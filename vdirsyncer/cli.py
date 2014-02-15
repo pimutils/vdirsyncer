@@ -1,10 +1,23 @@
+# -*- coding: utf-8 -*-
+'''
+    vdirsyncer.cli
+    ~~~~~~~~~~~~~~
+
+    :copyright: (c) 2014 Markus Unterwaditzer
+    :license: MIT, see LICENSE for more details.
+'''
+
 import os
 import ConfigParser
-from vdirsyncer.cli_utils import path
 from vdirsyncer.sync import sync_classes
 
+def _path(p):
+    p = os.path.expanduser(p)
+    p = os.path.abspath(p)
+    return p
+
 def get_config_parser(env):
-    fname = env.get('VDIRSYNCER_CONFIG', path('~/.vdirsyncer/config'))
+    fname = env.get('VDIRSYNCER_CONFIG', _path('~/.vdirsyncer/config'))
     c = ConfigParser.SafeConfigParser()
     c.read(fname)
     return dict((c, c.items(c)) for c in c.sections())

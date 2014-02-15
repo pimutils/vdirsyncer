@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+'''
+    vdirsyncer.storage.base
+    ~~~~~~~~~~~~~~~~~~~~~~~
+
+    :copyright: (c) 2014 Markus Unterwaditzer
+    :license: MIT, see LICENSE for more details.
+'''
+
 class Item(object):
     '''should-be-immutable wrapper class for VCALENDAR and VCARD'''
     def __init__(self, raw):
@@ -14,6 +23,8 @@ class Item(object):
 
 
 class Storage(object):
+    '''Superclass of all storages, mainly useful to summarize the interface to
+    implement.'''
     def __init__(self, fileext='', item_class=Item):
         self.fileext = fileext
         self.item_class = item_class

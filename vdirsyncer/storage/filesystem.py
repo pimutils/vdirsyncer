@@ -1,9 +1,22 @@
+# -*- coding: utf-8 -*-
+'''
+    vdirsyncer.storage.filesystem
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    :copyright: (c) 2014 Markus Unterwaditzer
+    :license: MIT, see LICENSE for more details.
+'''
+
 import os
 from vdirsyncer.storage.base import Storage, Item
 import vdirsyncer.exceptions as exceptions
 
 class FilesystemStorage(Storage):
+    '''Saves data in vdir collection, mtime is etag.'''
     def __init__(self, path, **kwargs):
+        '''
+        :param path: Absolute path to a *collection* inside a vdir.
+        '''
         self.path = path
         super(FilesystemStorage, self).__init__(**kwargs)
 

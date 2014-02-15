@@ -1,8 +1,20 @@
+# -*- coding: utf-8 -*-
+'''
+    vdirsyncer.storage.memory
+    ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    :copyright: (c) 2014 Markus Unterwaditzer
+    :license: MIT, see LICENSE for more details.
+'''
+
 import datetime
 from vdirsyncer.storage.base import Item, Storage 
 import vdirsyncer.exceptions as exceptions
 
 class MemoryStorage(Storage):
+    '''
+    Saves data in RAM, only useful for testing.
+    '''
     def __init__(self, **kwargs):
         self.items = {}  # uid => (etag, object)
         super(MemoryStorage, self).__init__(**kwargs)

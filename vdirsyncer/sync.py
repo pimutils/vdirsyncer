@@ -1,9 +1,31 @@
+# -*- coding: utf-8 -*-
+'''
+    vdirsyncer.sync
+    ~~~~~~~~~~~~~~~
+
+    The function in `vdirsyncer.sync` can be called on two instances of
+    `Storage` to syncronize them. Due to the abstract API storage classes are
+    implementing, the two given instances don't have to be of the same exact
+    type. This allows us not only to syncronize a local vdir with a CalDAV
+    server, but also syncronize two CalDAV servers or two local vdirs.
+
+    :copyright: (c) 2014 Markus Unterwaditzer
+    :license: MIT, see LICENSE for more details.
+'''
+
+
 def sync(storage_a, storage_b, status):
     '''Syncronizes two storages.
 
     :param storage_a: The first storage
+    :type storage_a: :class:`vdirsyncer.storage.base.Storage`
     :param storage_b: The second storage
-    :param status: {uid: (etag_a, etag_b)}
+    :type storage_b: :class:`vdirsyncer.storage.base.Storage`
+    :param status:
+        {uid: (etag_a, etag_b)}, metadata about the two storages for detection
+        of changes. Will be modified by the function and should be passed to it
+        at the next sync. If this is the first sync, an empty dictionary should
+        be provided.
     '''
     list_a = dict(storage_a.list_items())
     list_b = dict(storage_b.list_items())
@@ -15,7 +37,7 @@ def sync(storage_a, storage_b, status):
     for uid in set(list_a).union(set(list_b)):
         if uid not in status:
             if uid in list_a and uid in list_b:  # missing status
-                status[uid] = (list_a[uid], list_b[uid])  # TODO: might need etag diffing too?
+                status[uid] = (list_a[uid], list_b[uid])  # TODO: might need some kind of diffing too?
             elif uid in list_a and uid not in list_b:  # new item in a
                 prefetch_items_from_a.append(uid)
                 actions.append(('upload', uid, 'a', 'b'))
