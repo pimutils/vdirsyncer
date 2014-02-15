@@ -6,13 +6,13 @@ class Item(object):
 
     @property
     def uid(self):
-        for line in raw.splitlines():
+        for line in self.raw.splitlines():
             if line.startswith(b'UID'):
                 return line.lstrip(b'UID:').strip()
 
 
 class Storage(object):
-    def __init__(self, fileext, item_class=Item):
+    def __init__(self, fileext='', item_class=Item):
         self.fileext = fileext
         self.item_class = item_class
 

@@ -11,7 +11,7 @@ class FilesystemStorage(Storage):
         return os.path.getmtime(href)
 
     def _get_href(self, obj):
-        return os.path.join(self.path, obj.uid + b'b' + self.fileext)
+        return os.path.join(self.path, obj.uid + self.fileext)
 
     def _get_hrefs(self):
         for fname in os.listdir(self.path):
