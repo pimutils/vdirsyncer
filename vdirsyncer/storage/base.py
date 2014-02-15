@@ -1,4 +1,21 @@
-class Syncer(object):
+class Item(object):
+    '''wrapper class for VCALENDAR and VCARD'''
+    def __init__(self, raw):
+        self.raw = raw
+        self._uid = None
+
+    @property
+    def uid(self):
+        for line in raw.splitlines():
+            if line.startswith(b'UID'):
+                return line.lstrip(b'UID:').strip()
+
+
+class Storage(object):
+    def __init__(self, fileext, item_class=Item):
+        self.fileext = fileext
+        self.item_class = item_class
+
     def list_items(self):
         '''
         :returns: list of (href, etag)
@@ -15,12 +32,14 @@ class Syncer(object):
     def item_exists(self, href):
         '''
         check if item exists
+        :returns: True or False
         '''
         raise NotImplementedError()
 
     def upload(self, obj):
         '''
-        Upload a new object, raise error if it already exists.
+        Upload a new object, raise
+        :exc:`vdirsyncer.exceptions.AlreadyExistingError` if it already exists.
         :returns: (href, etag)
         '''
         raise NotImplementedError()
