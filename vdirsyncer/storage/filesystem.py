@@ -1,6 +1,6 @@
 import os
 from vdirsyncer.storage.base import Storage, Item
-from vdirsyncer.exceptions import AlreadyExistingError
+import vdirsyncer.exceptions as exceptions
 
 class FilesystemStorage(Storage):
     def __init__(self, path, **kwargs):
@@ -9,6 +9,9 @@ class FilesystemStorage(Storage):
 
     def _get_etag(self, href):
         return os.path.getmtime(href)
+
+    def _get_href(self, obj):
+        return os.path.join(self.path, obj.uid + b'b' + self.fileext)
 
     def _get_hrefs(self):
         for fname in os.listdir(self.path):
@@ -28,13 +31,10 @@ class FilesystemStorage(Storage):
     def item_exists(self, href):
         return os.path.isfile(path)
 
-    def _get_href(self, obj):
-        return os.path.join(self.path, obj.uid + b'b' + self.fileext)
-
     def upload(self, obj):
         href = self._get_href(obj)
         if os.path.exists(href):
-            raise AlreadyExistingError(href)
+            raise exceptions.AlreadyExistingError(href)
         with open(href, 'wb+') as f:
             f.write(obj.raw)
         return href, self._get_etag(href)
@@ -43,8 +43,10 @@ class FilesystemStorage(Storage):
         href = self._get_href(obj)
         actual_etag = self._get_etag(href)
         if etag != actual_etag:
-            raise WrongEtagError(etag, actual_etag)
-
+            raise exceptions.WrongEtagError(etag, actual_etag)
+        if not os.path.exists(href):
+            raise exceptions.NotFoundError(href)
         with open(href, 'wb') as f:
             f.write(obj.raw)
+
         return self._get_etag(href)

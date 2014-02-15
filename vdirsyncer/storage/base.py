@@ -46,8 +46,9 @@ class Storage(object):
 
     def update(self, obj, etag):
         '''
-        Update the object, raise error if the etag on the server doesn't match
-        the given etag.
+        Update the object, raise :exc:`vdirsyncer.exceptions.WrongEtagError` if
+        the etag on the server doesn't match the given etag, raise
+        :exc:`vdirsyncer.exceptions.NotFoundError` if the item doesn't exist.
 
         :returns: etag on the server
         '''
