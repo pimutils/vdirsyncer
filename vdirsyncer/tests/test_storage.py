@@ -22,14 +22,12 @@ class StorageTests(object):
             'UID:8',
             'UID:9'
         ]
-        fileext = ''
+        fileext = '.lol'
         s = self._get_storage(fileext=fileext)
         for item in items:
             s.upload(Item(item))
-        hrefs = [href for href, etag in s.list_items()]
-        prefix = os.path.commonprefix(hrefs)
-        a = set(x[len(prefix):] for x in hrefs)
-        b = set(str(y) + fileext for y in range(1, 10))
+        a = set(uid for uid, etag in s.list_items())
+        b = set(str(y) for y in range(1, 10))
         assert a == b
 
 

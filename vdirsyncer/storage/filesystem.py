@@ -7,46 +7,40 @@ class FilesystemStorage(Storage):
         self.path = path
         super(FilesystemStorage, self).__init__(**kwargs)
 
-    def _get_etag(self, href):
-        return os.path.getmtime(href)
-
-    def _get_href(self, obj):
-        return os.path.join(self.path, obj.uid + self.fileext)
-
-    def _get_hrefs(self):
-        for fname in os.listdir(self.path):
-            href = os.path.join(self.path, fname)
-            if os.path.isfile(href):
-                yield href
+    def _get_filepath(self, uid):
+        return os.path.join(self.path, uid + self.fileext)
 
     def list_items(self):
-        for href in self._get_hrefs():
-            yield href, self._get_etag(href)
+        for fname in os.listdir(self.path):
+            fpath = os.path.join(self.path, fname)
+            if os.path.isfile(fpath) and fname.endswith(self.fileext):
+                uid = fname[:-len(self.fileext)]
+                yield uid, os.path.getmtime(fpath)
 
-    def get_items(self, hrefs):
-        for href in hrefs:
-            with open(href, 'rb') as f:
-                yield Item(f.read()), href, self._get_etag(href)
+    def get_items(self, uids):
+        for uid in uids:
+            fpath = self._get_filepath(uid)
+            with open(fpath, 'rb') as f:
+                yield Item(f.read()), uid, os.path.getmtime(fpath)
 
-    def item_exists(self, href):
-        return os.path.isfile(path)
+    def item_exists(self, uid):
+        return os.path.isfile(self._get_filepath(uid))
 
     def upload(self, obj):
-        href = self._get_href(obj)
-        if os.path.exists(href):
-            raise exceptions.AlreadyExistingError(href)
-        with open(href, 'wb+') as f:
+        fpath = self._get_filepath(obj.uid)
+        if os.path.exists(fpath):
+            raise exceptions.AlreadyExistingError(obj.uid)
+        with open(fpath, 'wb+') as f:
             f.write(obj.raw)
-        return href, self._get_etag(href)
+        return obj.uid, os.path.getmtime(fpath)
 
     def update(self, obj, etag):
-        href = self._get_href(obj)
-        actual_etag = self._get_etag(href)
+        fpath = self._get_filepath(obj)
+        if not os.path.exists(fpath):
+            raise exceptions.NotFoundError(href)
+        actual_etag = os.path.getmtime(fpath)
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
-        if not os.path.exists(href):
-            raise exceptions.NotFoundError(href)
-        with open(href, 'wb') as f:
+        with open(fpath, 'wb') as f:
             f.write(obj.raw)
-
-        return self._get_etag(href)
+        return os.path.getmtime(fpath)

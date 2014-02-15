@@ -1,14 +1,16 @@
 class Item(object):
-    '''wrapper class for VCALENDAR and VCARD'''
+    '''should-be-immutable wrapper class for VCALENDAR and VCARD'''
     def __init__(self, raw):
         self.raw = raw
         self._uid = None
 
     @property
     def uid(self):
-        for line in self.raw.splitlines():
-            if line.startswith(b'UID'):
-                return line.lstrip(b'UID:').strip()
+        if self._uid is None:
+            for line in self.raw.splitlines():
+                if line.startswith(b'UID'):
+                    self._uid = line.lstrip(b'UID:').strip()
+        return self._uid
 
 
 class Storage(object):
@@ -18,18 +20,18 @@ class Storage(object):
 
     def list_items(self):
         '''
-        :returns: list of (href, etag)
+        :returns: list of (uid, etag)
         '''
         raise NotImplementedError()
 
-    def get_items(self, hrefs):
+    def get_items(self, uids):
         '''
-        :param hrefs: list of hrefs to fetch
-        :returns: list of (object, href, etag)
+        :param uids: list of uids to fetch
+        :returns: list of (object, uid, etag)
         '''
         raise NotImplementedError()
 
-    def item_exists(self, href):
+    def item_exists(self, uid):
         '''
         check if item exists
         :returns: True or False
@@ -40,7 +42,7 @@ class Storage(object):
         '''
         Upload a new object, raise
         :exc:`vdirsyncer.exceptions.AlreadyExistingError` if it already exists.
-        :returns: (href, etag)
+        :returns: (uid, etag)
         '''
         raise NotImplementedError()
 
