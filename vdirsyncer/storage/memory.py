@@ -14,7 +14,7 @@ class MemoryStorage(Storage):
     def get_items(self, uids):
         for uid in uids:
             etag, obj = self.items[uid]
-            return obj, uid, etag
+            yield obj, uid, etag
 
     def item_exists(self, uid):
         return uid in self.items
@@ -24,11 +24,14 @@ class MemoryStorage(Storage):
             raise exceptions.AlreadyExistingError(obj)
         etag = datetime.datetime.now()
         self.items[obj.uid] = (etag, obj)
-        return obj.uid, etag
+        return etag
 
     def update(self, obj, etag):
         if obj.uid not in self.items:
             raise exceptions.NotFoundError(obj)
         etag = datetime.datetime.now()
         self.items[obj.uid] = (etag, obj)
-        return obj.uid, etag
+        return etag
+
+    def delete(self, uid):
+        del self.items[uid]

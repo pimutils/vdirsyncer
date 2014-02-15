@@ -42,7 +42,7 @@ class Storage(object):
         '''
         Upload a new object, raise
         :exc:`vdirsyncer.exceptions.AlreadyExistingError` if it already exists.
-        :returns: (uid, etag)
+        :returns: etag on the server
         '''
         raise NotImplementedError()
 
@@ -53,5 +53,11 @@ class Storage(object):
         :exc:`vdirsyncer.exceptions.NotFoundError` if the item doesn't exist.
 
         :returns: etag on the server
+        '''
+        raise NotImplementedError()
+
+    def delete(self, uid):
+        '''
+        Delete the object, raise exceptions on error, no return value
         '''
         raise NotImplementedError()

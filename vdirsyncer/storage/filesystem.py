@@ -32,7 +32,7 @@ class FilesystemStorage(Storage):
             raise exceptions.AlreadyExistingError(obj.uid)
         with open(fpath, 'wb+') as f:
             f.write(obj.raw)
-        return obj.uid, os.path.getmtime(fpath)
+        return os.path.getmtime(fpath)
 
     def update(self, obj, etag):
         fpath = self._get_filepath(obj)
@@ -44,3 +44,6 @@ class FilesystemStorage(Storage):
         with open(fpath, 'wb') as f:
             f.write(obj.raw)
         return os.path.getmtime(fpath)
+
+    def delete(self, uid):
+        os.remove(self._get_filepath(uid))
