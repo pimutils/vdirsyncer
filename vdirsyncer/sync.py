@@ -13,8 +13,6 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-import itertools
-
 def sync(storage_a, storage_b, status):
     '''Syncronizes two storages.
 
@@ -67,14 +65,10 @@ def sync(storage_a, storage_b, status):
             del status[uid]
 
 def get_actions(list_a, list_b, status):
-    already_handled = set()
     prefetch_from_a = []
     prefetch_from_b = []
     actions = []
-    for uid in itertools.chain(list_a, list_b, status):
-        if uid in already_handled:
-            continue
-        already_handled.add(uid)
+    for uid in set(list_a).union(set(list_b)).union(set(status)):
         if uid not in status:
             if uid in list_a and uid in list_b:  # missing status
                 # TODO: might need some kind of diffing too?
@@ -103,5 +97,4 @@ def get_actions(list_a, list_b, status):
                 actions.append(('delete', uid, None, 'b'))
             elif uid not in list_a and uid not in list_b:  # was deleted from a and b
                 actions.append(('delete', uid, None, None))
-                del status[uid]
     return actions, prefetch_from_a, prefetch_from_b

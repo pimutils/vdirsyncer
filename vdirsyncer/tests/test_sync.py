@@ -61,3 +61,10 @@ class SyncTests(TestCase):
         assert next(b.list())[0] == '2'
         obj, uid, etag = b.get('2')
         assert obj.raw == new_item2.raw
+
+    def test_irrelevant_status(self):
+        a = MemoryStorage()
+        b = MemoryStorage()
+        status = {'1': ('UID:1', 1234)}
+        sync(a, b, status)
+        assert not status
