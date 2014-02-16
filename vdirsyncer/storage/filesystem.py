@@ -47,9 +47,9 @@ class FilesystemStorage(Storage):
         return os.path.getmtime(fpath)
 
     def update(self, obj, etag):
-        fpath = self._get_filepath(obj)
+        fpath = self._get_filepath(obj.uid)
         if not os.path.exists(fpath):
-            raise exceptions.NotFoundError(href)
+            raise exceptions.NotFoundError(obj.uid)
         actual_etag = os.path.getmtime(fpath)
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
@@ -60,6 +60,9 @@ class FilesystemStorage(Storage):
 
     def delete(self, uid, etag):
         fpath = self._get_filepath(uid)
-        if etag != os.path.getmtime(fpath):
+        if not os.path.isfile(fpath):
+            raise exceptions.NotFoundError(uid)
+        actual_etag = os.path.getmtime(fpath)
+        if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
         os.remove(fpath)

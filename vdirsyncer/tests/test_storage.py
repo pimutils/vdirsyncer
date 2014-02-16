@@ -15,6 +15,7 @@ import shutil
 from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.filesystem import FilesystemStorage
 from vdirsyncer.storage.memory import MemoryStorage
+import vdirsyncer.exceptions as exceptions
 
 class StorageTests(object):
     def _get_storage(self, **kwargs):
@@ -43,6 +44,28 @@ class StorageTests(object):
             assert s.has(i)
             item, etag = s.get(i)
             assert item.raw == 'UID:{}'.format(i)
+
+    def test_upload_already_existing(self):
+        s = self._get_storage()
+        item = Item('UID:1')
+        s.upload(item)
+        self.assertRaises(exceptions.AlreadyExistingError, s.upload, item)
+
+    def test_update_nonexisting(self):
+        s = self._get_storage()
+        item = Item('UID:1')
+        self.assertRaises(exceptions.NotFoundError, s.update, item, 123)
+
+    def test_wrong_etag(self):
+        s = self._get_storage()
+        item = Item('UID:1')
+        etag = s.upload(item)
+        self.assertRaises(exceptions.WrongEtagError, s.update, item, 'lolnope')
+        self.assertRaises(exceptions.WrongEtagError, s.delete, '1', 'lolnope')
+
+    def test_delete_nonexisting(self):
+        s = self._get_storage()
+        self.assertRaises(exceptions.NotFoundError, s.delete, '1', 123)
 
 
 class FilesystemStorageTests(TestCase, StorageTests):
