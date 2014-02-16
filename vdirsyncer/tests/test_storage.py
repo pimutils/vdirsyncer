@@ -20,7 +20,7 @@ class StorageTests(object):
     def _get_storage(self, **kwargs):
         raise NotImplementedError()
 
-    def test_generic_upload(self):
+    def test_generic(self):
         items = [
             'UID:1',
             'UID:2',
@@ -36,9 +36,14 @@ class StorageTests(object):
         s = self._get_storage(fileext=fileext)
         for item in items:
             s.upload(Item(item))
-        a = set(uid for uid, etag in s.list_items())
+        a = set(uid for uid, etag in s.list())
         b = set(str(y) for y in range(1, 10))
         assert a == b
+        for i in b:
+            assert s.has(i)
+            item, uid, etag = s.get(i)
+            assert uid == i
+            assert item.raw == 'UID:{}'.format(i)
 
 
 class FilesystemStorageTests(TestCase, StorageTests):
