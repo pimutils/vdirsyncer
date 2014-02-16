@@ -41,8 +41,7 @@ class StorageTests(object):
         assert a == b
         for i in b:
             assert s.has(i)
-            item, uid, etag = s.get(i)
-            assert uid == i
+            item, etag = s.get(i)
             assert item.raw == 'UID:{}'.format(i)
 
 

@@ -33,7 +33,7 @@ class FilesystemStorage(Storage):
     def get(self, uid):
         fpath = self._get_filepath(uid)
         with open(fpath, 'rb') as f:
-            return Item(f.read()), uid, os.path.getmtime(fpath)
+            return Item(f.read()), os.path.getmtime(fpath)
 
     def has(self, uid):
         return os.path.isfile(self._get_filepath(uid))

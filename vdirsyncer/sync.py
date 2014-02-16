@@ -36,9 +36,9 @@ def sync(storage_a, storage_b, status):
         get_actions(list_a, list_b, status)
 
     def prefetch():
-        for item, uid, etag in storage_a.get_multi(prefetch_from_a):
+        for uid, item, etag in storage_a.get_multi(prefetch_from_a):
             items_a[uid] = (item, etag)
-        for item, uid, etag in storage_b.get_multi(prefetch_from_b):
+        for uid, item, etag in storage_b.get_multi(prefetch_from_b):
             items_b[uid] = (item, etag)
     prefetch()
 

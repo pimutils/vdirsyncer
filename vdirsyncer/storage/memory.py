@@ -25,7 +25,7 @@ class MemoryStorage(Storage):
 
     def get(self, uid):
         etag, obj = self.items[uid]
-        return obj, uid, etag
+        return obj, etag
 
     def has(self, uid):
         return uid in self.items

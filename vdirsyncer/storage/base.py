@@ -38,17 +38,18 @@ class Storage(object):
     def get(self, uid):
         '''
         :param uid: uid to fetch
-        :returns: (object, uid, etag)
+        :returns: (object, etag)
         '''
         raise NotImplementedError()
 
     def get_multi(self, uids):
         '''
         :param uids: list of uids to fetch
-        :returns: iterable of (object, uid, etag)
+        :returns: iterable of (uid, obj, etag)
         '''
         for uid in uids:
-            yield self.get(uid)
+            obj, etag = self.get(uid)
+            yield uid, obj, etag
 
     def has(self, uid):
         '''
