@@ -34,55 +34,21 @@ def sync(storage_a, storage_b, status):
     items_a = {}  # items prefetched for copy
     items_b = {}  # {uid: (item, etag)}
 
-    storages = {
-        'a': [storage_a, items_a, list_a],
-        'b': [storage_b, items_b, list_b]
-    }
-    
-    def get_actions():
-        already_handled = set()
-        prefetch_from_a = []
-        prefetch_from_b = []
-        actions = []  # list(tuple(action, uid, source, dest))
-        for uid in itertools.chain(list_a, list_b, status):
-            if uid in already_handled:
-                continue
-            already_handled.add(uid)
-            if uid not in status:
-                if uid in list_a and uid in list_b:  # missing status
-                    # TODO: might need some kind of diffing too?
-                    status[uid] = (list_a[uid], list_b[uid])  
-                elif uid in list_a and uid not in list_b:  # new item in a
-                    prefetch_from_a.append(uid)
-                    actions.append(('upload', uid, 'a', 'b'))
-                elif uid not in list_a and uid in list_b:  # new item in b
-                    prefetch_from_b.append(uid)
-                    actions.append(('upload', uid, 'b', 'a'))
-            else:
-                if uid in list_a and uid in list_b:
-                    if list_a[uid] != status[uid][0] and list_b[uid] != status[uid][1]:
-                        1/0  # conflict resolution TODO
-                    elif list_a[uid] != status[uid][0]:  # item update in a
-                        prefetch_from_a.append(uid)
-                        actions.append(('update', uid, 'a', 'b'))
-                    elif list_b[uid] != status[uid][1]:  # item update in b
-                        prefetch_from_b.append(uid)
-                        actions.append(('update', uid, 'b', 'a'))
-                    else:  # completely in sync!
-                        pass
-                elif uid in list_a and uid not in list_b:  # deleted from b
-                    actions.append(('delete', uid, 'b', 'a'))
-                elif uid not in list_a and uid in list_b:  # deleted from a
-                    actions.append(('delete', uid, 'a', 'b'))
-                elif uid not in list_a and uid not in list_b:  # deleted from a and b
-                    del status[uid]
-        return actions, prefetch_from_a, prefetch_from_b
-    actions, prefetch_from_a, prefetch_from_b = get_actions()
+    actions, prefetch_from_a, prefetch_from_b = \
+        get_actions(list_a, list_b, status)
 
-    for item, uid, etag in storage_a.get_multi(prefetch_from_a):
-        items_a[uid] = (item, etag)
-    for item, uid, etag in storage_b.get_multi(prefetch_from_b):
-        items_b[uid] = (item, etag)
+    def prefetch():
+        for item, uid, etag in storage_a.get_multi(prefetch_from_a):
+            items_a[uid] = (item, etag)
+        for item, uid, etag in storage_b.get_multi(prefetch_from_b):
+            items_b[uid] = (item, etag)
+    prefetch()
+
+    storages = {
+        'a': (storage_a, items_a, list_a),
+        'b': (storage_b, items_b, list_b),
+        None: (None, None, None)
+    }
 
     for action, uid, source, dest in actions:
         source_storage, source_items, source_list = storages[source]
@@ -96,5 +62,46 @@ def sync(storage_a, storage_b, status):
                 dest_etag = dest_storage.update(item, dest_list[uid])
             status[uid] = (source_etag, dest_etag) if source == 'a' else (dest_etag, source_etag)
         elif action == 'delete':
-            dest_storage.delete(uid, dest_list[uid])
+            if dest is not None:
+                dest_storage.delete(uid, dest_list[uid])
             del status[uid]
+
+def get_actions(list_a, list_b, status):
+    already_handled = set()
+    prefetch_from_a = []
+    prefetch_from_b = []
+    actions = []
+    for uid in itertools.chain(list_a, list_b, status):
+        if uid in already_handled:
+            continue
+        already_handled.add(uid)
+        if uid not in status:
+            if uid in list_a and uid in list_b:  # missing status
+                # TODO: might need some kind of diffing too?
+                status[uid] = (list_a[uid], list_b[uid])
+            elif uid in list_a and uid not in list_b:  # new item was created in a
+                prefetch_from_a.append(uid)
+                actions.append(('upload', uid, 'a', 'b'))
+            elif uid not in list_a and uid in list_b:  # new item was created in b
+                prefetch_from_b.append(uid)
+                actions.append(('upload', uid, 'b', 'a'))
+        else:
+            if uid in list_a and uid in list_b:
+                if list_a[uid] != status[uid][0] and list_b[uid] != status[uid][1]:
+                    1/0  # conflict resolution TODO
+                elif list_a[uid] != status[uid][0]:  # item was updated in a
+                    prefetch_from_a.append(uid)
+                    actions.append(('update', uid, 'a', 'b'))
+                elif list_b[uid] != status[uid][1]:  # item was updated in b
+                    prefetch_from_b.append(uid)
+                    actions.append(('update', uid, 'b', 'a'))
+                else:  # completely in sync!
+                    pass
+            elif uid in list_a and uid not in list_b:  # was deleted from b
+                actions.append(('delete', uid, None, 'a'))
+            elif uid not in list_a and uid in list_b:  # was deleted from a
+                actions.append(('delete', uid, None, 'b'))
+            elif uid not in list_a and uid not in list_b:  # was deleted from a and b
+                actions.append(('delete', uid, None, None))
+                del status[uid]
+    return actions, prefetch_from_a, prefetch_from_b
