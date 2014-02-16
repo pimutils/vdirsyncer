@@ -29,20 +29,28 @@ class Storage(object):
         self.fileext = fileext
         self.item_class = item_class
 
-    def list_items(self):
+    def list(self):
         '''
         :returns: list of (uid, etag)
         '''
         raise NotImplementedError()
 
-    def get_items(self, uids):
+    def get(self, uid):
         '''
-        :param uids: list of uids to fetch
-        :returns: list of (object, uid, etag)
+        :param uid: uid to fetch
+        :returns: (object, uid, etag)
         '''
         raise NotImplementedError()
 
-    def item_exists(self, uid):
+    def get_multi(self, uids):
+        '''
+        :param uids: list of uids to fetch
+        :returns: iterable of (object, uid, etag)
+        '''
+        for uid in uids:
+            yield self.get(uid)
+
+    def has(self, uid):
         '''
         check if item exists
         :returns: True or False
@@ -67,8 +75,9 @@ class Storage(object):
         '''
         raise NotImplementedError()
 
-    def delete(self, uid):
+    def delete(self, uid, etag):
         '''
-        Delete the object, raise exceptions on error, no return value
+        Delete the object, raise exceptions when etag doesn't match, no return
+        value
         '''
         raise NotImplementedError()

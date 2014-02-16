@@ -19,16 +19,15 @@ class MemoryStorage(Storage):
         self.items = {}  # uid => (etag, object)
         super(MemoryStorage, self).__init__(**kwargs)
 
-    def list_items(self):
+    def list(self):
         for uid, (etag, obj) in self.items.items():
             yield uid, etag
 
-    def get_items(self, uids):
-        for uid in uids:
-            etag, obj = self.items[uid]
-            yield obj, uid, etag
+    def get(self, uid):
+        etag, obj = self.items[uid]
+        return obj, uid, etag
 
-    def item_exists(self, uid):
+    def has(self, uid):
         return uid in self.items
 
     def upload(self, obj):
@@ -41,9 +40,17 @@ class MemoryStorage(Storage):
     def update(self, obj, etag):
         if obj.uid not in self.items:
             raise exceptions.NotFoundError(obj)
-        etag = datetime.datetime.now()
-        self.items[obj.uid] = (etag, obj)
+        actual_etag, _ = self.items[obj.uid]
+        if etag != actual_etag:
+            raise exceptions.WrongEtagError(etag, actual_etag)
+
+        new_etag = datetime.datetime.now()
+        self.items[obj.uid] = (new_etag, obj)
         return etag
 
-    def delete(self, uid):
+    def delete(self, uid, etag):
+        if not self.has(uid):
+            raise exceptions.NotFoundError(uid)
+        if etag != self.items[uid][0]:
+            raise exceptions.WrongEtagError(etag)
         del self.items[uid]

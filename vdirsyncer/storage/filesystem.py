@@ -23,20 +23,19 @@ class FilesystemStorage(Storage):
     def _get_filepath(self, uid):
         return os.path.join(self.path, uid + self.fileext)
 
-    def list_items(self):
+    def list(self):
         for fname in os.listdir(self.path):
             fpath = os.path.join(self.path, fname)
             if os.path.isfile(fpath) and fname.endswith(self.fileext):
                 uid = fname[:-len(self.fileext)]
                 yield uid, os.path.getmtime(fpath)
 
-    def get_items(self, uids):
-        for uid in uids:
-            fpath = self._get_filepath(uid)
-            with open(fpath, 'rb') as f:
-                yield Item(f.read()), uid, os.path.getmtime(fpath)
+    def get(self, uid):
+        fpath = self._get_filepath(uid)
+        with open(fpath, 'rb') as f:
+            return Item(f.read()), uid, os.path.getmtime(fpath)
 
-    def item_exists(self, uid):
+    def has(self, uid):
         return os.path.isfile(self._get_filepath(uid))
 
     def upload(self, obj):
@@ -54,9 +53,13 @@ class FilesystemStorage(Storage):
         actual_etag = os.path.getmtime(fpath)
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
+
         with open(fpath, 'wb') as f:
             f.write(obj.raw)
         return os.path.getmtime(fpath)
 
-    def delete(self, uid):
-        os.remove(self._get_filepath(uid))
+    def delete(self, uid, etag):
+        fpath = self._get_filepath(uid)
+        if etag != os.path.getmtime(fpath):
+            raise exceptions.WrongEtagError(etag, actual_etag)
+        os.remove(fpath)
