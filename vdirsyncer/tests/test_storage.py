@@ -37,13 +37,11 @@ class StorageTests(object):
         s = self._get_storage(fileext=fileext)
         for item in items:
             s.upload(Item(item))
-        a = set(uid for uid, etag in s.list())
-        b = set(str(y) for y in range(1, 10))
-        assert a == b
-        for i in b:
-            assert s.has(i)
-            item, etag = s.get(i)
-            assert item.raw == 'UID:{}'.format(i)
+        hrefs = (href for href, etag in s.list())
+        for href in hrefs:
+            assert s.has(href)
+            obj, etag = s.get(href)
+            assert obj.raw == 'UID:{}'.format(obj.uid)
 
     def test_upload_already_existing(self):
         s = self._get_storage()
@@ -54,14 +52,14 @@ class StorageTests(object):
     def test_update_nonexisting(self):
         s = self._get_storage()
         item = Item('UID:1')
-        self.assertRaises(exceptions.NotFoundError, s.update, item, 123)
+        self.assertRaises(exceptions.NotFoundError, s.update, 'huehue', item, 123)
 
     def test_wrong_etag(self):
         s = self._get_storage()
-        item = Item('UID:1')
-        etag = s.upload(item)
-        self.assertRaises(exceptions.WrongEtagError, s.update, item, 'lolnope')
-        self.assertRaises(exceptions.WrongEtagError, s.delete, '1', 'lolnope')
+        obj = Item('UID:1')
+        href, etag = s.upload(obj)
+        self.assertRaises(exceptions.WrongEtagError, s.update, href, obj, 'lolnope')
+        self.assertRaises(exceptions.WrongEtagError, s.delete, href, 'lolnope')
 
     def test_delete_nonexisting(self):
         s = self._get_storage()

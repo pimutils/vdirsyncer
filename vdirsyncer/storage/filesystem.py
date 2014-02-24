@@ -12,7 +12,9 @@ from vdirsyncer.storage.base import Storage, Item
 import vdirsyncer.exceptions as exceptions
 
 class FilesystemStorage(Storage):
-    '''Saves data in vdir collection, mtime is etag.'''
+    '''Saves data in vdir collection
+    mtime is etag
+    filename without path is href'''
     def __init__(self, path, **kwargs):
         '''
         :param path: Absolute path to a *collection* inside a vdir.
@@ -20,34 +22,39 @@ class FilesystemStorage(Storage):
         self.path = path
         super(FilesystemStorage, self).__init__(**kwargs)
 
-    def _get_filepath(self, uid):
-        return os.path.join(self.path, uid + self.fileext)
+    def _get_filepath(self, href):
+        return os.path.join(self.path, href)
+
+    def _get_href(self, uid):
+        return uid + self.fileext
 
     def list(self):
         for fname in os.listdir(self.path):
             fpath = os.path.join(self.path, fname)
             if os.path.isfile(fpath) and fname.endswith(self.fileext):
-                uid = fname[:-len(self.fileext)]
-                yield uid, os.path.getmtime(fpath)
+                yield fname, os.path.getmtime(fpath)
 
-    def get(self, uid):
-        fpath = self._get_filepath(uid)
+    def get(self, href):
+        fpath = self._get_filepath(href)
         with open(fpath, 'rb') as f:
             return Item(f.read()), os.path.getmtime(fpath)
 
-    def has(self, uid):
-        return os.path.isfile(self._get_filepath(uid))
+    def has(self, href):
+        return os.path.isfile(self._get_filepath(href))
 
     def upload(self, obj):
-        fpath = self._get_filepath(obj.uid)
+        href = self._get_href(obj.uid)
+        fpath = self._get_filepath(href)
         if os.path.exists(fpath):
             raise exceptions.AlreadyExistingError(obj.uid)
         with open(fpath, 'wb+') as f:
             f.write(obj.raw)
-        return os.path.getmtime(fpath)
+        return href, os.path.getmtime(fpath)
 
-    def update(self, obj, etag):
-        fpath = self._get_filepath(obj.uid)
+    def update(self, href, obj, etag):
+        fpath = self._get_filepath(href)
+        if href != self._get_href(obj.uid):
+            raise exceptions.NotFoundError(obj.uid)
         if not os.path.exists(fpath):
             raise exceptions.NotFoundError(obj.uid)
         actual_etag = os.path.getmtime(fpath)
@@ -58,10 +65,10 @@ class FilesystemStorage(Storage):
             f.write(obj.raw)
         return os.path.getmtime(fpath)
 
-    def delete(self, uid, etag):
-        fpath = self._get_filepath(uid)
+    def delete(self, href, etag):
+        fpath = self._get_filepath(href)
         if not os.path.isfile(fpath):
-            raise exceptions.NotFoundError(uid)
+            raise exceptions.NotFoundError(href)
         actual_etag = os.path.getmtime(fpath)
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)

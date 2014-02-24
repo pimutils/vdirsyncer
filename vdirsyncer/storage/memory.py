@@ -16,41 +16,42 @@ class MemoryStorage(Storage):
     Saves data in RAM, only useful for testing.
     '''
     def __init__(self, **kwargs):
-        self.items = {}  # uid => (etag, object)
+        self.items = {}  # href => (etag, object)
         super(MemoryStorage, self).__init__(**kwargs)
 
     def list(self):
-        for uid, (etag, obj) in self.items.items():
-            yield uid, etag
+        for href, (etag, obj) in self.items.items():
+            yield href, etag
 
-    def get(self, uid):
-        etag, obj = self.items[uid]
+    def get(self, href):
+        etag, obj = self.items[href]
         return obj, etag
 
-    def has(self, uid):
-        return uid in self.items
+    def has(self, href):
+        return href in self.items
 
     def upload(self, obj):
-        if obj.uid in self.items:
-            raise exceptions.AlreadyExistingError(obj)
+        href = self._get_href(obj.uid)
+        if href in self.items:
+            raise exceptions.AlreadyExistingError(obj.uid)
         etag = datetime.datetime.now()
-        self.items[obj.uid] = (etag, obj)
-        return etag
+        self.items[href] = (etag, obj)
+        return href, etag
 
-    def update(self, obj, etag):
-        if obj.uid not in self.items:
-            raise exceptions.NotFoundError(obj)
-        actual_etag, _ = self.items[obj.uid]
+    def update(self, href, obj, etag):
+        if href != self._get_href(obj.uid) or href not in self.items:
+            raise exceptions.NotFoundError(href)
+        actual_etag, _ = self.items[href]
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
 
         new_etag = datetime.datetime.now()
-        self.items[obj.uid] = (new_etag, obj)
-        return etag
+        self.items[href] = (new_etag, obj)
+        return new_etag
 
-    def delete(self, uid, etag):
-        if not self.has(uid):
-            raise exceptions.NotFoundError(uid)
-        if etag != self.items[uid][0]:
+    def delete(self, href, etag):
+        if not self.has(href):
+            raise exceptions.NotFoundError(href)
+        if etag != self.items[href][0]:
             raise exceptions.WrongEtagError(etag)
-        del self.items[uid]
+        del self.items[href]
