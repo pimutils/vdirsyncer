@@ -38,6 +38,19 @@ class SyncTests(TestCase):
         assert a.has('1.txt')
         assert b.has('1.asd')
 
+    def test_missing_status_and_different_items(self):
+        return  # TODO
+        a = MemoryStorage(fileext='.txt')
+        b = MemoryStorage(fileext='.asd')
+        status = {}
+        item1 = Item('UID:1\nhaha')
+        item2 = Item('UID:1\nhoho')
+        a.upload(item1)
+        b.upload(item2)
+        sync(a, b, status)
+        assert status
+        assert a.get('1.txt')[0].raw == b.get('1.asd')[0].raw
+
     def test_upload_and_update(self):
         a = MemoryStorage(fileext='.txt')
         b = MemoryStorage(fileext='.asd')

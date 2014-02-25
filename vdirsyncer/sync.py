@@ -55,15 +55,13 @@ def sync(storage_a, storage_b, status):
     list_b = dict(prepare_list(storage_b, b_href_to_uid))
     a_uid_to_href = dict((x['uid'], href) for href, x in list_a.iteritems())
     b_uid_to_href = dict((x['uid'], href) for href, x in list_b.iteritems())
-    etags_a = dict((x['uid'], x['etag']) for href, x in list_a.iteritems())
-    etags_b = dict((x['uid'], x['etag']) for href, x in list_b.iteritems())
     del a_href_to_uid, b_href_to_uid
 
     actions, prefetch_from_a, prefetch_from_b = \
-        get_actions(etags_a, etags_b, status)
+        get_actions(list_a, list_b, status, a_uid_to_href, b_uid_to_href)
     
-    prefetch(storage_a, list_a, (a_uid_to_href[x] for x in prefetch_from_a))
-    prefetch(storage_b, list_b, (b_uid_to_href[x] for x in prefetch_from_b))
+    prefetch(storage_a, list_a, prefetch_from_a)
+    prefetch(storage_b, list_b, prefetch_from_b)
 
     storages = {
         'a': (storage_a, list_a, a_uid_to_href),
@@ -96,38 +94,47 @@ def sync(storage_a, storage_b, status):
                 dest_storage.delete(dest_href, dest_etag)
             del status[uid]
 
-def get_actions(list_a, list_b, status):
+def get_actions(list_a, list_b, status, a_uid_to_href, b_uid_to_href):
     prefetch_from_a = []
     prefetch_from_b = []
     actions = []
-    for uid in set(list_a).union(set(list_b)).union(set(status)):
+    uids_a = set(x['uid'] for x in list_a.values())
+    uids_b = set(x['uid'] for x in list_b.values())
+    uids_status = set(status)
+    for uid in uids_a.union(uids_b).union(uids_status):
+        href_a = a_uid_to_href.get(uid, None)
+        href_b = b_uid_to_href.get(uid, None)
+        a = list_a.get(href_a, None)
+        b = list_b.get(href_b, None)
         if uid not in status:
-            if uid in list_a and uid in list_b:  # missing status
+            if uid in uids_a and uid in uids_b:  # missing status
                 # TODO: might need some kind of diffing too?
-                status[uid] = (list_a[uid], list_b[uid])
-            elif uid in list_a and uid not in list_b:  # new item was created in a
-                prefetch_from_a.append(uid)
+                if a['obj'].raw != b['obj'].raw:
+                    1/0
+                status[uid] = (href_a, a['etag'], href_b, b['etag'])
+            elif uid in uids_a and uid not in uids_b:  # new item was created in a
+                prefetch_from_a.append(href_a)
                 actions.append(('upload', uid, 'a', 'b'))
-            elif uid not in list_a and uid in list_b:  # new item was created in b
-                prefetch_from_b.append(uid)
+            elif uid not in uids_a and uid in uids_b:  # new item was created in b
+                prefetch_from_b.append(href_b)
                 actions.append(('upload', uid, 'b', 'a'))
         else:
-            href_a, etag_a, href_b, etag_b = status[uid]
-            if uid in list_a and uid in list_b:
-                if list_a[uid] != etag_a and list_b[uid] != etag_b:
+            _, status_etag_a, _, status_etag_b = status[uid]
+            if uid in uids_a and uid in uids_b:
+                if a['etag'] != status_etag_a and b['etag'] != status_etag_b:
                     1/0  # conflict resolution TODO
-                elif list_a[uid] != etag_a:  # item was updated in a
-                    prefetch_from_a.append(uid)
+                elif a['etag'] != status_etag_a:  # item was updated in a
+                    prefetch_from_a.append(href_a)
                     actions.append(('update', uid, 'a', 'b'))
-                elif list_b[uid] != etag_b:  # item was updated in b
-                    prefetch_from_b.append(uid)
+                elif b['etag'] != status_etag_b:  # item was updated in b
+                    prefetch_from_b.append(href_b)
                     actions.append(('update', uid, 'b', 'a'))
                 else:  # completely in sync!
                     pass
-            elif uid in list_a and uid not in list_b:  # was deleted from b
+            elif uid in uids_a and uid not in uids_b:  # was deleted from b
                 actions.append(('delete', uid, None, 'a'))
-            elif uid not in list_a and uid in list_b:  # was deleted from a
+            elif uid not in uids_a and uid in uids_b:  # was deleted from a
                 actions.append(('delete', uid, None, 'b'))
-            elif uid not in list_a and uid not in list_b:  # was deleted from a and b
+            elif uid not in uids_a and uid not in uids_b:  # was deleted from a and b
                 actions.append(('delete', uid, None, None))
     return actions, prefetch_from_a, prefetch_from_b
