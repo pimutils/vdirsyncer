@@ -23,3 +23,5 @@ also syncronize two CalDAV servers or two local vdirs.
     through that every time we want to delete or update an event.
   - finish the CLI and decide on a config format
   - moar tests
+  - conflict resolution
+  - Everywhere you find TODO in the sourcecode
