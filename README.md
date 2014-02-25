@@ -16,7 +16,7 @@ This allows us not only to syncronize a local vdir with a CalDAV server, but
 also syncronize two CalDAV servers or two local vdirs.
 
 ## Rough list of things that need to be done
-  - implement CalDAVStorage and CardDAVStorage --
+  - implement CalDAVStorage and CardDAVStorage
     While events generally have to be referenced by href, there's an example in
     the [CalDAV RFC](http://www.ietf.org/rfc/rfc4791.txt) (Ctrl+F for "by UID")
     on how to get events by UID. In the worst case we have to find out the href
