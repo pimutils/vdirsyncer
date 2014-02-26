@@ -15,16 +15,14 @@ from lxml import etree
 import requests
 import datetime
 
-CALDAV_LIST_TEMPLATE = 
-
-CALDAV_GET_MULTI_TEMPLATE = ''''''
-
 CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
 
 class CaldavStorage(Storage):
     '''hrefs are full URLs to items'''
-    def __init__(self, url, username, password, start_date=None, end_date=None,
-                 verify=True, auth='basic', useragent='vdirsyncer', **kwargs):
+    _session = None
+    def __init__(self, url, username='', password='', start_date=None,
+                 end_date=None, verify=True, auth='basic',
+                 useragent='vdirsyncer', _request_func=None, **kwargs):
         '''
         :param url: Direct URL for the CalDAV collection. No autodiscovery.
         :param username: Username for authentication.
@@ -34,10 +32,12 @@ class CaldavStorage(Storage):
         :param verify: Verify SSL certificate, default True.
         :param auth: Authentication method, from {'basic', 'digest'}, default 'basic'.
         :param useragent: Default 'vdirsyncer'.
+        :param _request_func: Function to use for network calls. Same API as
+                              requests.request. Useful for tests.
         '''
         super(CaldavStorage, self).__init__(**kwargs)
+        self._request = _request_func or self._request
 
-        self.session = requests.session()
         self._settings = {'verify': verify}
         if auth == 'basic':
             self._settings['auth'] = (username, password)
@@ -48,17 +48,16 @@ class CaldavStorage(Storage):
             raise ValueError('Unknown authentication method: {}'.format(auth))
 
         self.useragent = useragent
-        self.url = url
+        self.url = url.rstrip('/') + '/'
         self.start_date = start_date
         self.end_date = end_date
 
         headers = self._default_headers()
         headers['Depth'] = 1
-        response = self.session.request(
+        response = self._request(
             'OPTIONS',
-            self.url,
-            headers=headers,
-            **self._settings
+            '',
+            headers=headers
         )
         response.raise_for_status()
         if 'calendar-access' not in response.headers['DAV']:
@@ -69,6 +68,18 @@ class CaldavStorage(Storage):
             'User-Agent': self.useragent,
             'Content-Type': 'application/xml; charset=UTF-8'
         }
+
+    def _simplify_href(self, href):
+        if href.startswith(self.url):
+            return href[len(self.url):]
+        return href
+
+    def _request(self, method, item, data=None, headers=None):
+        if self._session is None:
+            self._session = requests.session()
+        assert '/' not in item
+        path = self.url + item
+        return self._session.request(method, url, data=data, headers=headers, **self._settings)
 
     def list(self):
         data = '''<?xml version="1.0" encoding="utf-8" ?>
@@ -95,18 +106,17 @@ class CaldavStorage(Storage):
         else:
             data = data.format(caldavfilter='')
             
-        response = self.session.request(
+        response = self._request(
             'REPORT',
-            self.url,
+            '',
             data=data,
-            headers=self._default_headers(),
-            **self._settings
+            headers=self._default_headers()
         )
         response.raise_for_status()
         root = etree.XML(response.content)
         for element in root.iter('{DAV:}response'):
             etag = element.find('{DAV:}propstat').find('{DAV:}prop').find('{DAV:}getetag').text
-            href = element.find('{DAV:}href').text
+            href = self._simplify_href(element.find('{DAV:}href').text)
             yield href, etag
 
     def get_multi(self, hrefs):
@@ -121,36 +131,36 @@ class CaldavStorage(Storage):
     </D:prop>
     {hrefs}
 </C:calendar-multiget>'''
-        hrefs = '\n'.join('<D:href>{}</D:href>'.format(href=href) for href in hrefs)
-        data = data.format(hrefs=hrefs)
-        response = self.session.request(
+        href_xml = []
+        for href in hrefs:
+            assert '/' not in href
+            href_xml.append('<D:href>{}</D:href>'.format(self.url + href))
+        data = data.format(hrefs='\n'.join(href_xml))
+        response = self._request(
             'REPORT',
-            self.url,
+            '',
             data=data,
-            headers=self._default_headers(),
-            **self._settings
+            headers=self._default_headers()
         )
-        if response != 404:  # nonexisting hrefs will be handled separately
-            response.raise_for_status()
+        status_code = response.status_code
+        response.raise_for_status()
+        c = response.x.get_data()
         root = etree.XML(response.content)
-        finished_hrefs = set()
         rv = []
+        hrefs_left = set(hrefs)
         for element in root.iter('{DAV:}response'):
-            try:
-                href = element.find('{DAV:}href').text
-                obj = element \
-                    .find('{DAV:}propstat') \
-                    .find('{DAV:}prop') \
-                    .find('{urn:ietf:params:xml:ns:caldav}calendar-data').text
-                etag = element \
-                    .find('{DAV:}propstat') \
-                    .find('{DAV:}prop') \
-                    .find('{DAV:}getetag').text
-            except AttributeError:
-                continue
+            href = self._simplify_href(element.find('{DAV:}href').text)
+            obj = element \
+                .find('{DAV:}propstat') \
+                .find('{DAV:}prop') \
+                .find('{urn:ietf:params:xml:ns:caldav}calendar-data').text
+            etag = element \
+                .find('{DAV:}propstat') \
+                .find('{DAV:}prop') \
+                .find('{DAV:}getetag').text
             rv.append((href, Item(obj), etag))
-            finished_hrefs.add(href)
-        for href in set(hrefs) - finished_hrefs:
+            hrefs_left.remove(href)
+        for href in hrefs_left:
             raise exceptions.NotFoundError(href)
         return rv
 
@@ -168,18 +178,20 @@ class CaldavStorage(Storage):
             return True
 
     def upload(self, obj):
-        href = self.url + self._get_href(obj.uid)
+        href = self._get_href(obj.uid)
         headers = self._default_headers()
         headers.update({
             'Content-Type': 'text/calendar',
             'If-None-Match': '*'
         })
-        response = requests.put(
+        response = self._request(
+            'PUT',
             href,
-            data=obj.raw
-            headers=headers,
-            **self._settings
+            data=obj.raw,
+            headers=headers
         )
+        if response.status_code != 201:
+            raise exceptions.StorageError('Unexpected response with content {}'.format(repr(response.content)))
         response.raise_for_status()
 
         if not response.headers.get('etag', None):
@@ -193,11 +205,11 @@ class CaldavStorage(Storage):
             'Content-Type': 'text/calendar',
             'If-Match': etag
         })
-        response = requests.put(
-            remotepath,
+        response = self._request(
+            'PUT',
+            href,
             data=obj.raw,
-            headers=headers,
-            **self._settings
+            headers=headers
         )
         response.raise_for_status()
         
@@ -205,3 +217,16 @@ class CaldavStorage(Storage):
             obj2, etag = self.get(href)
             assert obj2.raw == obj.raw
         return href, etag
+
+    def delete(self, href, etag):
+        headers = self._default_headers()
+        headers.update({
+            'If-Match': etag
+        })
+
+        response = self._request(
+            'DELETE',
+            href,
+            headers=headers
+        )
+        response.raise_for_status()
