@@ -10,6 +10,7 @@
 import os
 from vdirsyncer.storage.base import Storage, Item
 import vdirsyncer.exceptions as exceptions
+from vdirsyncer.utils import expand_path
 
 
 class FilesystemStorage(Storage):
@@ -22,7 +23,7 @@ class FilesystemStorage(Storage):
         '''
         :param path: Absolute path to a *collection* inside a vdir.
         '''
-        self.path = path
+        self.path = expand_path(path)
         self.fileext = fileext
         super(FilesystemStorage, self).__init__(**kwargs)
 

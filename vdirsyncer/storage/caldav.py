@@ -82,7 +82,7 @@ class CaldavStorage(Storage):
         if self._session is None:
             self._session = requests.session()
         assert '/' not in item
-        path = self.url + item
+        url = self.url + item
         return self._session.request(method, url, data=data, headers=headers, **self._settings)
 
     @staticmethod
