@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 '''
     vdirsyncer.tests.storage.test_memory
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     :copyright: (c) 2014 Markus Unterwaditzer
     :license: MIT, see LICENSE for more details.
