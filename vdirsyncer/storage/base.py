@@ -17,8 +17,8 @@ class Item(object):
     def uid(self):
         if self._uid is None:
             for line in self.raw.splitlines():
-                if line.startswith(b'UID'):
-                    self._uid = line.lstrip(b'UID:').strip()
+                if line.startswith(b'UID:'):
+                    self._uid = line[4:].strip()
         return self._uid
 
 
