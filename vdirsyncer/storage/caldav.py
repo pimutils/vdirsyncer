@@ -96,9 +96,9 @@ class CaldavStorage(Storage):
 </C:calendar-query>'''
         start = self.start_date
         end = self.end_date
-        if not start or not end:
+        if start or end:
             start = start or datetime.datetime.utcnow()
-            end = end or start + datetime.timedelta(years=1)
+            end = end or start + datetime.timedelta(days=365)
             caldavfilter = ('<C:comp-filter name="VTODO">'
                             '<C:time-range start="{start}" end="{end}"/>'
                             '</C:comp-filter>').format(start=start.strftime(CALDAV_DT_FORMAT),
