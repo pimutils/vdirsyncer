@@ -20,6 +20,7 @@ CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
 class CaldavStorage(Storage):
     '''hrefs are full URLs to items'''
     _session = None
+    fileext = '.ics'
     def __init__(self, url, username='', password='', start_date=None,
                  end_date=None, verify=True, auth='basic',
                  useragent='vdirsyncer', _request_func=None, **kwargs):
@@ -142,9 +143,7 @@ class CaldavStorage(Storage):
             data=data,
             headers=self._default_headers()
         )
-        status_code = response.status_code
         response.raise_for_status()
-        c = response.x.get_data()
         root = etree.XML(response.content)
         rv = []
         hrefs_left = set(hrefs)
@@ -161,7 +160,7 @@ class CaldavStorage(Storage):
             rv.append((href, Item(obj), etag))
             hrefs_left.remove(href)
         for href in hrefs_left:
-            raise exceptions.NotFoundError(href)
+            raise exceptions.NotFound(href)
         return rv
 
     def get(self, href):
@@ -172,7 +171,7 @@ class CaldavStorage(Storage):
     def has(self, href):
         try:
             self.get(href)
-        except exceptions.NotFoundError:
+        except exceptions.PreconditionFailed:
             return False
         else:
             return True
@@ -190,11 +189,19 @@ class CaldavStorage(Storage):
             data=obj.raw,
             headers=headers
         )
+        if response.status_code == 412:
+            raise exceptions.PreconditionFailed(response.content)
         if response.status_code != 201:
-            raise exceptions.StorageError('Unexpected response with content {}'.format(repr(response.content)))
+            raise exceptions.StorageError(
+                'Unexpected response with content {} and status {}'.format(
+                    repr(response.content),
+                    response.status_code
+                )
+            )
         response.raise_for_status()
 
-        if not response.headers.get('etag', None):
+        etag = response.headers.get('etag', None)
+        if not etag:
             obj2, etag = self.get(href)
             assert obj2.raw == obj.raw
         return href, etag
@@ -213,7 +220,8 @@ class CaldavStorage(Storage):
         )
         response.raise_for_status()
         
-        if not response.headers.get('etag', None):
+        etag = response.headers.get('etag', None)
+        if not etag:
             obj2, etag = self.get(href)
             assert obj2.raw == obj.raw
         return href, etag

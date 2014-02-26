@@ -31,8 +31,8 @@ class Storage(object):
       - HREF: Per-storage identifier of item, might be UID.
       - ETAG: Checksum of item, or something similar that changes when the object does
     '''
-    def __init__(self, fileext='.txt', item_class=Item):
-        self.fileext = fileext
+    fileext = '.txt'
+    def __init__(self, item_class=Item):
         self.item_class = item_class
 
     def _get_href(self, uid):
@@ -54,6 +54,8 @@ class Storage(object):
     def get_multi(self, hrefs):
         '''
         :param hrefs: list of hrefs to fetch
+        :raises: :exc:`vdirsyncer.exceptions.PreconditionFailed` if one of the
+        items couldn't be found.
         :returns: iterable of (href, obj, etag)
         '''
         for href in hrefs:
@@ -70,16 +72,16 @@ class Storage(object):
     def upload(self, obj):
         '''
         Upload a new object, raise
-        :exc:`vdirsyncer.exceptions.AlreadyExistingError` if it already exists.
+        :exc:`vdirsyncer.exceptions.PreconditionFailed` if it already exists.
         :returns: (href, etag)
         '''
         raise NotImplementedError()
 
     def update(self, href, obj, etag):
         '''
-        Update the object, raise :exc:`vdirsyncer.exceptions.WrongEtagError` if
-        the etag on the server doesn't match the given etag, raise
-        :exc:`vdirsyncer.exceptions.NotFoundError` if the item doesn't exist.
+        Update the object, raise
+        :exc:`vdirsyncer.exceptions.PreconditionFailed` if the etag on the
+        server doesn't match the given etag or if the item doesn't exist.
 
         :returns: etag
         '''
@@ -87,7 +89,8 @@ class Storage(object):
 
     def delete(self, href, etag):
         '''
-        Delete the object by href, raise exceptions when etag doesn't match, no
-        return value
+        Delete the object by href, raise
+        :exc:`vdirsyncer.exceptions.PreconditionFailed` when item has a
+        different etag or doesn't exist.
         '''
         raise NotImplementedError()

@@ -15,11 +15,12 @@ class FilesystemStorage(Storage):
     '''Saves data in vdir collection
     mtime is etag
     filename without path is href'''
-    def __init__(self, path, **kwargs):
+    def __init__(self, path, fileext, **kwargs):
         '''
         :param path: Absolute path to a *collection* inside a vdir.
         '''
         self.path = path
+        self.fileext = fileext
         super(FilesystemStorage, self).__init__(**kwargs)
 
     def _get_filepath(self, href):

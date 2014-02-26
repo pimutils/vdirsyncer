@@ -7,23 +7,33 @@
     :license: MIT, see LICENSE for more details.
 '''
 
+
 class Error(Exception):
     '''Baseclass for all errors.'''
-    pass
 
-class NotFoundError(Error):
-    '''The item does not exist (anymore).'''
-    pass
 
-class AlreadyExistingError(Error):
-    '''The item exists although it shouldn't, possible race condition.'''
-    pass
+class PreconditionFailed(Error):
+    '''
+      - The item doesn't exist although it should
+      - The item exists although it shouldn't
+      - The etags don't match.
 
-class WrongEtagError(Error):
-    '''The given etag doesn't match the etag from the storage, possible race
-    condition.'''
-    pass
+    Due to CalDAV we can't actually say which error it is.
+    This error may indicate race conditions.
+    '''
+
+
+class NotFoundError(PreconditionFailed):
+    '''Item not found'''
+
+
+class AlreadyExistingError(PreconditionFailed):
+    '''Item already exists'''
+
+
+class WrongEtagError(PreconditionFailed):
+    '''Wrong etag'''
+
 
 class StorageError(Error):
     '''Internal or initialization errors with storage.'''
-    pass
