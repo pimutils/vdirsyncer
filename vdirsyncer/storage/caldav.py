@@ -17,10 +17,13 @@ import datetime
 
 CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
 
+
 class CaldavStorage(Storage):
+
     '''hrefs are full URLs to items'''
     _session = None
     fileext = '.ics'
+
     def __init__(self, url, username='', password='', start_date=None,
                  end_date=None, verify=True, auth='basic',
                  useragent='vdirsyncer', _request_func=None, **kwargs):
@@ -106,7 +109,7 @@ class CaldavStorage(Storage):
             data = data.format(caldavfilter=caldavfilter)
         else:
             data = data.format(caldavfilter='')
-            
+
         response = self._request(
             'REPORT',
             '',
@@ -116,7 +119,8 @@ class CaldavStorage(Storage):
         response.raise_for_status()
         root = etree.XML(response.content)
         for element in root.iter('{DAV:}response'):
-            etag = element.find('{DAV:}propstat').find('{DAV:}prop').find('{DAV:}getetag').text
+            etag = element.find('{DAV:}propstat').find(
+                '{DAV:}prop').find('{DAV:}getetag').text
             href = self._simplify_href(element.find('{DAV:}href').text)
             yield href, etag
 
@@ -214,7 +218,7 @@ class CaldavStorage(Storage):
         if response.status_code == 412:
             raise exceptions.PreconditionFailed(response.content)
         response.raise_for_status()
-        
+
         etag = response.headers.get('etag', None)
         if not etag:
             obj2, etag = self.get(href)

@@ -33,7 +33,9 @@ radicale.log.start()
 
 
 class Response(object):
+
     '''Fake API of requests module'''
+
     def __init__(self, x):
         self.x = x
         self.status_code = x.status_code

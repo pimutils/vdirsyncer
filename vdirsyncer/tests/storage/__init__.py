@@ -18,7 +18,9 @@ from vdirsyncer.storage.memory import MemoryStorage
 from vdirsyncer.storage.caldav import CaldavStorage
 import vdirsyncer.exceptions as exceptions
 
+
 class StorageTests(object):
+
     def _create_bogus_item(self, uid):
         return Item('''BEGIN:VCALENDAR
 VERSION:2.0
@@ -33,6 +35,7 @@ UID:{}
 END:VTODO
 END:VCALENDAR
 '''.format(uid))
+
     def _get_storage(self, **kwargs):
         raise NotImplementedError()
 
@@ -56,14 +59,17 @@ END:VCALENDAR
     def test_update_nonexisting(self):
         s = self._get_storage()
         item = self._create_bogus_item(1)
-        self.assertRaises(exceptions.PreconditionFailed, s.update, 'huehue', item, 123)
+        self.assertRaises(
+            exceptions.PreconditionFailed, s.update, 'huehue', item, 123)
 
     def test_wrong_etag(self):
         s = self._get_storage()
         obj = self._create_bogus_item(1)
         href, etag = s.upload(obj)
-        self.assertRaises(exceptions.PreconditionFailed, s.update, href, obj, 'lolnope')
-        self.assertRaises(exceptions.PreconditionFailed, s.delete, href, 'lolnope')
+        self.assertRaises(
+            exceptions.PreconditionFailed, s.update, href, obj, 'lolnope')
+        self.assertRaises(
+            exceptions.PreconditionFailed, s.delete, href, 'lolnope')
 
     def test_delete_nonexisting(self):
         s = self._get_storage()

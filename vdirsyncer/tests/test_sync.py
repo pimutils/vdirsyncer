@@ -13,10 +13,13 @@ from vdirsyncer.storage.memory import MemoryStorage
 from vdirsyncer.sync import sync
 import vdirsyncer.exceptions as exceptions
 
+
 def empty_storage(x):
     return list(x.list()) == []
 
+
 class SyncTests(TestCase):
+
     def test_irrelevant_status(self):
         a = MemoryStorage()
         b = MemoryStorage()
@@ -101,7 +104,9 @@ class SyncTests(TestCase):
         item = Item('UID:1')
         a.upload(item)
         b.upload(item)
-        status = {'1': ('1.txt', a.get('1.txt')[1], '1.txt', b.get('1.txt')[1])}
+        status = {
+            '1': ('1.txt', a.get('1.txt')[1], '1.txt', b.get('1.txt')[1])
+        }
         old_status = dict(status)
         a.update = b.update = a.upload = b.upload = \
             lambda *a, **kw: self.fail('Method shouldn\'t have been called.')

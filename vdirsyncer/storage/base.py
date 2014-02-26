@@ -7,8 +7,11 @@
     :license: MIT, see LICENSE for more details.
 '''
 
+
 class Item(object):
+
     '''should-be-immutable wrapper class for VCALENDAR and VCARD'''
+
     def __init__(self, raw):
         self.raw = raw
         self._uid = None
@@ -23,15 +26,17 @@ class Item(object):
 
 
 class Storage(object):
+
     '''Superclass of all storages, mainly useful to summarize the interface to
     implement.
-    
+
     Terminology:
       - UID: Global identifier of the item, across storages.
       - HREF: Per-storage identifier of item, might be UID.
       - ETAG: Checksum of item, or something similar that changes when the object does
     '''
     fileext = '.txt'
+
     def __init__(self, item_class=Item):
         self.item_class = item_class
 

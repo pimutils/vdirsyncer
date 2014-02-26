@@ -11,10 +11,13 @@ import os
 from vdirsyncer.storage.base import Storage, Item
 import vdirsyncer.exceptions as exceptions
 
+
 class FilesystemStorage(Storage):
+
     '''Saves data in vdir collection
     mtime is etag
     filename without path is href'''
+
     def __init__(self, path, fileext, **kwargs):
         '''
         :param path: Absolute path to a *collection* inside a vdir.

@@ -8,13 +8,16 @@
 '''
 
 import datetime
-from vdirsyncer.storage.base import Item, Storage 
+from vdirsyncer.storage.base import Item, Storage
 import vdirsyncer.exceptions as exceptions
 
+
 class MemoryStorage(Storage):
+
     '''
     Saves data in RAM, only useful for testing.
     '''
+
     def __init__(self, **kwargs):
         self.items = {}  # href => (etag, object)
         super(MemoryStorage, self).__init__(**kwargs)

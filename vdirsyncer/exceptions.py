@@ -9,10 +9,12 @@
 
 
 class Error(Exception):
+
     '''Baseclass for all errors.'''
 
 
 class PreconditionFailed(Error):
+
     '''
       - The item doesn't exist although it should
       - The item exists although it shouldn't
@@ -24,16 +26,20 @@ class PreconditionFailed(Error):
 
 
 class NotFoundError(PreconditionFailed):
+
     '''Item not found'''
 
 
 class AlreadyExistingError(PreconditionFailed):
+
     '''Item already exists'''
 
 
 class WrongEtagError(PreconditionFailed):
+
     '''Wrong etag'''
 
 
 class StorageError(Error):
+
     '''Internal or initialization errors with storage.'''

@@ -13,6 +13,8 @@ from unittest import TestCase
 from vdirsyncer.storage.memory import MemoryStorage
 from . import StorageTests
 
+
 class MemoryStorageTests(TestCase, StorageTests):
+
     def _get_storage(self, **kwargs):
         return MemoryStorage(**kwargs)

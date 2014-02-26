@@ -18,6 +18,7 @@ from . import StorageTests
 
 class FilesystemStorageTests(TestCase, StorageTests):
     tmpdir = None
+
     def _get_storage(self, **kwargs):
         path = self.tmpdir = tempfile.mkdtemp()
         return FilesystemStorage(path=path, fileext='.txt', **kwargs)
