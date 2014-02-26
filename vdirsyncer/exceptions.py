@@ -23,3 +23,7 @@ class WrongEtagError(Error):
     '''The given etag doesn't match the etag from the storage, possible race
     condition.'''
     pass
+
+class StorageError(Error):
+    '''Internal or initialization errors with storage.'''
+    pass
