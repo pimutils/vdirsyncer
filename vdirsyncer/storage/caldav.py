@@ -191,13 +191,6 @@ class CaldavStorage(Storage):
         )
         if response.status_code == 412:
             raise exceptions.PreconditionFailed(response.content)
-        if response.status_code != 201:
-            raise exceptions.StorageError(
-                'Unexpected response with content {} and status {}'.format(
-                    repr(response.content),
-                    response.status_code
-                )
-            )
         response.raise_for_status()
 
         etag = response.headers.get('etag', None)
@@ -218,6 +211,8 @@ class CaldavStorage(Storage):
             data=obj.raw,
             headers=headers
         )
+        if response.status_code == 412:
+            raise exceptions.PreconditionFailed(response.content)
         response.raise_for_status()
         
         etag = response.headers.get('etag', None)
