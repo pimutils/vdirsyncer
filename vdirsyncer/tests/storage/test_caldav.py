@@ -15,26 +15,41 @@
 __version__ = '0.1.0'
 
 from unittest import TestCase
-import os
 import tempfile
 import shutil
-from vdirsyncer.storage.caldav import CaldavStorage
-from . import StorageTests
+import sys
+import os
 
 from werkzeug.test import Client
 from werkzeug.wrappers import BaseResponse as WerkzeugResponse
 
+from vdirsyncer.storage.caldav import CaldavStorage
+from . import StorageTests
 
-# All of radicale is already global state, there's nothing we can do
-os.environ['RADICALE_CONFIG'] = ''
-import radicale.config as radicale_config
-radicale_config.set('storage', 'type', 'filesystem')
-radicale_config.set('storage', 'filesystem_folder', None)
-radicale_config.set('rights', 'type', 'None')
 
-from radicale import Application
-import radicale.log
-radicale.log.start()
+def do_the_radicale_dance(tmpdir):
+    # All of radicale is already global state, the cleanliness of the code and
+    # all hope is already lost. This function runs before every test.
+
+    # This wipes out the radicale modules, to reset all of its state.
+    for module in list(sys.modules):
+        if module.startswith('radicale'):
+            del sys.modules[module]
+
+    # radicale.config looks for this envvar. We have to delete it before it
+    # tries to load a config file.
+    os.environ['RADICALE_CONFIG'] = ''
+    import radicale.config
+
+    # Now we can set some basic configuration.
+    radicale.config.set('storage', 'type', 'filesystem')
+    radicale.config.set('storage', 'filesystem_folder', tmpdir)
+    radicale.config.set('rights', 'type', 'None')
+
+    # This one is particularly useful with radicale's debugging logs and
+    # pytest-capturelog, however, it is very verbose.
+    #import radicale.log
+    #radicale.log.start()
 
 
 class Response(object):
@@ -59,7 +74,9 @@ class CaldavStorageTests(TestCase, StorageTests):
 
     def _get_storage(self, **kwargs):
         self.tmpdir = tempfile.mkdtemp()
-        radicale_config.set('storage', 'filesystem_folder', self.tmpdir)
+
+        do_the_radicale_dance(self.tmpdir)
+        from radicale import Application
         app = Application()
 
         c = Client(app, WerkzeugResponse)

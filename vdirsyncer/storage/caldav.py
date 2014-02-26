@@ -85,6 +85,12 @@ class CaldavStorage(Storage):
         path = self.url + item
         return self._session.request(method, url, data=data, headers=headers, **self._settings)
 
+    @staticmethod
+    def _check_response(response):
+        if response.status_code == 412:
+            raise exceptions.PreconditionFailed()
+        response.raise_for_status()
+
     def list(self):
         data = '''<?xml version="1.0" encoding="utf-8" ?>
 <C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
@@ -193,9 +199,7 @@ class CaldavStorage(Storage):
             data=obj.raw,
             headers=headers
         )
-        if response.status_code == 412:
-            raise exceptions.PreconditionFailed(response.content)
-        response.raise_for_status()
+        self._check_response(response)
 
         etag = response.headers.get('etag', None)
         if not etag:
@@ -215,9 +219,7 @@ class CaldavStorage(Storage):
             data=obj.raw,
             headers=headers
         )
-        if response.status_code == 412:
-            raise exceptions.PreconditionFailed(response.content)
-        response.raise_for_status()
+        self._check_response(response)
 
         etag = response.headers.get('etag', None)
         if not etag:
@@ -236,4 +238,4 @@ class CaldavStorage(Storage):
             href,
             headers=headers
         )
-        response.raise_for_status()
+        self._check_response(response)

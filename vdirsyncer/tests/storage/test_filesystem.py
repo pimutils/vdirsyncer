@@ -24,7 +24,6 @@ class FilesystemStorageTests(TestCase, StorageTests):
         return FilesystemStorage(path=path, fileext='.txt', **kwargs)
 
     def tearDown(self):
-        print("lol")
         if self.tmpdir is not None:
             shutil.rmtree(self.tmpdir)
             self.tmpdir = None
