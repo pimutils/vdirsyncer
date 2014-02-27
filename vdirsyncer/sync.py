@@ -12,6 +12,9 @@
     :copyright: (c) 2014 Markus Unterwaditzer
     :license: MIT, see LICENSE for more details.
 '''
+import vdirsyncer.exceptions as exceptions
+import vdirsyncer.log
+sync_logger = vdirsyncer.log.get('sync')
 
 
 def prepare_list(storage, href_to_uid):
@@ -49,10 +52,14 @@ def sync(storage_a, storage_b, status):
         modified by the function and should be passed to it at the next sync.
         If this is the first sync, an empty dictionary should be provided.
     '''
-    a_href_to_uid = dict((href_a, uid)
-                         for uid, (href_a, etag_a, href_b, etag_b) in status.iteritems())
-    b_href_to_uid = dict((href_b, uid)
-                         for uid, (href_a, etag_a, href_b, etag_b) in status.iteritems())
+    a_href_to_uid = dict(
+        (href_a, uid)
+        for uid, (href_a, etag_a, href_b, etag_b) in status.iteritems()
+    )
+    b_href_to_uid = dict(
+        (href_b, uid)
+        for uid, (href_a, etag_a, href_b, etag_b) in status.iteritems()
+    )
     # href => {'etag': etag, 'obj': optional object, 'uid': uid}
     list_a = dict(prepare_list(storage_a, a_href_to_uid))
     list_b = dict(prepare_list(storage_b, b_href_to_uid))
@@ -73,6 +80,7 @@ def sync(storage_a, storage_b, status):
     }
 
     for action, uid, source, dest in actions:
+        sync_logger.debug((action, uid, source, dest))
         source_storage, source_list, source_uid_to_href = storages[source]
         dest_storage, dest_list, dest_uid_to_href = storages[dest]
 
@@ -114,8 +122,13 @@ def get_actions(list_a, list_b, status, a_uid_to_href, b_uid_to_href):
         if uid not in status:
             if uid in uids_a and uid in uids_b:  # missing status
                 # TODO: might need some kind of diffing too?
+                assert type(a['obj'].raw) is unicode, repr(a['obj'].raw)
+                assert type(b['obj'].raw) is unicode, repr(b['obj'].raw)
                 if a['obj'].raw != b['obj'].raw:
-                    1 / 0
+                    raise NotImplementedError(
+                        'Conflict. No status and '
+                        'different content on both sides.'
+                    )
                 status[uid] = (href_a, a['etag'], href_b, b['etag'])
             # new item was created in a
             elif uid in uids_a and uid not in uids_b:
@@ -129,7 +142,9 @@ def get_actions(list_a, list_b, status, a_uid_to_href, b_uid_to_href):
             _, status_etag_a, _, status_etag_b = status[uid]
             if uid in uids_a and uid in uids_b:
                 if a['etag'] != status_etag_a and b['etag'] != status_etag_b:
-                    1 / 0  # conflict resolution TODO
+                    # conflict resolution TODO
+                    raise NotImplementedError('Conflict. '
+                                              'New etags on both sides.')
                 elif a['etag'] != status_etag_a:  # item was updated in a
                     prefetch_from_a.append(href_a)
                     actions.append(('update', uid, 'a', 'b'))

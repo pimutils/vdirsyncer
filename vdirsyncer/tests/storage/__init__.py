@@ -22,7 +22,7 @@ import vdirsyncer.exceptions as exceptions
 class StorageTests(object):
 
     def _create_bogus_item(self, uid):
-        return Item('''BEGIN:VCALENDAR
+        return Item(u'''BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//dmfs.org//mimedir.icalendar//EN
 BEGIN:VTODO

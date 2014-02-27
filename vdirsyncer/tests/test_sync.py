@@ -33,7 +33,7 @@ class SyncTests(TestCase):
         a = MemoryStorage()
         b = MemoryStorage()
         status = {}
-        item = Item('UID:1')
+        item = Item(u'UID:1')
         a.upload(item)
         b.upload(item)
         sync(a, b, status)
@@ -46,8 +46,8 @@ class SyncTests(TestCase):
         a = MemoryStorage()
         b = MemoryStorage()
         status = {}
-        item1 = Item('UID:1\nhaha')
-        item2 = Item('UID:1\nhoho')
+        item1 = Item(u'UID:1\nhaha')
+        item2 = Item(u'UID:1\nhoho')
         a.upload(item1)
         b.upload(item2)
         sync(a, b, status)
@@ -59,22 +59,22 @@ class SyncTests(TestCase):
         b = MemoryStorage()
         status = {}
 
-        item = Item('UID:1')  # new item 1 in a
+        item = Item(u'UID:1')  # new item 1 in a
         a.upload(item)
         sync(a, b, status)
         assert b.get('1.txt')[0].raw == item.raw
 
-        item = Item('UID:1\nASDF:YES')  # update of item 1 in b
+        item = Item(u'UID:1\nASDF:YES')  # update of item 1 in b
         b.update('1.txt', item, b.get('1.txt')[1])
         sync(a, b, status)
         assert a.get('1.txt')[0].raw == item.raw
 
-        item2 = Item('UID:2')  # new item 2 in b
+        item2 = Item(u'UID:2')  # new item 2 in b
         b.upload(item2)
         sync(a, b, status)
         assert a.get('2.txt')[0].raw == item2.raw
 
-        item2 = Item('UID:2\nASDF:YES')  # update of item 2 in a
+        item2 = Item(u'UID:2\nASDF:YES')  # update of item 2 in a
         a.update('2.txt', item2, a.get('2.txt')[1])
         sync(a, b, status)
         assert b.get('2.txt')[0].raw == item2.raw
@@ -84,7 +84,7 @@ class SyncTests(TestCase):
         b = MemoryStorage()
         status = {}
 
-        item = Item('UID:1')
+        item = Item(u'UID:1')
         a.upload(item)
         sync(a, b, status)
         b.delete('1.txt', b.get('1.txt')[1])
@@ -101,7 +101,7 @@ class SyncTests(TestCase):
     def test_already_synced(self):
         a = MemoryStorage()
         b = MemoryStorage()
-        item = Item('UID:1')
+        item = Item(u'UID:1')
         a.upload(item)
         b.upload(item)
         status = {

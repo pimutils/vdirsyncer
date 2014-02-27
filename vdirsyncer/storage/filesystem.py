@@ -19,11 +19,12 @@ class FilesystemStorage(Storage):
     mtime is etag
     filename without path is href'''
 
-    def __init__(self, path, fileext, **kwargs):
+    def __init__(self, path, fileext, encoding='utf-8', **kwargs):
         '''
         :param path: Absolute path to a *collection* inside a vdir.
         '''
         self.path = expand_path(path)
+        self.encoding = encoding
         self.fileext = fileext
         super(FilesystemStorage, self).__init__(**kwargs)
 
@@ -42,7 +43,7 @@ class FilesystemStorage(Storage):
     def get(self, href):
         fpath = self._get_filepath(href)
         with open(fpath, 'rb') as f:
-            return Item(f.read()), os.path.getmtime(fpath)
+            return Item(f.read().decode(self.encoding)), os.path.getmtime(fpath)
 
     def has(self, href):
         return os.path.isfile(self._get_filepath(href))
@@ -53,7 +54,7 @@ class FilesystemStorage(Storage):
         if os.path.exists(fpath):
             raise exceptions.AlreadyExistingError(obj.uid)
         with open(fpath, 'wb+') as f:
-            f.write(obj.raw)
+            f.write(obj.raw.encode(self.encoding))
         return href, os.path.getmtime(fpath)
 
     def update(self, href, obj, etag):
@@ -67,7 +68,7 @@ class FilesystemStorage(Storage):
             raise exceptions.WrongEtagError(etag, actual_etag)
 
         with open(fpath, 'wb') as f:
-            f.write(obj.raw)
+            f.write(obj.raw.encode('utf-8'))
         return os.path.getmtime(fpath)
 
     def delete(self, href, etag):

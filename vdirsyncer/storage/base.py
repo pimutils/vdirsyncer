@@ -13,16 +13,14 @@ class Item(object):
     '''should-be-immutable wrapper class for VCALENDAR and VCARD'''
 
     def __init__(self, raw):
-        self.raw = raw
-        self._uid = None
+        assert type(raw) is unicode
+        raw = raw.splitlines()
+        self.uid = None
 
-    @property
-    def uid(self):
-        if self._uid is None:
-            for line in self.raw.splitlines():
-                if line.startswith(b'UID:'):
-                    self._uid = line[4:].strip()
-        return self._uid
+        for line in raw:
+            if line.startswith(u'UID:'):
+                self.uid = line[4:].strip()
+        self.raw = '\n'.join(raw)
 
 
 class Storage(object):

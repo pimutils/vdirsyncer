@@ -13,6 +13,7 @@ from .base import Storage, Item
 import vdirsyncer.exceptions as exceptions
 from lxml import etree
 import requests
+import urlparse
 import datetime
 
 CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
@@ -53,6 +54,7 @@ class CaldavStorage(Storage):
 
         self.useragent = useragent
         self.url = url.rstrip('/') + '/'
+        self.parsed_url = urlparse.urlparse(self.url)
         self.start_date = start_date
         self.end_date = end_date
 
@@ -74,8 +76,10 @@ class CaldavStorage(Storage):
         }
 
     def _simplify_href(self, href):
-        if href.startswith(self.url):
-            return href[len(self.url):]
+        href = urlparse.urlparse(href).path
+        if href.startswith(self.parsed_url.path):
+            href = href[len(self.parsed_url.path):]
+        assert '/' not in href, href
         return href
 
     def _request(self, method, item, data=None, headers=None):
@@ -144,7 +148,7 @@ class CaldavStorage(Storage):
 </C:calendar-multiget>'''
         href_xml = []
         for href in hrefs:
-            assert '/' not in href
+            assert '/' not in href, href
             href_xml.append('<D:href>{}</D:href>'.format(self.url + href))
         data = data.format(hrefs='\n'.join(href_xml))
         response = self._request(
@@ -154,19 +158,24 @@ class CaldavStorage(Storage):
             headers=self._default_headers()
         )
         response.raise_for_status()
-        root = etree.XML(response.content)
+        root = etree.XML(response.content)  # etree only can handle bytes
         rv = []
         hrefs_left = set(hrefs)
         for element in root.iter('{DAV:}response'):
-            href = self._simplify_href(element.find('{DAV:}href').text)
+            href = self._simplify_href(
+                element.find('{DAV:}href').text.decode(response.encoding))
             obj = element \
                 .find('{DAV:}propstat') \
                 .find('{DAV:}prop') \
                 .find('{urn:ietf:params:xml:ns:caldav}calendar-data').text
             etag = element \
                 .find('{DAV:}propstat') \
-                .find('{DAV:}prop') \
-                .find('{DAV:}getetag').text
+                    .find('{DAV:}prop') \
+                    .find('{DAV:}getetag').text
+            if isinstance(obj, bytes):
+                obj = obj.decode(response.encoding)
+            if isinstance(etag, bytes):
+                etag = etag.decode(response.encoding)
             rv.append((href, Item(obj), etag))
             hrefs_left.remove(href)
         for href in hrefs_left:
