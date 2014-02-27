@@ -17,13 +17,17 @@ import urlparse
 import datetime
 
 CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
+CONFIG_DT_FORMAT = '%Y-%m-%d'
 
 
 class CaldavStorage(Storage):
 
     '''hrefs are full URLs to items'''
     _session = None
+    _repr_attributes = ('url', 'username')
     fileext = '.ics'
+    start_date = None
+    end_date = None
 
     def __init__(self, url, username='', password='', start_date=None,
                  end_date=None, verify=True, auth='basic',
@@ -52,11 +56,18 @@ class CaldavStorage(Storage):
         else:
             raise ValueError('Unknown authentication method: {}'.format(auth))
 
+        self.username, self.password = username, password
         self.useragent = useragent
         self.url = url.rstrip('/') + '/'
         self.parsed_url = urlparse.urlparse(self.url)
-        self.start_date = start_date
-        self.end_date = end_date
+        if (start_date is None) != (end_date is None):
+            raise ValueError('If start_date is given, '
+                             'end_date has to be given too.')
+        elif start_date is not None and end_date is not None:
+            namespace = dict(datetime.__dict__)
+            namespace['start_date'] = self.start_date = \
+                eval(start_date, namespace)
+            self.end_date = eval(end_date, namespace)
 
         headers = self._default_headers()
         headers['Depth'] = 1
@@ -109,13 +120,13 @@ class CaldavStorage(Storage):
 </C:calendar-query>'''
         start = self.start_date
         end = self.end_date
-        if start or end:
-            start = start or datetime.datetime.utcnow()
-            end = end or start + datetime.timedelta(days=365)
+        if start and end:
+            start = start.strftime(CALDAV_DT_FORMAT)
+            end = end.strftime(CALDAV_DT_FORMAT)
             caldavfilter = ('<C:comp-filter name="VTODO">'
                             '<C:time-range start="{start}" end="{end}"/>'
-                            '</C:comp-filter>').format(start=start.strftime(CALDAV_DT_FORMAT),
-                                                       end=end.strftime(CALDAV_DT_FORMAT))
+                            '</C:comp-filter>').format(start=start,
+                                                       end=end)
             data = data.format(caldavfilter=caldavfilter)
         else:
             data = data.format(caldavfilter='')

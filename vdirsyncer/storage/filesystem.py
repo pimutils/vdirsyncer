@@ -19,6 +19,8 @@ class FilesystemStorage(Storage):
     mtime is etag
     filename without path is href'''
 
+    _repr_attributes = ('path',)
+
     def __init__(self, path, fileext, encoding='utf-8', **kwargs):
         '''
         :param path: Absolute path to a *collection* inside a vdir.

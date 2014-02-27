@@ -63,6 +63,7 @@ def sync(storage_a, storage_b, status):
     # href => {'etag': etag, 'obj': optional object, 'uid': uid}
     list_a = dict(prepare_list(storage_a, a_href_to_uid))
     list_b = dict(prepare_list(storage_b, b_href_to_uid))
+
     a_uid_to_href = dict((x['uid'], href) for href, x in list_a.iteritems())
     b_uid_to_href = dict((x['uid'], href) for href, x in list_b.iteritems())
     del a_href_to_uid, b_href_to_uid
@@ -80,9 +81,9 @@ def sync(storage_a, storage_b, status):
     }
 
     for action, uid, source, dest in actions:
-        sync_logger.debug((action, uid, source, dest))
         source_storage, source_list, source_uid_to_href = storages[source]
         dest_storage, dest_list, dest_uid_to_href = storages[dest]
+        sync_logger.debug((action, uid, source_storage, dest_storage))
 
         if action in ('upload', 'update'):
             source_href = source_uid_to_href[uid]
@@ -121,11 +122,10 @@ def get_actions(list_a, list_b, status, a_uid_to_href, b_uid_to_href):
         b = list_b.get(href_b, None)
         if uid not in status:
             if uid in uids_a and uid in uids_b:  # missing status
-                # TODO: might need some kind of diffing too?
                 assert type(a['obj'].raw) is unicode, repr(a['obj'].raw)
                 assert type(b['obj'].raw) is unicode, repr(b['obj'].raw)
                 if a['obj'].raw != b['obj'].raw:
-                    raise NotImplementedError(
+                    raise NotImplementedError(  # TODO
                         'Conflict. No status and '
                         'different content on both sides.'
                     )

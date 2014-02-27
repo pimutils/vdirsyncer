@@ -103,17 +103,23 @@ def _main(env, file_cfg):
     general, all_pairs, all_storages = file_cfg
     app = argvard.Argvard()
 
-
     @app.main()
     def app_main(context):
         print("Hello.")
+        sys.exit(1)
 
-    @app.option('--debug|-v')
-    def debug_option(context):
+    @app.option('--verbose|-v')
+    def verbose_option(context):
+        '''Print generally more information.'''
         log.get('cli').setLevel(log.logging.DEBUG)
-        log.get('sync').setLevel(log.logging.DEBUG)
+        sync_verbose_option(context)
 
     sync_command = argvard.Command()
+
+    @sync_command.option('--verbose|-v')
+    def sync_verbose_option(context):
+        '''Print more information about the syncing process.'''
+        log.get('sync').setLevel(log.logging.DEBUG)
 
     @sync_command.main('[pairs...]')
     def sync_main(context, pairs=None):

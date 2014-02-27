@@ -34,12 +34,19 @@ class Storage(object):
       - ETAG: Checksum of item, or something similar that changes when the object does
     '''
     fileext = '.txt'
+    _repr_attributes = set()
 
     def __init__(self, item_class=Item):
         self.item_class = item_class
 
     def _get_href(self, uid):
         return uid + self.fileext
+
+    def __repr__(self):
+        return '<{}(**{})>'.format(
+            self.__class__.__name__,
+            dict((x, getattr(self, x)) for x in self._repr_attributes)
+        )
 
     def list(self):
         '''
