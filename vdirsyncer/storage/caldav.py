@@ -77,7 +77,7 @@ class CaldavStorage(Storage):
             headers=headers
         )
         response.raise_for_status()
-        if 'calendar-access' not in response.headers['DAV']:
+        if 'DAV' not in response.headers or 'calendar-access' not in response.headers['DAV']:
             raise exceptions.StorageError('URL is not a CalDAV collection')
 
     def _default_headers(self):
