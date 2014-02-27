@@ -1,0 +1,33 @@
+[general]
+status_path=~/.vdirsyncer/status/
+
+[pair bob]
+# This syncronizes only a single collection/calendar/addressbook
+a = bob_local
+b = bob_remote
+
+[storage bob_local]
+# This represents only a single collection/calendar/addressbook
+type = filesystem
+path = ~/.watdo/tasks/somecalendar/
+#fileext = .ics
+
+[storage bob_remote]
+# This represents only a single collection/calendar/addressbook
+type = caldav
+url = https://owncloud.example.com/remote.php/caldav/calendars/bob/somecalendar/
+username =  # blabla
+password =  # blabla
+
+# Specify a time range which should be syncronized. Either both start_date and
+# end_date or neither have to be set. The default is to syncronize everything.
+# The following example syncronizes from one year in the past to one year in
+# the future.
+
+# All Python expressions are allowed here. The global namespace contains
+# everything from the datetime module. The expression has to evaluate to a
+# datetime.
+#start_date = datetime.now() - timedelta(days=365)
+
+# Here, start_date is also in the namespace.
+#end_date = datetime.now() + timedelta(days=365)

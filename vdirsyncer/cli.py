@@ -123,6 +123,8 @@ def _main(env, file_cfg):
 
     @sync_command.main('[pairs...]')
     def sync_main(context, pairs=None):
+        '''Syncronize the given pairs. If no pairs are given, all will be
+        syncronized.'''
         if pairs is None:
             pairs = list(all_pairs)
         actions = []
