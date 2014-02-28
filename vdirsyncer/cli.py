@@ -150,7 +150,7 @@ def _main(env, file_cfg):
 
     app.register_command('sync', sync_command)
 
-    if general.get('verbose', False):
+    if general.get('verbose', 'False').lower() == 'true':
         verbose_option()
     else:
         quiet_option()
