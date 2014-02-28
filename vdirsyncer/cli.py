@@ -28,24 +28,39 @@ storage_names = {
 }
 
 
-def get_config_parser(env):
-    fname = env.get('VDIRSYNCER_CONFIG', expand_path('~/.vdirsyncer/config'))
+def parse_options(items):
+    for key, value in items:
+        if value.lower() in ('yes', 'true', 'on'):
+            value = True
+        elif value.lower() in ('no', 'false', 'off'):
+            value = False
+        try:
+            value = int(value)
+        except ValueError:
+            pass
+        yield key, value
+
+
+def load_config(fname):
     c = ConfigParser.RawConfigParser()
     c.read(fname)
+
+    get_options = lambda s: dict(parse_options(c.items(s)))
+
     pairs = {}
     storages = {}
     for section in c.sections():
         if section.startswith('storage '):
             name = section[len('storage '):]
-            storages.setdefault(name, {}).update(c.items(section))
+            storages.setdefault(name, {}).update(get_options(section))
         elif section.startswith('pair '):
             name = section[len('pair '):]
-            options = dict(c.items(section))
-            pairs[name] = a, b = (options.pop('a'), options.pop('b'))
+            options = get_options(section)
+            pairs[name] = a, b = options.pop('a'), options.pop('b')
             storages.setdefault(a, {}).update(options)
             storages.setdefault(b, {}).update(options)
         elif section == 'general':
-            general = dict(c.items(section))
+            general = get_options(section)
         else:
             cli_logger.error(
                 'Unknown section in {}: {}'.format(fname, section))
@@ -95,7 +110,9 @@ def storage_instance_from_config(config):
 
 def main():
     env = os.environ
-    cfg = get_config_parser(env)
+
+    fname = env.get('VDIRSYNCER_CONFIG', expand_path('~/.vdirsyncer/config'))
+    cfg = load_config(fname)
     _main(env, cfg)
 
 
@@ -150,7 +167,7 @@ def _main(env, file_cfg):
 
     app.register_command('sync', sync_command)
 
-    if general.get('verbose', 'False').lower() == 'true':
+    if general.get('verbose', False):
         verbose_option()
     else:
         quiet_option()

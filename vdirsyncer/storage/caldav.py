@@ -36,8 +36,8 @@ class CaldavStorage(Storage):
         :param url: Direct URL for the CalDAV collection. No autodiscovery.
         :param username: Username for authentication.
         :param password: Password for authentication.
-        :param start_date: Start date of timerange to show, default now.
-        :param end_date: End date of timerange to show, default now + one year.
+        :param start_date: Start date of timerange to show, default -inf.
+        :param end_date: End date of timerange to show, default +inf.
         :param verify: Verify SSL certificate, default True.
         :param auth: Authentication method, from {'basic', 'digest'}, default 'basic'.
         :param useragent: Default 'vdirsyncer'.
@@ -66,8 +66,11 @@ class CaldavStorage(Storage):
         elif start_date is not None and end_date is not None:
             namespace = dict(datetime.__dict__)
             namespace['start_date'] = self.start_date = \
-                eval(start_date, namespace)
-            self.end_date = eval(end_date, namespace)
+                (eval(start_date, namespace) if isinstance(start_date, str)
+                 else start_date)
+            self.end_date = \
+                (eval(end_date, namespace) if isinstance(end_date, str)
+                 else end_date)
 
         headers = self._default_headers()
         headers['Depth'] = 1
