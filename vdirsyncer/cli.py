@@ -109,17 +109,16 @@ def _main(env, file_cfg):
         sys.exit(1)
 
     @app.option('--verbose|-v')
-    def verbose_option(context):
-        '''Print generally more information.'''
-        log.get('cli').setLevel(log.logging.DEBUG)
-        sync_verbose_option(context)
+    def verbose_option(context=None):
+        '''Print more information.'''
+        log.set_level(log.logging.DEBUG)
+
+    @app.option('--quiet|-q')
+    def quiet_option(context=None):
+        '''Inverse of --verbose.'''
+        log.set_level(log.logging.WARNING)
 
     sync_command = argvard.Command()
-
-    @sync_command.option('--verbose|-v')
-    def sync_verbose_option(context):
-        '''Print more information about the syncing process.'''
-        log.get('sync').setLevel(log.logging.DEBUG)
 
     @sync_command.main('[pairs...]')
     def sync_main(context, pairs=None):
@@ -150,4 +149,9 @@ def _main(env, file_cfg):
             action()
 
     app.register_command('sync', sync_command)
+
+    if general.get('verbose', False):
+        verbose_option()
+    else:
+        quiet_option()
     app()

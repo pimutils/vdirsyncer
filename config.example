@@ -1,5 +1,6 @@
 [general]
 status_path=~/.vdirsyncer/status/
+#verbose = False
 
 [pair bob]
 # This syncronizes only a single collection/calendar/addressbook

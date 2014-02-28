@@ -11,11 +11,12 @@ import sys
 
 
 stdout_handler = logging.StreamHandler(sys.stdout)
+default_level = logging.WARNING
 
 
 def create_logger(name):
     x = logging.getLogger(name)
-    x.setLevel(logging.WARNING)
+    x.setLevel(default_level)
     x.addHandler(stdout_handler)
     return x
 
@@ -28,3 +29,10 @@ def get(name):
     if name not in loggers:
         loggers[name] = create_logger(name)
     return loggers[name]
+
+
+def set_level(level):
+    global default_level
+    default_level = level
+    for logger in loggers.values():
+        logger.setLevel(level)
