@@ -80,32 +80,58 @@ def sync(storage_a, storage_b, status):
         None: (None, None, None)
     }
 
-    for action, uid, source, dest in actions:
+    for action in actions:
+        action(storages, status)
+
+
+def action_upload(uid, source, dest):
+    def inner(storages, status):
         source_storage, source_list, source_uid_to_href = storages[source]
         dest_storage, dest_list, dest_uid_to_href = storages[dest]
-        sync_logger.debug((action, uid, source_storage, dest_storage))
+        source_href = source_uid_to_href[uid]
+        source_etag = source_list[source_href]['etag']
 
-        if action in ('upload', 'update'):
-            source_href = source_uid_to_href[uid]
-            source_etag = source_list[source_href]['etag']
-            obj = source_list[source_href]['obj']
+        obj = source_list[source_href]['obj']
+        dest_href, dest_etag = dest_storage.upload(obj)
 
-            if action == 'upload':
-                dest_href, dest_etag = dest_storage.upload(obj)
-            else:
-                dest_href = dest_uid_to_href[uid]
-                old_etag = dest_list[dest_href]['etag']
-                dest_etag = dest_storage.update(dest_href, obj, old_etag)
-            source_status = (source_href, source_etag)
-            dest_status = (dest_href, dest_etag)
-            status[uid] = source_status + dest_status if source == 'a' else \
-                dest_status + source_status
-        elif action == 'delete':
-            if dest is not None:
-                dest_href = dest_uid_to_href[uid]
-                dest_etag = dest_list[dest_href]['etag']
-                dest_storage.delete(dest_href, dest_etag)
-            del status[uid]
+        source_status = (source_href, source_etag)
+        dest_status = (dest_href, dest_etag)
+        status[uid] = source_status + dest_status if source == 'a' else \
+            dest_status + source_status
+
+    return inner
+
+
+def action_update(uid, source, dest):
+    def inner(storages, status):
+        source_storage, source_list, source_uid_to_href = storages[source]
+        dest_storage, dest_list, dest_uid_to_href = storages[dest]
+        source_href = source_uid_to_href[uid]
+        source_etag = source_list[source_href]['etag']
+
+        dest_href = dest_uid_to_href[uid]
+        old_etag = dest_list[dest_href]['etag']
+        obj = source_list[source_href]['obj']
+        dest_etag = dest_storage.update(dest_href, obj, old_etag)
+
+        source_status = (source_href, source_etag)
+        dest_status = (dest_href, dest_etag)
+        status[uid] = source_status + dest_status if source == 'a' else \
+            dest_status + source_status
+
+    return inner
+
+
+def action_delete(uid, source, dest):
+    def inner(storages, status):
+        if dest is not None:
+            dest_storage, dest_list, dest_uid_to_href = storages[dest]
+            dest_href = dest_uid_to_href[uid]
+            dest_etag = dest_list[dest_href]['etag']
+            dest_storage.delete(dest_href, dest_etag)
+        del status[uid]
+
+    return inner
 
 
 def get_actions(list_a, list_b, status, a_uid_to_href, b_uid_to_href):
@@ -133,11 +159,11 @@ def get_actions(list_a, list_b, status, a_uid_to_href, b_uid_to_href):
             # new item was created in a
             elif uid in uids_a and uid not in uids_b:
                 prefetch_from_a.append(href_a)
-                actions.append(('upload', uid, 'a', 'b'))
+                actions.append(action_upload(uid, 'a', 'b'))
             # new item was created in b
             elif uid not in uids_a and uid in uids_b:
                 prefetch_from_b.append(href_b)
-                actions.append(('upload', uid, 'b', 'a'))
+                actions.append(action_upload(uid, 'b', 'a'))
         else:
             _, status_etag_a, _, status_etag_b = status[uid]
             if uid in uids_a and uid in uids_b:
@@ -147,17 +173,17 @@ def get_actions(list_a, list_b, status, a_uid_to_href, b_uid_to_href):
                                               'New etags on both sides.')
                 elif a['etag'] != status_etag_a:  # item was updated in a
                     prefetch_from_a.append(href_a)
-                    actions.append(('update', uid, 'a', 'b'))
+                    actions.append(action_update(uid, 'a', 'b'))
                 elif b['etag'] != status_etag_b:  # item was updated in b
                     prefetch_from_b.append(href_b)
-                    actions.append(('update', uid, 'b', 'a'))
+                    actions.append(action_update(uid, 'b', 'a'))
                 else:  # completely in sync!
                     pass
             elif uid in uids_a and uid not in uids_b:  # was deleted from b
-                actions.append(('delete', uid, None, 'a'))
+                actions.append(action_delete(uid, None, 'a'))
             elif uid not in uids_a and uid in uids_b:  # was deleted from a
-                actions.append(('delete', uid, None, 'b'))
+                actions.append(action_delete(uid, None, 'b'))
             # was deleted from a and b
             elif uid not in uids_a and uid not in uids_b:
-                actions.append(('delete', uid, None, None))
+                actions.append(action_delete(uid, None, None))
     return actions, prefetch_from_a, prefetch_from_b
