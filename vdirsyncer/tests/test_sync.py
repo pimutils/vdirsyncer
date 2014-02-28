@@ -113,3 +113,30 @@ class SyncTests(TestCase):
         sync(a, b, status)
         assert status == old_status
         assert a.has('1.txt') and b.has('1.txt')
+
+    def test_conflict_resolution_both_etags_new(self):
+        a = MemoryStorage()
+        b = MemoryStorage()
+        item = Item(u'UID:1')
+        href_a, etag_a = a.upload(item)
+        href_b, etag_b = b.upload(item)
+        status = {}
+        sync(a, b, status)
+        assert status
+        a.update(href_a, Item(u'UID:1\nASDASD'), etag_a)
+        b.update(href_b, Item(u'UID:1\nHUEHUE'), etag_b)
+        self.assertRaises(exceptions.SyncConflict, sync, a, b, status)
+        sync(a, b, status, conflict_resolution='a wins')
+        obj_a, _ = a.get(href_a)
+        obj_b, _ = b.get(href_b)
+        assert obj_a.raw == obj_b.raw == u'UID:1\nASDASD'
+
+    def tset_conflict_resolution_new_etags_without_changes(self):
+        a = MemoryStorage()
+        b = MemoryStorage()
+        item = Item(u'UID:1')
+        href_a, etag_a = a.upload(item)
+        href_b, etag_b = b.upload(item)
+        status = {'1': (href_a, 'BOGUS_a', href_b, 'BOGUS_b')}
+        sync(a, b, status)
+        assert status == {'1': (href_a, etag_a, href_b, etag_b)}

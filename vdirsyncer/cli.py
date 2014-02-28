@@ -56,9 +56,8 @@ def load_config(fname):
         elif section.startswith('pair '):
             name = section[len('pair '):]
             options = get_options(section)
-            pairs[name] = a, b = options.pop('a'), options.pop('b')
-            storages.setdefault(a, {}).update(options)
-            storages.setdefault(b, {}).update(options)
+            a, b = options.pop('a'), options.pop('b')
+            pairs[name] = a, b, options
         elif section == 'general':
             general = get_options(section)
         else:
@@ -146,7 +145,7 @@ def _main(env, file_cfg):
         actions = []
         for pair_name in pairs:
             try:
-                a, b = all_pairs[pair_name]
+                a, b, pair_options = all_pairs[pair_name]
             except KeyError:
                 cli_logger.critical('Pair not found: {}'.format(pair_name))
                 cli_logger.critical('These are the pairs found: ')
@@ -158,7 +157,8 @@ def _main(env, file_cfg):
             def x(a=a, b=b, pair_name=pair_name):
                 cli_logger.debug('Syncing {}'.format(pair_name))
                 status = load_status(general['status_path'], pair_name)
-                sync(a, b, status)
+                sync(a, b, status,
+                     pair_options.get('conflict_resolution', None))
                 save_status(general['status_path'], pair_name, status)
             actions.append(x)
 

@@ -6,6 +6,9 @@ status_path=~/.vdirsyncer/status/
 # This syncronizes only a single collection/calendar/addressbook
 a = bob_local
 b = bob_remote
+# conflict_resolution = None  # abort when collisions occur
+# conflict_resolution = a wins  # assume a's items to be more up-to-date
+# conflict_resolution = b wins  # assume b's items to be more up-to-date
 
 [storage bob_local]
 # This represents only a single collection/calendar/addressbook

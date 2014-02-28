@@ -43,3 +43,11 @@ class WrongEtagError(PreconditionFailed):
 class StorageError(Error):
 
     '''Internal or initialization errors with storage.'''
+
+
+class SyncError(Error):
+    pass
+
+
+class SyncConflict(SyncError):
+    pass

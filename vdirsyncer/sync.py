@@ -40,7 +40,7 @@ def prefetch(storage, item_list, hrefs):
         item_list[href]['obj'] = obj
 
 
-def sync(storage_a, storage_b, status):
+def sync(storage_a, storage_b, status, conflict_resolution=None):
     '''Syncronizes two storages.
 
     :param storage_a: The first storage
@@ -51,6 +51,9 @@ def sync(storage_a, storage_b, status):
         metadata about the two storages for detection of changes. Will be
         modified by the function and should be passed to it at the next sync.
         If this is the first sync, an empty dictionary should be provided.
+    :param conflict_resolution: Either 'a wins' or 'b wins'. If none is
+        provided, the sync function will raise
+        :py:exc:`vdirsyncer.exceptions.SyncConflict`.
     '''
     a_href_to_uid = dict(
         (href_a, uid)
@@ -81,13 +84,16 @@ def sync(storage_a, storage_b, status):
     }
 
     for action in actions:
-        action(storages, status)
+        action(storages, status, conflict_resolution)
 
 
 def action_upload(uid, source, dest):
-    def inner(storages, status):
+    def inner(storages, status, conflict_resolution):
         source_storage, source_list, source_uid_to_href = storages[source]
         dest_storage, dest_list, dest_uid_to_href = storages[dest]
+        sync_logger.debug('Copying (uploading) item {} to {}'
+                          .format(uid, dest_storage))
+
         source_href = source_uid_to_href[uid]
         source_etag = source_list[source_href]['etag']
 
@@ -103,9 +109,11 @@ def action_upload(uid, source, dest):
 
 
 def action_update(uid, source, dest):
-    def inner(storages, status):
+    def inner(storages, status, conflict_resolution):
         source_storage, source_list, source_uid_to_href = storages[source]
         dest_storage, dest_list, dest_uid_to_href = storages[dest]
+        sync_logger.debug('Copying (updating) item {} to {}'
+                          .format(uid, dest_storage))
         source_href = source_uid_to_href[uid]
         source_etag = source_list[source_href]['etag']
 
@@ -123,13 +131,46 @@ def action_update(uid, source, dest):
 
 
 def action_delete(uid, source, dest):
-    def inner(storages, status):
+    def inner(storages, status, conflict_resolution):
         if dest is not None:
             dest_storage, dest_list, dest_uid_to_href = storages[dest]
+            sync_logger.debug('Deleting item {} from {}'
+                              .format(uid, dest_storage))
             dest_href = dest_uid_to_href[uid]
             dest_etag = dest_list[dest_href]['etag']
             dest_storage.delete(dest_href, dest_etag)
+        else:
+            sync_logger.debug('Deleting status info for nonexisting item {}'
+                              .format(uid))
         del status[uid]
+
+    return inner
+
+
+def action_conflict_resolve(uid):
+    def inner(storages, status, conflict_resolution):
+        sync_logger.debug('Doing conflict resolution for item {}...'
+                          .format(uid))
+        a_storage, list_a, a_uid_to_href = storages['a']
+        b_storage, list_b, b_uid_to_href = storages['b']
+        a_href = a_uid_to_href[uid]
+        b_href = b_uid_to_href[uid]
+        a_meta = list_a[a_href]
+        b_meta = list_b[b_href]
+        if a_meta['obj'].raw == b_meta['obj'].raw:
+            sync_logger.debug('...same content on both sides.')
+            status[uid] = a_href, a_meta['etag'], b_href, b_meta['etag']
+        elif conflict_resolution is None:
+            raise exceptions.SyncConflict()
+        elif conflict_resolution == 'a wins':
+            sync_logger.debug('...{} wins.'.format(a_storage))
+            action_update(uid, 'a', 'b')(storages, status, conflict_resolution)
+        elif conflict_resolution == 'b wins':
+            sync_logger.debug('...{} wins.'.format(b_storage))
+            action_update(uid, 'b', 'a')(storages, status, conflict_resolution)
+        else:
+            raise ValueError('Invalid conflict resolution mode: {}'
+                             .format(conflict_resolution))
 
     return inner
 
@@ -148,14 +189,7 @@ def get_actions(list_a, list_b, status, a_uid_to_href, b_uid_to_href):
         b = list_b.get(href_b, None)
         if uid not in status:
             if uid in uids_a and uid in uids_b:  # missing status
-                assert type(a['obj'].raw) is unicode, repr(a['obj'].raw)
-                assert type(b['obj'].raw) is unicode, repr(b['obj'].raw)
-                if a['obj'].raw != b['obj'].raw:
-                    raise NotImplementedError(  # TODO
-                        'Conflict. No status and '
-                        'different content on both sides.'
-                    )
-                status[uid] = (href_a, a['etag'], href_b, b['etag'])
+                actions.append(action_conflict_resolve(uid))
             # new item was created in a
             elif uid in uids_a and uid not in uids_b:
                 prefetch_from_a.append(href_a)
@@ -168,9 +202,9 @@ def get_actions(list_a, list_b, status, a_uid_to_href, b_uid_to_href):
             _, status_etag_a, _, status_etag_b = status[uid]
             if uid in uids_a and uid in uids_b:
                 if a['etag'] != status_etag_a and b['etag'] != status_etag_b:
-                    # conflict resolution TODO
-                    raise NotImplementedError('Conflict. '
-                                              'New etags on both sides.')
+                    prefetch_from_a.append(href_a)
+                    prefetch_from_b.append(href_b)
+                    actions.append(action_conflict_resolve(uid))
                 elif a['etag'] != status_etag_a:  # item was updated in a
                     prefetch_from_a.append(href_a)
                     actions.append(action_update(uid, 'a', 'b'))
