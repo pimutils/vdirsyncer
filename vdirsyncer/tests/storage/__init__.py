@@ -15,19 +15,7 @@ import vdirsyncer.exceptions as exceptions
 class StorageTests(object):
 
     def _create_bogus_item(self, uid):
-        return Item(u'''BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//dmfs.org//mimedir.icalendar//EN
-BEGIN:VTODO
-CREATED:20130721T142233Z
-DTSTAMP:20130730T074543Z
-LAST-MODIFIED;VALUE=DATE-TIME:20140122T151338Z
-SEQUENCE:2
-SUMMARY:Book: Kowlani - Tödlicher Staub
-UID:{}
-END:VTODO
-END:VCALENDAR
-'''.format(uid))
+        return Item(u'UID:{}'.format(uid))
 
     def _get_storage(self, **kwargs):
         raise NotImplementedError()
