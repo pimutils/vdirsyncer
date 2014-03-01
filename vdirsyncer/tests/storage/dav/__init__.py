@@ -23,6 +23,8 @@ from werkzeug.test import Client
 from werkzeug.wrappers import BaseResponse as WerkzeugResponse
 
 from .. import StorageTests
+import vdirsyncer.exceptions as exceptions
+from vdirsyncer.storage.base import Item
 
 
 def do_the_radicale_dance(tmpdir):
@@ -96,3 +98,12 @@ class DavStorageTests(StorageTests):
         if self.tmpdir is not None:
             shutil.rmtree(self.tmpdir)
             self.tmpdir = None
+
+    def test_dav_broken_item(self):
+        item = Item(u'UID:1')
+        s = self._get_storage()
+        try:
+            s.upload(item)
+        except exceptions.Error:
+            pass
+        assert not list(s.list())
