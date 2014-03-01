@@ -22,6 +22,8 @@ class StorageTests(object):
 
     def test_generic(self):
         items = map(self._create_bogus_item, range(1, 10))
+        for i, item in enumerate(items):
+            assert item.uid == unicode(i + 1), item.raw
         s = self._get_storage()
         for item in items:
             s.upload(item)

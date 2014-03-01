@@ -20,7 +20,7 @@ class Item(object):
         for line in raw:
             if line.startswith(u'UID:'):
                 self.uid = line[4:].strip()
-        self.raw = '\n'.join(raw)
+        self.raw = u'\n'.join(raw)
 
 
 class Storage(object):
