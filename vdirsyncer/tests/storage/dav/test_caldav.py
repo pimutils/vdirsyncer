@@ -16,7 +16,7 @@ __version__ = '0.1.0'
 
 from unittest import TestCase
 
-from vdirsyncer.storage.caldav import CaldavStorage
+from vdirsyncer.storage.dav.caldav import CaldavStorage
 from . import DavStorageTests
 
 
