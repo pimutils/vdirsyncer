@@ -25,5 +25,5 @@ setup(
     entry_points={
         'console_scripts': ['vdirsyncer = vdirsyncer.cli:main']
     },
-    install_requires=['argvard', 'requests']
+    install_requires=['argvard', 'requests', 'lxml']
 )
