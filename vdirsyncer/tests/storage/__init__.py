@@ -8,14 +8,7 @@
 '''
 __version__ = '0.1.0'
 
-from unittest import TestCase
-import os
-import tempfile
-import shutil
 from vdirsyncer.storage.base import Item
-from vdirsyncer.storage.filesystem import FilesystemStorage
-from vdirsyncer.storage.memory import MemoryStorage
-from vdirsyncer.storage.caldav import CaldavStorage
 import vdirsyncer.exceptions as exceptions
 
 

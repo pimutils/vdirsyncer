@@ -9,6 +9,7 @@
 
 import os
 
+
 def expand_path(p):
     p = os.path.expanduser(p)
     p = os.path.abspath(p)

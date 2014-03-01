@@ -146,7 +146,7 @@ def _main(env, file_cfg):
                 sys.exit(1)
             a = storage_instance_from_config(all_storages[a])
             b = storage_instance_from_config(all_storages[b])
-            
+
             def x(a=a, b=b, pair_name=pair_name):
                 cli_logger.debug('Syncing {}'.format(pair_name))
                 status = load_status(general['status_path'], pair_name)

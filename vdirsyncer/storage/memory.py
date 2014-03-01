@@ -8,7 +8,7 @@
 '''
 
 import datetime
-from vdirsyncer.storage.base import Item, Storage
+from vdirsyncer.storage.base import Storage
 import vdirsyncer.exceptions as exceptions
 
 

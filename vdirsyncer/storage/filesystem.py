@@ -45,7 +45,8 @@ class FilesystemStorage(Storage):
     def get(self, href):
         fpath = self._get_filepath(href)
         with open(fpath, 'rb') as f:
-            return Item(f.read().decode(self.encoding)), os.path.getmtime(fpath)
+            return (Item(f.read().decode(self.encoding)),
+                    os.path.getmtime(fpath))
 
     def has(self, href):
         return os.path.isfile(self._get_filepath(href))

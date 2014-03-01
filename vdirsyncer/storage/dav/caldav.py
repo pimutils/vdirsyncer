@@ -39,7 +39,8 @@ class CaldavStorage(Storage):
         :param start_date: Start date of timerange to show, default -inf.
         :param end_date: End date of timerange to show, default +inf.
         :param verify: Verify SSL certificate, default True.
-        :param auth: Authentication method, from {'basic', 'digest'}, default 'basic'.
+        :param auth: Authentication method, from {'basic', 'digest'}, default
+            'basic'.
         :param useragent: Default 'vdirsyncer'.
         :param _request_func: Function to use for network calls. Same API as
                               requests.request. Useful for tests.
@@ -80,7 +81,7 @@ class CaldavStorage(Storage):
             headers=headers
         )
         response.raise_for_status()
-        if 'DAV' not in response.headers or 'calendar-access' not in response.headers['DAV']:
+        if 'calendar-access' not in response.headers.get('DAV', ''):
             raise exceptions.StorageError('URL is not a CalDAV collection')
 
     def _default_headers(self):
@@ -101,7 +102,8 @@ class CaldavStorage(Storage):
             self._session = requests.session()
         assert '/' not in item
         url = self.url + item
-        return self._session.request(method, url, data=data, headers=headers, **self._settings)
+        return self._session.request(method, url, data=data, headers=headers,
+                                     **self._settings)
 
     @staticmethod
     def _check_response(response):
@@ -184,8 +186,8 @@ class CaldavStorage(Storage):
                 .find('{urn:ietf:params:xml:ns:caldav}calendar-data').text
             etag = element \
                 .find('{DAV:}propstat') \
-                    .find('{DAV:}prop') \
-                    .find('{DAV:}getetag').text
+                .find('{DAV:}prop') \
+                .find('{DAV:}getetag').text
             if isinstance(obj, bytes):
                 obj = obj.decode(response.encoding)
             if isinstance(etag, bytes):

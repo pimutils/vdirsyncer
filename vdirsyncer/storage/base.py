@@ -31,7 +31,8 @@ class Storage(object):
     Terminology:
       - UID: Global identifier of the item, across storages.
       - HREF: Per-storage identifier of item, might be UID.
-      - ETAG: Checksum of item, or something similar that changes when the object does
+      - ETAG: Checksum of item, or something similar that changes when the
+              object does.
     '''
     fileext = '.txt'
     _repr_attributes = set()
