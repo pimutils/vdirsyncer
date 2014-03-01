@@ -113,16 +113,17 @@ class CaldavStorage(Storage):
 
     def list(self):
         data = '''<?xml version="1.0" encoding="utf-8" ?>
-<C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
-    <D:prop>
-        <D:getetag/>
-        </D:prop>
-    <C:filter>
-        <C:comp-filter name="VCALENDAR">
-            {caldavfilter}
-        </C:comp-filter>
-    </C:filter>
-</C:calendar-query>'''
+            <C:calendar-query xmlns:D="DAV:"
+                xmlns:C="urn:ietf:params:xml:ns:caldav">
+                <D:prop>
+                    <D:getetag/>
+                    </D:prop>
+                <C:filter>
+                    <C:comp-filter name="VCALENDAR">
+                        {caldavfilter}
+                    </C:comp-filter>
+                </C:filter>
+            </C:calendar-query>'''
         start = self.start_date
         end = self.end_date
         if start and end:
@@ -155,13 +156,14 @@ class CaldavStorage(Storage):
             return ()
 
         data = '''<?xml version="1.0" encoding="utf-8" ?>
-<C:calendar-multiget xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
-    <D:prop>
-        <D:getetag/>
-        <C:calendar-data/>
-    </D:prop>
-    {hrefs}
-</C:calendar-multiget>'''
+            <C:calendar-multiget xmlns:D="DAV:"
+                xmlns:C="urn:ietf:params:xml:ns:caldav">
+                <D:prop>
+                    <D:getetag/>
+                    <C:calendar-data/>
+                </D:prop>
+                {hrefs}
+            </C:calendar-multiget>'''
         href_xml = []
         for href in hrefs:
             assert '/' not in href, href
