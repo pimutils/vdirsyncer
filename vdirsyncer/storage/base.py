@@ -35,7 +35,7 @@ class Storage(object):
               object does.
     '''
     fileext = '.txt'
-    _repr_attributes = set()
+    _repr_attributes = ()
 
     def __init__(self, item_class=Item):
         self.item_class = item_class

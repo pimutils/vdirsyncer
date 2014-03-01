@@ -13,9 +13,11 @@
 '''
 
 from .dav.caldav import CaldavStorage
+from .dav.carddav import CarddavStorage
 from .filesystem import FilesystemStorage
 
 storage_names = {
     'caldav': CaldavStorage,
+    'carddav': CarddavStorage,
     'filesystem': FilesystemStorage
 }

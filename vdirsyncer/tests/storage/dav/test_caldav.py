@@ -4,11 +4,6 @@
     vdirsyncer.tests.storage.test_caldav
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Using an actual CalDAV server to test the CalDAV storage. Done by using
-    Werkzeug's test client for WSGI apps. While this is pretty fast, Radicale
-    has so much global state such that a clean separation of the unit tests is
-    not guaranteed.
-
     :copyright: (c) 2014 Markus Unterwaditzer
     :license: MIT, see LICENSE for more details.
 '''
@@ -23,6 +18,7 @@ from . import DavStorageTests
 
 class CaldavStorageTests(TestCase, DavStorageTests):
     storage_class = CaldavStorage
+    radicale_path = '/bob/test.ics/'
 
     def _create_bogus_item(self, uid):
         return Item(u'BEGIN:VCALENDAR\n'

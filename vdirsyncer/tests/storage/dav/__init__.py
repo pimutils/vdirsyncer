@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 '''
     vdirsyncer.tests.storage.dav
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Using an actual CalDAV/CardDAV server to test the CalDAV and CardDAV
     storages. Done by using Werkzeug's test client for WSGI apps. While this is
@@ -12,7 +12,6 @@
     :copyright: (c) 2014 Markus Unterwaditzer
     :license: MIT, see LICENSE for more details.
 '''
-__version__ = '0.1.0'
 
 import tempfile
 import shutil
@@ -72,6 +71,7 @@ class Response(object):
 class DavStorageTests(StorageTests):
     tmpdir = None
     storage_class = None
+    radicale_path = None
 
     def _get_storage(self, **kwargs):
         self.tmpdir = tempfile.mkdtemp()
@@ -82,12 +82,11 @@ class DavStorageTests(StorageTests):
 
         c = Client(app, WerkzeugResponse)
         server = 'http://127.0.0.1'
-        calendar_path = '/bob/test.ics/'
-        full_url = server + calendar_path
+        full_url = server + self.radicale_path
 
         def x(method, item, data=None, headers=None):
             assert '/' not in item
-            url = calendar_path + item
+            url = self.radicale_path + item
             r = c.open(path=url, method=method, data=data, headers=headers)
             r = Response(r)
             return r

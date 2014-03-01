@@ -25,12 +25,15 @@ class StorageTests(object):
         for i, item in enumerate(items):
             assert item.uid == unicode(i + 1), item.raw
         s = self._get_storage()
+        hrefs = []
         for item in items:
-            s.upload(item)
-        hrefs = (href for href, etag in s.list())
-        for href in hrefs:
+            hrefs.append(s.upload(item))
+        hrefs.sort()
+        assert hrefs == sorted(s.list())
+        for href, etag in hrefs:
             assert s.has(href)
-            obj, etag = s.get(href)
+            obj, etag2 = s.get(href)
+            assert etag == etag2
             assert 'UID:{}'.format(obj.uid) in obj.raw
 
     def test_upload_already_existing(self):
@@ -57,3 +60,9 @@ class StorageTests(object):
     def test_delete_nonexisting(self):
         s = self._get_storage()
         self.assertRaises(exceptions.PreconditionFailed, s.delete, '1', 123)
+
+    def test_list(self):
+        s = self._get_storage()
+        assert not list(s.list())
+        s.upload(self._create_bogus_item('1'))
+        assert list(s.list())
