@@ -197,7 +197,7 @@ class CaldavStorage(Storage):
             rv.append((href, Item(obj), etag))
             hrefs_left.remove(href)
         for href in hrefs_left:
-            raise exceptions.NotFound(href)
+            raise exceptions.NotFoundError(href)
         return rv
 
     def get(self, href):
