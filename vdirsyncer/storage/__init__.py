@@ -11,3 +11,11 @@
     :copyright: (c) 2014 Markus Unterwaditzer
     :license: MIT, see LICENSE for more details.
 '''
+
+from .dav.caldav import CaldavStorage
+from .filesystem import FilesystemStorage
+
+storage_names = {
+    'caldav': CaldavStorage,
+    'filesystem': FilesystemStorage
+}

@@ -1,20 +1,19 @@
 
 # -*- coding: utf-8 -*-
 '''
-    vdirsyncer.tests.storage.test_caldav
+    vdirsyncer.tests.storage.dav
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Using an actual CalDAV server to test the CalDAV storage. Done by using
-    Werkzeug's test client for WSGI apps. While this is pretty fast, Radicale
-    has so much global state such that a clean separation of the unit tests is
-    not guaranteed.
+    Using an actual CalDAV/CardDAV server to test the CalDAV and CardDAV
+    storages. Done by using Werkzeug's test client for WSGI apps. While this is
+    pretty fast, Radicale has so much global state such that a clean separation
+    of the unit tests is not easy.
 
     :copyright: (c) 2014 Markus Unterwaditzer
     :license: MIT, see LICENSE for more details.
 '''
 __version__ = '0.1.0'
 
-from unittest import TestCase
 import tempfile
 import shutil
 import sys
@@ -23,8 +22,7 @@ import os
 from werkzeug.test import Client
 from werkzeug.wrappers import BaseResponse as WerkzeugResponse
 
-from vdirsyncer.storage.caldav import CaldavStorage
-from . import StorageTests
+from .. import StorageTests
 
 
 def do_the_radicale_dance(tmpdir):
@@ -69,8 +67,9 @@ class Response(object):
             raise HTTPError(str(self.status_code))
 
 
-class CaldavStorageTests(TestCase, StorageTests):
+class DavStorageTests(StorageTests):
     tmpdir = None
+    storage_class = None
 
     def _get_storage(self, **kwargs):
         self.tmpdir = tempfile.mkdtemp()
@@ -90,7 +89,7 @@ class CaldavStorageTests(TestCase, StorageTests):
             r = c.open(path=url, method=method, data=data, headers=headers)
             r = Response(r)
             return r
-        return CaldavStorage(full_url, _request_func=x)
+        return self.storage_class(url=full_url, _request_func=x, **kwargs)
 
     def tearDown(self):
         self.app = None

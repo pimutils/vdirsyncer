@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-    vdirsyncer.storage.caldav
+    vdirsyncer.storage.dav.caldav
     ~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Original version from khal: https://github.com/geier/khal
@@ -9,7 +9,7 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-from .base import Storage, Item
+from ..base import Storage, Item
 import vdirsyncer.exceptions as exceptions
 from lxml import etree
 import requests

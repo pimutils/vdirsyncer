@@ -12,20 +12,13 @@ import sys
 import json
 import ConfigParser
 from vdirsyncer.sync import sync
-from vdirsyncer.storage.caldav import CaldavStorage
-from vdirsyncer.storage.filesystem import FilesystemStorage
 from vdirsyncer.utils import expand_path
+from vdirsyncer.storage import storage_names
 import vdirsyncer.log as log
 import argvard
 
 
 cli_logger = log.get('cli')
-
-
-storage_names = {
-    'caldav': CaldavStorage,
-    'filesystem': FilesystemStorage
-}
 
 
 def parse_options(items):
