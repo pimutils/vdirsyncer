@@ -1,3 +1,5 @@
+***This is still work-in-progress! Expect breakage, bad docs and data-loss.***
+
 vdirsyncer synchronizes your CalDAV calendars and CardDAV addressbooks between
 two storages. The supported storages are CalDAV, CardDAV and
 [vdir](https://github.com/untitaker/vdir).
