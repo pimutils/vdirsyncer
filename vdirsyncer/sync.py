@@ -4,10 +4,10 @@
     ~~~~~~~~~~~~~~~
 
     The function in `vdirsyncer.sync` can be called on two instances of
-    `Storage` to syncronize them. Due to the abstract API storage classes are
+    `Storage` to synchronize them. Due to the abstract API storage classes are
     implementing, the two given instances don't have to be of the same exact
-    type. This allows us not only to syncronize a local vdir with a CalDAV
-    server, but also syncronize two CalDAV servers or two local vdirs.
+    type. This allows us not only to synchronize a local vdir with a CalDAV
+    server, but also synchronize two CalDAV servers or two local vdirs.
 
     :copyright: (c) 2014 Markus Unterwaditzer
     :license: MIT, see LICENSE for more details.

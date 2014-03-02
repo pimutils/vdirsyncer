@@ -4,7 +4,7 @@ status_path=~/.vdirsyncer/status/
 
 # CONTACTS
 [pair bob_contacts]
-# This syncronizes only a single calendar/addressbook
+# This synchronizes only a single calendar/addressbook
 a = bob_contacts_local
 b = bob_contacts_remote
 # conflict_resolution = None  # abort when collisions occur
@@ -40,9 +40,9 @@ url = https://owncloud.example.com/remote.php/caldav/calendars/bob/somecalendar/
 username =  # blabla
 password =  # blabla
 
-# Specify a time range which should be syncronized. Either both start_date and
-# end_date or neither have to be set. The default is to syncronize everything.
-# The following example syncronizes from one year in the past to one year in
+# Specify a time range which should be synchronized. Either both start_date and
+# end_date or neither have to be set. The default is to synchronize everything.
+# The following example synchronizes from one year in the past to one year in
 # the future.
 
 # All Python expressions are allowed here. The global namespace contains
