@@ -1,9 +1,12 @@
 [general]
+# A folder where vdirsyncer can store some metadata about each pair.
 status_path=~/.vdirsyncer/status/
 #verbose = False
 
 # CONTACTS
 [pair bob_contacts]
+# A pair references two storages and tells vdirsyncer to syncronize them.
+# Similar to accounts in OfflineIMAP.
 # This synchronizes only a single calendar/addressbook
 a = bob_contacts_local
 b = bob_contacts_remote
@@ -12,13 +15,14 @@ b = bob_contacts_remote
 # conflict_resolution = b wins  # assume b's items to be more up-to-date
 
 [storage bob_contacts_local]
+# A storage references actual data on a remote server or on the local disk.
+# Similar to repositories in OfflineIMAP.
 # This represents only a single calendar/addressbook
 type = filesystem
 path = ~/.watdo/tasks/somecalendar/
 fileext = .vcf
 
 [storage bob_contacts_remote]
-# This represents only a single calendar/addressbook
 type = carddav
 url = https://owncloud.example.com/remote.php/carddav/addressbooks/bob/default/
 username =  # blabla
