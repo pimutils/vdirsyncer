@@ -10,9 +10,6 @@
 '''
 
 from .base import DavStorage
-from ..base import Item
-import vdirsyncer.exceptions as exceptions
-from lxml import etree
 import datetime
 
 CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'

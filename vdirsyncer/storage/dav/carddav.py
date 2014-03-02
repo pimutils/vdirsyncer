@@ -10,9 +10,6 @@
 '''
 
 from .base import DavStorage
-from ..base import Item
-import vdirsyncer.exceptions as exceptions
-from lxml import etree
 
 
 class CarddavStorage(DavStorage):
@@ -32,7 +29,6 @@ class CarddavStorage(DavStorage):
             </C:addressbook-multiget>'''
 
     get_multi_data_query = '{urn:ietf:params:xml:ns:carddav}address-data'
-
 
     list_xml = '''<?xml version="1.0" encoding="utf-8" ?>
         <C:addressbook-query xmlns:D="DAV:"

@@ -7,7 +7,7 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-from ..base import Storage
+from ..base import Storage, Item
 import vdirsyncer.exceptions as exceptions
 import requests
 import urlparse
