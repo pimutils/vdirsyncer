@@ -1,4 +1,4 @@
-vdirsyncer synchronizes your CalDAV addressbooks and CalDAV calendars between
+vdirsyncer synchronizes your CalDAV calendars and CardDAV addressbooks between
 two storages. The supported storages are CalDAV, CardDAV and
 [vdir](https://github.com/untitaker/vdir).
 
