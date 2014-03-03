@@ -22,7 +22,7 @@ class FilesystemStorageTests(TestCase, StorageTests):
         path = self.tmpdir = tempfile.mkdtemp()
         return FilesystemStorage(path=path, fileext='.txt', **kwargs)
 
-    def tearDown(self):
+    def teardown_method(self, method):
         if self.tmpdir is not None:
             shutil.rmtree(self.tmpdir)
             self.tmpdir = None

@@ -92,7 +92,7 @@ class DavStorageTests(StorageTests):
             return r
         return self.storage_class(url=full_url, _request_func=x, **kwargs)
 
-    def tearDown(self):
+    def teardown_method(self, method):
         self.app = None
         if self.tmpdir is not None:
             shutil.rmtree(self.tmpdir)
