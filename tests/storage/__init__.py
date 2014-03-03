@@ -41,11 +41,18 @@ class StorageTests(object):
         s.upload(item)
         self.assertRaises(exceptions.PreconditionFailed, s.upload, item)
 
+    def test_upload(self):
+        s = self._get_storage()
+        item = self._create_bogus_item(1)
+        href, etag = s.upload(item)
+        assert s.get(href)[0].raw == item.raw
+
     def test_update(self):
         s = self._get_storage()
         item = self._create_bogus_item(1)
         href, etag = s.upload(item)
         assert s.get(href)[0].raw == item.raw
+
         new_item = Item(item.raw + u'\nX-SOMETHING: YES\n')
         s.update(href, new_item, etag)
         assert s.get(href)[0].raw == new_item.raw
