@@ -41,9 +41,20 @@ class StorageTests(object):
         s.upload(item)
         self.assertRaises(exceptions.PreconditionFailed, s.upload, item)
 
+    def test_update(self):
+        s = self._get_storage()
+        item = self._create_bogus_item(1)
+        href, etag = s.upload(item)
+        assert s.get(href)[0].raw == item.raw
+        new_item = Item(item.raw + u'\nX-SOMETHING: YES\n')
+        s.update(href, new_item, etag)
+        assert s.get(href)[0].raw == new_item.raw
+
     def test_update_nonexisting(self):
         s = self._get_storage()
         item = self._create_bogus_item(1)
+        self.assertRaises(
+            exceptions.PreconditionFailed, s.update, s._get_href('1'), item, 123)
         self.assertRaises(
             exceptions.PreconditionFailed, s.update, 'huehue', item, 123)
 
