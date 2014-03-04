@@ -64,7 +64,9 @@ class CaldavStorage(DavStorage):
                 </D:prop>
                 <C:filter>
                     <C:comp-filter name="VCALENDAR">
-                        {caldavfilter}
+                        <C:comp-filter name="VTODO">
+                            {caldavfilter}
+                        </C:comp-filter>
                     </C:comp-filter>
                 </C:filter>
             </C:calendar-query>'''
@@ -73,9 +75,7 @@ class CaldavStorage(DavStorage):
         if start and end:
             start = start.strftime(CALDAV_DT_FORMAT)
             end = end.strftime(CALDAV_DT_FORMAT)
-            caldavfilter = ('<C:comp-filter name="VTODO">'
-                            '<C:time-range start="{start}" end="{end}"/>'
-                            '</C:comp-filter>').format(start=start,
-                                                       end=end)
+            caldavfilter = ('<C:time-range start="{start}" end="{end}"/>'
+                            .format(start=start, end=end))
             return data.format(caldavfilter=caldavfilter)
         return data.format(caldavfilter='')

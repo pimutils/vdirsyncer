@@ -11,6 +11,7 @@ from unittest import TestCase
 from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.memory import MemoryStorage
 from vdirsyncer.sync import sync
+from . import assert_item_equals, normalize_item
 import vdirsyncer.exceptions as exceptions
 
 
@@ -52,7 +53,7 @@ class SyncTests(TestCase):
         b.upload(item2)
         sync(a, b, status)
         assert status
-        assert a.get('1.txt')[0].raw == b.get('1.txt')[0].raw
+        assert_item_equals(a.get('1.txt')[0], b.get('1.txt')[0])
 
     def test_upload_and_update(self):
         a = MemoryStorage()
@@ -62,22 +63,22 @@ class SyncTests(TestCase):
         item = Item(u'UID:1')  # new item 1 in a
         a.upload(item)
         sync(a, b, status)
-        assert b.get('1.txt')[0].raw == item.raw
+        assert_item_equals(b.get('1.txt')[0], item)
 
         item = Item(u'UID:1\nASDF:YES')  # update of item 1 in b
         b.update('1.txt', item, b.get('1.txt')[1])
         sync(a, b, status)
-        assert a.get('1.txt')[0].raw == item.raw
+        assert_item_equals(a.get('1.txt')[0], item)
 
         item2 = Item(u'UID:2')  # new item 2 in b
         b.upload(item2)
         sync(a, b, status)
-        assert a.get('2.txt')[0].raw == item2.raw
+        assert_item_equals(a.get('2.txt')[0], item2)
 
         item2 = Item(u'UID:2\nASDF:YES')  # update of item 2 in a
         a.update('2.txt', item2, a.get('2.txt')[1])
         sync(a, b, status)
-        assert b.get('2.txt')[0].raw == item2.raw
+        assert_item_equals(b.get('2.txt')[0], item2)
 
     def test_deletion(self):
         a = MemoryStorage()
@@ -129,7 +130,10 @@ class SyncTests(TestCase):
         sync(a, b, status, conflict_resolution='a wins')
         obj_a, _ = a.get(href_a)
         obj_b, _ = b.get(href_b)
-        assert obj_a.raw == obj_b.raw == u'UID:1\nASDASD'
+        assert_item_equals(obj_a, obj_b)
+        n = normalize_item(obj_a)
+        assert u'UID:1' in n
+        assert u'ASDASD' in n
 
     def tset_conflict_resolution_new_etags_without_changes(self):
         a = MemoryStorage()

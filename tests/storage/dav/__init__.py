@@ -60,6 +60,7 @@ class Response(object):
         self.status_code = x.status_code
         self.content = x.get_data(as_text=False)
         self.headers = x.headers
+        self.encoding = x.charset
 
     def raise_for_status(self):
         '''copied from requests itself'''
@@ -69,6 +70,7 @@ class Response(object):
 
 
 class DavStorageTests(StorageTests):
+    '''hrefs are paths without scheme or netloc'''
     tmpdir = None
     storage_class = None
     radicale_path = None
@@ -84,10 +86,9 @@ class DavStorageTests(StorageTests):
         server = 'http://127.0.0.1'
         full_url = server + self.radicale_path
 
-        def x(method, item, data=None, headers=None):
-            assert '/' not in item
-            url = self.radicale_path + item
-            r = c.open(path=url, method=method, data=data, headers=headers)
+        def x(method, path, data=None, headers=None):
+            path = path or self.radicale_path
+            r = c.open(path=path, method=method, data=data, headers=headers)
             r = Response(r)
             return r
         return self.storage_class(url=full_url, _request_func=x, **kwargs)

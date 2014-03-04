@@ -72,10 +72,13 @@ class DavStorage(Storage):
         '''Used to strip hrefs off the collection's URL, to leave only the
         filename.'''
         href = urlparse.urlparse(href).path
-        if href.startswith(self.parsed_url.path):
-            href = href[len(self.parsed_url.path):]
-        assert '/' not in href, href
-        return href
+        if href.startswith('/'):
+            return href
+        assert '/' not in href
+        return self.parsed_url.path + href
+
+    def _get_href(self, uid):
+        return self._simplify_href(super(DavStorage, self)._get_href(uid))
 
     def _default_headers(self):
         return {
@@ -83,11 +86,10 @@ class DavStorage(Storage):
             'Content-Type': 'application/xml; charset=UTF-8'
         }
 
-    def _request(self, method, item, data=None, headers=None):
+    def _request(self, method, path, data=None, headers=None):
         if self._session is None:
             self._session = requests.session()
-        assert '/' not in item
-        url = self.url + item
+        url = self.parsed_url.scheme + '://' + self.parsed_url.netloc + path
         return self._session.request(method, url, data=data, headers=headers,
                                      **self._settings)
 
@@ -105,11 +107,11 @@ class DavStorage(Storage):
     def get_multi(self, hrefs):
         if not hrefs:
             return ()
+        hrefs = [self._simplify_href(href) for href in hrefs]
 
         href_xml = []
         for href in hrefs:
-            assert '/' not in href, href
-            href_xml.append('<D:href>{}</D:href>'.format(self.url + href))
+            href_xml.append('<D:href>{}</D:href>'.format(href))
         data = self.get_multi_template.format(hrefs='\n'.join(href_xml))
         response = self._request(
             'REPORT',
@@ -151,6 +153,7 @@ class DavStorage(Storage):
             return True
 
     def update(self, href, obj, etag):
+        href = self._simplify_href(href)
         headers = self._default_headers()
         headers.update({
             'Content-Type': self.item_mimetype,
@@ -192,6 +195,7 @@ class DavStorage(Storage):
         return href, etag
 
     def delete(self, href, etag):
+        href = self._simplify_href(href)
         headers = self._default_headers()
         headers.update({
             'If-Match': etag

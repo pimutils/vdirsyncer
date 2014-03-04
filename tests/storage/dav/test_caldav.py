@@ -19,16 +19,16 @@ class CaldavStorageTests(TestCase, DavStorageTests):
     storage_class = CaldavStorage
     radicale_path = '/bob/test.ics/'
 
-    def _create_bogus_item(self, uid):
-        return Item(u'BEGIN:VCALENDAR\n'
-                    u'VERSION:2.0\n'
-                    u'PRODID:-//dmfs.org//mimedir.icalendar//EN\n'
-                    u'BEGIN:VTODO\n'
-                    u'CREATED:20130721T142233Z\n'
-                    u'DTSTAMP:20130730T074543Z\n'
-                    u'LAST-MODIFIED;VALUE=DATE-TIME:20140122T151338Z\n'
-                    u'SEQUENCE:2\n'
-                    u'SUMMARY:Book: Kowlani - Tödlicher Staub\n'
-                    u'UID:{}\n'
-                    u'END:VTODO\n'
-                    u'END:VCALENDAR'.format(uid))
+    item_template = (u'BEGIN:VCALENDAR\n'
+                     u'VERSION:2.0\n'
+                     u'PRODID:-//dmfs.org//mimedir.icalendar//EN\n'
+                     u'BEGIN:VTODO\n'
+                     u'CREATED:20130721T142233Z\n'
+                     u'DTSTAMP:20130730T074543Z\n'
+                     u'LAST-MODIFIED;VALUE=DATE-TIME:20140122T151338Z\n'
+                     u'SEQUENCE:2\n'
+                     u'SUMMARY:Book: Kowlani - Tödlicher Staub\n'
+                     u'UID:{uid}\n'
+                     u'X-SOMETHING:{r}\n'
+                     u'END:VTODO\n'
+                     u'END:VCALENDAR')

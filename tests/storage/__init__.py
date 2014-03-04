@@ -9,12 +9,16 @@
 
 from vdirsyncer.storage.base import Item
 import vdirsyncer.exceptions as exceptions
+from .. import assert_item_equals
+import random
 
 
 class StorageTests(object):
+    item_template = u'UID:{uid}\nX-SOMETHING:{r}'
 
     def _create_bogus_item(self, uid):
-        return Item(u'UID:{}'.format(uid))
+        r = random.random()
+        return Item(self.item_template.format(uid=uid, r=r))
 
     def _get_storage(self, **kwargs):
         raise NotImplementedError()
@@ -45,25 +49,25 @@ class StorageTests(object):
         s = self._get_storage()
         item = self._create_bogus_item(1)
         href, etag = s.upload(item)
-        assert s.get(href)[0].raw == item.raw
+        assert_item_equals(s.get(href)[0], item)
 
     def test_update(self):
         s = self._get_storage()
         item = self._create_bogus_item(1)
         href, etag = s.upload(item)
-        assert s.get(href)[0].raw == item.raw
+        assert_item_equals(s.get(href)[0], item)
 
-        new_item = Item(item.raw + u'\nX-SOMETHING: YES\n')
+        new_item = self._create_bogus_item(1)
         s.update(href, new_item, etag)
-        assert s.get(href)[0].raw == new_item.raw
+        assert_item_equals(s.get(href)[0], new_item)
 
     def test_update_nonexisting(self):
         s = self._get_storage()
         item = self._create_bogus_item(1)
-        self.assertRaises(
-            exceptions.PreconditionFailed, s.update, s._get_href('1'), item, 123)
-        self.assertRaises(
-            exceptions.PreconditionFailed, s.update, 'huehue', item, 123)
+        self.assertRaises(exceptions.PreconditionFailed,
+                          s.update, s._get_href('1'), item, 123)
+        self.assertRaises(exceptions.PreconditionFailed,
+                          s.update, 'huehue', item, 123)
 
     def test_wrong_etag(self):
         s = self._get_storage()
