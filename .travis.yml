@@ -6,6 +6,6 @@ env:
 
 install:
     - "pip install ."
-    - "sh install_deps.sh"
+    - "sh install-deps.sh"
 
 script: py.test
