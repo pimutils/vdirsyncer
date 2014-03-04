@@ -1,8 +1,11 @@
 language: python
 python: "2.7"
+env:
+    - DAV_SERVER=radicale
+    - DAV_SERVER=radicale-git
 
 install:
     - "pip install ."
-    - "pip install -r dev_requirements.txt"
+    - "sh install_deps.sh"
 
 script: py.test

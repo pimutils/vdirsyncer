@@ -1,4 +1,3 @@
-Radicale
 Werkzeug
 pytest
 pytest-capturelog

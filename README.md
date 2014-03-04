@@ -20,5 +20,5 @@ Run `vdirsyncer --help`.
 ## How to run the tests
 
     pip install .
-    pip install -r dev_requirements.txt
+    sh install_deps.sh
     py.test
