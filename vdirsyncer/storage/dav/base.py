@@ -87,6 +87,7 @@ class DavStorage(Storage):
         }
 
     def _request(self, method, path, data=None, headers=None):
+        path = path or self.parsed_url.path
         if self._session is None:
             self._session = requests.session()
         url = self.parsed_url.scheme + '://' + self.parsed_url.netloc + path
