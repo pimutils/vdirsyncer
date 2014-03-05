@@ -12,7 +12,7 @@ import sys
 import json
 import ConfigParser
 from vdirsyncer.sync import sync
-from vdirsyncer.utils import expand_path
+from vdirsyncer.utils import expand_path, split_dict
 from vdirsyncer.storage import storage_names
 import vdirsyncer.log as log
 import argvard
@@ -34,7 +34,7 @@ def parse_options(items):
         yield key, value
 
 
-def load_config(fname):
+def load_config(fname, pair_options=('collections', 'conflict_resolution')):
     c = ConfigParser.RawConfigParser()
     c.read(fname)
 
@@ -42,15 +42,21 @@ def load_config(fname):
 
     pairs = {}
     storages = {}
+
+    def handle_pair(section):
+        pair_name = section[len('pair '):]
+        options = get_options(section)
+        a, b = options.pop('a'), options.pop('b')
+        p, s = \
+            split_dict(options, lambda x: x in pair_options)
+        pairs[pair_name] = a, b, p, s
+
     for section in c.sections():
         if section.startswith('storage '):
             name = section[len('storage '):]
             storages.setdefault(name, {}).update(get_options(section))
         elif section.startswith('pair '):
-            name = section[len('pair '):]
-            options = get_options(section)
-            a, b = options.pop('a'), options.pop('b')
-            pairs[name] = a, b, options
+            handle_pair(section)
         elif section == 'general':
             general = get_options(section)
         else:
@@ -138,22 +144,35 @@ def _main(env, file_cfg):
         actions = []
         for pair_name in pairs:
             try:
-                a, b, pair_options = all_pairs[pair_name]
+                a_name, b_name, pair_options, storage_defaults = all_pairs[pair_name]
             except KeyError:
                 cli_logger.critical('Pair not found: {}'.format(pair_name))
                 cli_logger.critical('These are the pairs found: ')
                 cli_logger.critical(list(all_pairs))
                 sys.exit(1)
-            a = storage_instance_from_config(all_storages[a])
-            b = storage_instance_from_config(all_storages[b])
+            collections = pair_options.get('collections', '').split(',')
+            for collection in collections:
+                collection = collection.strip()
+                if collection:
+                    storage_defaults['collection'] = collection
+                config_a = dict(storage_defaults)
+                config_a.update(all_storages[a_name])
+                config_b = dict(storage_defaults)
+                config_b.update(all_storages[b_name])
+                a = storage_instance_from_config(config_a)
+                b = storage_instance_from_config(config_b)
 
-            def x(a=a, b=b, pair_name=pair_name):
-                cli_logger.debug('Syncing {}'.format(pair_name))
-                status = load_status(general['status_path'], pair_name)
-                sync(a, b, status,
-                     pair_options.get('conflict_resolution', None))
-                save_status(general['status_path'], pair_name, status)
-            actions.append(x)
+                def x(a=a, b=b, pair_name=pair_name, collection=collection):
+                    status_name = \
+                        '_'.join(filter(bool, (pair_name, collection)))
+                    pair_description = \
+                        ' from '.join(filter(bool, (pair_name, collection)))
+                    cli_logger.debug('Syncing {}'.format(pair_description))
+                    status = load_status(general['status_path'], status_name)
+                    sync(a, b, status,
+                         pair_options.get('conflict_resolution', None))
+                    save_status(general['status_path'], status_name, status)
+                actions.append(x)
 
         for action in actions:
             action()
