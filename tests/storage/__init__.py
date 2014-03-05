@@ -16,9 +16,10 @@ import random
 class StorageTests(object):
     item_template = u'UID:{uid}\nX-SOMETHING:{r}'
 
-    def _create_bogus_item(self, uid):
+    def _create_bogus_item(self, uid, item_template=None):
         r = random.random()
-        return Item(self.item_template.format(uid=uid, r=r))
+        item_template = item_template or self.item_template
+        return Item(item_template.format(uid=uid, r=r))
 
     def _get_storage(self, **kwargs):
         raise NotImplementedError()
