@@ -72,7 +72,7 @@ class CaldavStorage(DavStorage):
             </C:calendar-query>'''
         start = self.start_date
         end = self.end_date
-        if start and end:
+        if start is not None and end is not None:
             start = start.strftime(CALDAV_DT_FORMAT)
             end = end.strftime(CALDAV_DT_FORMAT)
             caldavfilter = ('<C:time-range start="{start}" end="{end}"/>'
