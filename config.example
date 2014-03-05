@@ -4,7 +4,7 @@
 [general]
 # A folder where vdirsyncer can store some metadata about each pair.
 status_path = ~/.vdirsyncer/status/
-#verbose = False
+#verbose = True
 
 # CONTACTS
 [pair bob_contacts]
