@@ -1,53 +1,55 @@
+# An example configuration for vdirsyncer.
+# Optional parameters are commented out.
+
 [general]
 # A folder where vdirsyncer can store some metadata about each pair.
-status_path=~/.vdirsyncer/status/
+status_path = ~/.vdirsyncer/status/
 #verbose = False
 
 # CONTACTS
 [pair bob_contacts]
-# A pair references two storages and tells vdirsyncer to syncronize them.
 # Similar to accounts in OfflineIMAP.
-# This synchronizes only a single calendar/addressbook
 a = bob_contacts_local
 b = bob_contacts_remote
-# conflict_resolution = None  # abort when collisions occur
+collections = private,coworkers  # collections = addressbooks in this case
+# conflict_resolution = None  # abort when collisions occur (default)
 # conflict_resolution = a wins  # assume a's items to be more up-to-date
 # conflict_resolution = b wins  # assume b's items to be more up-to-date
 
 [storage bob_contacts_local]
 # A storage references actual data on a remote server or on the local disk.
 # Similar to repositories in OfflineIMAP.
-# This represents only a single calendar/addressbook
 type = filesystem
-path = ~/.watdo/tasks/somecalendar/
+path = ~/.contacts/
 fileext = .vcf
 
 [storage bob_contacts_remote]
 type = carddav
 url = https://owncloud.example.com/remote.php/carddav/addressbooks/bob/default/
-username =  # blabla
-password =  # blabla
+#username =  # blabla
+#password =  # blabla
 
 # CALENDAR
 [pair bob_calendar]
 a = bob_calendar_local
 b = bob_calendar_remote
+collections = private,work
 
 [storage bob_calendar_local]
 type = filesystem
-path = ~/.watdo/tasks/somecalendar/
+path = ~/.watdo/tasks/
 fileext = .ics
 
 [storage bob_calendar_remote]
 type = caldav
-url = https://owncloud.example.com/remote.php/caldav/calendars/bob/somecalendar/
-username =  # blabla
-password =  # blabla
+url = https://owncloud.example.com/remote.php/caldav/calendars/bob/
+#username =  # blabla
+#password =  # blabla
 
-# Specify a time range which should be synchronized. Either both start_date and
-# end_date or neither have to be set. The default is to synchronize everything.
-# The following example synchronizes from one year in the past to one year in
-# the future.
+# Optional: Specify a time range which should be synchronized. Either both
+# start_date and end_date or neither have to be set. The default is to
+# synchronize everything.  The following example synchronizes from one year in
+# the past to one year in the future.
 
 # All Python expressions are allowed here. The global namespace contains
 # everything from the datetime module. The expression has to evaluate to a
