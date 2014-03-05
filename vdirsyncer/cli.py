@@ -166,7 +166,7 @@ def _main(env, file_cfg):
                     status_name = \
                         '_'.join(filter(bool, (pair_name, collection)))
                     pair_description = \
-                        ' from '.join(filter(bool, (pair_name, collection)))
+                        ' from '.join(filter(bool, (collection, pair_name)))
                     cli_logger.debug('Syncing {}'.format(pair_description))
                     status = load_status(general['status_path'], status_name)
                     sync(a, b, status,
