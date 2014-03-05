@@ -26,9 +26,9 @@ class DavStorage(Storage):
     _session = None
     _repr_attributes = ('url', 'username')
 
-    def __init__(self, url, username='', password='', verify=True,
-                 auth='basic', useragent='vdirsyncer', _request_func=None,
-                 **kwargs):
+    def __init__(self, url, username='', password='', collection=None,
+                 verify=True, auth='basic', useragent='vdirsyncer',
+                 _request_func=None, **kwargs):
         '''
         :param url: Direct URL for the CalDAV collection. No autodiscovery.
         :param username: Username for authentication.
@@ -54,6 +54,10 @@ class DavStorage(Storage):
 
         self.username, self.password = username, password
         self.useragent = useragent
+
+        url = url.rstrip('/') + '/'
+        if collection is not None:
+            url = urlparse.urljoin(url, collection)
         self.url = url.rstrip('/') + '/'
         self.parsed_url = urlparse.urlparse(self.url)
 

@@ -21,11 +21,13 @@ class FilesystemStorage(Storage):
 
     _repr_attributes = ('path',)
 
-    def __init__(self, path, fileext, encoding='utf-8', **kwargs):
+    def __init__(self, path, fileext, collection=None, encoding='utf-8', **kwargs):
         '''
         :param path: Absolute path to a *collection* inside a vdir.
         '''
         self.path = expand_path(path)
+        if collection is not None:
+            self.path = os.path.join(self.path, collection)
         self.encoding = encoding
         self.fileext = fileext
         super(FilesystemStorage, self).__init__(**kwargs)
