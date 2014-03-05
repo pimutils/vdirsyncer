@@ -72,9 +72,9 @@ class DavStorage(Storage):
         if self.dav_header not in response.headers.get('DAV', ''):
             raise exceptions.StorageError('URL is not a collection')
 
-    def _simplify_href(self, href):
-        '''Used to strip hrefs off the collection's URL, to leave only the
-        filename.'''
+    def _normalize_href(self, href):
+        '''Normalize the href to be a path only relative to hostname and
+        schema.'''
         href = urlparse.urlparse(href).path
         if href.startswith('/'):
             return href
@@ -82,7 +82,7 @@ class DavStorage(Storage):
         return self.parsed_url.path + href
 
     def _get_href(self, uid):
-        return self._simplify_href(super(DavStorage, self)._get_href(uid))
+        return self._normalize_href(super(DavStorage, self)._get_href(uid))
 
     def _default_headers(self):
         return {
@@ -92,6 +92,7 @@ class DavStorage(Storage):
 
     def _request(self, method, path, data=None, headers=None):
         path = path or self.parsed_url.path
+        assert path.startswith(self.parsed_url.path)
         if self._session is None:
             self._session = requests.session()
         url = self.parsed_url.scheme + '://' + self.parsed_url.netloc + path
@@ -112,7 +113,7 @@ class DavStorage(Storage):
     def get_multi(self, hrefs):
         if not hrefs:
             return ()
-        hrefs = [self._simplify_href(href) for href in hrefs]
+        hrefs = [self._normalize_href(href) for href in hrefs]
 
         href_xml = []
         for href in hrefs:
@@ -129,7 +130,7 @@ class DavStorage(Storage):
         rv = []
         hrefs_left = set(hrefs)
         for element in root.iter('{DAV:}response'):
-            href = self._simplify_href(
+            href = self._normalize_href(
                 element.find('{DAV:}href').text.decode(response.encoding))
             obj = element \
                 .find('{DAV:}propstat') \
@@ -158,7 +159,7 @@ class DavStorage(Storage):
             return True
 
     def update(self, href, obj, etag):
-        href = self._simplify_href(href)
+        href = self._normalize_href(href)
         headers = self._default_headers()
         headers.update({
             'Content-Type': self.item_mimetype,
@@ -200,7 +201,7 @@ class DavStorage(Storage):
         return href, etag
 
     def delete(self, href, etag):
-        href = self._simplify_href(href)
+        href = self._normalize_href(href)
         headers = self._default_headers()
         headers.update({
             'If-Match': etag
@@ -225,5 +226,5 @@ class DavStorage(Storage):
         for element in root.iter('{DAV:}response'):
             etag = element.find('{DAV:}propstat').find(
                 '{DAV:}prop').find('{DAV:}getetag').text
-            href = self._simplify_href(element.find('{DAV:}href').text)
+            href = self._normalize_href(element.find('{DAV:}href').text)
             yield href, etag
