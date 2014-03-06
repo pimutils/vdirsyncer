@@ -214,11 +214,11 @@ class DavStorage(Storage):
         )
         self._check_response(response)
 
-    def list(self):
+    def _list(self, xml):
         response = self._request(
             'REPORT',
             '',
-            data=self.list_xml,
+            data=xml,
             headers=self._default_headers()
         )
         response.raise_for_status()

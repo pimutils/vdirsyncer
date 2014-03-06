@@ -25,6 +25,7 @@ fileext = .vcf
 
 [storage bob_contacts_remote]
 type = carddav
+#item_types = VTODO,VEVENT
 url = https://owncloud.example.com/remote.php/carddav/addressbooks/bob/default/
 #username =  # blabla
 #password =  # blabla
