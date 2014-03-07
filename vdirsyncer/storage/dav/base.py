@@ -158,47 +158,34 @@ class DavStorage(Storage):
         else:
             return True
 
-    def update(self, href, obj, etag):
-        href = self._normalize_href(href)
+    def _put(self, href, obj, etag):
         headers = self._default_headers()
-        headers.update({
-            'Content-Type': self.item_mimetype,
-            'If-Match': etag
-        })
+        headers['Content-Type'] = self.item_mimetype,
+        if etag is None:
+            headers['If-None-Match'] = '*'
+        else:
+            headers['If-Match'] = etag
+
         response = self._request(
             'PUT',
             href,
-            data=obj.raw,
+            data=obj.raw.encode('utf-8'),
             headers=headers
         )
         self._check_response(response)
-
         etag = response.headers.get('etag', None)
         if not etag:
             obj2, etag = self.get(href)
             assert obj2.raw == obj.raw
         return href, etag
+
+    def update(self, href, obj, etag):
+        href = self._normalize_href(href)
+        return self._put(href, obj, etag)
 
     def upload(self, obj):
         href = self._get_href(obj.uid)
-        headers = self._default_headers()
-        headers.update({
-            'Content-Type': self.item_mimetype,
-            'If-None-Match': '*'
-        })
-        response = self._request(
-            'PUT',
-            href,
-            data=obj.raw,
-            headers=headers
-        )
-        self._check_response(response)
-
-        etag = response.headers.get('etag', None)
-        if not etag:
-            obj2, etag = self.get(href)
-            assert obj2.raw == obj.raw
-        return href, etag
+        return self._put(href, obj, None)
 
     def delete(self, href, etag):
         href = self._normalize_href(href)
