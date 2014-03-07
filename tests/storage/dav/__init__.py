@@ -88,6 +88,7 @@ class DavStorageTests(StorageTests):
 
         def x(method, path, data=None, headers=None):
             path = path or self.radicale_path
+            assert isinstance(data, bytes) or data is None
             r = c.open(path=path, method=method, data=data, headers=headers)
             r = Response(r)
             return r
