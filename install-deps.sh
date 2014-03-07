@@ -1,8 +1,9 @@
-pip install -r requirements.txt
+pip install --use-mirrors .
+pip install --use-mirrors -r requirements.txt
 [[ -z "$DAV_SERVER" ]] && DAV_SERVER=radicale
 case "$DAV_SERVER" in
     "radicale")
-        pip install radicale
+        pip install --use-mirrors radicale
         ;;
     "radicale-git")
         pip install git+https://github.com/Kozea/Radicale.git

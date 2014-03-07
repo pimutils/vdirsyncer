@@ -5,7 +5,6 @@ env:
     - DAV_SERVER=radicale-git
 
 install:
-    - "pip install ."
     - "sh install-deps.sh"
 
 script: py.test

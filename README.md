@@ -19,6 +19,5 @@ Run `vdirsyncer --help`.
 
 ## How to run the tests
 
-    pip install .
     sh install_deps.sh
     py.test
