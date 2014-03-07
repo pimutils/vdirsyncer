@@ -15,9 +15,11 @@
 from .dav.caldav import CaldavStorage
 from .dav.carddav import CarddavStorage
 from .filesystem import FilesystemStorage
+from .http import HttpStorage
 
 storage_names = {
     'caldav': CaldavStorage,
     'carddav': CarddavStorage,
-    'filesystem': FilesystemStorage
+    'filesystem': FilesystemStorage,
+    'http': HttpStorage
 }
