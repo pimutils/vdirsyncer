@@ -27,6 +27,8 @@ def split_collection(text):
             elif item_type is None:
                 item_type = value
                 item.append(line)
+            else:
+                item.append(line)
         elif key == u'END':
             if value == collection_type:
                 break
