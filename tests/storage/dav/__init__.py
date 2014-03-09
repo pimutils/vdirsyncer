@@ -27,6 +27,38 @@ from .. import StorageTests
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
 
+RADICALE_SCHEMA = '''
+create table collection (
+       path varchar(200) not null,
+       parent_path varchar(200) references collection (path),
+       primary key (path));
+
+create table item (
+       name varchar(200) not null,
+       tag text not null,
+       collection_path varchar(200) references collection (path),
+       primary key (name));
+
+create table header (
+       name varchar(200) not null,
+       value text not null,
+       collection_path varchar(200) references collection (path),
+       primary key (name, collection_path));
+
+create table line (
+       name text not null,
+       value text not null,
+       item_name varchar(200) references item (name),
+       timestamp bigint not null,
+       primary key (timestamp));
+
+create table property (
+       name varchar(200) not null,
+       value text not null,
+       collection_path varchar(200) references collection (path),
+       primary key (name, collection_path));
+'''
+
 
 def do_the_radicale_dance(tmpdir):
     # All of radicale is already global state, the cleanliness of the code and
@@ -43,9 +75,20 @@ def do_the_radicale_dance(tmpdir):
     import radicale.config
 
     # Now we can set some basic configuration.
-    radicale.config.set('storage', 'type', 'filesystem')
-    radicale.config.set('storage', 'filesystem_folder', tmpdir)
     radicale.config.set('rights', 'type', 'None')
+
+    if os.environ.get('RADICALE_STORAGE', 'filesystem') == 'filesystem':
+        radicale.config.set('storage', 'type', 'filesystem')
+        radicale.config.set('storage', 'filesystem_folder', tmpdir)
+    else:
+        radicale.config.set('storage', 'type', 'database')
+        radicale.config.set('storage', 'database_url', 'sqlite://')
+        from radicale.storage import database
+
+        s = database.Session()
+        for line in RADICALE_SCHEMA.split(';'):
+            s.execute(line)
+        s.commit()
 
     # This one is particularly useful with radicale's debugging logs and
     # pytest-capturelog, however, it is very verbose.

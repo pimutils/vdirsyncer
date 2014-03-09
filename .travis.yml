@@ -1,8 +1,10 @@
 language: python
 python: "2.7"
 env:
-    - DAV_SERVER=radicale
-    - DAV_SERVER=radicale-git
+    - DAV_SERVER=radicale RADICALE_STORAGE=filesystem
+    - DAV_SERVER=radicale RADICALE_STORAGE=database
+    - DAV_SERVER=radicale-git RADICALE_STORAGE=filesystem
+    - DAV_SERVER=radicale-git RADICALE_STORAGE=database
 
 install:
     - "sh install-deps.sh"
