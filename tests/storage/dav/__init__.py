@@ -97,9 +97,7 @@ class DavStorageTests(StorageTests):
 
     def get_storage_args(self, collection=None):
         url = 'http://127.0.0.1/bob/'
-        if collection is not None:
-            url += '{}{}'.format(collection, self.storage_class.fileext)
-        return {'url': url}
+        return {'url': url, 'collection': collection}
 
     def teardown_method(self, method):
         self.app = None

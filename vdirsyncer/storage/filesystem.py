@@ -36,12 +36,15 @@ class FilesystemStorage(Storage):
         super(FilesystemStorage, self).__init__(**kwargs)
         if collection is not None:
             path = os.path.join(path, collection)
+        self.collection = collection
         self.path = expand_path(path)
         self.encoding = encoding
         self.fileext = fileext
 
     @classmethod
     def discover(cls, path, **kwargs):
+        if kwargs.pop('collection', None) is not None:
+            raise TypeError('collection argument must not be given.')
         for collection in os.listdir(path):
             s = cls(path=path, collection=collection, **kwargs)
             if next(s.list(), None) is not None:

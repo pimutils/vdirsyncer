@@ -17,8 +17,11 @@ class MemoryStorageTests(TestCase, StorageTests):
 
     storage_class = MemoryStorage
 
-    def get_storage_args(collection=None):
-        return {}
+    def get_storage_args(self, **kwargs):
+        return kwargs
 
     def test_discover(self):
+        '''This test doesn't make any sense here.'''
+
+    def test_collection_arg(self):
         '''This test doesn't make any sense here.'''

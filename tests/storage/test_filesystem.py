@@ -22,6 +22,5 @@ class FilesystemStorageTests(TestCase, StorageTests):
     def get_storage_args(self, collection=None):
         path = self.tmpdir
         if collection is not None:
-            path = os.path.join(path, collection)
-            os.makedirs(path)
-        return {'path': path, 'fileext': '.txt'}
+            os.makedirs(os.path.join(path, collection))
+        return {'path': path, 'fileext': '.txt', 'collection': collection}
