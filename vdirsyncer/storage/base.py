@@ -33,12 +33,23 @@ class Storage(object):
       - HREF: Per-storage identifier of item, might be UID.
       - ETAG: Checksum of item, or something similar that changes when the
               object does.
+
+    :param collection: If None, the given URL or path is already directly
+        referring to a collection. Otherwise it will be treated as a basepath
+        to many collections (e.g. a vdir) and the given collection name will be
+        looked for.
     '''
     fileext = '.txt'
     _repr_attributes = ()
 
     def __init__(self, item_class=Item):
         self.item_class = item_class
+
+    @classmethod
+    def discover(cls, **kwargs):
+        '''Discover collections given a basepath to many collections.
+        :returns: Iterable of storages.'''
+        raise NotImplementedError()
 
     def _get_href(self, uid):
         return uid + self.fileext

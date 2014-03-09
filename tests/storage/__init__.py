@@ -88,3 +88,7 @@ class StorageTests(object):
         assert not list(s.list())
         s.upload(self._create_bogus_item('1'))
         assert list(s.list())
+
+    def test_discover(self):
+        # Too storage specific to implement in an abstract way
+        raise NotImplementedError()

@@ -25,12 +25,19 @@ class FilesystemStorage(Storage):
         '''
         :param path: Absolute path to a *collection* inside a vdir.
         '''
+        super(FilesystemStorage, self).__init__(**kwargs)
         self.path = expand_path(path)
         if collection is not None:
             self.path = os.path.join(self.path, collection)
         self.encoding = encoding
         self.fileext = fileext
-        super(FilesystemStorage, self).__init__(**kwargs)
+
+    @classmethod
+    def discover(cls, path, **kwargs):
+        for collection in os.listdir(path):
+            s = cls(path=path, collection=collection, **kwargs)
+            if next(s.list(), None) is not None:
+                yield s
 
     def _get_filepath(self, href):
         return os.path.join(self.path, href)

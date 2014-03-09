@@ -18,6 +18,7 @@ import shutil
 import sys
 import os
 import urlparse
+import pytest
 import mock
 
 from werkzeug.test import Client
@@ -71,16 +72,14 @@ class Response(object):
             raise HTTPError(str(self.status_code))
 
 
+@pytest.mark.usefixtures('class_tmpdir')
 class DavStorageTests(StorageTests):
     '''hrefs are paths without scheme or netloc'''
-    tmpdir = None
     storage_class = None
     radicale_path = None
     patcher = None
 
     def _get_storage(self, **kwargs):
-        self.tmpdir = tempfile.mkdtemp()
-
         do_the_radicale_dance(self.tmpdir)
         from radicale import Application
         app = Application()
@@ -103,9 +102,6 @@ class DavStorageTests(StorageTests):
 
     def teardown_method(self, method):
         self.app = None
-        if self.tmpdir is not None:
-            shutil.rmtree(self.tmpdir)
-            self.tmpdir = None
         if self.patcher is not None:
             self.patcher.stop()
             self.patcher = None

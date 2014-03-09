@@ -10,19 +10,30 @@
 
 from unittest import TestCase
 import tempfile
+import pytest
 import shutil
+import os
 from vdirsyncer.storage.filesystem import FilesystemStorage
 from . import StorageTests
 
 
+@pytest.mark.usefixtures('class_tmpdir')
 class FilesystemStorageTests(TestCase, StorageTests):
-    tmpdir = None
 
     def _get_storage(self, **kwargs):
-        path = self.tmpdir = tempfile.mkdtemp()
-        return FilesystemStorage(path=path, fileext='.txt', **kwargs)
+        return FilesystemStorage(path=self.tmpdir, fileext='.txt', **kwargs)
 
-    def teardown_method(self, method):
-        if self.tmpdir is not None:
-            shutil.rmtree(self.tmpdir)
-            self.tmpdir = None
+    def test_discover(self):
+        paths = set()
+        for i, collection in enumerate('abcd'):
+            p = os.path.join(self.tmpdir, collection)
+            os.makedirs(os.path.join(self.tmpdir, collection))
+            fname = os.path.join(p, 'asdf.txt')
+            with open(fname, 'w+') as f:
+                f.write(self._create_bogus_item(i).raw)
+            paths.add(p)
+
+        storages = list(FilesystemStorage.discover(path=self.tmpdir, fileext='.txt'))
+        assert len(storages) == 4
+        for s in storages:
+            assert s.path in paths

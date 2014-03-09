@@ -17,3 +17,6 @@ class MemoryStorageTests(TestCase, StorageTests):
 
     def _get_storage(self, **kwargs):
         return MemoryStorage(**kwargs)
+
+    def test_discover(self):
+        '''This test doesn't make any sense here.'''
