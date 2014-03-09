@@ -16,7 +16,6 @@ from . import DavStorageTests
 
 class CarddavStorageTests(TestCase, DavStorageTests):
     storage_class = CarddavStorage
-    radicale_path = '/bob/test.vcf/'
 
     item_template = (u'BEGIN:VCARD\n'
                      u'VERSION:3.0\n'

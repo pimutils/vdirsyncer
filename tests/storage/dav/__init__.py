@@ -74,7 +74,6 @@ class Response(object):
 class DavStorageTests(StorageTests):
     '''hrefs are paths without scheme or netloc'''
     storage_class = None
-    radicale_path = None
     patcher = None
 
     def _get_storage(self, **kwargs):
@@ -84,7 +83,8 @@ class DavStorageTests(StorageTests):
 
         c = Client(app, WerkzeugResponse)
         server = 'http://127.0.0.1'
-        full_url = server + self.radicale_path
+        fileext = self.storage_class.fileext
+        full_url = server + '/bob/test{}/'.format(fileext)
 
         def x(session, method, url, data=None, headers=None, **kw):
             path = urlparse.urlparse(url).path or self.radicale_path

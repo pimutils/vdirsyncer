@@ -45,7 +45,6 @@ END:VCALENDAR'''
 
 class CaldavStorageTests(TestCase, DavStorageTests):
     storage_class = CaldavStorage
-    radicale_path = '/bob/test.ics/'
 
     item_template = TASK_TEMPLATE
 
