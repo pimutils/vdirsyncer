@@ -27,9 +27,9 @@ class FilesystemStorage(Storage):
         :param path: Absolute path to a *collection* inside a vdir.
         '''
         super(FilesystemStorage, self).__init__(**kwargs)
-        self.path = expand_path(path)
         if collection is not None:
-            self.path = os.path.join(self.path, collection)
+            path = os.path.join(path, collection)
+        self.path = expand_path(path)
         self.encoding = encoding
         self.fileext = fileext
 
