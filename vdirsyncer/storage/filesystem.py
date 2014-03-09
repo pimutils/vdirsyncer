@@ -21,7 +21,8 @@ class FilesystemStorage(Storage):
 
     _repr_attributes = ('path',)
 
-    def __init__(self, path, fileext, collection=None, encoding='utf-8', **kwargs):
+    def __init__(self, path, fileext, collection=None, encoding='utf-8',
+                 **kwargs):
         '''
         :param path: Absolute path to a *collection* inside a vdir.
         '''

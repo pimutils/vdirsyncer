@@ -9,9 +9,7 @@
 '''
 
 from unittest import TestCase
-import tempfile
 import pytest
-import shutil
 import os
 from vdirsyncer.storage.filesystem import FilesystemStorage
 from . import StorageTests
@@ -33,7 +31,8 @@ class FilesystemStorageTests(TestCase, StorageTests):
                 f.write(self._create_bogus_item(i).raw)
             paths.add(p)
 
-        storages = list(FilesystemStorage.discover(path=self.tmpdir, fileext='.txt'))
+        storages = list(FilesystemStorage.discover(path=self.tmpdir,
+                                                   fileext='.txt'))
         assert len(storages) == 4
         for s in storages:
             assert s.path in paths

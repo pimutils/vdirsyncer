@@ -13,8 +13,6 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-import tempfile
-import shutil
 import sys
 import os
 import urlparse

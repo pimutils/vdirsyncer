@@ -8,12 +8,10 @@
 '''
 
 import mock
-import requests
 from unittest import TestCase
-from . import StorageTests
 from .. import assert_item_equals
 from textwrap import dedent
-from vdirsyncer.storage.http import HttpStorage, Item, split_collection
+from vdirsyncer.storage.http import HttpStorage, Item
 
 
 class HttpStorageTests(TestCase):
@@ -31,7 +29,6 @@ class HttpStorageTests(TestCase):
                 METHOD:PUBLISH
                 BEGIN:VEVENT
                 UID:461092315540@example.com
-                ORGANIZER;CN="Alice Balder, Example Inc.":MAILTO:alice@example.com
                 LOCATION:Somewhere
                 SUMMARY:Eine Kurzinfo
                 DESCRIPTION:Beschreibung des Termines
@@ -48,7 +45,7 @@ class HttpStorageTests(TestCase):
                 BEGIN:VALARM
                 ACTION:AUDIO
                 TRIGGER:19980403T120000
-                ATTACH;FMTTYPE=audio/basic:http://host.com/pub/audio-files/ssbanner.aud
+                ATTACH;FMTTYPE=audio/basic:http://host.com/pub/ssbanner.aud
                 REPEAT:4
                 DURATION:PT1H
                 END:VALARM
@@ -68,7 +65,6 @@ class HttpStorageTests(TestCase):
             assert_item_equals(item, Item(dedent(u'''
                 BEGIN:VEVENT
                 UID:461092315540@example.com
-                ORGANIZER;CN="Alice Balder, Example Inc.":MAILTO:alice@example.com
                 LOCATION:Somewhere
                 SUMMARY:Eine Kurzinfo
                 DESCRIPTION:Beschreibung des Termines
@@ -89,7 +85,7 @@ class HttpStorageTests(TestCase):
                 BEGIN:VALARM
                 ACTION:AUDIO
                 TRIGGER:19980403T120000
-                ATTACH;FMTTYPE=audio/basic:http://host.com/pub/audio-files/ssbanner.aud
+                ATTACH;FMTTYPE=audio/basic:http://host.com/pub/ssbanner.aud
                 REPEAT:4
                 DURATION:PT1H
                 END:VALARM

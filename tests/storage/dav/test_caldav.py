@@ -10,7 +10,6 @@
 
 from unittest import TestCase
 
-from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.dav.caldav import CaldavStorage
 from . import DavStorageTests
 
