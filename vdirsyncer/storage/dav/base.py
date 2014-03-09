@@ -177,6 +177,8 @@ class DavStorage(Storage):
 
     def update(self, href, obj, etag):
         href = self._normalize_href(href)
+        if etag is None:
+            raise ValueError('etag must be given and must not be None.')
         return self._put(href, obj, etag)
 
     def upload(self, obj):

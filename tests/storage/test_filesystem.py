@@ -17,22 +17,11 @@ from . import StorageTests
 
 @pytest.mark.usefixtures('class_tmpdir')
 class FilesystemStorageTests(TestCase, StorageTests):
+    storage_class = FilesystemStorage
 
-    def _get_storage(self, **kwargs):
-        return FilesystemStorage(path=self.tmpdir, fileext='.txt', **kwargs)
-
-    def test_discover(self):
-        paths = set()
-        for i, collection in enumerate('abcd'):
-            p = os.path.join(self.tmpdir, collection)
-            os.makedirs(os.path.join(self.tmpdir, collection))
-            fname = os.path.join(p, 'asdf.txt')
-            with open(fname, 'w+') as f:
-                f.write(self._create_bogus_item(i).raw)
-            paths.add(p)
-
-        storages = list(FilesystemStorage.discover(path=self.tmpdir,
-                                                   fileext='.txt'))
-        assert len(storages) == 4
-        for s in storages:
-            assert s.path in paths
+    def get_storage_args(self, collection=None):
+        path = self.tmpdir
+        if collection is not None:
+            path = os.path.join(path, collection)
+            os.makedirs(path)
+        return {'path': path, 'fileext': '.txt'}

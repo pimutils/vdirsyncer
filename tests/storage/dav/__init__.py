@@ -16,7 +16,8 @@
 import sys
 import os
 import urlparse
-import pytest
+import tempfile
+import shutil
 import mock
 
 from werkzeug.test import Client
@@ -70,24 +71,22 @@ class Response(object):
             raise HTTPError(str(self.status_code))
 
 
-@pytest.mark.usefixtures('class_tmpdir')
 class DavStorageTests(StorageTests):
     '''hrefs are paths without scheme or netloc'''
     storage_class = None
     patcher = None
+    tmpdir = None
 
-    def _get_storage(self, **kwargs):
+    def setup_method(self, method):
+        self.tmpdir = tempfile.mkdtemp()
         do_the_radicale_dance(self.tmpdir)
         from radicale import Application
         app = Application()
 
         c = Client(app, WerkzeugResponse)
-        server = 'http://127.0.0.1'
-        fileext = self.storage_class.fileext
-        full_url = server + '/bob/test{}/'.format(fileext)
 
         def x(session, method, url, data=None, headers=None, **kw):
-            path = urlparse.urlparse(url).path or self.radicale_path
+            path = urlparse.urlparse(url).path
             assert isinstance(data, bytes) or data is None
             r = c.open(path=path, method=method, data=data, headers=headers)
             r = Response(r)
@@ -96,10 +95,17 @@ class DavStorageTests(StorageTests):
         self.patcher = p = mock.patch('requests.Session.request', new=x)
         p.start()
 
-        return self.storage_class(url=full_url, **kwargs)
+    def get_storage_args(self, collection=None):
+        url = 'http://127.0.0.1/bob/'
+        if collection is not None:
+            url += '{}{}'.format(collection, self.storage_class.fileext)
+        return {'url': url}
 
     def teardown_method(self, method):
         self.app = None
+        if self.tmpdir is not None:
+            shutil.rmtree(self.tmpdir)
+            self.tmpdir = None
         if self.patcher is not None:
             self.patcher.stop()
             self.patcher = None
