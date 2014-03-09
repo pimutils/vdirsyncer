@@ -7,6 +7,10 @@ env:
     - DAV_SERVER=radicale_git RADICALE_STORAGE=database
 
 install:
-    - "sh install-deps.sh"
+    - "./install-deps.sh"
 
 script: py.test
+
+cache:
+    directories:
+        - /home/travis/virtualenv/python2.7/local/lib/python2.7/site-packages

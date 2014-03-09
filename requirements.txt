@@ -1,4 +1,3 @@
 Werkzeug
 pytest
-pytest-capturelog
 mock
