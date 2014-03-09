@@ -57,20 +57,12 @@ class HttpStorage(Storage):
             for item in split_collection(r.text):
                 self._items[item.uid] = item
 
-        for uid in self._items.keys():
+        for uid, item in self._items.items():
             yield uid, hashlib.sha256(item.raw)
 
     def get(self, href):
-        ((actual_href, obj, etag),) = self.get_multi([href])
-        assert href == actual_href
-        return obj, etag
-
-    def get_multi(self, hrefs):
-        pass
+        x = self._items[href]
+        return x, hashlib.sha256(x.raw)
 
     def has(self, href):
-        '''
-        check if item exists by href
-        :returns: True or False
-        '''
-        raise NotImplementedError()
+        return href in self._items
