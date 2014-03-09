@@ -27,8 +27,7 @@ class DavStorage(Storage):
     _repr_attributes = ('url', 'username')
 
     def __init__(self, url, username='', password='', collection=None,
-                 verify=True, auth='basic', useragent='vdirsyncer',
-                 _request_func=None, **kwargs):
+                 verify=True, auth='basic', useragent='vdirsyncer', **kwargs):
         '''
         :param url: Direct URL for the CalDAV collection. No autodiscovery.
         :param username: Username for authentication.
@@ -37,11 +36,8 @@ class DavStorage(Storage):
         :param auth: Authentication method, from {'basic', 'digest'}, default
                      'basic'.
         :param useragent: Default 'vdirsyncer'.
-        :param _request_func: Function to use for network calls. Same API as
-                              requests.request. Useful for tests.
         '''
         super(DavStorage, self).__init__(**kwargs)
-        self._request = _request_func or self._request
 
         self._settings = {'verify': verify}
         if auth == 'basic':

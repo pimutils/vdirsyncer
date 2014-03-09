@@ -17,6 +17,8 @@ import tempfile
 import shutil
 import sys
 import os
+import urlparse
+import mock
 
 from werkzeug.test import Client
 from werkzeug.wrappers import BaseResponse as WerkzeugResponse
@@ -74,6 +76,7 @@ class DavStorageTests(StorageTests):
     tmpdir = None
     storage_class = None
     radicale_path = None
+    patcher = None
 
     def _get_storage(self, **kwargs):
         self.tmpdir = tempfile.mkdtemp()
@@ -86,19 +89,26 @@ class DavStorageTests(StorageTests):
         server = 'http://127.0.0.1'
         full_url = server + self.radicale_path
 
-        def x(method, path, data=None, headers=None):
-            path = path or self.radicale_path
+        def x(session, method, url, data=None, headers=None, **kw):
+            path = urlparse.urlparse(url).path or self.radicale_path
             assert isinstance(data, bytes) or data is None
             r = c.open(path=path, method=method, data=data, headers=headers)
             r = Response(r)
             return r
-        return self.storage_class(url=full_url, _request_func=x, **kwargs)
+
+        self.patcher = p = mock.patch('requests.Session.request', new=x)
+        p.start()
+
+        return self.storage_class(url=full_url, **kwargs)
 
     def teardown_method(self, method):
         self.app = None
         if self.tmpdir is not None:
             shutil.rmtree(self.tmpdir)
             self.tmpdir = None
+        if self.patcher is not None:
+            self.patcher.stop()
+            self.patcher = None
 
     def test_dav_broken_item(self):
         item = Item(u'UID:1')
