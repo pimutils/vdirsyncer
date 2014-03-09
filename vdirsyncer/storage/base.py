@@ -30,9 +30,11 @@ class Storage(object):
 
     Terminology:
       - UID: Global identifier of the item, across storages.
-      - HREF: Per-storage identifier of item, might be UID.
+      - HREF: Per-storage identifier of item, might be UID. The reason items
+          aren't just referenced by their UID is because the CalDAV and CardDAV
+          specifications make this imperformant to implement.
       - ETAG: Checksum of item, or something similar that changes when the
-              object does.
+          object does.
 
     :param collection: If None, the given URL or path is already directly
         referring to a collection. Otherwise it will be treated as a basepath
@@ -42,13 +44,16 @@ class Storage(object):
     fileext = '.txt'
     _repr_attributes = ()
 
-    def __init__(self, item_class=Item):
-        self.item_class = item_class
-
     @classmethod
     def discover(cls, **kwargs):
-        '''Discover collections given a basepath to many collections.
-        :returns: Iterable of storages.'''
+        '''
+        Discover collections given a basepath or -URL to many collections.
+        :param **kwargs: Keyword arguments to additionally pass to the storage
+            instances returned. You shouldn't pass `collection` here, otherwise
+            TypeError will be raised.
+        :returns: Iterable of storages which represent the discovered
+            collections, all of which are passed kwargs during initialization.
+        '''
         raise NotImplementedError()
 
     def _get_href(self, uid):

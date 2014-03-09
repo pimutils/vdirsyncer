@@ -24,7 +24,14 @@ class FilesystemStorage(Storage):
     def __init__(self, path, fileext, collection=None, encoding='utf-8',
                  **kwargs):
         '''
-        :param path: Absolute path to a *collection* inside a vdir.
+        :param path: Absolute path to a vdir or collection, depending on the
+            collection parameter (see
+            :py:class:`vdirsyncer.storage.base.Storage`).
+        :param fileext: The file extension to use (e.g. `".txt"`). Contained in
+            the href, so if you change the file extension after a sync, this
+            will trigger a re-download of everything (but *should* not cause
+            data-loss of any kind).
+        :param encoding: File encoding for items.
         '''
         super(FilesystemStorage, self).__init__(**kwargs)
         if collection is not None:

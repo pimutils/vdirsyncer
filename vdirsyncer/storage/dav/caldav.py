@@ -21,9 +21,9 @@ class CaldavStorage(DavStorage):
     fileext = '.ics'
     item_mimetype = 'text/calendar'
     dav_header = 'calendar-access'
+
     start_date = None
     end_date = None
-    item_types = None
 
     get_multi_template = '''<?xml version="1.0" encoding="utf-8" ?>
         <C:calendar-multiget xmlns:D="DAV:"
@@ -42,6 +42,10 @@ class CaldavStorage(DavStorage):
         '''
         :param start_date: Start date of timerange to show, default -inf.
         :param end_date: End date of timerange to show, default +inf.
+        :param item_types: The item types to show from the server. Dependent on
+            server functionality, no clientside validation of results. This
+            currently only affects the `list` method, but this shouldn't cause
+            problems in the normal usecase.
         '''
         super(CaldavStorage, self).__init__(**kwargs)
         if isinstance(item_types, str):

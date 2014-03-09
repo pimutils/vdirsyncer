@@ -16,12 +16,16 @@ from lxml import etree
 
 class DavStorage(Storage):
 
+    # the file extension of items. Useful for testing against radicale.
     fileext = None
+    # mimetype of items
     item_mimetype = None
+    # The expected header for resource validation.
     dav_header = None
+    # XML to use when fetching multiple hrefs.
     get_multi_template = None
+    # The LXML query for extracting results in get_multi
     get_multi_data_query = None
-    list_xml = None
 
     _session = None
     _repr_attributes = ('url', 'username')
@@ -29,12 +33,13 @@ class DavStorage(Storage):
     def __init__(self, url, username='', password='', collection=None,
                  verify=True, auth='basic', useragent='vdirsyncer', **kwargs):
         '''
-        :param url: Direct URL for the CalDAV collection. No autodiscovery.
+        :param url: Base URL or an URL to a collection. Autodiscovery should be
+            done via :py:meth:`DavStorage.discover`.
         :param username: Username for authentication.
         :param password: Password for authentication.
         :param verify: Verify SSL certificate, default True.
         :param auth: Authentication method, from {'basic', 'digest'}, default
-                     'basic'.
+            'basic'.
         :param useragent: Default 'vdirsyncer'.
         '''
         super(DavStorage, self).__init__(**kwargs)
@@ -56,6 +61,7 @@ class DavStorage(Storage):
             url = urlparse.urljoin(url, collection)
         self.url = url.rstrip('/') + '/'
         self.parsed_url = urlparse.urlparse(self.url)
+        self.collection = collection
 
         headers = self._default_headers()
         headers['Depth'] = 1
