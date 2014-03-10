@@ -141,7 +141,10 @@ class DavStorage(Storage):
             if isinstance(etag, bytes):
                 etag = etag.decode(response.encoding)
             rv.append((href, Item(obj), etag))
-            hrefs_left.remove(href)
+            try:
+                hrefs_left.remove(href)
+            except KeyError as e:
+                raise KeyError('{} doesn\'t exist in {}'.format(href, hrefs_left))
         for href in hrefs_left:
             raise exceptions.NotFoundError(href)
         return rv
