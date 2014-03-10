@@ -11,6 +11,8 @@ import os
 from vdirsyncer.storage.base import Storage, Item
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.utils import expand_path
+import vdirsyncer.log as log
+logger = log.get('storage.filesystem')
 
 
 class FilesystemStorage(Storage):
@@ -65,7 +67,8 @@ class FilesystemStorage(Storage):
     def update(self, href, obj, etag):
         fpath = self._get_filepath(href)
         if href != self._get_href(obj.uid):
-            raise exceptions.NotFoundError(obj.uid)
+            logger.warning('href != uid + fileext: href={}; uid={}'
+                           .format(href, obj.uid))
         if not os.path.exists(fpath):
             raise exceptions.NotFoundError(obj.uid)
         actual_etag = os.path.getmtime(fpath)
