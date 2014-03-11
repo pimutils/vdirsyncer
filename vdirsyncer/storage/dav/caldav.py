@@ -21,6 +21,7 @@ class CaldavStorage(DavStorage):
     fileext = '.ics'
     item_mimetype = 'text/calendar'
     dav_header = 'calendar-access'
+    leif_class = 'CalDiscover'
 
     start_date = None
     end_date = None

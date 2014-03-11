@@ -26,6 +26,10 @@ class DavStorage(Storage):
     get_multi_template = None
     # The LXML query for extracting results in get_multi
     get_multi_data_query = None
+    # The leif class to use for autodiscovery
+    # This should be the class *name* (i.e. "module attribute name") instead of
+    # the class, because leif is an optional dependency
+    leif_class = None
 
     _session = None
     _repr_attributes = ('url', 'username')
@@ -73,6 +77,25 @@ class DavStorage(Storage):
         response.raise_for_status()
         if self.dav_header not in response.headers.get('DAV', ''):
             raise exceptions.StorageError('URL is not a collection')
+
+    @classmethod
+    def discover(cls, url, **kwargs):
+        if kwargs.pop('collection', None) is not None:
+            raise TypeError('collection argument must not be given.')
+        from leif import leif
+        d = getattr(leif, cls.leif_class)(
+            url,
+            user=kwargs.get('username', None),
+            password=kwargs.get('password', None),
+            ssl_verify=kwargs.get('verify', True)
+        )
+        for c in d.discover():
+            collection = c['href']
+            if collection.startswith(url):
+                collection = collection[len(url):]
+            s = cls(url=url, collection=collection, **kwargs)
+            s.displayname = c['displayname']
+            yield s
 
     def _normalize_href(self, href):
         '''Normalize the href to be a path only relative to hostname and
