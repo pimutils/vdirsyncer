@@ -10,7 +10,6 @@
 
 from unittest import TestCase
 
-from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.dav.caldav import CaldavStorage
 from . import DavStorageTests
 
@@ -46,7 +45,6 @@ END:VCALENDAR'''
 
 class CaldavStorageTests(TestCase, DavStorageTests):
     storage_class = CaldavStorage
-    radicale_path = '/bob/test.ics/'
 
     item_template = TASK_TEMPLATE
 

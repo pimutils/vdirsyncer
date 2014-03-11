@@ -9,20 +9,18 @@
 '''
 
 from unittest import TestCase
-import tempfile
-import shutil
+import pytest
+import os
 from vdirsyncer.storage.filesystem import FilesystemStorage
 from . import StorageTests
 
 
+@pytest.mark.usefixtures('class_tmpdir')
 class FilesystemStorageTests(TestCase, StorageTests):
-    tmpdir = None
+    storage_class = FilesystemStorage
 
-    def _get_storage(self, **kwargs):
-        path = self.tmpdir = tempfile.mkdtemp()
-        return FilesystemStorage(path=path, fileext='.txt', **kwargs)
-
-    def teardown_method(self, method):
-        if self.tmpdir is not None:
-            shutil.rmtree(self.tmpdir)
-            self.tmpdir = None
+    def get_storage_args(self, collection=None):
+        path = self.tmpdir
+        if collection is not None:
+            os.makedirs(os.path.join(path, collection))
+        return {'path': path, 'fileext': '.txt', 'collection': collection}

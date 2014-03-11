@@ -21,8 +21,11 @@ class StorageTests(object):
         item_template = item_template or self.item_template
         return Item(item_template.format(uid=uid, r=r))
 
-    def _get_storage(self, **kwargs):
+    def get_storage_args(self, collection=None):
         raise NotImplementedError()
+
+    def _get_storage(self):
+        return self.storage_class(**self.get_storage_args())
 
     def test_generic(self):
         items = map(self._create_bogus_item, range(1, 10))
@@ -88,3 +91,21 @@ class StorageTests(object):
         assert not list(s.list())
         s.upload(self._create_bogus_item('1'))
         assert list(s.list())
+
+    def test_discover(self):
+        items = []
+        for i in range(4):
+            s = self.storage_class(**self.get_storage_args(collection=str(i)))
+            items.append(self._create_bogus_item(str(i)))
+            s.upload(items[-1])
+
+        d = self.storage_class.discover(
+            **self.get_storage_args(collection=None))
+        for s in d:
+            ((href, etag),) = s.list()
+            item, etag = s.get(href)
+            assert item.raw in set(x.raw for x in items)
+
+    def test_collection_arg(self):
+        s = self.storage_class(**self.get_storage_args(collection='asd'))
+        assert s.collection == 'asd'

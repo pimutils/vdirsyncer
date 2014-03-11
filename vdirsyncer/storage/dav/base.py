@@ -16,12 +16,20 @@ from lxml import etree
 
 class DavStorage(Storage):
 
+    # the file extension of items. Useful for testing against radicale.
     fileext = None
+    # mimetype of items
     item_mimetype = None
+    # The expected header for resource validation.
     dav_header = None
+    # XML to use when fetching multiple hrefs.
     get_multi_template = None
+    # The LXML query for extracting results in get_multi
     get_multi_data_query = None
-    list_xml = None
+    # The leif class to use for autodiscovery
+    # This should be the class *name* (i.e. "module attribute name") instead of
+    # the class, because leif is an optional dependency
+    leif_class = None
 
     _session = None
     _repr_attributes = ('url', 'username')
@@ -29,12 +37,13 @@ class DavStorage(Storage):
     def __init__(self, url, username='', password='', collection=None,
                  verify=True, auth='basic', useragent='vdirsyncer', **kwargs):
         '''
-        :param url: Direct URL for the CalDAV collection. No autodiscovery.
+        :param url: Base URL or an URL to a collection. Autodiscovery should be
+            done via :py:meth:`DavStorage.discover`.
         :param username: Username for authentication.
         :param password: Password for authentication.
         :param verify: Verify SSL certificate, default True.
         :param auth: Authentication method, from {'basic', 'digest'}, default
-                     'basic'.
+            'basic'.
         :param useragent: Default 'vdirsyncer'.
         '''
         super(DavStorage, self).__init__(**kwargs)
@@ -56,6 +65,7 @@ class DavStorage(Storage):
             url = urlparse.urljoin(url, collection)
         self.url = url.rstrip('/') + '/'
         self.parsed_url = urlparse.urlparse(self.url)
+        self.collection = collection
 
         headers = self._default_headers()
         headers['Depth'] = 1
@@ -67,6 +77,25 @@ class DavStorage(Storage):
         response.raise_for_status()
         if self.dav_header not in response.headers.get('DAV', ''):
             raise exceptions.StorageError('URL is not a collection')
+
+    @classmethod
+    def discover(cls, url, **kwargs):
+        if kwargs.pop('collection', None) is not None:
+            raise TypeError('collection argument must not be given.')
+        from leif import leif
+        d = getattr(leif, cls.leif_class)(
+            url,
+            user=kwargs.get('username', None),
+            password=kwargs.get('password', None),
+            ssl_verify=kwargs.get('verify', True)
+        )
+        for c in d.discover():
+            collection = c['href']
+            if collection.startswith(url):
+                collection = collection[len(url):]
+            s = cls(url=url, collection=collection, **kwargs)
+            s.displayname = c['displayname']
+            yield s
 
     def _normalize_href(self, href):
         '''Normalize the href to be a path only relative to hostname and
@@ -180,6 +209,8 @@ class DavStorage(Storage):
 
     def update(self, href, obj, etag):
         href = self._normalize_href(href)
+        if etag is None:
+            raise ValueError('etag must be given and must not be None.')
         return self._put(href, obj, etag)
 
     def upload(self, obj):

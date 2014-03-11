@@ -144,7 +144,8 @@ def _main(env, file_cfg):
         actions = []
         for pair_name in pairs:
             try:
-                a_name, b_name, pair_options, storage_defaults = all_pairs[pair_name]
+                a_name, b_name, pair_options, storage_defaults = \
+                    all_pairs[pair_name]
             except KeyError:
                 cli_logger.critical('Pair not found: {}'.format(pair_name))
                 cli_logger.critical('These are the pairs found: ')

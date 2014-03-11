@@ -23,16 +23,34 @@ class FilesystemStorage(Storage):
 
     _repr_attributes = ('path',)
 
-    def __init__(self, path, fileext, collection=None, encoding='utf-8', **kwargs):
+    def __init__(self, path, fileext, collection=None, encoding='utf-8',
+                 **kwargs):
         '''
-        :param path: Absolute path to a *collection* inside a vdir.
+        :param path: Absolute path to a vdir or collection, depending on the
+            collection parameter (see
+            :py:class:`vdirsyncer.storage.base.Storage`).
+        :param fileext: The file extension to use (e.g. `".txt"`). Contained in
+            the href, so if you change the file extension after a sync, this
+            will trigger a re-download of everything (but *should* not cause
+            data-loss of any kind).
+        :param encoding: File encoding for items.
         '''
-        self.path = expand_path(path)
+        super(FilesystemStorage, self).__init__(**kwargs)
         if collection is not None:
-            self.path = os.path.join(self.path, collection)
+            path = os.path.join(path, collection)
+        self.collection = collection
+        self.path = expand_path(path)
         self.encoding = encoding
         self.fileext = fileext
-        super(FilesystemStorage, self).__init__(**kwargs)
+
+    @classmethod
+    def discover(cls, path, **kwargs):
+        if kwargs.pop('collection', None) is not None:
+            raise TypeError('collection argument must not be given.')
+        for collection in os.listdir(path):
+            s = cls(path=path, collection=collection, **kwargs)
+            if next(s.list(), None) is not None:
+                yield s
 
     def _get_filepath(self, href):
         return os.path.join(self.path, href)

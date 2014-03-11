@@ -17,6 +17,7 @@ class CarddavStorage(DavStorage):
     fileext = '.vcf'
     item_mimetype = 'text/vcard'
     dav_header = 'addressbook'
+    leif_class = 'CardDiscover'
 
     get_multi_template = '''<?xml version="1.0" encoding="utf-8" ?>
             <C:addressbook-multiget xmlns:D="DAV:"
