@@ -104,6 +104,7 @@ class Response(object):
         self.x = x
         self.status_code = x.status_code
         self.content = x.get_data(as_text=False)
+        self.text = x.get_data(as_text=True)
         self.headers = x.headers
         self.encoding = x.charset
 
