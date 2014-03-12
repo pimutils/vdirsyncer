@@ -139,8 +139,10 @@ class DavStorageTests(StorageTests):
         self.patcher = p = mock.patch('requests.Session.request', new=x)
         p.start()
 
-    def get_storage_args(self, collection=None):
+    def get_storage_args(self, collection='test'):
         url = 'http://127.0.0.1/bob/'
+        if collection is not None:
+            collection += self.storage_class.fileext
         return {'url': url, 'collection': collection}
 
     def teardown_method(self, method):

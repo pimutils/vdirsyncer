@@ -108,4 +108,6 @@ class StorageTests(object):
 
     def test_collection_arg(self):
         s = self.storage_class(**self.get_storage_args(collection='asd'))
-        assert s.collection == 'asd'
+        # Can't do stronger assertion because of radicale, which needs a
+        # fileextension to guess the collection type.
+        assert 'asd' in s.collection
