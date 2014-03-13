@@ -101,6 +101,33 @@ def main():
     _main(env, cfg)
 
 
+def parse_pairs_args(pairs_args, all_pairs):
+    if not pairs_args:
+        pairs_args = list(all_pairs)
+    for pair_and_collection in pairs_args:
+        pair, collection = pair_and_collection, None
+        if '/' in pair:
+            pair, collection = pair.split('/')
+
+        try:
+            a_name, b_name, pair_options, storage_defaults = \
+                all_pairs[pair]
+        except KeyError:
+            cli_logger.critical('Pair not found: {}'.format(pair))
+            cli_logger.critical('These are the pairs found: ')
+            cli_logger.critical(list(all_pairs))
+            sys.exit(1)
+
+        if collection is None:
+            collections = [x.strip() for x in
+                           pair_options.get('collections', '').split(',')]
+        else:
+            collections = [collection]
+
+        for c in collections:
+            yield pair, c
+
+
 def _main(env, file_cfg):
     general, all_pairs, all_storages = file_cfg
     app = argvard.Argvard()
@@ -124,43 +151,40 @@ def _main(env, file_cfg):
 
     @sync_command.main('[pairs...]')
     def sync_main(context, pairs=None):
-        '''Syncronize the given pairs. If no pairs are given, all will be
-        synchronized.'''
-        if pairs is None:
-            pairs = list(all_pairs)
+        '''
+        Syncronize the given pairs. If no pairs are given, all will be
+        synchronized.
+        
+        Examples:
+        `vdirsyncer sync` will sync everything configured.
+        `vdirsyncer sync bob frank` will sync the pairs "bob" and "frank".
+        `vdirsyncer sync bob/first_collection` will sync "first_collection"
+        from the pair "bob".
+        '''
         actions = []
-        for pair_name in pairs:
-            try:
-                a_name, b_name, pair_options, storage_defaults = \
-                    all_pairs[pair_name]
-            except KeyError:
-                cli_logger.critical('Pair not found: {}'.format(pair_name))
-                cli_logger.critical('These are the pairs found: ')
-                cli_logger.critical(list(all_pairs))
-                sys.exit(1)
-            collections = pair_options.get('collections', '').split(',')
-            for collection in collections:
-                collection = collection.strip()
-                if collection:
-                    storage_defaults['collection'] = collection
-                config_a = dict(storage_defaults)
-                config_a.update(all_storages[a_name])
-                config_b = dict(storage_defaults)
-                config_b.update(all_storages[b_name])
-                a = storage_instance_from_config(config_a)
-                b = storage_instance_from_config(config_b)
+        for pair_name, collection in parse_pairs_args(pairs, all_pairs):
+            a_name, b_name, pair_options, storage_defaults = \
+                all_pairs[pair_name]
+            if collection:
+                storage_defaults['collection'] = collection
+            config_a = dict(storage_defaults)
+            config_a.update(all_storages[a_name])
+            config_b = dict(storage_defaults)
+            config_b.update(all_storages[b_name])
+            a = storage_instance_from_config(config_a)
+            b = storage_instance_from_config(config_b)
 
-                def x(a=a, b=b, pair_name=pair_name, collection=collection):
-                    status_name = \
-                        '_'.join(filter(bool, (pair_name, collection)))
-                    pair_description = \
-                        ' from '.join(filter(bool, (collection, pair_name)))
-                    cli_logger.debug('Syncing {}'.format(pair_description))
-                    status = load_status(general['status_path'], status_name)
-                    sync(a, b, status,
-                         pair_options.get('conflict_resolution', None))
-                    save_status(general['status_path'], status_name, status)
-                actions.append(x)
+            def x(a=a, b=b, pair_name=pair_name, collection=collection):
+                status_name = \
+                    '_'.join(filter(bool, (pair_name, collection)))
+                pair_description = \
+                    ' from '.join(filter(bool, (collection, pair_name)))
+                cli_logger.debug('Syncing {}'.format(pair_description))
+                status = load_status(general['status_path'], status_name)
+                sync(a, b, status,
+                     pair_options.get('conflict_resolution', None))
+                save_status(general['status_path'], status_name, status)
+            actions.append(x)
 
         for action in actions:
             action()
