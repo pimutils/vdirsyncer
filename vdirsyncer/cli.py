@@ -12,26 +12,13 @@ import sys
 import json
 import ConfigParser
 from vdirsyncer.sync import sync
-from vdirsyncer.utils import expand_path, split_dict
+from vdirsyncer.utils import expand_path, split_dict, parse_options
 from vdirsyncer.storage import storage_names
 import vdirsyncer.log as log
 import argvard
 
 
 cli_logger = log.get('cli')
-
-
-def parse_options(items):
-    for key, value in items:
-        if value.lower() in ('yes', 'true', 'on'):
-            value = True
-        elif value.lower() in ('no', 'false', 'off'):
-            value = False
-        try:
-            value = int(value)
-        except ValueError:
-            pass
-        yield key, value
 
 
 def load_config(fname, pair_options=('collections', 'conflict_resolution')):

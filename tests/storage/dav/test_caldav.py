@@ -58,3 +58,20 @@ class CaldavStorageTests(TestCase, DavStorageTests):
             href_etag_task,
             href_etag_event
         ])
+
+    def test_item_types(self):
+        kw = self.get_storage_args()
+        s = self.storage_class(item_types=('VTODO',), **kw)
+        s.upload(self._create_bogus_item(1, item_template=EVENT_TEMPLATE))
+        s.upload(self._create_bogus_item(5, item_template=EVENT_TEMPLATE))
+        href, etag = \
+            s.upload(self._create_bogus_item(3, item_template=TASK_TEMPLATE))
+        ((href2, etag2),) = s.list()
+        assert href2 == href
+        assert etag2 == etag
+
+    def test_item_types_passed_as_string(self):
+        kw = self.get_storage_args()
+        a = self.storage_class(item_types='VTODO,VEVENT', **kw)
+        b = self.storage_class(item_types=('VTODO', 'VEVENT'), **kw)
+        assert a.item_types == b.item_types == ('VTODO', 'VEVENT')

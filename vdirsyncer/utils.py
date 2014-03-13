@@ -26,3 +26,16 @@ def split_dict(d, f):
             b[k] = v
 
     return a, b
+
+
+def parse_options(items):
+    for key, value in items:
+        if value.lower() in ('yes', 'true', 'on'):
+            value = True
+        elif value.lower() in ('no', 'false', 'off'):
+            value = False
+        try:
+            value = int(value)
+        except ValueError:
+            pass
+        yield key, value

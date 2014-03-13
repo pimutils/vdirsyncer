@@ -51,7 +51,7 @@ class CaldavStorage(DavStorage):
         super(CaldavStorage, self).__init__(**kwargs)
         if isinstance(item_types, str):
             item_types = [x.strip() for x in item_types.split(',')]
-        self.item_types = item_types
+        self.item_types = tuple(item_types)
         if (start_date is None) != (end_date is None):
             raise ValueError('If start_date is given, '
                              'end_date has to be given too.')
