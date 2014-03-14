@@ -134,8 +134,7 @@ def _main(env, file_cfg):
 
     @app.main()
     def app_main(context):
-        print("Hello.")
-        sys.exit(1)
+        app.options['--help'].function(context)
 
     @app.option('--verbose|-v')
     def verbose_option(context=None):
