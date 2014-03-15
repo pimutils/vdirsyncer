@@ -19,7 +19,7 @@ setup(
     author_email='markus@unterwaditzer.net',
     url='https://github.com/untitaker/vdirsyncer',
     description='A syncronization tool for vdir',
-    long_description=open('README.md').read(),
+    long_description=open('README.rst').read(),
     packages=find_packages(),
     include_package_data=True,
     entry_points={
