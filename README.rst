@@ -16,7 +16,8 @@ questions regarding the usage, feel free to open a new issue.
 It aims to be for CalDAV and CardDAV what
 `OfflineIMAP <http://offlineimap.org/>`_ is for IMAP.
 
-## How to use
+How to use
+==========
 
 Copy ``example.cfg`` to ``~/.vdirsyncer/config`` and edit it. You can use the
 `VDIRSYNCER_CONFIG` environment variable to change the path vdirsyncer will
@@ -24,7 +25,8 @@ read the config from.
 
 Run ``vdirsyncer --help``.
 
-## How to run the tests
+How to run the tests
+====================
 
     sh install_deps.sh
     py.test
