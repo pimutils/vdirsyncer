@@ -43,7 +43,6 @@ def test_missing_status():
 
 
 def test_missing_status_and_different_items():
-    return  # TODO
     a = MemoryStorage()
     b = MemoryStorage()
     status = {}
@@ -51,9 +50,12 @@ def test_missing_status_and_different_items():
     item2 = Item(u'UID:1\nhoho')
     a.upload(item1)
     b.upload(item2)
-    sync(a, b, status)
-    assert status
-    assert_item_equals(a.get('1.txt')[0], b.get('1.txt')[0])
+    with pytest.raises(exceptions.SyncConflict):
+        sync(a, b, status)
+    assert not status
+    sync(a, b, status, conflict_resolution='a wins')
+    assert_item_equals(item1, b.get('1.txt')[0])
+    assert_item_equals(item1, a.get('1.txt')[0])
 
 
 def test_upload_and_update():
