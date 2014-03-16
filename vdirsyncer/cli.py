@@ -153,7 +153,7 @@ def _main(env, file_cfg):
         '''
         Syncronize the given pairs. If no pairs are given, all will be
         synchronized.
-        
+
         Examples:
         `vdirsyncer sync` will sync everything configured.
         `vdirsyncer sync bob frank` will sync the pairs "bob" and "frank".

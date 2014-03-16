@@ -9,6 +9,7 @@
 
 import vdirsyncer.utils as utils
 
+
 def test_parse_options():
     o = {
         'foo': 'yes',

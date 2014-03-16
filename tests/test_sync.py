@@ -7,7 +7,6 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-from unittest import TestCase
 import pytest
 from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.memory import MemoryStorage
@@ -29,6 +28,7 @@ def test_irrelevant_status():
     assert empty_storage(a)
     assert empty_storage(b)
 
+
 def test_missing_status():
     a = MemoryStorage()
     b = MemoryStorage()
@@ -40,6 +40,7 @@ def test_missing_status():
     assert len(status) == 1
     assert a.has('1.txt')
     assert b.has('1.txt')
+
 
 def test_missing_status_and_different_items():
     return  # TODO
@@ -53,6 +54,7 @@ def test_missing_status_and_different_items():
     sync(a, b, status)
     assert status
     assert_item_equals(a.get('1.txt')[0], b.get('1.txt')[0])
+
 
 def test_upload_and_update():
     a = MemoryStorage()
@@ -79,6 +81,7 @@ def test_upload_and_update():
     sync(a, b, status)
     assert_item_equals(b.get('2.txt')[0], item2)
 
+
 def test_deletion():
     a = MemoryStorage()
     b = MemoryStorage()
@@ -98,6 +101,7 @@ def test_deletion():
     sync(a, b, status)
     assert not a.has('1.txt') and not b.has('1.txt')
 
+
 def test_already_synced():
     a = MemoryStorage()
     b = MemoryStorage()
@@ -113,6 +117,7 @@ def test_already_synced():
     sync(a, b, status)
     assert status == old_status
     assert a.has('1.txt') and b.has('1.txt')
+
 
 def test_conflict_resolution_both_etags_new():
     a = MemoryStorage()
@@ -134,6 +139,7 @@ def test_conflict_resolution_both_etags_new():
     n = normalize_item(obj_a)
     assert u'UID:1' in n
     assert u'ASDASD' in n
+
 
 def test_conflict_resolution_new_etags_without_changes():
     a = MemoryStorage()

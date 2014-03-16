@@ -172,8 +172,9 @@ class DavStorage(Storage):
             rv.append((href, Item(obj), etag))
             try:
                 hrefs_left.remove(href)
-            except KeyError as e:
-                raise KeyError('{} doesn\'t exist in {}'.format(href, hrefs_left))
+            except KeyError:
+                raise KeyError('{} doesn\'t exist in {}'
+                               .format(href, hrefs_left))
         for href in hrefs_left:
             raise exceptions.NotFoundError(href)
         return rv
