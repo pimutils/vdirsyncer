@@ -134,6 +134,7 @@ def _main(env, file_cfg):
 
     @app.main()
     def app_main(context):
+        # https://github.com/DasIch/argvard/issues/2
         app.options['--help'].function(context)
 
     @app.option('--verbose|-v')
