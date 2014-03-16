@@ -24,7 +24,7 @@ from vdirsyncer.storage.base import Item
 
 
 dav_server = os.environ.get('DAV_SERVER', '').strip() or 'radicale'
-if dav_server in ('radicale', 'radicale-git'):
+if dav_server in ('radicale', 'radicale_git'):
     from ._radicale import ServerMixin
 elif dav_server == 'owncloud':
     from ._owncloud import ServerMixin
