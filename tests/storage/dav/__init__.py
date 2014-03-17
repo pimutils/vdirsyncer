@@ -8,15 +8,7 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-import sys
 import os
-import urlparse
-import tempfile
-import shutil
-import mock
-
-from werkzeug.test import Client
-from werkzeug.wrappers import BaseResponse as WerkzeugResponse
 
 from .. import StorageTests
 import vdirsyncer.exceptions as exceptions
@@ -39,4 +31,3 @@ class DavStorageTests(ServerMixin, StorageTests):
         except exceptions.Error:
             pass
         assert not list(s.list())
-

@@ -22,7 +22,6 @@ import mock
 from werkzeug.test import Client
 from werkzeug.wrappers import BaseResponse as WerkzeugResponse
 
-from .. import StorageTests
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
 

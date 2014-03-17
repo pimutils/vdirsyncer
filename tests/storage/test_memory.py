@@ -8,7 +8,6 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-from unittest import TestCase
 from vdirsyncer.storage.memory import MemoryStorage
 from . import StorageTests
 

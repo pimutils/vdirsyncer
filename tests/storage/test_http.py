@@ -8,7 +8,6 @@
 '''
 
 import mock
-from unittest import TestCase
 from .. import assert_item_equals
 from textwrap import dedent
 from vdirsyncer.storage.http import HttpStorage, Item

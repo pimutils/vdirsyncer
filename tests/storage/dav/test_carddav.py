@@ -8,8 +8,6 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-from unittest import TestCase
-
 from vdirsyncer.storage.dav.carddav import CarddavStorage
 from . import DavStorageTests
 
