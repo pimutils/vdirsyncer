@@ -113,10 +113,24 @@ class Response(object):
             raise HTTPError(str(self.status_code))
 
 
+def wsgi_setup(app):
+    c = Client(app, WerkzeugResponse)
+    def x(session, method, url, data=None, headers=None, **kw):
+        path = urlparse.urlparse(url).path
+        assert isinstance(data, bytes) or data is None
+        r = c.open(path=path, method=method, data=data, headers=headers)
+        r = Response(r)
+        return r
+
+    p = mock.patch('requests.Session.request', new=x)
+    p.start()
+    return p.stop
+
+
 class ServerMixin(object):
     '''hrefs are paths without scheme or netloc'''
     storage_class = None
-    patcher = None
+    wsgi_teardown = None
     tmpdir = None
 
     def setup_method(self, method):
@@ -124,18 +138,7 @@ class ServerMixin(object):
         do_the_radicale_dance(self.tmpdir)
         from radicale import Application
         app = Application()
-
-        c = Client(app, WerkzeugResponse)
-
-        def x(session, method, url, data=None, headers=None, **kw):
-            path = urlparse.urlparse(url).path
-            assert isinstance(data, bytes) or data is None
-            r = c.open(path=path, method=method, data=data, headers=headers)
-            r = Response(r)
-            return r
-
-        self.patcher = p = mock.patch('requests.Session.request', new=x)
-        p.start()
+        self.wsgi_teardown = wsgi_setup(app)
 
     def get_storage_args(self, collection='test'):
         url = 'http://127.0.0.1/bob/'
@@ -148,15 +151,6 @@ class ServerMixin(object):
         if self.tmpdir is not None:
             shutil.rmtree(self.tmpdir)
             self.tmpdir = None
-        if self.patcher is not None:
-            self.patcher.stop()
-            self.patcher = None
-
-    def test_dav_broken_item(self):
-        item = Item(u'UID:1')
-        s = self._get_storage()
-        try:
-            s.upload(item)
-        except exceptions.Error:
-            pass
-        assert not list(s.list())
+        if self.wsgi_teardown is not None:
+            self.wsgi_teardown()
+            self.wsgi_teardown = None

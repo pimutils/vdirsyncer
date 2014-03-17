@@ -20,4 +20,12 @@ radicale_storage_database() { pip install --use-mirrors sqlalchemy pysqlite; }
 radicale_storage_filesystem() { true; }
 
 
+davserver_owncloud() {
+    pip install paste
+    git clone git@github.com:untitaker/owncloud-testserver.git
+    cd ./owncloud-testserver/
+    sh install.sh
+}
+
+
 davserver_$DAV_SERVER
