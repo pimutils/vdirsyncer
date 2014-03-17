@@ -14,7 +14,7 @@ from textwrap import dedent
 from vdirsyncer.storage.http import HttpStorage, Item
 
 
-class HttpStorageTests(TestCase):
+class TestHttpStorage(object):
 
     def test_list(self):
         collection_url = 'http://127.0.0.1/calendar/collection/'

@@ -14,7 +14,7 @@ from vdirsyncer.storage.dav.carddav import CarddavStorage
 from . import DavStorageTests
 
 
-class CarddavStorageTests(TestCase, DavStorageTests):
+class TestCarddavStorage(DavStorageTests):
     storage_class = CarddavStorage
 
     item_template = (u'BEGIN:VCARD\n'

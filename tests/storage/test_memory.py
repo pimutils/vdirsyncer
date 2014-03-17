@@ -13,7 +13,7 @@ from vdirsyncer.storage.memory import MemoryStorage
 from . import StorageTests
 
 
-class MemoryStorageTests(TestCase, StorageTests):
+class TestMemoryStorage(StorageTests):
 
     storage_class = MemoryStorage
 

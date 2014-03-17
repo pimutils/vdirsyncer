@@ -8,7 +8,6 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-from unittest import TestCase
 import pytest
 import os
 from vdirsyncer.storage.filesystem import FilesystemStorage
@@ -16,7 +15,7 @@ from . import StorageTests
 
 
 @pytest.mark.usefixtures('class_tmpdir')
-class FilesystemStorageTests(TestCase, StorageTests):
+class TestFilesystemStorage(StorageTests):
     storage_class = FilesystemStorage
 
     def get_storage_args(self, collection=None):

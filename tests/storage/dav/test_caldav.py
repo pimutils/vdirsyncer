@@ -43,7 +43,7 @@ END:VEVENT
 END:VCALENDAR'''
 
 
-class CaldavStorageTests(TestCase, DavStorageTests):
+class TestCaldavStorage(DavStorageTests):
     storage_class = CaldavStorage
 
     item_template = TASK_TEMPLATE

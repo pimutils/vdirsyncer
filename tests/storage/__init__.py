@@ -11,6 +11,7 @@ from vdirsyncer.storage.base import Item
 import vdirsyncer.exceptions as exceptions
 from .. import assert_item_equals
 import random
+import pytest
 
 
 class StorageTests(object):
@@ -47,7 +48,8 @@ class StorageTests(object):
         s = self._get_storage()
         item = self._create_bogus_item(1)
         s.upload(item)
-        self.assertRaises(exceptions.PreconditionFailed, s.upload, item)
+        with pytest.raises(exceptions.PreconditionFailed):
+            s.upload(item)
 
     def test_upload(self):
         s = self._get_storage()
@@ -68,23 +70,24 @@ class StorageTests(object):
     def test_update_nonexisting(self):
         s = self._get_storage()
         item = self._create_bogus_item(1)
-        self.assertRaises(exceptions.PreconditionFailed,
-                          s.update, s._get_href('1'), item, 123)
-        self.assertRaises(exceptions.PreconditionFailed,
-                          s.update, 'huehue', item, 123)
+        with pytest.raises(exceptions.PreconditionFailed):
+            s.update(s._get_href('1'), item, 123)
+        with pytest.raises(exceptions.PreconditionFailed):
+            s.update('huehue', item, 123)
 
     def test_wrong_etag(self):
         s = self._get_storage()
         obj = self._create_bogus_item(1)
         href, etag = s.upload(obj)
-        self.assertRaises(
-            exceptions.PreconditionFailed, s.update, href, obj, 'lolnope')
-        self.assertRaises(
-            exceptions.PreconditionFailed, s.delete, href, 'lolnope')
+        with pytest.raises(exceptions.PreconditionFailed):
+            s.update(href, obj, 'lolnope')
+        with pytest.raises(exceptions.PreconditionFailed):
+            s.delete(href, 'lolnope')
 
     def test_delete_nonexisting(self):
         s = self._get_storage()
-        self.assertRaises(exceptions.PreconditionFailed, s.delete, '1', 123)
+        with pytest.raises(exceptions.PreconditionFailed):
+            s.delete('1', 123)
 
     def test_list(self):
         s = self._get_storage()

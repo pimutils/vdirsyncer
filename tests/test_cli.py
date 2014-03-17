@@ -7,10 +7,9 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-from unittest import TestCase
 import vdirsyncer.cli as cli
 import vdirsyncer.exceptions as exceptions
 
 
-class CliTests(TestCase):
+class TestCli(object):
     pass
