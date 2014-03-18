@@ -21,7 +21,7 @@ radicale_storage_filesystem() { true; }
 
 
 davserver_owncloud() {
-    git clone git@github.com:untitaker/owncloud-testserver.git
+    git clone https://github.com/untitaker/owncloud-testserver.git
     cd ./owncloud-testserver/
     sh install.sh
 }
