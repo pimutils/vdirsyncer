@@ -206,7 +206,7 @@ class DavStorage(Storage):
         etag = response.headers.get('etag', None)
         if not etag:
             obj2, etag = self.get(href)
-            assert obj2.raw == obj.raw
+            assert obj2.uid == obj.uid
         return href, etag
 
     def update(self, href, obj, etag):
