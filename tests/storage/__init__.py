@@ -98,7 +98,8 @@ class StorageTests(object):
     def test_discover(self):
         items = []
         for i in range(4):
-            s = self.storage_class(**self.get_storage_args(collection='test' + str(i+1)))
+            i += 1
+            s = self.storage_class(**self.get_storage_args(collection='test' + str(i)))
             items.append(self._create_bogus_item(str(i)))
             s.upload(items[-1])
 

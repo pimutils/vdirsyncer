@@ -232,6 +232,8 @@ class DavStorage(Storage):
             href,
             headers=headers
         )
+        if response.status_code == 404:
+            raise exceptions.NotFoundError(href)
         self._check_response(response)
 
     def _list(self, xml):

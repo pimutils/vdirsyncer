@@ -10,8 +10,7 @@ davserver_owncloud() {
 }
 
 
+# while it would be nice if the server was cleanly shut down, it's not really a
+# problem either
 davserver_$DAV_SERVER &
-DAVSERVER_PID=$!
-py.test ./tests/
-kill -9 $DAVSERVER_PID
-wait
+py.test $@

@@ -23,12 +23,13 @@ class ServerMixin(object):
         subprocess.call([os.path.join(owncloud_repo, 'install.sh')])
 
     def get_storage_args(self, collection='test'):
-        assert self.storage_class.fileext in ('.ics', '.vcf')
         url = 'http://127.0.0.1:8080'
         if self.storage_class.fileext == '.vcf':
             url += '/remote.php/carddav/addressbooks/asdf/'
-        else:
+        elif self.storage_class.fileext == '.ics':
             url += '/remote.php/carddav/addressbooks/asdf/'
+        else:
+            raise RuntimeError(self.storage_class.fileext)
         if collection is not None:
             # the following collections are setup in ownCloud
             assert collection in ('test', 'test1', 'test2', 'test3', 'test4',
