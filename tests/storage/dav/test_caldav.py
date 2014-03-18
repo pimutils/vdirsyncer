@@ -9,7 +9,9 @@
 '''
 
 
+import requests.exceptions
 from vdirsyncer.storage.dav.caldav import CaldavStorage
+import vdirsyncer.exceptions as exceptions
 from . import DavStorageTests
 
 
@@ -61,8 +63,11 @@ class TestCaldavStorage(DavStorageTests):
     def test_item_types(self):
         kw = self.get_storage_args()
         s = self.storage_class(item_types=('VTODO',), **kw)
-        s.upload(self._create_bogus_item(1, item_template=EVENT_TEMPLATE))
-        s.upload(self._create_bogus_item(5, item_template=EVENT_TEMPLATE))
+        try:
+            s.upload(self._create_bogus_item(1, item_template=EVENT_TEMPLATE))
+            s.upload(self._create_bogus_item(5, item_template=EVENT_TEMPLATE))
+        except (exceptions.Error, requests.exceptions.HTTPError):
+            pass
         href, etag = \
             s.upload(self._create_bogus_item(3, item_template=TASK_TEMPLATE))
         ((href2, etag2),) = s.list()
