@@ -71,23 +71,23 @@ class StorageTests(object):
         s = self._get_storage()
         item = self._create_bogus_item(1)
         with pytest.raises(exceptions.PreconditionFailed):
-            s.update(s._get_href('1'), item, 123)
+            s.update(s._get_href('1'), item, '"123"')
         with pytest.raises(exceptions.PreconditionFailed):
-            s.update('huehue', item, 123)
+            s.update('huehue', item, '"123"')
 
     def test_wrong_etag(self):
         s = self._get_storage()
         obj = self._create_bogus_item(1)
         href, etag = s.upload(obj)
         with pytest.raises(exceptions.PreconditionFailed):
-            s.update(href, obj, 'lolnope')
+            s.update(href, obj, '"lolnope"')
         with pytest.raises(exceptions.PreconditionFailed):
-            s.delete(href, 'lolnope')
+            s.delete(href, '"lolnope"')
 
     def test_delete_nonexisting(self):
         s = self._get_storage()
         with pytest.raises(exceptions.PreconditionFailed):
-            s.delete('1', 123)
+            s.delete('1', '"123"')
 
     def test_list(self):
         s = self._get_storage()

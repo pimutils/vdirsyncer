@@ -193,6 +193,7 @@ class DavStorage(Storage):
         if etag is None:
             headers['If-None-Match'] = '*'
         else:
+            assert etag[0] == etag[-1] == '"'
             headers['If-Match'] = etag
 
         response = self._request(
@@ -221,6 +222,7 @@ class DavStorage(Storage):
     def delete(self, href, etag):
         href = self._normalize_href(href)
         headers = self._default_headers()
+        assert etag[0] == etag[-1] == '"'
         headers.update({
             'If-Match': etag
         })
