@@ -4,3 +4,4 @@ htmlcov
 .coverage
 build
 env
+owncloud-testserver
