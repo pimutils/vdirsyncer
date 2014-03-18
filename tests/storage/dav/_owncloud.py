@@ -27,7 +27,7 @@ class ServerMixin(object):
         if self.storage_class.fileext == '.vcf':
             url += '/remote.php/carddav/addressbooks/asdf/'
         elif self.storage_class.fileext == '.ics':
-            url += '/remote.php/carddav/addressbooks/asdf/'
+            url += '/remote.php/caldav/calendars/asdf/'
         else:
             raise RuntimeError(self.storage_class.fileext)
         if collection is not None:
@@ -36,4 +36,4 @@ class ServerMixin(object):
                                   'test5', 'test6', 'test7', 'test8', 'test9',
                                   'test10')
 
-            return {'url': url, 'collection': collection, 'username': 'asdf', 'password': 'asdf'}
+        return {'url': url, 'collection': collection, 'username': 'asdf', 'password': 'asdf'}
