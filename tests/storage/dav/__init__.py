@@ -13,6 +13,7 @@ import os
 from .. import StorageTests
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
+import requests.exceptions
 
 
 dav_server = os.environ.get('DAV_SERVER', '').strip() or 'radicale'
@@ -30,6 +31,6 @@ class DavStorageTests(ServerMixin, StorageTests):
         s = self._get_storage()
         try:
             s.upload(item)
-        except exceptions.Error:
+        except (exceptions.Error, requests.exceptions.HTTPError):
             pass
         assert not list(s.list())
