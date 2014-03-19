@@ -16,7 +16,7 @@ from vdirsyncer.storage.base import Item
 import requests.exceptions
 
 
-dav_server = os.environ.get('DAV_SERVER', '').strip() or 'radicale'
+dav_server = os.environ.get('DAV_SERVER', '').strip() or 'radicale_filesystem'
 if dav_server.startswith('radicale_'):
     from ._radicale import ServerMixin
 elif dav_server == 'owncloud':
