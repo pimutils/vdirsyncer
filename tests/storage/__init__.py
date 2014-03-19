@@ -26,7 +26,9 @@ class StorageTests(object):
         raise NotImplementedError()
 
     def _get_storage(self):
-        return self.storage_class(**self.get_storage_args())
+        s = self.storage_class(**self.get_storage_args())
+        assert not list(s.list())
+        return s
 
     def test_generic(self):
         items = map(self._create_bogus_item, range(1, 10))

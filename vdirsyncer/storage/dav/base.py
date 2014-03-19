@@ -127,7 +127,7 @@ class DavStorage(Storage):
     @staticmethod
     def _check_response(response):
         if response.status_code == 412:
-            raise exceptions.PreconditionFailed()
+            raise exceptions.PreconditionFailed(response.reason)
         response.raise_for_status()
 
     def get(self, href):
