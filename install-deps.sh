@@ -14,7 +14,10 @@ davserver_radicale_git() {
     radicale_deps
 }
 
-radicale_deps() { radicale_storage_$RADICALE_STORAGE; }
+radicale_deps() {
+    pip install --use-mirrors werkzeug
+    radicale_storage_$RADICALE_STORAGE
+}
 
 radicale_storage_database() { pip install --use-mirrors sqlalchemy pysqlite; }
 radicale_storage_filesystem() { true; }
