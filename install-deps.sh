@@ -15,9 +15,9 @@ davserver_radicale_database() {
 }
 
 radicale_deps() {
-    if [ "$REQUIREMENTS" == "release" ]; then
+    if [ "$REQUIREMENTS" = "release" ]; then
         radicale_pkg="radicale"
-    elif [ "$REQUIREMENTS" == "devel" ]; then
+    elif [ "$REQUIREMENTS" = "devel" ]; then
         radicale_pkg="git+https://github.com/Kozea/Radicale.git"
     else
         false
