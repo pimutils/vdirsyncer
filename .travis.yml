@@ -5,8 +5,7 @@ env:
     - DAV_SERVER=radicale RADICALE_STORAGE=database
     - DAV_SERVER=radicale_git RADICALE_STORAGE=filesystem
     - DAV_SERVER=radicale_git RADICALE_STORAGE=database
+    - DAV_SERVER=owncloud
 
-install:
-    - "./install-deps.sh"
-
-script: py.test
+install: "./install-deps.sh"
+script: "./run-tests.sh tests/"
