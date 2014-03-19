@@ -105,6 +105,7 @@ class Response(object):
         self.text = x.get_data(as_text=True)
         self.headers = x.headers
         self.encoding = x.charset
+        self.reason = str(x.status)
 
     def raise_for_status(self):
         '''copied from requests itself'''
