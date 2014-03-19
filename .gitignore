@@ -5,3 +5,4 @@ htmlcov
 build
 env
 owncloud-testserver
+*.egg-info

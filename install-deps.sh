@@ -1,27 +1,29 @@
 #!/bin/sh
-pip install --use-mirrors .
+echo "The shell is $SHELL"
+set -e
+pip install --use-mirrors --editable .
 pip install --use-mirrors -r requirements.txt
-[[ -z "$DAV_SERVER" ]] && DAV_SERVER=radicale
-[[ -z "$RADICALE_STORAGE" ]] && RADICALE_STORAGE=filesystem
+[ -n "$DAV_SERVER" ] || DAV_SERVER=radicale_filesystem
 
-davserver_radicale() {
-    pip install --use-mirrors radicale
+davserver_radicale_filesystem() {
     radicale_deps
 }
 
-davserver_radicale_git() {
-    pip install git+https://github.com/Kozea/Radicale.git
+davserver_radicale_database() {
     radicale_deps
+    pip install --use-mirrors sqlalchemy pysqlite
 }
 
 radicale_deps() {
-    pip install --use-mirrors werkzeug
-    radicale_storage_$RADICALE_STORAGE
+    if [ "$REQUIREMENTS" == "release" ]; then
+        radicale_pkg="radicale"
+    elif [ "$REQUIREMENTS" == "devel" ]; then
+        radicale_pkg="git+https://github.com/Kozea/Radicale.git"
+    else
+        false
+    fi
+    pip install --use-mirrors werkzeug $radicale_pkg
 }
-
-radicale_storage_database() { pip install --use-mirrors sqlalchemy pysqlite; }
-radicale_storage_filesystem() { true; }
-
 
 davserver_owncloud() {
     git clone https://github.com/untitaker/owncloud-testserver.git

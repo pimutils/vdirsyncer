@@ -1,12 +1,12 @@
 #!/bin/sh
-[[ -z "$DAV_SERVER" ]] && DAV_SERVER=radicale
-[[ -z "$RADICALE_STORAGE" ]] && RADICALE_STORAGE=filesystem
+set -e
+[ -n "$DAV_SERVER" ] || DAV_SERVER=radicale_filesystem
 
-davserver_radicale() { true; }
-davserver_radicale_git() { true; }
+davserver_radicale_database() { true; }
+davserver_radicale_filesystem() { true; }
 
 davserver_owncloud() {
-    sh ./owncloud-testserver/php.sh
+    sh ./owncloud-testserver/php.sh > /dev/null
 }
 
 

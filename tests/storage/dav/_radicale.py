@@ -57,6 +57,8 @@ create table property (
        primary key (name, collection_path));
 '''
 
+dav_server = os.environ.get('DAV_SERVER', 'radicale_filesystem')
+
 
 def do_the_radicale_dance(tmpdir):
     # All of radicale is already global state, the cleanliness of the code and
@@ -75,7 +77,7 @@ def do_the_radicale_dance(tmpdir):
     # Now we can set some basic configuration.
     radicale.config.set('rights', 'type', 'None')
 
-    if os.environ.get('RADICALE_STORAGE', 'filesystem') == 'filesystem':
+    if dav_server == 'radicale_filesystem':
         radicale.config.set('storage', 'type', 'filesystem')
         radicale.config.set('storage', 'filesystem_folder', tmpdir)
     else:
