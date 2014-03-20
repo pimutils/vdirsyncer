@@ -6,7 +6,7 @@ davserver_radicale_database() { true; }
 davserver_radicale_filesystem() { true; }
 
 davserver_owncloud() {
-    sh ./owncloud-testserver/php.sh > /dev/null
+    sh ./owncloud-testserver/php.sh
 }
 
 
