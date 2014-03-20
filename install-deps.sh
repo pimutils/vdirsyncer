@@ -27,8 +27,12 @@ radicale_deps() {
 
 davserver_owncloud() {
     # Maybe tmpfs is mounted on /tmp/, can't harm anyway.
-    git clone --depth=1 https://github.com/untitaker/owncloud-testserver.git /tmp/owncloud-testserver
-    ln -s /tmp/owncloud-testserver .
+    if [ ! -d ./owncloud-testserver/ ]; then
+        git clone --depth=1 \
+            https://github.com/untitaker/owncloud-testserver.git \
+            /tmp/owncloud-testserver
+        ln -s /tmp/owncloud-testserver .
+    fi
     cd ./owncloud-testserver/
     sh install.sh
 }
