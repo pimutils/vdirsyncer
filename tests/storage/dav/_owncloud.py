@@ -20,7 +20,7 @@ class ServerMixin(object):
     wsgi_teardown = None
 
     def setup_method(self, method):
-        subprocess.call([os.path.join(owncloud_repo, 'install.sh')])
+        subprocess.check_call([os.path.join(owncloud_repo, 'install.sh')])
 
     def get_storage_args(self, collection='test'):
         url = 'http://127.0.0.1:8080'
