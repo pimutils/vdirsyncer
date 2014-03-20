@@ -98,19 +98,28 @@ class StorageTests(object):
         assert list(s.list())
 
     def test_discover(self):
-        items = []
-        for i in range(4):
+        items = set()
+        collections = set(['test1', 'test2', 'test3', 'test4'])
+        for i, collection in enumerate(collections):
+            # Create collections on-the-fly for most storages
+            # Except ownCloud, which already has all of them, and more
             i += 1
-            s = self.storage_class(**self.get_storage_args(collection='test' + str(i)))
-            items.append(self._create_bogus_item(str(i)))
-            s.upload(items[-1])
+            s = self.storage_class(**self.get_storage_args(collection=collection))
+            item = self._create_bogus_item(str(i))
+            s.upload(item)
+            items.add(item.raw)
 
         d = self.storage_class.discover(
             **self.get_storage_args(collection=None))
         for s in d:
+            if s.collection not in collections:
+                # ownCloud has many more collections, as on-the-fly creation
+                # doesn't really work there. Skip those collections, as they
+                # are not relevant to us.
+                continue
             ((href, etag),) = s.list()
             item, etag = s.get(href)
-            assert item.raw in set(x.raw for x in items)
+            assert item.raw in items
 
     def test_collection_arg(self):
         s = self.storage_class(**self.get_storage_args(collection='test2'))
