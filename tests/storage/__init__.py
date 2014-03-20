@@ -26,7 +26,9 @@ class StorageTests(object):
         raise NotImplementedError()
 
     def _get_storage(self):
-        return self.storage_class(**self.get_storage_args())
+        s = self.storage_class(**self.get_storage_args())
+        assert not list(s.list())
+        return s
 
     def test_generic(self):
         items = map(self._create_bogus_item, range(1, 10))
@@ -98,7 +100,8 @@ class StorageTests(object):
     def test_discover(self):
         items = []
         for i in range(4):
-            s = self.storage_class(**self.get_storage_args(collection=str(i)))
+            i += 1
+            s = self.storage_class(**self.get_storage_args(collection='test' + str(i)))
             items.append(self._create_bogus_item(str(i)))
             s.upload(items[-1])
 
@@ -110,7 +113,7 @@ class StorageTests(object):
             assert item.raw in set(x.raw for x in items)
 
     def test_collection_arg(self):
-        s = self.storage_class(**self.get_storage_args(collection='asd'))
+        s = self.storage_class(**self.get_storage_args(collection='test2'))
         # Can't do stronger assertion because of radicale, which needs a
         # fileextension to guess the collection type.
-        assert 'asd' in s.collection
+        assert 'test2' in s.collection

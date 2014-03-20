@@ -1,12 +1,14 @@
 language: python
 python: "2.7"
 env:
-    - DAV_SERVER=radicale RADICALE_STORAGE=filesystem
-    - DAV_SERVER=radicale RADICALE_STORAGE=database
-    - DAV_SERVER=radicale_git RADICALE_STORAGE=filesystem
-    - DAV_SERVER=radicale_git RADICALE_STORAGE=database
+    global:
+        - IS_TRAVIS=true
+    matrix:
+        - DAV_SERVER=radicale_filesystem REQUIREMENTS=release
+        - DAV_SERVER=radicale_filesystem REQUIREMENTS=devel
+        - DAV_SERVER=radicale_database REQUIREMENTS=release
+        - DAV_SERVER=radicale_database REQUIREMENTS=devel
+        - DAV_SERVER=owncloud REQUIREMENTS=release
 
-install:
-    - "./install-deps.sh"
-
-script: py.test
+install: "./install-deps.sh"
+script: "./run-tests.sh tests/"

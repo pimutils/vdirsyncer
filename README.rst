@@ -30,5 +30,17 @@ How to run the tests
 
 ::
 
-    sh install_deps.sh
-    py.test
+    sh install-deps.sh
+    sh run-tests.sh
+
+The environment variable ``DAV_SERVER`` specifies which CalDAV/CardDAV server
+to test against. It has to be set for both scripts, ``install-deps.sh`` and
+``run-tests.sh``.
+
+  - ``DAV_SERVER=radicale``: The default, installs the latest Radicale release
+    from PyPI. Very fast, because no additional processes are needed.
+  - ``DAV_SERVER=radicale_git``: Same as ``radicale``, except that the
+    installation happens from their git repo. ``install-deps.sh`` is slightly
+    slower with this.
+  - ``DAV_SERVER=owncloud``: Uses latest ownCloud release. Very slow
+    installation, very slow tests.

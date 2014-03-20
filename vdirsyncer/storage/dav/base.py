@@ -127,7 +127,7 @@ class DavStorage(Storage):
     @staticmethod
     def _check_response(response):
         if response.status_code == 412:
-            raise exceptions.PreconditionFailed()
+            raise exceptions.PreconditionFailed(response.reason)
         response.raise_for_status()
 
     def get(self, href):
@@ -206,7 +206,7 @@ class DavStorage(Storage):
         etag = response.headers.get('etag', None)
         if not etag:
             obj2, etag = self.get(href)
-            assert obj2.raw == obj.raw
+            assert obj2.uid == obj.uid
         return href, etag
 
     def update(self, href, obj, etag):
@@ -232,6 +232,8 @@ class DavStorage(Storage):
             href,
             headers=headers
         )
+        if response.status_code == 404:
+            raise exceptions.NotFoundError(href)
         self._check_response(response)
 
     def _list(self, xml):
