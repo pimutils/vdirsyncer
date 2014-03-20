@@ -57,7 +57,7 @@ create table property (
        primary key (name, collection_path));
 '''
 
-dav_server = os.environ.get('DAV_SERVER', 'radicale_filesystem')
+dav_server = os.environ.get('DAV_SERVER', '').strip() or 'radicale_filesystem'
 
 
 def do_the_radicale_dance(tmpdir):
@@ -80,7 +80,7 @@ def do_the_radicale_dance(tmpdir):
     if dav_server == 'radicale_filesystem':
         radicale.config.set('storage', 'type', 'filesystem')
         radicale.config.set('storage', 'filesystem_folder', tmpdir)
-    else:
+    elif dav_server == 'radicale_database':
         radicale.config.set('storage', 'type', 'database')
         radicale.config.set('storage', 'database_url', 'sqlite://')
         from radicale.storage import database
@@ -89,6 +89,8 @@ def do_the_radicale_dance(tmpdir):
         for line in RADICALE_SCHEMA.split(';'):
             s.execute(line)
         s.commit()
+    else:
+        raise RuntimeError()
 
     # This one is particularly useful with radicale's debugging logs and
     # pytest-capturelog, however, it is very verbose.
