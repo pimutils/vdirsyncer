@@ -9,7 +9,7 @@
 '''
 
 from vdirsyncer.storage.dav.carddav import CarddavStorage
-from . import DavStorageTests
+from . import DavStorageTests, pytestmark
 
 
 VCARD_TEMPLATE = u'''BEGIN:VCARD

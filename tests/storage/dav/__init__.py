@@ -9,6 +9,7 @@
 '''
 
 import os
+import pytest
 
 from .. import StorageTests
 import vdirsyncer.exceptions as exceptions
@@ -23,6 +24,18 @@ elif dav_server == 'owncloud':
     from ._owncloud import ServerMixin
 else:
     raise RuntimeError('{} is not a known DAV server.'.format(dav_server))
+
+try:
+    import radicale
+    radicale_version = radicale.VERSION
+    del radicale
+except ImportError:
+    radicale_version = None
+
+
+pytestmark = pytest.mark.xfail(
+    dav_server == 'radicale_database' and radicale_version == '0.8',
+    reason='Database storage of Radicale 0.8 is broken.')
 
 
 class DavStorageTests(ServerMixin, StorageTests):

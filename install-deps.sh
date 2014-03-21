@@ -1,8 +1,9 @@
 #!/bin/sh
 echo "The shell is $SHELL"
 set -e
-pip install --use-mirrors --editable .
-pip install --use-mirrors -r requirements.txt
+PIP_INSTALL="pip install --use-mirrors --upgrade"
+$PIP_INSTALL --editable .
+$PIP_INSTALL -r requirements.txt
 [ -n "$DAV_SERVER" ] || DAV_SERVER=radicale_filesystem
 
 davserver_radicale_filesystem() {
@@ -11,7 +12,7 @@ davserver_radicale_filesystem() {
 
 davserver_radicale_database() {
     radicale_deps
-    pip install --use-mirrors sqlalchemy pysqlite
+    $PIP_INSTALL sqlalchemy pysqlite
 }
 
 radicale_deps() {
@@ -22,7 +23,7 @@ radicale_deps() {
     else
         false
     fi
-    pip install --use-mirrors werkzeug $radicale_pkg
+    $PIP_INSTALL werkzeug $radicale_pkg
 }
 
 davserver_owncloud() {

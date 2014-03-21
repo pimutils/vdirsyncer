@@ -12,7 +12,7 @@
 import requests.exceptions
 from vdirsyncer.storage.dav.caldav import CaldavStorage
 import vdirsyncer.exceptions as exceptions
-from . import DavStorageTests
+from . import DavStorageTests, pytestmark
 
 
 TASK_TEMPLATE = u'''BEGIN:VCALENDAR

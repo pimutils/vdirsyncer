@@ -11,7 +11,9 @@ import os
 import pytest
 
 dav_server = os.environ.get('DAV_SERVER', '').strip() or 'radicale_filesystem'
-php_sh = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../owncloud-testserver/php.sh'))
+php_sh = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '../../../owncloud-testserver/php.sh'
+))
 
 if dav_server == 'owncloud':
     @pytest.fixture(autouse=True)
