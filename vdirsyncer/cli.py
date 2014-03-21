@@ -137,14 +137,32 @@ def _main(env, file_cfg):
         # https://github.com/DasIch/argvard/issues/2
         app.options['--help'].function(context)
 
-    @app.option('--verbose|-v')
-    def verbose_option(context=None):
-        '''Print more information.'''
-        log.set_level(log.logging.DEBUG)
+    @app.option('--verbosity verbosity')
+    def verbose_option(context, verbosity):
+        '''
+        Basically Python logging levels.
+
+        CRITICAL: Config errors, at most.
+
+        ERROR: Normal errors, at most.
+
+        WARNING: Problems of which vdirsyncer thinks that it can handle them
+        itself, but which might crash other clients.
+
+        INFO: Normal output.
+
+        DEBUG: Show e.g. HTTP traffic. Not supposed to be readable by the
+        normal user.
+
+        '''
+        x = getattr(log.logging, verbosity, None)
+        if x is None:
+            raise ValueError(u'Invalid verbosity value: {}'.format(verbosity))
+        log.set_level(x)
 
     @app.option('--quiet|-q')
     def quiet_option(context=None):
-        '''Inverse of --verbose.'''
+        '''Print less information than normal.'''
         log.set_level(log.logging.WARNING)
 
     sync_command = argvard.Command()
@@ -190,9 +208,4 @@ def _main(env, file_cfg):
             action()
 
     app.register_command('sync', sync_command)
-
-    if general.get('verbose', False):
-        verbose_option()
-    else:
-        quiet_option()
     app()
