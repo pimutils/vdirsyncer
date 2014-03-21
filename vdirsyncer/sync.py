@@ -91,7 +91,7 @@ def action_upload(uid, source, dest):
     def inner(storages, status, conflict_resolution):
         source_storage, source_list, source_uid_to_href = storages[source]
         dest_storage, dest_list, dest_uid_to_href = storages[dest]
-        sync_logger.debug('Copying (uploading) item {} to {}'
+        sync_logger.info('Copying (uploading) item {} to {}'
                           .format(uid, dest_storage))
 
         source_href = source_uid_to_href[uid]
@@ -112,7 +112,7 @@ def action_update(uid, source, dest):
     def inner(storages, status, conflict_resolution):
         source_storage, source_list, source_uid_to_href = storages[source]
         dest_storage, dest_list, dest_uid_to_href = storages[dest]
-        sync_logger.debug('Copying (updating) item {} to {}'
+        sync_logger.info('Copying (updating) item {} to {}'
                           .format(uid, dest_storage))
         source_href = source_uid_to_href[uid]
         source_etag = source_list[source_href]['etag']
@@ -134,13 +134,13 @@ def action_delete(uid, source, dest):
     def inner(storages, status, conflict_resolution):
         if dest is not None:
             dest_storage, dest_list, dest_uid_to_href = storages[dest]
-            sync_logger.debug('Deleting item {} from {}'
+            sync_logger.info('Deleting item {} from {}'
                               .format(uid, dest_storage))
             dest_href = dest_uid_to_href[uid]
             dest_etag = dest_list[dest_href]['etag']
             dest_storage.delete(dest_href, dest_etag)
         else:
-            sync_logger.debug('Deleting status info for nonexisting item {}'
+            sync_logger.info('Deleting status info for nonexisting item {}'
                               .format(uid))
         del status[uid]
 
@@ -149,7 +149,7 @@ def action_delete(uid, source, dest):
 
 def action_conflict_resolve(uid):
     def inner(storages, status, conflict_resolution):
-        sync_logger.debug('Doing conflict resolution for item {}...'
+        sync_logger.info('Doing conflict resolution for item {}...'
                           .format(uid))
         a_storage, list_a, a_uid_to_href = storages['a']
         b_storage, list_b, b_uid_to_href = storages['b']
@@ -158,15 +158,15 @@ def action_conflict_resolve(uid):
         a_meta = list_a[a_href]
         b_meta = list_b[b_href]
         if a_meta['obj'].raw == b_meta['obj'].raw:
-            sync_logger.debug('...same content on both sides.')
+            sync_logger.info('...same content on both sides.')
             status[uid] = a_href, a_meta['etag'], b_href, b_meta['etag']
         elif conflict_resolution is None:
             raise exceptions.SyncConflict()
         elif conflict_resolution == 'a wins':
-            sync_logger.debug('...{} wins.'.format(a_storage))
+            sync_logger.info('...{} wins.'.format(a_storage))
             action_update(uid, 'a', 'b')(storages, status, conflict_resolution)
         elif conflict_resolution == 'b wins':
-            sync_logger.debug('...{} wins.'.format(b_storage))
+            sync_logger.info('...{} wins.'.format(b_storage))
             action_update(uid, 'b', 'a')(storages, status, conflict_resolution)
         else:
             raise ValueError('Invalid conflict resolution mode: {}'

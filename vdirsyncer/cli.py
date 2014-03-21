@@ -179,7 +179,7 @@ def _main(env, file_cfg):
                     '_'.join(filter(bool, (pair_name, collection)))
                 pair_description = \
                     ' from '.join(filter(bool, (collection, pair_name)))
-                cli_logger.debug('Syncing {}'.format(pair_description))
+                cli_logger.info('Syncing {}'.format(pair_description))
                 status = load_status(general['status_path'], status_name)
                 sync(a, b, status,
                      pair_options.get('conflict_resolution', None))
@@ -191,7 +191,7 @@ def _main(env, file_cfg):
 
     app.register_command('sync', sync_command)
 
-    if general.get('verbose', True):
+    if general.get('verbose', False):
         verbose_option()
     else:
         quiet_option()

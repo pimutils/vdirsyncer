@@ -11,7 +11,7 @@ import sys
 
 
 stdout_handler = logging.StreamHandler(sys.stdout)
-default_level = logging.WARNING
+default_level = logging.INFO
 
 
 def create_logger(name):
