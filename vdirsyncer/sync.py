@@ -92,7 +92,7 @@ def action_upload(uid, source, dest):
         source_storage, source_list, source_uid_to_href = storages[source]
         dest_storage, dest_list, dest_uid_to_href = storages[dest]
         sync_logger.info('Copying (uploading) item {} to {}'
-                          .format(uid, dest_storage))
+                         .format(uid, dest_storage))
 
         source_href = source_uid_to_href[uid]
         source_etag = source_list[source_href]['etag']
@@ -113,7 +113,7 @@ def action_update(uid, source, dest):
         source_storage, source_list, source_uid_to_href = storages[source]
         dest_storage, dest_list, dest_uid_to_href = storages[dest]
         sync_logger.info('Copying (updating) item {} to {}'
-                          .format(uid, dest_storage))
+                         .format(uid, dest_storage))
         source_href = source_uid_to_href[uid]
         source_etag = source_list[source_href]['etag']
 
@@ -135,13 +135,13 @@ def action_delete(uid, source, dest):
         if dest is not None:
             dest_storage, dest_list, dest_uid_to_href = storages[dest]
             sync_logger.info('Deleting item {} from {}'
-                              .format(uid, dest_storage))
+                             .format(uid, dest_storage))
             dest_href = dest_uid_to_href[uid]
             dest_etag = dest_list[dest_href]['etag']
             dest_storage.delete(dest_href, dest_etag)
         else:
             sync_logger.info('Deleting status info for nonexisting item {}'
-                              .format(uid))
+                             .format(uid))
         del status[uid]
 
     return inner
@@ -150,7 +150,7 @@ def action_delete(uid, source, dest):
 def action_conflict_resolve(uid):
     def inner(storages, status, conflict_resolution):
         sync_logger.info('Doing conflict resolution for item {}...'
-                          .format(uid))
+                         .format(uid))
         a_storage, list_a, a_uid_to_href = storages['a']
         b_storage, list_b, b_uid_to_href = storages['b']
         a_href = a_uid_to_href[uid]

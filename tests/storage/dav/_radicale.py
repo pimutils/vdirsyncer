@@ -22,8 +22,6 @@ import mock
 from werkzeug.test import Client
 from werkzeug.wrappers import BaseResponse as WerkzeugResponse
 
-import vdirsyncer.exceptions as exceptions
-from vdirsyncer.storage.base import Item
 
 RADICALE_SCHEMA = '''
 create table collection (
@@ -120,6 +118,7 @@ class Response(object):
 
 def wsgi_setup(app):
     c = Client(app, WerkzeugResponse)
+
     def x(session, method, url, data=None, headers=None, **kw):
         path = urlparse.urlparse(url).path
         assert isinstance(data, bytes) or data is None

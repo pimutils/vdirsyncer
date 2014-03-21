@@ -13,7 +13,10 @@ from vdirsyncer.utils import expand_path
 import subprocess
 import os
 
-owncloud_repo = expand_path(os.path.join(os.path.dirname(__file__), '../../../owncloud-testserver/'))
+owncloud_repo = expand_path(os.path.join(
+    os.path.dirname(__file__), '../../../owncloud-testserver/'
+))
+
 
 class ServerMixin(object):
     storage_class = None
@@ -36,4 +39,5 @@ class ServerMixin(object):
                                   'test5', 'test6', 'test7', 'test8', 'test9',
                                   'test10')
 
-        return {'url': url, 'collection': collection, 'username': 'asdf', 'password': 'asdf'}
+        return {'url': url, 'collection': collection,
+                'username': 'asdf', 'password': 'asdf'}
