@@ -9,9 +9,13 @@
 
 from ..base import Storage, Item
 import vdirsyncer.exceptions as exceptions
+import vdirsyncer.log as log
 import requests
 import urlparse
 from lxml import etree
+
+
+dav_logger = log.get('storage.dav')
 
 
 class DavStorage(Storage):
@@ -121,8 +125,16 @@ class DavStorage(Storage):
         if self._session is None:
             self._session = requests.session()
         url = self.parsed_url.scheme + '://' + self.parsed_url.netloc + path
-        return self._session.request(method, url, data=data, headers=headers,
-                                     **self._settings)
+        dav_logger.debug(u'Method: {}'.format(method))
+        dav_logger.debug(u'Path: {}'.format(path))
+        dav_logger.debug(u'/// DATA')
+        dav_logger.debug(data)
+        dav_logger.debug(u'/// END DATA')
+        r = self._session.request(method, url, data=data, headers=headers,
+                                  **self._settings)
+        dav_logger.debug(r.status_code)
+        dav_logger.debug(r.text)
+        return r
 
     @staticmethod
     def _check_response(response):
