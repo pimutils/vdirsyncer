@@ -23,7 +23,7 @@ def wait():
     for i in range(10):
         try:
             requests.get('http://127.0.0.1:8080/')
-        except requests.exceptions.HTTPException:
+        except requests.exceptions.ConnectionError:
             time.sleep(1)
         else:
             return True
