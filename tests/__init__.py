@@ -1,3 +1,6 @@
+import vdirsyncer.log
+vdirsyncer.log.set_level(vdirsyncer.log.logging.DEBUG)
+
 def normalize_item(item):
     # - X-RADICALE-NAME is used by radicale, because hrefs don't really exist
     #   in their filesystem backend
