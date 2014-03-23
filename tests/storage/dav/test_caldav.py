@@ -9,6 +9,7 @@
 '''
 
 
+import pytest
 import requests.exceptions
 from vdirsyncer.storage.dav.caldav import CaldavStorage
 import vdirsyncer.exceptions as exceptions
@@ -44,6 +45,12 @@ END:VEVENT
 END:VCALENDAR'''
 
 
+templates = {
+    'VEVENT': EVENT_TEMPLATE,
+    'VTODO': TASK_TEMPLATE
+}
+
+
 class TestCaldavStorage(DavStorageTests):
     storage_class = CaldavStorage
 
@@ -60,16 +67,21 @@ class TestCaldavStorage(DavStorageTests):
             href_etag_event
         ])
 
-    def test_item_types(self):
+    @pytest.mark.parametrize('item_type', ['VTODO', 'VEVENT'])
+    def test_item_types(self, item_type):
+        other_item_type = 'VTODO' if item_type == 'VEVENT' else 'VEVENT'
         kw = self.get_storage_args()
-        s = self.storage_class(item_types=('VTODO',), **kw)
+        s = self.storage_class(item_types=(item_type,), **kw)
         try:
-            s.upload(self._create_bogus_item(1, item_template=EVENT_TEMPLATE))
-            s.upload(self._create_bogus_item(5, item_template=EVENT_TEMPLATE))
+            s.upload(self._create_bogus_item(
+                1, item_template=templates[other_item_type]))
+            s.upload(self._create_bogus_item(
+                5, item_template=templates[other_item_type]))
         except (exceptions.Error, requests.exceptions.HTTPError):
             pass
         href, etag = \
-            s.upload(self._create_bogus_item(3, item_template=TASK_TEMPLATE))
+            s.upload(self._create_bogus_item(
+                3, item_template=templates[item_type]))
         ((href2, etag2),) = s.list()
         assert href2 == href
         assert etag2 == etag
