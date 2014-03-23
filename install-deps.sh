@@ -1,7 +1,8 @@
 #!/bin/sh
 echo "The shell is $SHELL"
 set -e
-PIP_INSTALL="pip install --use-mirrors --upgrade"
+[ "$IS_TRAVIS" = "true" ] && CFLAGS=-O0 pip install lxml || true
+PIP_INSTALL="pip install --use-mirrors"
 $PIP_INSTALL --editable .
 $PIP_INSTALL -r requirements.txt
 [ -n "$DAV_SERVER" ] || DAV_SERVER=radicale_filesystem
