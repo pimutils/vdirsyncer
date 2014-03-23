@@ -11,4 +11,4 @@ env:
         - DAV_SERVER=owncloud REQUIREMENTS=release
 
 install: "./install-deps.sh"
-script: "./run-tests.sh tests/"
+script: "py.test tests/"

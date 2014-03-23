@@ -31,4 +31,4 @@ How to run the tests
 ::
 
     sh install-deps.sh
-    sh run-tests.sh
+    py.test tests/
