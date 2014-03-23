@@ -6,6 +6,7 @@ PIP_INSTALL="pip install --use-mirrors"
 $PIP_INSTALL --editable .
 $PIP_INSTALL -r requirements.txt
 [ -n "$DAV_SERVER" ] || DAV_SERVER=radicale_filesystem
+[ -n "$REQUIREMENTS" ] || REQUIREMENTS=release
 
 davserver_radicale_filesystem() {
     radicale_deps
@@ -22,6 +23,7 @@ radicale_deps() {
     elif [ "$REQUIREMENTS" = "devel" ]; then
         radicale_pkg="git+https://github.com/Kozea/Radicale.git"
     else
+        echo "Invalid requirements envvar"
         false
     fi
     $PIP_INSTALL werkzeug $radicale_pkg
