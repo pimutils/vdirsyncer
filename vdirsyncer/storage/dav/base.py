@@ -127,6 +127,7 @@ class DavStorage(Storage):
         url = self.parsed_url.scheme + '://' + self.parsed_url.netloc + path
         dav_logger.debug(u'Method: {}'.format(method))
         dav_logger.debug(u'Path: {}'.format(path))
+        dav_logger.debug(u'Headers: {}'.format(headers))
         dav_logger.debug(u'/// DATA')
         dav_logger.debug(data)
         dav_logger.debug(u'/// END DATA')
