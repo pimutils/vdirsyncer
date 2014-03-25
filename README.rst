@@ -6,7 +6,7 @@ vdirsyncer
     :target: https://travis-ci.org/untitaker/vdirsyncer
 
 vdirsyncer synchronizes your calendars and addressbooks between two storages.
-The supported storages are CalDAV, CardDAV and
+The supported storages are CalDAV, CardDAV, arbitrary HTTP resources and
 `vdir <https://github.com/untitaker/vdir>`_.
 
 While i use it daily and haven't experienced data loss (even when vdirsyncer
@@ -15,6 +15,18 @@ questions regarding the usage, feel free to open a new issue.
 
 It aims to be for CalDAV and CardDAV what
 `OfflineIMAP <http://offlineimap.org/>`_ is for IMAP.
+
+CardDAV/CalDAV Server Support
+=====================
+
+vdirsyncer is currently tested against the latest versions Radicale and
+ownCloud. While Radicale seems to work perfectly, ownCloud currently has
+problems detecting collisions and race-conditions. However, given that this is
+a problem with every setup involving ownCloud, and that ownCloud is widely
+used, it apparently isn't big enough of a problem yet.
+
+See `Bug #16 <https://github.com/untitaker/vdirsyncer/issues/16>`_ for
+informations on problems with ownCloud.
 
 How to use
 ==========
