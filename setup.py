@@ -25,5 +25,6 @@ setup(
     entry_points={
         'console_scripts': ['vdirsyncer = vdirsyncer.cli:main']
     },
-    install_requires=['argvard', 'requests', 'lxml']
+    install_requires=['argvard', 'requests', 'lxml'],
+    extras_require={'keyring': ['keyring']}
 )
