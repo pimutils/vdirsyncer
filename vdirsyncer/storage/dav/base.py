@@ -7,7 +7,8 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-from ..base import Storage, Item
+from ..base import Item
+from ..http import HttpStorageBase
 import vdirsyncer.exceptions as exceptions
 import vdirsyncer.log as log
 import requests
@@ -18,7 +19,7 @@ from lxml import etree
 dav_logger = log.get('storage.dav')
 
 
-class DavStorage(Storage):
+class DavStorage(HttpStorageBase):
 
     # the file extension of items. Useful for testing against radicale.
     fileext = None
@@ -38,8 +39,7 @@ class DavStorage(Storage):
     _session = None
     _repr_attributes = ('url', 'username')
 
-    def __init__(self, url, username='', password='', collection=None,
-                 verify=True, auth='basic', useragent='vdirsyncer', **kwargs):
+    def __init__(self, **kwargs):
         '''
         :param url: Base URL or an URL to a collection. Autodiscovery should be
             done via :py:meth:`DavStorage.discover`.
@@ -51,25 +51,6 @@ class DavStorage(Storage):
         :param useragent: Default 'vdirsyncer'.
         '''
         super(DavStorage, self).__init__(**kwargs)
-
-        self._settings = {'verify': verify}
-        if auth == 'basic':
-            self._settings['auth'] = (username, password)
-        elif auth == 'digest':
-            from requests.auth import HTTPDigestAuth
-            self._settings['auth'] = HTTPDigestAuth(username, password)
-        else:
-            raise ValueError('Unknown authentication method: {}'.format(auth))
-
-        self.username, self.password = username, password
-        self.useragent = useragent
-
-        url = url.rstrip('/') + '/'
-        if collection is not None:
-            url = urlparse.urljoin(url, collection)
-        self.url = url.rstrip('/') + '/'
-        self.parsed_url = urlparse.urlparse(self.url)
-        self.collection = collection
 
         headers = self._default_headers()
         headers['Depth'] = 1
@@ -112,12 +93,6 @@ class DavStorage(Storage):
 
     def _get_href(self, uid):
         return self._normalize_href(super(DavStorage, self)._get_href(uid))
-
-    def _default_headers(self):
-        return {
-            'User-Agent': self.useragent,
-            'Content-Type': 'application/xml; charset=UTF-8'
-        }
 
     def _request(self, method, path, data=None, headers=None):
         path = path or self.parsed_url.path
