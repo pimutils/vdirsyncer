@@ -12,7 +12,7 @@ import requests
 import urlparse
 import hashlib
 from .base import Storage, Item
-from vdirsyncer.utils import expand_path
+from vdirsyncer.utils import expand_path, get_password
 
 
 def split_collection(text):
@@ -80,6 +80,9 @@ class HttpStorageBase(Storage):
         :param useragent: Default 'vdirsyncer'.
         '''
         super(HttpStorageBase, self).__init__(**kwargs)
+
+        if username and not password:
+            password = get_password(username, url)
 
         self._settings = {
             'verify': prepare_verify(verify),
