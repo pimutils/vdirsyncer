@@ -25,7 +25,7 @@ loggers = {}
 
 
 def get(name):
-    name = 'watdo.' + name
+    name = 'vdirsyncer.' + name
     if name not in loggers:
         loggers[name] = create_logger(name)
     return loggers[name]
