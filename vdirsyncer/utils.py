@@ -92,7 +92,7 @@ def get_password(username, resource):
     try:
         import keyring
     except ImportError:
-        keyring = None
+        keyring, password = None, None
     else:
         password = keyring.get_password(
             'vdirsyncer:' + hostname, username)
