@@ -40,16 +40,6 @@ class DavStorage(HttpStorageBase):
     _repr_attributes = ('url', 'username')
 
     def __init__(self, **kwargs):
-        '''
-        :param url: Base URL or an URL to a collection. Autodiscovery should be
-            done via :py:meth:`DavStorage.discover`.
-        :param username: Username for authentication.
-        :param password: Password for authentication.
-        :param verify: Verify SSL certificate, default True.
-        :param auth: Authentication method, from {'basic', 'digest'}, default
-            'basic'.
-        :param useragent: Default 'vdirsyncer'.
-        '''
         super(DavStorage, self).__init__(**kwargs)
 
         headers = self._default_headers()

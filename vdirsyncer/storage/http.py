@@ -69,7 +69,16 @@ class HttpStorageBase(Storage):
 
     def __init__(self, url, username='', password='', collection=None,
                  verify=True, auth=None, useragent='vdirsyncer', **kwargs):
-
+        '''
+        :param url: Base URL or an URL to a collection. Autodiscovery should be
+            done via :py:meth:`DavStorage.discover`.
+        :param username: Username for authentication.
+        :param password: Password for authentication.
+        :param verify: Verify SSL certificate, default True.
+        :param auth: Authentication method, from {'basic', 'digest'}, default
+            'basic'.
+        :param useragent: Default 'vdirsyncer'.
+        '''
         super(HttpStorageBase, self).__init__(**kwargs)
 
         self._settings = {
