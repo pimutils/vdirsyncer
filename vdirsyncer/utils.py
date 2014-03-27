@@ -84,9 +84,10 @@ def get_password(username, resource):
     except IOError:
         pass
     else:
-        sync_logger.debug("Read password for user {0} on {1} in .netrc".format(
-            auths[0], hostname))
-        return auths[1]
+        if auths is not None:
+            sync_logger.debug("Read password for user {0} on {1} in .netrc".format(
+                auths[0], hostname))
+            return auths[1]
 
     # keyring
     try:
