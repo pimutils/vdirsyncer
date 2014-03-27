@@ -111,7 +111,7 @@ def get_password(username, resource):
             prompt = 'Save this password in the keyring? [y/N] '
             answer = raw_input(prompt)
         if answer.lower() == 'y':
-            password = keyring.set_password(
+            keyring.set_password(
                 'vdirsyncer:' + hostname, username, password)
 
     return password
