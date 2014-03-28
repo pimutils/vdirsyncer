@@ -109,7 +109,7 @@ class HttpStorage(HttpStorageBase):
     def list(self):
         if self._items is None:
             r = requests.get(self.url, **self._settings)
-            r.raise_on_status()
+            r.raise_for_status()
             self._items = {}
             for item in split_collection(r.text):
                 self._items[item.uid] = item
