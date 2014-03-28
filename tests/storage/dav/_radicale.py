@@ -15,9 +15,8 @@
 import sys
 import os
 import urlparse
-import tempfile
 import shutil
-import mock
+import pytest
 
 from werkzeug.test import Client
 from werkzeug.wrappers import BaseResponse as WerkzeugResponse
@@ -90,11 +89,6 @@ def do_the_radicale_dance(tmpdir):
     else:
         raise RuntimeError()
 
-    # This one is particularly useful with radicale's debugging logs and
-    # pytest-capturelog, however, it is very verbose.
-    #import radicale.log
-    #radicale.log.start()
-
 
 class Response(object):
 
@@ -116,33 +110,28 @@ class Response(object):
             raise HTTPError(str(self.status_code))
 
 
-def wsgi_setup(app):
-    c = Client(app, WerkzeugResponse)
-
-    def x(session, method, url, data=None, headers=None, **kw):
-        path = urlparse.urlparse(url).path
-        assert isinstance(data, bytes) or data is None
-        r = c.open(path=path, method=method, data=data, headers=headers)
-        r = Response(r)
-        return r
-
-    p = mock.patch('requests.Session.request', new=x)
-    p.start()
-    return p.stop
-
-
 class ServerMixin(object):
     '''hrefs are paths without scheme or netloc'''
     storage_class = None
     wsgi_teardown = None
     tmpdir = None
 
-    def setup_method(self, method):
-        self.tmpdir = tempfile.mkdtemp()
-        do_the_radicale_dance(self.tmpdir)
+    @pytest.fixture(autouse=True)
+    def setup(self, monkeypatch, tmpdir):
+        do_the_radicale_dance(str(tmpdir))
         from radicale import Application
         app = Application()
-        self.wsgi_teardown = wsgi_setup(app)
+        c = Client(app, WerkzeugResponse)
+
+        def request(self, method, url, data=None, headers=None, **kw):
+            path = urlparse.urlparse(url).path
+            assert isinstance(data, bytes) or data is None
+            r = c.open(path=path, method=method, data=data,
+                       headers=headers)
+            r = Response(r)
+            return r
+
+        monkeypatch.setattr('requests.sessions.Session.request', request)
 
     def get_storage_args(self, collection='test'):
         url = 'http://127.0.0.1/bob/'
