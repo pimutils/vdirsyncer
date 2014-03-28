@@ -42,8 +42,10 @@ def test_get_password_from_netrc(monkeypatch):
         return username, 'bogus', password
 
     import netrc
-
     monkeypatch.setattr(netrc.netrc, 'authenticators', authenticators)
+
+    import getpass
+    monkeypatch.setattr(getpass, 'getpass', None)
 
     _password = utils.get_password(username, resource)
     assert _password == password
@@ -82,11 +84,14 @@ def test_get_password_from_system_keyring(monkeypatch, resources_to_test):
     import netrc
     netrc_calls = []
 
-    def authenticators(self, h):
-        netrc_calls.append(h)
+    def authenticators(self, hostname):
+        netrc_calls.append(hostname)
         return None
 
     monkeypatch.setattr(netrc.netrc, 'authenticators', authenticators)
+
+    import getpass
+    monkeypatch.setattr(getpass, 'getpass', None)
 
     _password = utils.get_password(username, resource)
     assert _password == password
