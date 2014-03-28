@@ -14,9 +14,12 @@ from vdirsyncer.storage.filesystem import FilesystemStorage
 from . import StorageTests
 
 
-@pytest.mark.usefixtures('class_tmpdir')
 class TestFilesystemStorage(StorageTests):
     storage_class = FilesystemStorage
+
+    @pytest.fixture(autouse=True)
+    def setup(self, tmpdir):
+        self.tmpdir = str(tmpdir)
 
     def get_storage_args(self, collection=None):
         path = self.tmpdir
