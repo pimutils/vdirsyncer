@@ -12,6 +12,7 @@ from .http import HttpStorageBase
 import vdirsyncer.exceptions as exceptions
 import vdirsyncer.log as log
 import requests
+import datetime
 import urlparse
 from lxml import etree
 
@@ -231,8 +232,6 @@ class DavStorage(HttpStorageBase):
                 '{DAV:}prop').find('{DAV:}getetag').text
             href = self._normalize_href(element.find('{DAV:}href').text)
             yield href, etag
-
-
 
 
 class CaldavStorage(DavStorage):

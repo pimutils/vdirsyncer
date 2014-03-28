@@ -104,7 +104,8 @@ class StorageTests(object):
             # Create collections on-the-fly for most storages
             # Except ownCloud, which already has all of them, and more
             i += 1
-            s = self.storage_class(**self.get_storage_args(collection=collection))
+            s = self.storage_class(
+                **self.get_storage_args(collection=collection))
             item = self._create_bogus_item(str(i))
             s.upload(item)
             items.add(item.raw)

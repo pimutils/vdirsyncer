@@ -100,7 +100,8 @@ def get_password(username, resource):
         password = None
 
         while True:
-            password = keyring.get_password(password_key_prefix + key, username)
+            password = keyring.get_password(password_key_prefix + key,
+                                            username)
             if password is not None:
                 return password
 
@@ -139,6 +140,7 @@ def get_password(username, resource):
             prompt = 'Save this password in the keyring? [y/N] '
             answer = raw_input(prompt).lower()
         if answer == 'y':
-            keyring.set_password(password_key_prefix + resource, username, password)
+            keyring.set_password(password_key_prefix + resource,
+                                 username, password)
 
     return password
