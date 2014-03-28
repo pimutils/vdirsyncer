@@ -8,8 +8,10 @@
 '''
 
 import os
-
 import vdirsyncer.log
+
+password_key_prefix = 'vdirsyncer:'
+
 
 def expand_path(p):
     p = os.path.expanduser(p)
@@ -65,54 +67,78 @@ def get_password(username, resource):
 
     """
     import getpass
-    from netrc import netrc
     try:
-        from urlparse import urlsplit
+        from urlparse import urlsplit, urlunsplit
     except ImportError:
-        from urllib.parse import urlsplit
+        from urllib.parse import urlsplit, urlunsplit
 
-    sync_logger = vdirsyncer.log.get('sync')
-
-    # XXX is it save to asume that a password is always the same for
-    # any given (hostname, username) combination?
-    hostname = urlsplit(resource).hostname
-
-    # netrc
-    try:
-        auths = netrc().authenticators(hostname)
-        # auths = (user, password)
-    except IOError:
-        pass
-    else:
-        if auths is not None:
-            sync_logger.debug("Read password for user {0} on {1} in .netrc".format(
-                auths[0], hostname))
-            return auths[1]
-
-    # keyring
     try:
         import keyring
     except ImportError:
-        keyring, password = None, None
-    else:
-        password = keyring.get_password(
-            'vdirsyncer:' + hostname, username)
+        keyring = None
+
+    logger = vdirsyncer.log.get('sync')
+    hostname = urlsplit(resource).hostname
+
+    def _netrc():
+        '''.netrc'''
+        from netrc import netrc
+        try:
+            netrc_user, account, password = \
+                netrc().authenticators(hostname) or (None, None, None)
+            if netrc_user == username:
+                return password
+        except IOError:
+            pass
+
+    def _keyring():
+        '''system keyring'''
+        if keyring is None:
+            return None
+
+        key = resource
+        password = None
+
+        while True:
+            password = keyring.get_password(password_key_prefix + key, username)
+            if password is not None:
+                return password
+
+            parsed = urlsplit(key)
+            path = parsed.path
+            if path.endswith('/'):
+                path = path.rstrip('/')
+            else:
+                path = path.rsplit('/', 1)[0] + '/'
+
+            new_key = urlunsplit((
+                parsed.scheme,
+                parsed.netloc,
+                path,
+                parsed.query,
+                parsed.fragment
+            ))
+            if new_key == key:
+                return None
+            key = new_key
+
+    for func in (_netrc, _keyring):
+        password = func()
         if password is not None:
-            sync_logger.debug("Got password for user {0}@{1} from keyring".format(
-                username, hostname))
+            logger.debug('Got password for {} from {}'
+                         .format(username, func.__doc__))
             return password
 
-    if password is None:
-        prompt = 'Server password {0}@{1}: '.format(username, hostname)
-        password = getpass.getpass(prompt=prompt)
+    prompt = ('Server password for {} at the resource {}: '
+              .format(username, resource))
+    password = getpass.getpass(prompt=prompt)
 
-    if keyring:
-        answer = 'x'
-        while answer.lower() not in ['', 'y', 'n']:
+    if keyring is not None:
+        answer = None
+        while answer not in ['', 'y', 'n']:
             prompt = 'Save this password in the keyring? [y/N] '
-            answer = raw_input(prompt)
-        if answer.lower() == 'y':
-            keyring.set_password(
-                'vdirsyncer:' + hostname, username, password)
+            answer = raw_input(prompt).lower()
+        if answer == 'y':
+            keyring.set_password(password_key_prefix + resource, username, password)
 
     return password
