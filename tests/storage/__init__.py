@@ -108,6 +108,11 @@ class StorageTests(object):
                 i += 1
                 s = self.storage_class(
                     **self.get_storage_args(collection=collection))
+
+                # radicale ignores empty collections during discovery
+                item = self._create_bogus_item(str(i))
+                s.upload(item)
+
                 collections.add(s.collection)
         main()  # remove leftover variables from loop for safety
 
