@@ -18,8 +18,6 @@ import urlparse
 import shutil
 import pytest
 
-from tests import log_request, log_response
-
 from werkzeug.test import Client
 from werkzeug.wrappers import BaseResponse as WerkzeugResponse
 
@@ -118,8 +116,6 @@ class ServerMixin(object):
         from requests import Response
 
         def send(self, request, *args, **kwargs):
-            log_request(request.method, request.url, request.body,
-                        request.headers)
             path = urlparse.urlparse(request.url).path
             wr = c.open(path=path, method=request.method,
                         data=request.body, headers=dict(request.headers))
@@ -129,7 +125,6 @@ class ServerMixin(object):
             r.headers = wr.headers
             r.encoding = wr.charset
             r.status_code = wr.status_code
-            log_response(r)
             return r
 
 

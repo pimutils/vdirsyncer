@@ -15,7 +15,6 @@ import os
 import time
 import pytest
 import requests
-from tests import requests_mock
 
 owncloud_repo = expand_path(os.path.join(
     os.path.dirname(__file__), '../../../owncloud-testserver/'
@@ -46,7 +45,6 @@ class ServerMixin(object):
 
         xprocess.ensure('owncloud_server', preparefunc)
         subprocess.check_call([os.path.join(owncloud_repo, 'reset.sh')])
-        requests_mock(monkeypatch)
 
     def get_storage_args(self, collection='test'):
         url = 'http://127.0.0.1:8080'
