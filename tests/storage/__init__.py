@@ -118,7 +118,7 @@ class StorageTests(object):
 
         def main():
             for s in d:
-                if not s.collection.startswith('test'):
+                if s.collection not in collections:
                     # ownCloud has many more collections, as on-the-fly
                     # creation doesn't really work there. Skip those
                     # collections, as they are not relevant to us.
