@@ -98,7 +98,7 @@ class StorageTests(object):
         assert list(s.list())
 
     def test_discover(self):
-        collections = {}
+        collections = set()
 
         def main():
             for i in range(1, 5):
@@ -108,9 +108,7 @@ class StorageTests(object):
                 i += 1
                 s = self.storage_class(
                     **self.get_storage_args(collection=collection))
-                item = self._create_bogus_item(str(i))
-                s.upload(item)
-                collections[s.collection] = normalize_item(item)
+                collections.add(s.collection)
         main()  # remove leftover variables from loop for safety
 
         d = self.storage_class.discover(
@@ -124,10 +122,7 @@ class StorageTests(object):
                     # collections, as they are not relevant to us.
                     print('Skipping {}'.format(s.collection))
                     continue
-                ((href, etag),) = s.list()
-                item, etag = s.get(href)
-                assert collections[s.collection] == normalize_item(item)
-                del collections[s.collection]
+                collections.remove(s.collection)
         main()
 
         assert not collections

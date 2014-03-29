@@ -49,8 +49,7 @@ class FilesystemStorage(Storage):
             raise TypeError('collection argument must not be given.')
         for collection in os.listdir(path):
             s = cls(path=path, collection=collection, **kwargs)
-            if next(s.list(), None) is not None:
-                yield s
+            yield s
 
     def _get_filepath(self, href):
         return os.path.join(self.path, href)
