@@ -118,9 +118,12 @@ class StorageTests(object):
                 # doesn't really work there. Skip those collections, as they
                 # are not relevant to us.
                 continue
+            collection = collections.remove(s.collection)
             ((href, etag),) = s.list()
             item, etag = s.get(href)
             assert item.raw in items
+
+        assert not collections
 
     def test_collection_arg(self):
         s = self.storage_class(**self.get_storage_args(collection='test2'))

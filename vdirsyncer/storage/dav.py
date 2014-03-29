@@ -94,17 +94,8 @@ class DavStorage(HttpStorageBase):
         if self._session is None:
             self._session = requests.session()
         url = self.parsed_url.scheme + '://' + self.parsed_url.netloc + path
-        dav_logger.debug(u'Method: {}'.format(method))
-        dav_logger.debug(u'Path: {}'.format(path))
-        dav_logger.debug(u'Headers: {}'.format(headers))
-        dav_logger.debug(u'/// DATA')
-        dav_logger.debug(data)
-        dav_logger.debug(u'/// END DATA')
-        r = self._session.request(method, url, data=data, headers=headers,
-                                  **self._settings)
-        dav_logger.debug(r.status_code)
-        dav_logger.debug(r.text)
-        return r
+        return self._session.request(method, url, data=data, headers=headers,
+                                     **self._settings)
 
     @staticmethod
     def _check_response(response):
