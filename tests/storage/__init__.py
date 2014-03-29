@@ -9,7 +9,7 @@
 
 from vdirsyncer.storage.base import Item
 import vdirsyncer.exceptions as exceptions
-from .. import assert_item_equals
+from .. import assert_item_equals, normalize_item
 import random
 import pytest
 
@@ -98,30 +98,37 @@ class StorageTests(object):
         assert list(s.list())
 
     def test_discover(self):
-        items = set()
-        collections = set(['test1', 'test2', 'test3', 'test4'])
-        for i, collection in enumerate(collections):
-            # Create collections on-the-fly for most storages
-            # Except ownCloud, which already has all of them, and more
-            i += 1
-            s = self.storage_class(
-                **self.get_storage_args(collection=collection))
-            item = self._create_bogus_item(str(i))
-            s.upload(item)
-            items.add(item.raw)
+        collections = {}
+
+        def main():
+            for i in range(1, 5):
+                collection = 'test{}'.format(i)
+                # Create collections on-the-fly for most storages
+                # Except ownCloud, which already has all of them, and more
+                i += 1
+                s = self.storage_class(
+                    **self.get_storage_args(collection=collection))
+                item = self._create_bogus_item(str(i))
+                s.upload(item)
+                collections[s.collection] = normalize_item(item)
+        main()  # remove leftover variables from loop for safety
 
         d = self.storage_class.discover(
             **self.get_storage_args(collection=None))
-        for s in d:
-            if s.collection not in collections:
-                # ownCloud has many more collections, as on-the-fly creation
-                # doesn't really work there. Skip those collections, as they
-                # are not relevant to us.
-                continue
-            collection = collections.remove(s.collection)
-            ((href, etag),) = s.list()
-            item, etag = s.get(href)
-            assert item.raw in items
+
+        def main():
+            for s in d:
+                if not s.collection.startswith('test'):
+                    # ownCloud has many more collections, as on-the-fly
+                    # creation doesn't really work there. Skip those
+                    # collections, as they are not relevant to us.
+                    print('Skipping {}'.format(s.collection))
+                    continue
+                ((href, etag),) = s.list()
+                item, etag = s.get(href)
+                assert collections[s.collection] == normalize_item(item)
+                del collections[s.collection]
+        main()
 
         assert not collections
 

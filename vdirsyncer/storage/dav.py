@@ -69,9 +69,10 @@ class DavStorage(HttpStorageBase):
             ssl_verify=kwargs.get('verify', True)
         )
         for c in d.discover():
-            collection = c['href']
+            collection = urlparse.urljoin(url, c['href'])
             if collection.startswith(url):
                 collection = collection[len(url):]
+            collection = collection.rstrip('/')
             s = cls(url=url, collection=collection, **kwargs)
             s.displayname = c['displayname']
             yield s
