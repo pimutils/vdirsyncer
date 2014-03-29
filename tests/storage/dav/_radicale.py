@@ -74,7 +74,17 @@ def do_the_radicale_dance(tmpdir):
     import radicale.config
 
     # Now we can set some basic configuration.
-    radicale.config.set('rights', 'type', 'None')
+    radicale.config.set('rights', 'type', 'owner_only')
+    radicale.config.set('auth', 'type', 'http')
+
+
+    import radicale.auth.http
+    def is_authenticated(user, password):
+        if user is None:
+            return False
+        assert user == 'bob' and password == 'bob'
+        return True
+    radicale.auth.http.is_authenticated = is_authenticated
 
     if dav_server == 'radicale_filesystem':
         radicale.config.set('storage', 'type', 'filesystem')
@@ -92,26 +102,6 @@ def do_the_radicale_dance(tmpdir):
         raise RuntimeError()
 
 
-class Response(object):
-
-    '''Fake API of requests module'''
-
-    def __init__(self, x):
-        self.x = x
-        self.status_code = x.status_code
-        self.content = x.get_data(as_text=False)
-        self.text = x.get_data(as_text=True)
-        self.headers = x.headers
-        self.encoding = x.charset
-        self.reason = str(x.status)
-
-    def raise_for_status(self):
-        '''copied from requests itself'''
-        if 400 <= self.status_code < 600:
-            from requests.exceptions import HTTPError
-            raise HTTPError(str(self.status_code))
-
-
 class ServerMixin(object):
     '''hrefs are paths without scheme or netloc'''
     storage_class = None
@@ -125,22 +115,33 @@ class ServerMixin(object):
         app = Application()
         c = Client(app, WerkzeugResponse)
 
-        def request(self, method, url, data=None, headers=None, **kw):
-            path = urlparse.urlparse(url).path
-            log_request(method, url, data, headers)
-            assert isinstance(data, bytes) or data is None
-            r = Response(c.open(path=path, method=method, data=data,
-                                headers=headers))
+        from requests import Response
+
+        def send(self, request, *args, **kwargs):
+            log_request(request.method, request.url, request.body,
+                        request.headers)
+            path = urlparse.urlparse(request.url).path
+            wr = c.open(path=path, method=request.method,
+                        data=request.body, headers=dict(request.headers))
+            r = Response()
+            r.request = request
+            r._content = wr.get_data(as_text=False)
+            r.headers = wr.headers
+            r.encoding = wr.charset
+            r.status_code = wr.status_code
             log_response(r)
             return r
 
-        monkeypatch.setattr('requests.sessions.Session.request', request)
+
+        monkeypatch.setattr('requests.adapters.HTTPAdapter.send', send)
 
     def get_storage_args(self, collection='test'):
         url = 'http://127.0.0.1/bob/'
         if collection is not None:
             collection += self.storage_class.fileext
-        return {'url': url, 'collection': collection}
+
+        return {'url': url, 'username': 'bob', 'password': 'bob',
+                'collection': collection}
 
     def teardown_method(self, method):
         self.app = None
