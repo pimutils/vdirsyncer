@@ -18,6 +18,8 @@ import urlparse
 import shutil
 import pytest
 
+from tests import log_request, log_response
+
 from werkzeug.test import Client
 from werkzeug.wrappers import BaseResponse as WerkzeugResponse
 
@@ -125,10 +127,11 @@ class ServerMixin(object):
 
         def request(self, method, url, data=None, headers=None, **kw):
             path = urlparse.urlparse(url).path
+            log_request(method, url, data, headers)
             assert isinstance(data, bytes) or data is None
-            r = c.open(path=path, method=method, data=data,
-                       headers=headers)
-            r = Response(r)
+            r = Response(c.open(path=path, method=method, data=data,
+                                headers=headers))
+            log_response(r)
             return r
 
         monkeypatch.setattr('requests.sessions.Session.request', request)
