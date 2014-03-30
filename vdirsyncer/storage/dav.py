@@ -80,11 +80,9 @@ class DavStorage(HttpStorageBase):
     def _normalize_href(self, href):
         '''Normalize the href to be a path only relative to hostname and
         schema.'''
-        href = urlparse.urlparse(href).path
-        if href.startswith('/'):
-            return href
-        assert '/' not in href
-        return self.parsed_url.path + href
+        x = urlparse.urljoin(self.url, href)
+        assert x.startswith(self.url)
+        return urlparse.urlsplit(x).path
 
     def _get_href(self, uid):
         return self._normalize_href(super(DavStorage, self)._get_href(uid))
