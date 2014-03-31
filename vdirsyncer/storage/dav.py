@@ -161,7 +161,7 @@ class DavStorage(HttpStorageBase):
 
     def _put(self, href, obj, etag):
         headers = self._default_headers()
-        headers['Content-Type'] = self.item_mimetype,
+        headers['Content-Type'] = self.item_mimetype
         if etag is None:
             headers['If-None-Match'] = '*'
         else:
