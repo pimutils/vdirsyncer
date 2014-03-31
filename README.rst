@@ -31,7 +31,11 @@ informations on problems with ownCloud.
 How to use
 ==========
 
-Copy ``example.cfg`` to ``~/.vdirsyncer/config`` and edit it. You can use the
+As all Python packages, vdirsyncer can be installed with ``pip``::
+
+    pip install --user vdirsyncer  # use the pip for Python 2
+
+Then copy ``example.cfg`` to ``~/.vdirsyncer/config`` and edit it. You can use the
 `VDIRSYNCER_CONFIG` environment variable to change the path vdirsyncer will
 read the config from.
 
