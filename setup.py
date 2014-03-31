@@ -14,11 +14,12 @@ from setuptools import setup, find_packages
 
 setup(
     name='vdirsyncer',
-    version='0.1.0',
+    version='0.1.1',
     author='Markus Unterwaditzer',
     author_email='markus@unterwaditzer.net',
     url='https://github.com/untitaker/vdirsyncer',
     description='A syncronization tool for vdir',
+    license='MIT',
     long_description=open('README.rst').read(),
     packages=find_packages(exclude=['tests']),
     include_package_data=True,

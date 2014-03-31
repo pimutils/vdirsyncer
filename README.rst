@@ -17,7 +17,7 @@ It aims to be for CalDAV and CardDAV what
 `OfflineIMAP <http://offlineimap.org/>`_ is for IMAP.
 
 CardDAV/CalDAV Server Support
-=====================
+=============================
 
 vdirsyncer is currently tested against the latest versions Radicale and
 ownCloud. While Radicale seems to work perfectly, ownCloud currently has
@@ -51,3 +51,8 @@ How to run the tests
 
     sh install-deps.sh
     py.test tests/
+
+License
+=======
+
+vdirsyncer is released under the MIT License, see ``LICENSE`` for more details.
