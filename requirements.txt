@@ -1,4 +1,3 @@
 pytest
 pytest-xprocess
-mock
 git+https://github.com/geier/leif
