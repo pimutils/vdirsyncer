@@ -8,3 +8,4 @@ owncloud-testserver
 *.egg-info
 .cache
 .xprocess
+dist
