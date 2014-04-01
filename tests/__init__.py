@@ -8,7 +8,6 @@
     :copyright: (c) 2014 Markus Unterwaditzer
     :license: MIT, see LICENSE for more details.
 '''
-__version__ = '0.1.1'
 
 import vdirsyncer.log
 vdirsyncer.log.set_level(vdirsyncer.log.logging.DEBUG)
