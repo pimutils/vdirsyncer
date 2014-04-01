@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
-    vdirsyncer.tests.storage.dav._owncloud
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    tests.storage.dav._owncloud
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Using utilities from paste to wrap the PHP application into WSGI.
 

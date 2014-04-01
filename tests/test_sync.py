@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
-    vdirsyncer.tests.test_sync
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    tests.test_sync
+    ~~~~~~~~~~~~~~~
 
     :copyright: (c) 2014 Markus Unterwaditzer
     :license: MIT, see LICENSE for more details.

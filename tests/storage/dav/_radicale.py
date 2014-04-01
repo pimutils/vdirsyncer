@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
-    vdirsyncer.tests.storage.dav._radicale
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    tests.storage.dav._radicale
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Using the Radicale CalDAV/CardDAV server to test the CalDAV and CardDAV
     storages. Done by using Werkzeug's test client for WSGI apps. While this is

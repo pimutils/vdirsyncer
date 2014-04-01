@@ -1,8 +1,7 @@
-
 # -*- coding: utf-8 -*-
 '''
-    vdirsyncer.tests.storage.dav.test_main
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    tests.storage.dav.test_main
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     :copyright: (c) 2014 Markus Unterwaditzer
     :license: MIT, see LICENSE for more details.
