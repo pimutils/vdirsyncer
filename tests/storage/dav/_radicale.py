@@ -101,10 +101,6 @@ def do_the_radicale_dance(tmpdir):
 
 
 class ServerMixin(object):
-    '''hrefs are paths without scheme or netloc'''
-    storage_class = None
-    wsgi_teardown = None
-    tmpdir = None
 
     @pytest.fixture(autouse=True)
     def setup(self, monkeypatch, tmpdir):
@@ -137,12 +133,3 @@ class ServerMixin(object):
 
         return {'url': url, 'username': 'bob', 'password': 'bob',
                 'collection': collection}
-
-    def teardown_method(self, method):
-        self.app = None
-        if self.tmpdir is not None:
-            shutil.rmtree(self.tmpdir)
-            self.tmpdir = None
-        if self.wsgi_teardown is not None:
-            self.wsgi_teardown()
-            self.wsgi_teardown = None
