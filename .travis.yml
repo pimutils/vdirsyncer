@@ -3,6 +3,7 @@ python: "2.7"
 env:
     global:
         - IS_TRAVIS=true
+        - CFLAGS=-O0
     matrix:
         - DAV_SERVER=radicale_filesystem REQUIREMENTS=release
         - DAV_SERVER=radicale_filesystem REQUIREMENTS=devel
@@ -10,5 +11,11 @@ env:
         - DAV_SERVER=radicale_database REQUIREMENTS=devel
         - DAV_SERVER=owncloud REQUIREMENTS=release
 
-install: "./install-deps.sh"
-script: "py.test -l tests/"
+install:
+    - "./install-deps.sh"
+    - "pip install coveralls"
+script:
+    - "coverage run --source=vdirsyncer/,tests/ --module pytest"
+after_success:
+    - "coverage report --show-missing"
+    - "coveralls"
