@@ -78,8 +78,6 @@ def do_the_radicale_dance(tmpdir):
 
     import radicale.auth.http
     def is_authenticated(user, password):
-        if user is None:
-            return False
         assert user == 'bob' and password == 'bob'
         return True
     radicale.auth.http.is_authenticated = is_authenticated
