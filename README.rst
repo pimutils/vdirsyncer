@@ -2,9 +2,6 @@
 vdirsyncer
 ==========
 
-.. image:: https://travis-ci.org/untitaker/vdirsyncer.png?branch=master
-    :target: https://travis-ci.org/untitaker/vdirsyncer
-
 vdirsyncer synchronizes your calendars and addressbooks between two storages.
 The supported storages are CalDAV, CardDAV, arbitrary HTTP resources and
 `vdir <https://github.com/untitaker/vdir>`_.
@@ -51,6 +48,12 @@ How to run the tests
 
     sh install-deps.sh
     py.test tests/
+
+.. image:: https://travis-ci.org/untitaker/vdirsyncer.png?branch=master
+    :target: https://travis-ci.org/untitaker/vdirsyncer
+
+.. image:: https://coveralls.io/repos/untitaker/vdirsyncer/badge.png?branch=master
+    :target: https://coveralls.io/r/untitaker/vdirsyncer?branch=master
 
 License
 =======
