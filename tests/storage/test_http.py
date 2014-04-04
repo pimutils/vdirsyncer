@@ -18,25 +18,15 @@ class TestHttpStorage(object):
     def test_list(self, monkeypatch):
         collection_url = 'http://127.0.0.1/calendar/collection/'
 
-        responses = [
+        items = [
             dedent(b'''
-                    BEGIN:VCALENDAR
-                    VERSION:2.0
-                    PRODID:http://www.example.com/calendarapplication/
-                    METHOD:PUBLISH
                     BEGIN:VEVENT
-                    UID:461092315540@example.com
-                    LOCATION:Somewhere
                     SUMMARY:Eine Kurzinfo
                     DESCRIPTION:Beschreibung des Termines
-                    CLASS:PUBLIC
-                    DTSTART:20060910T220000Z
-                    DTEND:20060919T215900Z
-                    DTSTAMP:20060812T125900Z
                     END:VEVENT
+                   ''').strip(),
+            dedent(b'''
                     BEGIN:VEVENT
-                    UID:461092315asdasd540@example.com
-                    LOCATION:Somewhere else
                     SUMMARY:Eine zweite Kurzinfo
                     DESCRIPTION:Beschreibung des anderen Termines
                     BEGIN:VALARM
@@ -47,8 +37,11 @@ class TestHttpStorage(object):
                     DURATION:PT1H
                     END:VALARM
                     END:VEVENT
-                    END:VCALENDAR
-                ''')
+                   ''').strip()
+        ]
+
+        responses = [
+            '\n'.join([b'BEGIN:VCALENDAR'] + items + [b'END:VCALENDAR'])
         ]
 
         def get(*a, **kw):
@@ -61,40 +54,10 @@ class TestHttpStorage(object):
         monkeypatch.setattr('requests.get', get)
 
         s = HttpStorage(url=collection_url)
-        l = list(s.list())
 
-        hrefs = set(href for href, etag in l)
-        href1 = u'461092315540@example.com'
-        href2 = u'461092315asdasd540@example.com'
-        assert hrefs == set((href1, href2))
+        for href, etag in s.list():
+            item, etag2 = s.get(href)
+            assert etag2 == etag
+            items.remove(item.raw.strip())
 
-        item, etag = s.get(href1)
-        assert_item_equals(item, Item(dedent(u'''
-            BEGIN:VEVENT
-            UID:461092315540@example.com
-            LOCATION:Somewhere
-            SUMMARY:Eine Kurzinfo
-            DESCRIPTION:Beschreibung des Termines
-            CLASS:PUBLIC
-            DTSTART:20060910T220000Z
-            DTEND:20060919T215900Z
-            DTSTAMP:20060812T125900Z
-            END:VEVENT
-        ''').strip()))
-
-        item, etag = s.get(href2)
-        assert_item_equals(item, Item(dedent(u'''
-            BEGIN:VEVENT
-            UID:461092315asdasd540@example.com
-            LOCATION:Somewhere else
-            SUMMARY:Eine zweite Kurzinfo
-            DESCRIPTION:Beschreibung des anderen Termines
-            BEGIN:VALARM
-            ACTION:AUDIO
-            TRIGGER:19980403T120000
-            ATTACH;FMTTYPE=audio/basic:http://host.com/pub/ssbanner.aud
-            REPEAT:4
-            DURATION:PT1H
-            END:VALARM
-            END:VEVENT
-        ''').strip()))
+        assert not items

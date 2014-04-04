@@ -65,7 +65,6 @@ def prepare_verify(verify):
 
 class HttpStorageBase(Storage):
     _repr_attributes = ('username', 'url')
-    _items = None
 
     def __init__(self, url, username='', password='', collection=None,
                  verify=True, auth=None, useragent='vdirsyncer', **kwargs):
@@ -106,20 +105,27 @@ class HttpStorageBase(Storage):
 
 
 class HttpStorage(HttpStorageBase):
+
+    _items = None
+
+    def __init__(self, **kwargs):
+        super(HttpStorage, self).__init__(**kwargs)
+        self._items = {}
+
     def list(self):
-        if self._items is None:
-            r = requests.get(self.url, **self._settings)
-            r.raise_for_status()
-            self._items = {}
-            for item in split_collection(r.text):
-                self._items[item.uid] = item
+        r = requests.get(self.url, **self._settings)
+        r.raise_for_status()
+        self._items.clear()
+        for i, item in enumerate(split_collection(r.text)):
+            uid = item.uid if item.uid is not None else i
+            self._items[uid] = item
 
         for uid, item in self._items.items():
-            yield uid, hashlib.sha256(item.raw)
+            yield uid, hashlib.sha256(item.raw).hexdigest()
 
     def get(self, href):
         x = self._items[href]
-        return x, hashlib.sha256(x.raw)
+        return x, hashlib.sha256(x.raw).hexdigest()
 
     def has(self, href):
         return href in self._items
