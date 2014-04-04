@@ -42,7 +42,7 @@ class TestHttpStorage(object):
 
         responses = [
             '\n'.join([b'BEGIN:VCALENDAR'] + items + [b'END:VCALENDAR'])
-        ]
+        ] * 2
 
         def get(*a, **kw):
             r = Response()
@@ -55,9 +55,16 @@ class TestHttpStorage(object):
 
         s = HttpStorage(url=collection_url)
 
+        found_items = {}
+
         for href, etag in s.list():
             item, etag2 = s.get(href)
             assert etag2 == etag
-            items.remove(item.raw.strip())
+            found_items[item.raw.strip()] = href
 
-        assert not items
+        assert set(found_items) == set(items)
+
+        for href, etag in s.list():
+            item, etag2 = s.get(href)
+            assert etag2 == etag
+            assert found_items[item.raw.strip()] == href
