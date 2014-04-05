@@ -7,7 +7,7 @@ set -e
 if [ "$IS_TRAVIS" = "true" ]; then
     PIP_INSTALL="pip install --use-wheel --no-index --find-links=http://dev.unterwaditzer.net/vdirsyncer/wheels/"
     pip install --upgrade wheel pip setuptools
-else:
+else
     PIP_INSTALL="pip install"
 fi
 $PIP_INSTALL --editable .
