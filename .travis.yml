@@ -16,7 +16,6 @@ install:
     - "pip install coveralls"
 script:
     - "coverage run --source=vdirsyncer/,tests/ --module pytest"
-after_success:
     - "coverage report --show-missing"
     - "coveralls"
 
