@@ -23,21 +23,21 @@ def prepare_list(storage, href_to_uid):
         if href in href_to_uid:
             props['uid'] = href_to_uid[href]
         else:
-            obj, new_etag = storage.get(href)
+            item, new_etag = storage.get(href)
             assert etag == new_etag
-            props['uid'] = obj.uid
-            props['obj'] = obj
+            props['uid'] = item.uid
+            props['item'] = item
         yield href, props
 
 
 def prefetch(storage, item_list, hrefs):
     hrefs_to_prefetch = []
     for href in hrefs:
-        if 'obj' not in item_list[href]:
+        if 'item' not in item_list[href]:
             hrefs_to_prefetch.append(href)
-    for href, obj, etag in storage.get_multi(hrefs_to_prefetch):
+    for href, item, etag in storage.get_multi(hrefs_to_prefetch):
         assert item_list[href]['etag'] == etag
-        item_list[href]['obj'] = obj
+        item_list[href]['item'] = item
 
 
 def sync(storage_a, storage_b, status, conflict_resolution=None):
@@ -63,7 +63,7 @@ def sync(storage_a, storage_b, status, conflict_resolution=None):
         (href_b, uid)
         for uid, (href_a, etag_a, href_b, etag_b) in status.iteritems()
     )
-    # href => {'etag': etag, 'obj': optional object, 'uid': uid}
+    # href => {'etag': etag, 'item': optional item, 'uid': uid}
     list_a = dict(prepare_list(storage_a, a_href_to_uid))
     list_b = dict(prepare_list(storage_b, b_href_to_uid))
 
@@ -97,8 +97,8 @@ def action_upload(uid, source, dest):
         source_href = source_uid_to_href[uid]
         source_etag = source_list[source_href]['etag']
 
-        obj = source_list[source_href]['obj']
-        dest_href, dest_etag = dest_storage.upload(obj)
+        item = source_list[source_href]['item']
+        dest_href, dest_etag = dest_storage.upload(item)
 
         source_status = (source_href, source_etag)
         dest_status = (dest_href, dest_etag)
@@ -119,8 +119,8 @@ def action_update(uid, source, dest):
 
         dest_href = dest_uid_to_href[uid]
         old_etag = dest_list[dest_href]['etag']
-        obj = source_list[source_href]['obj']
-        dest_etag = dest_storage.update(dest_href, obj, old_etag)
+        item = source_list[source_href]['item']
+        dest_etag = dest_storage.update(dest_href, item, old_etag)
 
         source_status = (source_href, source_etag)
         dest_status = (dest_href, dest_etag)
@@ -157,7 +157,7 @@ def action_conflict_resolve(uid):
         b_href = b_uid_to_href[uid]
         a_meta = list_a[a_href]
         b_meta = list_b[b_href]
-        if a_meta['obj'].raw == b_meta['obj'].raw:
+        if a_meta['item'].raw == b_meta['item'].raw:
             sync_logger.info('...same content on both sides.')
             status[uid] = a_href, a_meta['etag'], b_href, b_meta['etag']
         elif conflict_resolution is None:

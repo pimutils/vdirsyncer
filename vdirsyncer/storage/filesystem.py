@@ -76,28 +76,28 @@ class FilesystemStorage(Storage):
     def has(self, href):
         return os.path.isfile(self._get_filepath(href))
 
-    def upload(self, obj):
-        href = self._get_href(obj.uid)
+    def upload(self, item):
+        href = self._get_href(item.uid)
         fpath = self._get_filepath(href)
         if os.path.exists(fpath):
-            raise exceptions.AlreadyExistingError(obj.uid)
+            raise exceptions.AlreadyExistingError(item.uid)
         with open(fpath, 'wb+') as f:
-            f.write(obj.raw.encode(self.encoding))
+            f.write(item.raw.encode(self.encoding))
         return href, _get_etag(fpath)
 
-    def update(self, href, obj, etag):
+    def update(self, href, item, etag):
         fpath = self._get_filepath(href)
-        if href != self._get_href(obj.uid):
+        if href != self._get_href(item.uid):
             logger.warning('href != uid + fileext: href={}; uid={}'
-                           .format(href, obj.uid))
+                           .format(href, item.uid))
         if not os.path.exists(fpath):
-            raise exceptions.NotFoundError(obj.uid)
+            raise exceptions.NotFoundError(item.uid)
         actual_etag = _get_etag(fpath)
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
 
         with open(fpath, 'wb') as f:
-            f.write(obj.raw.encode('utf-8'))
+            f.write(item.raw.encode('utf-8'))
         return _get_etag(fpath)
 
     def delete(self, href, etag):

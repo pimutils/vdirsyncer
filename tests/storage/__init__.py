@@ -44,9 +44,9 @@ class StorageTests(object):
             assert isinstance(href, (str, unicode))
             assert isinstance(etag, (str, unicode))
             assert s.has(href)
-            obj, etag2 = s.get(href)
+            item, etag2 = s.get(href)
             assert etag == etag2
-            assert 'UID:{}'.format(obj.uid) in obj.raw
+            assert 'UID:{}'.format(item.uid) in item.raw
 
     def test_upload_already_existing(self):
         s = self._get_storage()
@@ -81,10 +81,10 @@ class StorageTests(object):
 
     def test_wrong_etag(self):
         s = self._get_storage()
-        obj = self._create_bogus_item(1)
-        href, etag = s.upload(obj)
+        item = self._create_bogus_item(1)
+        href, etag = s.upload(item)
         with pytest.raises(exceptions.PreconditionFailed):
-            s.update(href, obj, '"lolnope"')
+            s.update(href, item, '"lolnope"')
         with pytest.raises(exceptions.PreconditionFailed):
             s.delete(href, '"lolnope"')
 

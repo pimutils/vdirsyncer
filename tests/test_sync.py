@@ -135,10 +135,10 @@ def test_conflict_resolution_both_etags_new():
     with pytest.raises(exceptions.SyncConflict):
         sync(a, b, status)
     sync(a, b, status, conflict_resolution='a wins')
-    obj_a, _ = a.get(href_a)
-    obj_b, _ = b.get(href_b)
-    assert_item_equals(obj_a, obj_b)
-    n = normalize_item(obj_a)
+    item_a, _ = a.get(href_a)
+    item_b, _ = b.get(href_b)
+    assert_item_equals(item_a, item_b)
+    n = normalize_item(item_a)
     assert u'UID:1' in n
     assert u'ASDASD' in n
 

@@ -29,15 +29,17 @@ class Storage(object):
     implement.
 
     Terminology:
-      - UID: Global identifier of the item, across storages.
-      - HREF: Per-storage identifier of item, might be UID. The reason items
-          aren't just referenced by their UID is because the CalDAV and CardDAV
-          specifications make this imperformant to implement.
-      - ETAG: Checksum of item, or something similar that changes when the
-          object does.
+      - ITEM: Instance of the Item class, represents a calendar event, task or
+          contact.
+      - UID: String; Global identifier of the item, across storages.
+      - HREF: String; Per-storage identifier of item, might be UID. The reason
+          items aren't just referenced by their UID is because the CalDAV and
+          CardDAV specifications make this imperformant to implement.
+      - ETAG: String; Checksum of item, or something similar that changes when the
+          item does.
 
-    All of the above properties should be strings. If bytestrings, an ASCII
-    encoding is assumed.
+    Strings can be either unicode strings or bytestrings. If bytestrings, an
+    ASCII encoding is assumed.
 
     :param collection: If None, the given URL or path is already directly
         referring to a collection. Otherwise it will be treated as a basepath
@@ -77,7 +79,7 @@ class Storage(object):
     def get(self, href):
         '''
         :param href: href to fetch
-        :returns: (object, etag)
+        :returns: (item, etag)
         '''
         raise NotImplementedError()
 
@@ -86,11 +88,11 @@ class Storage(object):
         :param hrefs: list of hrefs to fetch
         :raises: :exc:`vdirsyncer.exceptions.PreconditionFailed` if one of the
         items couldn't be found.
-        :returns: iterable of (href, obj, etag)
+        :returns: iterable of (href, item, etag)
         '''
         for href in hrefs:
-            obj, etag = self.get(href)
-            yield href, obj, etag
+            item, etag = self.get(href)
+            yield href, item, etag
 
     def has(self, href):
         '''
@@ -99,17 +101,17 @@ class Storage(object):
         '''
         raise NotImplementedError()
 
-    def upload(self, obj):
+    def upload(self, item):
         '''
-        Upload a new object, raise
+        Upload a new item, raise
         :exc:`vdirsyncer.exceptions.PreconditionFailed` if it already exists.
         :returns: (href, etag)
         '''
         raise NotImplementedError()
 
-    def update(self, href, obj, etag):
+    def update(self, href, item, etag):
         '''
-        Update the object, raise
+        Update the item, raise
         :exc:`vdirsyncer.exceptions.PreconditionFailed` if the etag on the
         server doesn't match the given etag or if the item doesn't exist.
 
@@ -119,7 +121,7 @@ class Storage(object):
 
     def delete(self, href, etag):
         '''
-        Delete the object by href, raise
+        Delete the item by href, raise
         :exc:`vdirsyncer.exceptions.PreconditionFailed` when item has a
         different etag or doesn't exist.
         '''

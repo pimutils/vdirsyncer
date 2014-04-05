@@ -103,9 +103,9 @@ class DavStorage(HttpStorageBase):
         response.raise_for_status()
 
     def get(self, href):
-        ((actual_href, obj, etag),) = self.get_multi([href])
+        ((actual_href, item, etag),) = self.get_multi([href])
         assert href == actual_href
-        return obj, etag
+        return item, etag
 
     def get_multi(self, hrefs):
         if not hrefs:
@@ -129,7 +129,7 @@ class DavStorage(HttpStorageBase):
         for element in root.iter('{DAV:}response'):
             href = self._normalize_href(
                 element.find('{DAV:}href').text.decode(response.encoding))
-            obj = element \
+            raw = element \
                 .find('{DAV:}propstat') \
                 .find('{DAV:}prop') \
                 .find(self.get_multi_data_query).text
@@ -137,11 +137,11 @@ class DavStorage(HttpStorageBase):
                 .find('{DAV:}propstat') \
                 .find('{DAV:}prop') \
                 .find('{DAV:}getetag').text
-            if isinstance(obj, bytes):
-                obj = obj.decode(response.encoding)
+            if isinstance(raw, bytes):
+                raw = raw.decode(response.encoding)
             if isinstance(etag, bytes):
                 etag = etag.decode(response.encoding)
-            rv.append((href, Item(obj), etag))
+            rv.append((href, Item(raw), etag))
             try:
                 hrefs_left.remove(href)
             except KeyError:
@@ -159,7 +159,7 @@ class DavStorage(HttpStorageBase):
         else:
             return True
 
-    def _put(self, href, obj, etag):
+    def _put(self, href, item, etag):
         headers = self._default_headers()
         headers['Content-Type'] = self.item_mimetype
         if etag is None:
@@ -171,25 +171,25 @@ class DavStorage(HttpStorageBase):
         response = self._request(
             'PUT',
             href,
-            data=obj.raw.encode('utf-8'),
+            data=item.raw.encode('utf-8'),
             headers=headers
         )
         self._check_response(response)
         etag = response.headers.get('etag', None)
         if not etag:
-            obj2, etag = self.get(href)
-            assert obj2.uid == obj.uid
+            item2, etag = self.get(href)
+            assert item2.uid == item.uid
         return href, etag
 
-    def update(self, href, obj, etag):
+    def update(self, href, item, etag):
         href = self._normalize_href(href)
         if etag is None:
             raise ValueError('etag must be given and must not be None.')
-        return self._put(href, obj, etag)
+        return self._put(href, item, etag)
 
-    def upload(self, obj):
-        href = self._get_href(obj.uid)
-        return self._put(href, obj, None)
+    def upload(self, item):
+        href = self._get_href(item.uid)
+        return self._put(href, item, None)
 
     def delete(self, href, etag):
         href = self._normalize_href(href)
