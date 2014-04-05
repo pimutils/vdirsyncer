@@ -67,10 +67,10 @@ def get_password(username, resource):
 
     """
     import getpass
-    try:
-        from urlparse import urlsplit, urlunsplit
-    except ImportError:
+    try:  # pragma: no cover
         from urllib.parse import urlsplit, urlunsplit
+    except ImportError:  # pragma: no cover
+        from urlparse import urlsplit, urlunsplit
 
     try:
         import keyring

@@ -14,6 +14,7 @@ import vdirsyncer.utils as utils
 def test_parse_options():
     o = {
         'foo': 'yes',
+        'hah': 'true',
         'bar': '',
         'baz': 'whatever',
         'bam': '123',
@@ -22,6 +23,7 @@ def test_parse_options():
 
     assert dict(utils.parse_options(o.items())) == {
         'foo': True,
+        'hah': True,
         'bar': '',
         'baz': 'whatever',
         'bam': 123,
