@@ -17,7 +17,7 @@ install:
 script:
     - "coverage run --source=vdirsyncer/,tests/ --module pytest"
     - "coverage report --show-missing"
-    - "coveralls"
+    - "travis_retry coveralls"
 
 matrix:
     allow_failures:
