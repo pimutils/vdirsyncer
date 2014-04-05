@@ -33,11 +33,6 @@ except ImportError:
     radicale_version = None
 
 
-pytestmark = pytest.mark.xfail(
-    dav_server == 'radicale_database' and radicale_version == '0.8',
-    reason='Database storage of Radicale 0.8 is broken.')
-
-
 VCARD_TEMPLATE = u'''BEGIN:VCARD
 VERSION:3.0
 FN:Cyrus Daboo

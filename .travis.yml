@@ -19,3 +19,8 @@ script:
 after_success:
     - "coverage report --show-missing"
     - "coveralls"
+
+matrix:
+    allow_failures:
+        # radicale db storage is broken in 0.8
+        - env: DAV_SERVER=radicale_database REQUIREMENTS=release
