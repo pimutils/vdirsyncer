@@ -36,6 +36,9 @@ class Storage(object):
       - ETAG: Checksum of item, or something similar that changes when the
           object does.
 
+    All of the above properties should be strings. If bytestrings, an ASCII
+    encoding is assumed.
+
     :param collection: If None, the given URL or path is already directly
         referring to a collection. Otherwise it will be treated as a basepath
         to many collections (e.g. a vdir) and the given collection name will be

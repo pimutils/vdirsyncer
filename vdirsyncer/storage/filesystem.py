@@ -15,6 +15,10 @@ import vdirsyncer.log as log
 logger = log.get('storage.filesystem')
 
 
+def _get_etag(fpath):
+    return '{:.9f}'.format(os.path.getmtime(fpath))
+
+
 class FilesystemStorage(Storage):
 
     '''Saves data in vdir collection
@@ -61,13 +65,13 @@ class FilesystemStorage(Storage):
         for fname in os.listdir(self.path):
             fpath = os.path.join(self.path, fname)
             if os.path.isfile(fpath) and fname.endswith(self.fileext):
-                yield fname, os.path.getmtime(fpath)
+                yield fname, _get_etag(fpath)
 
     def get(self, href):
         fpath = self._get_filepath(href)
         with open(fpath, 'rb') as f:
             return (Item(f.read().decode(self.encoding)),
-                    os.path.getmtime(fpath))
+                    _get_etag(fpath))
 
     def has(self, href):
         return os.path.isfile(self._get_filepath(href))
@@ -79,7 +83,7 @@ class FilesystemStorage(Storage):
             raise exceptions.AlreadyExistingError(obj.uid)
         with open(fpath, 'wb+') as f:
             f.write(obj.raw.encode(self.encoding))
-        return href, os.path.getmtime(fpath)
+        return href, _get_etag(fpath)
 
     def update(self, href, obj, etag):
         fpath = self._get_filepath(href)
@@ -88,19 +92,19 @@ class FilesystemStorage(Storage):
                            .format(href, obj.uid))
         if not os.path.exists(fpath):
             raise exceptions.NotFoundError(obj.uid)
-        actual_etag = os.path.getmtime(fpath)
+        actual_etag = _get_etag(fpath)
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
 
         with open(fpath, 'wb') as f:
             f.write(obj.raw.encode('utf-8'))
-        return os.path.getmtime(fpath)
+        return _get_etag(fpath)
 
     def delete(self, href, etag):
         fpath = self._get_filepath(href)
         if not os.path.isfile(fpath):
             raise exceptions.NotFoundError(href)
-        actual_etag = os.path.getmtime(fpath)
+        actual_etag = _get_etag(fpath)
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
         os.remove(fpath)

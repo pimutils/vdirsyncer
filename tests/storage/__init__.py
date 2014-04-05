@@ -41,6 +41,8 @@ class StorageTests(object):
         hrefs.sort()
         assert hrefs == sorted(s.list())
         for href, etag in hrefs:
+            assert isinstance(href, (str, unicode))
+            assert isinstance(etag, (str, unicode))
             assert s.has(href)
             obj, etag2 = s.get(href)
             assert etag == etag2

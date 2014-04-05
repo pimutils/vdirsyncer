@@ -7,9 +7,13 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-import datetime
+import random
 from vdirsyncer.storage.base import Storage
 import vdirsyncer.exceptions as exceptions
+
+
+def _get_etag():
+    return '{:.9f}'.format(random.random())
 
 
 class MemoryStorage(Storage):
@@ -37,7 +41,7 @@ class MemoryStorage(Storage):
         href = self._get_href(obj.uid)
         if href in self.items:
             raise exceptions.AlreadyExistingError(obj.uid)
-        etag = datetime.datetime.now()
+        etag = _get_etag()
         self.items[href] = (etag, obj)
         return href, etag
 
@@ -48,7 +52,7 @@ class MemoryStorage(Storage):
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
 
-        new_etag = datetime.datetime.now()
+        new_etag = _get_etag()
         self.items[href] = (new_etag, obj)
         return new_etag
 
