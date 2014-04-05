@@ -1,10 +1,15 @@
 #!/bin/sh
 echo "The shell is $SHELL"
 set -e
-PIP_INSTALL="pip install --use-mirrors"
 [ -n "$DAV_SERVER" ] || DAV_SERVER=radicale_filesystem
 [ -n "$REQUIREMENTS" ] || REQUIREMENTS=release
 
+if [ "$IS_TRAVIS" = "true" ]; then
+    PIP_INSTALL="pip install --use-wheel --no-index --find-links=http://dev.unterwaditzer.net/vdirsyncer/wheels/"
+    pip install --upgrade wheel pip setuptools
+else:
+    PIP_INSTALL="pip install"
+fi
 $PIP_INSTALL --editable .
 $PIP_INSTALL -r requirements.txt
 
