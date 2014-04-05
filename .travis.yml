@@ -2,8 +2,8 @@ language: python
 python: "2.7"
 env:
     global:
-        - IS_TRAVIS=true
-        - CFLAGS=-O0
+        - IS_TRAVIS=true  # used by owncloud-testserver to install php
+        - CFLAGS=-O0  # speed up lxml build
     matrix:
         - DAV_SERVER=radicale_filesystem REQUIREMENTS=release
         - DAV_SERVER=radicale_filesystem REQUIREMENTS=devel
