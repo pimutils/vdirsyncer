@@ -5,7 +5,7 @@ set -e
 [ -n "$REQUIREMENTS" ] || REQUIREMENTS=release
 
 if [ "$IS_TRAVIS" = "true" ]; then
-    PIP_INSTALL="pip install --use-wheel --no-index --find-links=http://dev.unterwaditzer.net/vdirsyncer/wheels/"
+    PIP_INSTALL="pip install --use-wheel --find-links=http://dev.unterwaditzer.net/vdirsyncer/wheels/"
     pip install --upgrade wheel pip setuptools
 else
     PIP_INSTALL="pip install"
