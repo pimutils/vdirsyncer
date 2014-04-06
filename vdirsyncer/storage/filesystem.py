@@ -44,13 +44,15 @@ class FilesystemStorage(Storage):
         if collection is not None:
             path = os.path.join(path, collection)
         if not os.path.isdir(path):
+            if os.path.exists(path):
+                raise IOError('{} is not a directory.')
             if create:
                 os.makedirs(path, 0750)
             else:
-                raise ValueError('Directory {} does not exist. Use create = '
-                                 'True in your configuration to automatically '
-                                 'create it, or create it '
-                                 'yourself.'.format(path))
+                raise IOError('Directory {} does not exist. Use create = '
+                              'True in your configuration to automatically '
+                              'create it, or create it '
+                              'yourself.'.format(path))
         self.collection = collection
         self.path = expand_path(path)
         self.encoding = encoding
