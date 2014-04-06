@@ -4,12 +4,13 @@ set -e
 [ -n "$DAV_SERVER" ] || DAV_SERVER=radicale_filesystem
 [ -n "$REQUIREMENTS" ] || REQUIREMENTS=release
 
+PIP_INSTALL="pip install"
 if [ "$IS_TRAVIS" = "true" ]; then
+    export CFLAGS=-O0  # speed up builds of packages which don't have wheels
     PIP_INSTALL="pip install --use-wheel --find-links=http://dev.unterwaditzer.net/vdirsyncer/wheels/"
     pip install --upgrade wheel pip setuptools
-else
-    PIP_INSTALL="pip install"
 fi
+
 $PIP_INSTALL --editable .
 $PIP_INSTALL -r requirements.txt
 
