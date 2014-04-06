@@ -78,8 +78,7 @@ def test_get_password_from_system_keyring(monkeypatch, resources_to_test):
             if not self.resources:
                 return password
 
-    import sys
-    monkeypatch.setitem(sys.modules, 'keyring', KeyringMock())
+    monkeypatch.setattr(utils, 'keyring', KeyringMock())
 
     netrc_calls = []
 

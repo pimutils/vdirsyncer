@@ -10,6 +10,19 @@
 import os
 import vdirsyncer.log
 
+
+try:  # pragma: no cover
+    import urllib.parse as urlparse
+except ImportError:  # pragma: no cover
+    import urlparse
+
+
+try:
+    import keyring
+except ImportError:
+    keyring = None
+
+
 password_key_prefix = 'vdirsyncer:'
 
 
@@ -44,6 +57,52 @@ def parse_options(items):
         yield key, value
 
 
+def _password_from_netrc(username, resource):
+    '''.netrc'''
+    from netrc import netrc
+
+    hostname = urlparse.urlsplit(resource).hostname
+    try:
+        netrc_user, account, password = \
+            netrc().authenticators(hostname) or (None, None, None)
+        if netrc_user == username:
+            return password
+    except IOError:
+        pass
+
+
+def _password_from_keyring(username, resource):
+    '''system keyring'''
+    if keyring is None:
+        return None
+
+    key = resource
+    password = None
+
+    while True:
+        password = keyring.get_password(password_key_prefix + key, username)
+        if password is not None:
+            return password
+
+        parsed = urlparse.urlsplit(key)
+        path = parsed.path
+        if path.endswith('/'):
+            path = path.rstrip('/')
+        else:
+            path = path.rsplit('/', 1)[0] + '/'
+
+        new_key = urlparse.urlunsplit((
+            parsed.scheme,
+            parsed.netloc,
+            path,
+            parsed.query,
+            parsed.fragment
+        ))
+        if new_key == key:
+            return None
+        key = new_key
+
+
 def get_password(username, resource):
     """tries to access saved password or asks user for it
 
@@ -67,64 +126,11 @@ def get_password(username, resource):
 
     """
     import getpass
-    try:  # pragma: no cover
-        from urllib.parse import urlsplit, urlunsplit
-    except ImportError:  # pragma: no cover
-        from urlparse import urlsplit, urlunsplit
-
-    try:
-        import keyring
-    except ImportError:
-        keyring = None
 
     logger = vdirsyncer.log.get('sync')
-    hostname = urlsplit(resource).hostname
 
-    def _netrc():
-        '''.netrc'''
-        from netrc import netrc
-        try:
-            netrc_user, account, password = \
-                netrc().authenticators(hostname) or (None, None, None)
-            if netrc_user == username:
-                return password
-        except IOError:
-            pass
-
-    def _keyring():
-        '''system keyring'''
-        if keyring is None:
-            return None
-
-        key = resource
-        password = None
-
-        while True:
-            password = keyring.get_password(password_key_prefix + key,
-                                            username)
-            if password is not None:
-                return password
-
-            parsed = urlsplit(key)
-            path = parsed.path
-            if path.endswith('/'):
-                path = path.rstrip('/')
-            else:
-                path = path.rsplit('/', 1)[0] + '/'
-
-            new_key = urlunsplit((
-                parsed.scheme,
-                parsed.netloc,
-                path,
-                parsed.query,
-                parsed.fragment
-            ))
-            if new_key == key:
-                return None
-            key = new_key
-
-    for func in (_netrc, _keyring):
-        password = func()
+    for func in (_password_from_netrc, _password_from_keyring):
+        password = func(username, resource)
         if password is not None:
             logger.debug('Got password for {} from {}'
                          .format(username, func.__doc__))
