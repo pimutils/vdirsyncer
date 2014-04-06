@@ -28,7 +28,7 @@ class FilesystemStorage(Storage):
     _repr_attributes = ('path',)
 
     def __init__(self, path, fileext, collection=None, encoding='utf-8',
-                 **kwargs):
+                 create=True, **kwargs):
         '''
         :param path: Absolute path to a vdir or collection, depending on the
             collection parameter (see
@@ -38,10 +38,19 @@ class FilesystemStorage(Storage):
             will trigger a re-download of everything (but *should* not cause
             data-loss of any kind).
         :param encoding: File encoding for items.
+        :param create: Create directories if they don't exist.
         '''
         super(FilesystemStorage, self).__init__(**kwargs)
         if collection is not None:
             path = os.path.join(path, collection)
+        if not os.path.isdir(path):
+            if create:
+                os.makedirs(path, 0750)
+            else:
+                raise ValueError('Directory {} does not exist. Use create = '
+                                 'True in your configuration to automatically '
+                                 'create it, or create it '
+                                 'yourself.'.format(path))
         self.collection = collection
         self.path = expand_path(path)
         self.encoding = encoding

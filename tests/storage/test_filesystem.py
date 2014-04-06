@@ -26,3 +26,11 @@ class TestFilesystemStorage(StorageTests):
         if collection is not None:
             os.makedirs(os.path.join(path, collection))
         return {'path': path, 'fileext': '.txt', 'collection': collection}
+
+    def test_create_directory(self, tmpdir):
+        with pytest.raises(ValueError):
+            self.storage_class(str(tmpdir), '.txt', collection='lol',
+                               create=False)
+
+        self.storage_class(str(tmpdir), '.txt', collection='asd')
+        assert tmpdir.listdir() == [tmpdir.join('asd')]
