@@ -41,6 +41,7 @@ class FilesystemStorage(Storage):
         :param create: Create directories if they don't exist.
         '''
         super(FilesystemStorage, self).__init__(**kwargs)
+        path = expand_path(path)
         if collection is not None:
             path = os.path.join(path, collection)
         if not os.path.isdir(path):
@@ -54,7 +55,7 @@ class FilesystemStorage(Storage):
                               'create it, or create it '
                               'yourself.'.format(path))
         self.collection = collection
-        self.path = expand_path(path)
+        self.path = path
         self.encoding = encoding
         self.fileext = fileext
 
