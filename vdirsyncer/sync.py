@@ -15,6 +15,8 @@
     :copyright: (c) 2014 Markus Unterwaditzer
     :license: MIT, see LICENSE for more details.
 '''
+import itertools
+
 import vdirsyncer.exceptions as exceptions
 import vdirsyncer.log
 sync_logger = vdirsyncer.log.get('sync')
@@ -74,17 +76,16 @@ def sync(storage_a, storage_b, status, conflict_resolution=None):
     b_uid_to_href = dict((x['uid'], href) for href, x in list_b.iteritems())
     del a_href_to_uid, b_href_to_uid
 
+    storages = {
+        'a': (storage_a, list_a, a_uid_to_href),
+        'b': (storage_b, list_b, b_uid_to_href)
+    }
+
     actions, prefetch_from_a, prefetch_from_b = \
-        get_actions(list_a, list_b, status, a_uid_to_href, b_uid_to_href)
+        get_actions(storages, status)
 
     prefetch(storage_a, list_a, prefetch_from_a)
     prefetch(storage_b, list_b, prefetch_from_b)
-
-    storages = {
-        'a': (storage_a, list_a, a_uid_to_href),
-        'b': (storage_b, list_b, b_uid_to_href),
-        None: (None, None, None)
-    }
 
     for action in actions:
         action(storages, status, conflict_resolution)
@@ -133,7 +134,7 @@ def action_update(uid, source, dest):
     return inner
 
 
-def action_delete(uid, source, dest):
+def action_delete(uid, dest):
     def inner(storages, status, conflict_resolution):
         if dest is not None:
             dest_storage, dest_list, dest_uid_to_href = storages[dest]
@@ -178,32 +179,38 @@ def action_conflict_resolve(uid):
     return inner
 
 
-def get_actions(list_a, list_b, status, a_uid_to_href, b_uid_to_href):
+def get_actions(storages, status):
     prefetch_from_a = []
     prefetch_from_b = []
     actions = []
-    uids_a = set(x['uid'] for x in list_a.values())
-    uids_b = set(x['uid'] for x in list_b.values())
-    uids_status = set(status)
-    for uid in uids_a.union(uids_b).union(uids_status):
+
+    storage_a, list_a, a_uid_to_href = storages['a']
+    storage_b, list_b, b_uid_to_href = storages['b']
+
+    uids_a = (x['uid'] for x in list_a.itervalues())
+    uids_b = (x['uid'] for x in list_b.itervalues())
+    handled = set()
+    for uid in itertools.chain(uids_a, uids_b, status):
+        if uid in handled:
+            continue
+        handled.add(uid)
+
         href_a = a_uid_to_href.get(uid, None)
         href_b = b_uid_to_href.get(uid, None)
         a = list_a.get(href_a, None)
         b = list_b.get(href_b, None)
         if uid not in status:
-            if uid in uids_a and uid in uids_b:  # missing status
+            if a and b:  # missing status
                 actions.append(action_conflict_resolve(uid))
-            # new item was created in a
-            elif uid in uids_a and uid not in uids_b:
+            elif a and not b:  # new item was created in a
                 prefetch_from_a.append(href_a)
                 actions.append(action_upload(uid, 'a', 'b'))
-            # new item was created in b
-            elif uid not in uids_a and uid in uids_b:
+            elif not a and b:  # new item was created in b
                 prefetch_from_b.append(href_b)
                 actions.append(action_upload(uid, 'b', 'a'))
         else:
             _, status_etag_a, _, status_etag_b = status[uid]
-            if uid in uids_a and uid in uids_b:
+            if a and b:
                 if a['etag'] != status_etag_a and b['etag'] != status_etag_b:
                     prefetch_from_a.append(href_a)
                     prefetch_from_b.append(href_b)
@@ -214,13 +221,11 @@ def get_actions(list_a, list_b, status, a_uid_to_href, b_uid_to_href):
                 elif b['etag'] != status_etag_b:  # item was updated in b
                     prefetch_from_b.append(href_b)
                     actions.append(action_update(uid, 'b', 'a'))
-                else:  # completely in sync!
-                    pass
-            elif uid in uids_a and uid not in uids_b:  # was deleted from b
-                actions.append(action_delete(uid, None, 'a'))
-            elif uid not in uids_a and uid in uids_b:  # was deleted from a
-                actions.append(action_delete(uid, None, 'b'))
-            # was deleted from a and b
-            elif uid not in uids_a and uid not in uids_b:
-                actions.append(action_delete(uid, None, None))
+            elif a and not b:  # was deleted from b
+                actions.append(action_delete(uid, 'a'))
+            elif not a and b:  # was deleted from a
+                actions.append(action_delete(uid, 'b'))
+            elif not a and not b:  # was deleted from a and b
+                actions.append(action_delete(uid, None))
+
     return actions, prefetch_from_a, prefetch_from_b
