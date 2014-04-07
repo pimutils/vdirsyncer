@@ -116,9 +116,11 @@ def test_already_synced():
     old_status = dict(status)
     a.update = b.update = a.upload = b.upload = \
         lambda *a, **kw: pytest.fail('Method shouldn\'t have been called.')
-    sync(a, b, status)
-    assert status == old_status
-    assert a.has('1.txt') and b.has('1.txt')
+
+    for i in (1, 2):
+        sync(a, b, status)
+        assert status == old_status
+        assert a.has('1.txt') and b.has('1.txt')
 
 
 def test_conflict_resolution_both_etags_new():
