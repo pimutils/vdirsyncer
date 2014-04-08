@@ -50,10 +50,11 @@ def parse_options(items):
             value = True
         elif value.lower() in ('no', 'false', 'off'):
             value = False
-        try:
-            value = int(value)
-        except ValueError:
-            pass
+        else:
+            try:
+                value = int(value)
+            except ValueError:
+                pass
         yield key, value
 
 

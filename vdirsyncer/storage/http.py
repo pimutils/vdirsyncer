@@ -58,9 +58,9 @@ def prepare_auth(auth, username, password):
 
 
 def prepare_verify(verify):
-    if isinstance(verify, bool):
-        return verify
-    return expand_path(verify)
+    if isinstance(verify, (str, unicode)):
+        return expand_path(verify)
+    return verify
 
 
 class HttpStorageBase(Storage):

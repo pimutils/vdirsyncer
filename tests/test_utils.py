@@ -21,7 +21,9 @@ def test_parse_options():
         'asd': 'off'
     }
 
-    assert dict(utils.parse_options(o.items())) == {
+    a = dict(utils.parse_options(o.items()))
+
+    expected = {
         'foo': True,
         'hah': True,
         'bar': '',
@@ -29,6 +31,11 @@ def test_parse_options():
         'bam': 123,
         'asd': False
     }
+
+    assert a == expected
+
+    for key in a:
+        assert type(a[key]) is type(expected[key])
 
 
 def test_get_password_from_netrc(monkeypatch):
