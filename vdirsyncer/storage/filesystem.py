@@ -19,6 +19,29 @@ def _get_etag(fpath):
     return '{:.9f}'.format(os.path.getmtime(fpath))
 
 
+class safe_write(object):
+    f = None
+    tmppath = None
+    fpath = None
+    mode = None
+
+    def __init__(self, fpath, mode):
+        self.tmppath = fpath + '.tmp'
+        self.fpath = fpath
+        self.mode = mode
+
+    def __enter__(self):
+        self.f = f = open(self.tmppath, self.mode)
+        self.write = f.write
+        return self
+
+    def __exit__(self, type, value, tb):
+        if type is None:
+            os.rename(self.tmppath, self.fpath)
+        else:
+            os.remove(self.tmppath)
+
+
 class FilesystemStorage(Storage):
 
     '''Saves data in vdir collection
@@ -93,7 +116,7 @@ class FilesystemStorage(Storage):
         fpath = self._get_filepath(href)
         if os.path.exists(fpath):
             raise exceptions.AlreadyExistingError(item.uid)
-        with open(fpath, 'wb+') as f:
+        with safe_write(fpath, 'wb+') as f:
             f.write(item.raw.encode(self.encoding))
         return href, _get_etag(fpath)
 
@@ -108,7 +131,7 @@ class FilesystemStorage(Storage):
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
 
-        with open(fpath, 'wb') as f:
+        with safe_write(fpath, 'wb') as f:
             f.write(item.raw.encode(self.encoding))
         return _get_etag(fpath)
 

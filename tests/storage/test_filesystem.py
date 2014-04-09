@@ -41,3 +41,12 @@ class TestFilesystemStorage(StorageTests):
     def test_create_is_true(self, tmpdir):
         self.storage_class(str(tmpdir), '.txt', collection='asd')
         assert tmpdir.listdir() == [tmpdir.join('asd')]
+
+    def test_broken_data(self, tmpdir):
+        s = self.storage_class(str(tmpdir), '.txt')
+        class BrokenItem(object):
+            raw = b'Ц, Ш, Л, ж, Д, З, Ю'
+            uid = 'jeezus'
+        with pytest.raises(UnicodeError):
+            s.upload(BrokenItem)
+        assert not tmpdir.listdir()
