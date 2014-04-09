@@ -109,7 +109,7 @@ class FilesystemStorage(Storage):
             raise exceptions.WrongEtagError(etag, actual_etag)
 
         with open(fpath, 'wb') as f:
-            f.write(item.raw.encode('utf-8'))
+            f.write(item.raw.encode(self.encoding))
         return _get_etag(fpath)
 
     def delete(self, href, etag):
