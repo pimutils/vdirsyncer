@@ -119,7 +119,7 @@ class FilesystemStorage(Storage):
             raise exceptions.AlreadyExistingError(item.uid)
         with safe_write(fpath, 'wb+') as f:
             f.write(item.raw.encode(self.encoding))
-        return href, _get_etag(fpath)
+            return href, _get_etag(f.tmppath)
 
     def update(self, href, item, etag):
         fpath = self._get_filepath(href)
@@ -134,7 +134,7 @@ class FilesystemStorage(Storage):
 
         with safe_write(fpath, 'wb') as f:
             f.write(item.raw.encode(self.encoding))
-        return _get_etag(fpath)
+            return _get_etag(f.tmppath)
 
     def delete(self, href, etag):
         fpath = self._get_filepath(href)
