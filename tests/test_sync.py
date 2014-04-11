@@ -123,7 +123,8 @@ def test_already_synced():
         assert a.has('1.txt') and b.has('1.txt')
 
 
-def test_conflict_resolution_both_etags_new():
+@pytest.mark.parametrize('winning_storage', 'ab')
+def test_conflict_resolution_both_etags_new(winning_storage):
     a = MemoryStorage()
     b = MemoryStorage()
     item = Item(u'UID:1')
@@ -132,17 +133,28 @@ def test_conflict_resolution_both_etags_new():
     status = {}
     sync(a, b, status)
     assert status
-    a.update(href_a, Item(u'UID:1\nASDASD'), etag_a)
-    b.update(href_b, Item(u'UID:1\nHUEHUE'), etag_b)
+    a.update(href_a, Item(u'UID:1\nitem a'), etag_a)
+    b.update(href_b, Item(u'UID:1\nitem b'), etag_b)
     with pytest.raises(exceptions.SyncConflict):
         sync(a, b, status)
-    sync(a, b, status, conflict_resolution='a wins')
+    sync(a, b, status, conflict_resolution='{} wins'.format(winning_storage))
     item_a, _ = a.get(href_a)
     item_b, _ = b.get(href_b)
     assert_item_equals(item_a, item_b)
     n = normalize_item(item_a)
     assert u'UID:1' in n
-    assert u'ASDASD' in n
+    assert u'item {}'.format(winning_storage) in n
+
+
+def test_conflict_resolution_invalid_mode():
+    a = MemoryStorage()
+    b = MemoryStorage()
+    item_a = Item(u'UID:1\nitem a')
+    item_b = Item(u'UID:1\nitem b')
+    a.upload(item_a)
+    b.upload(item_b)
+    with pytest.raises(ValueError):
+        sync(a, b, {}, conflict_resolution='yolo')
 
 
 def test_conflict_resolution_new_etags_without_changes():
