@@ -14,6 +14,8 @@ import hashlib
 from .base import Storage, Item
 from vdirsyncer.utils import expand_path, get_password
 
+USERAGENT = 'vdirsyncer'
+
 
 def split_collection(text):
     item = []
@@ -63,11 +65,11 @@ def prepare_verify(verify):
     return verify
 
 
-class HttpStorageBase(Storage):
+class HttpStorage(Storage):
     _repr_attributes = ('username', 'url')
 
     def __init__(self, url, username='', password='', collection=None,
-                 verify=True, auth=None, useragent='vdirsyncer', **kwargs):
+                 verify=True, auth=None, useragent=USERAGENT, **kwargs):
         '''
         :param url: Base URL or an URL to a collection. Autodiscovery should be
             done via :py:meth:`DavStorage.discover`.
@@ -78,7 +80,7 @@ class HttpStorageBase(Storage):
             'basic'.
         :param useragent: Default 'vdirsyncer'.
         '''
-        super(HttpStorageBase, self).__init__(**kwargs)
+        super(HttpStorage, self).__init__(**kwargs)
 
         if username and not password:
             password = get_password(username, url)
@@ -90,27 +92,15 @@ class HttpStorageBase(Storage):
         self.username, self.password = username, password
         self.useragent = useragent
 
-        url = url.rstrip('/') + '/'
         if collection is not None:
             url = urlparse.urljoin(url, collection)
-        self.url = url.rstrip('/') + '/'
+        self.url = url
         self.parsed_url = urlparse.urlparse(self.url)
         self.collection = collection
+        self._items = {}
 
     def _default_headers(self):
-        return {
-            'User-Agent': self.useragent,
-            'Content-Type': 'application/xml; charset=UTF-8'
-        }
-
-
-class HttpStorage(HttpStorageBase):
-
-    _items = None
-
-    def __init__(self, **kwargs):
-        super(HttpStorage, self).__init__(**kwargs)
-        self._items = {}
+        return {'User-Agent': self.useragent}
 
     def list(self):
         r = requests.get(self.url, **self._settings)
