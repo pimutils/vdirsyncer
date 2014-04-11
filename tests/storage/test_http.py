@@ -44,14 +44,16 @@ class TestHttpStorage(object):
             '\n'.join([b'BEGIN:VCALENDAR'] + items + [b'END:VCALENDAR'])
         ] * 2
 
-        def get(*a, **kw):
+        def get(method, url, *a, **kw):
+            assert method == 'GET'
+            assert url == collection_url
             r = Response()
             r.status_code = 200
             assert responses
             r._content = responses.pop()
             return r
 
-        monkeypatch.setattr('requests.get', get)
+        monkeypatch.setattr('requests.request', get)
 
         s = HttpStorage(url=collection_url)
 

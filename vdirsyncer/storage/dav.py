@@ -9,8 +9,9 @@
 
 from .base import Item
 from .http import HttpStorageBase
-import vdirsyncer.exceptions as exceptions
-import vdirsyncer.log as log
+from .. import exceptions
+from .. import log
+from ..utils import request
 import requests
 import datetime
 import urlparse
@@ -93,8 +94,8 @@ class DavStorage(HttpStorageBase):
         if self._session is None:
             self._session = requests.session()
         url = self.parsed_url.scheme + '://' + self.parsed_url.netloc + path
-        return self._session.request(method, url, data=data, headers=headers,
-                                     **self._settings)
+        return request(method, url, data=data, headers=headers,
+                       session=self._session, **self._settings)
 
     @staticmethod
     def _check_response(response):

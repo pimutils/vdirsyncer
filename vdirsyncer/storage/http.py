@@ -12,7 +12,7 @@ import requests
 import urlparse
 import hashlib
 from .base import Storage, Item
-from vdirsyncer.utils import expand_path, get_password
+from vdirsyncer.utils import expand_path, get_password, request
 
 
 def split_collection(text):
@@ -113,7 +113,7 @@ class HttpStorage(HttpStorageBase):
         self._items = {}
 
     def list(self):
-        r = requests.get(self.url, **self._settings)
+        r = request('GET', self.url, **self._settings)
         r.raise_for_status()
         self._items.clear()
         for i, item in enumerate(split_collection(r.text)):

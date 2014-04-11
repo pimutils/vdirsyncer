@@ -23,6 +23,9 @@ except ImportError:
     keyring = None
 
 
+import requests
+
+
 password_key_prefix = 'vdirsyncer:'
 
 
@@ -151,3 +154,25 @@ def get_password(username, resource):
                                  username, password)
 
     return password
+
+
+def request(method, url, data=None, headers=None, auth=None, verify=None,
+            session=None):
+    '''wrapper method for requests, to ease logging and mocking'''
+
+    logger = vdirsyncer.log.get('utils')
+
+    if session is None:
+        func = requests.request
+    else:
+        func = session.request
+
+    logger.debug(u'{} {}'.format(method, url))
+    logger.debug(headers)
+    logger.debug(data)
+    logger.debug('Sending request...')
+    r = func(method, url, data=data, headers=headers, auth=auth, verify=verify)
+    logger.debug(r.status_code)
+    logger.debug(r.headers)
+    logger.debug(r.content)
+    return r
