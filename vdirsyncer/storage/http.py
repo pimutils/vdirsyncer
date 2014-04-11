@@ -8,7 +8,6 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-import requests
 import urlparse
 import hashlib
 from .base import Storage, Item

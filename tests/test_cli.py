@@ -9,7 +9,7 @@
 from textwrap import dedent
 
 import vdirsyncer.cli as cli
-import vdirsyncer.exceptions as exceptions
+
 
 def test_load_config(tmpdir, monkeypatch):
     f = tmpdir.join('test.cfg')
@@ -53,6 +53,7 @@ def test_load_config(tmpdir, monkeypatch):
     assert len(errors) == 1
     assert errors[0].startswith('Unknown section')
     assert 'bogus' in errors[0]
+
 
 def test_storage_instance_from_config(monkeypatch):
     def lol(**kw):

@@ -35,8 +35,8 @@ class Storage(object):
       - HREF: String; Per-storage identifier of item, might be UID. The reason
           items aren't just referenced by their UID is because the CalDAV and
           CardDAV specifications make this imperformant to implement.
-      - ETAG: String; Checksum of item, or something similar that changes when the
-          item does.
+      - ETAG: String; Checksum of item, or something similar that changes when
+          the item does.
 
     Strings can be either unicode strings or bytestrings. If bytestrings, an
     ASCII encoding is assumed.

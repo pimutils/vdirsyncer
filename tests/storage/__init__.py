@@ -9,7 +9,7 @@
 
 from vdirsyncer.storage.base import Item
 import vdirsyncer.exceptions as exceptions
-from .. import assert_item_equals, normalize_item
+from .. import assert_item_equals
 import random
 import pytest
 

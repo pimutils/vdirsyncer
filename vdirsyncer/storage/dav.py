@@ -11,7 +11,7 @@ from .base import Storage, Item
 from .http import prepare_auth, prepare_verify, USERAGENT
 from .. import exceptions
 from .. import log
-from ..utils import request
+from ..utils import request, get_password
 import requests
 import datetime
 import urlparse

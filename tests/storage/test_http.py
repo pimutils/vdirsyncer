@@ -7,9 +7,8 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-from .. import assert_item_equals
 from textwrap import dedent
-from vdirsyncer.storage.http import HttpStorage, Item
+from vdirsyncer.storage.http import HttpStorage
 from requests import Response
 
 

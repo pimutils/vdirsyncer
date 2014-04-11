@@ -44,6 +44,7 @@ class TestFilesystemStorage(StorageTests):
 
     def test_broken_data(self, tmpdir):
         s = self.storage_class(str(tmpdir), '.txt')
+
         class BrokenItem(object):
             raw = b'Ц, Ш, Л, ж, Д, З, Ю'
             uid = 'jeezus'

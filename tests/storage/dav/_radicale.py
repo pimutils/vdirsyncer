@@ -15,7 +15,6 @@
 import sys
 import os
 import urlparse
-import shutil
 import pytest
 
 from werkzeug.test import Client
@@ -75,8 +74,8 @@ def do_the_radicale_dance(tmpdir):
     radicale.config.set('rights', 'type', 'owner_only')
     radicale.config.set('auth', 'type', 'http')
 
-
     import radicale.auth.http
+
     def is_authenticated(user, password):
         assert user == 'bob' and password == 'bob'
         return True
@@ -120,7 +119,6 @@ class ServerMixin(object):
             r.encoding = wr.charset
             r.status_code = wr.status_code
             return r
-
 
         monkeypatch.setattr('requests.adapters.HTTPAdapter.send', send)
 
