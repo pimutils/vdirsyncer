@@ -154,3 +154,28 @@ def test_conflict_resolution_new_etags_without_changes():
     status = {'1': (href_a, 'BOGUS_a', href_b, 'BOGUS_b')}
     sync(a, b, status)
     assert status == {'1': (href_a, etag_a, href_b, etag_b)}
+
+def test_uses_get_multi(monkeypatch):
+    def breakdown(*a, **kw):
+        raise AssertionError('Expected use of get_multi')
+
+    get_multi_calls = []
+
+    old_get = MemoryStorage.get
+
+    def get_multi(self, hrefs):
+        get_multi_calls.append(hrefs)
+        for href in hrefs:
+            item, etag = old_get(self, href)
+            yield href, item, etag
+
+    monkeypatch.setattr(MemoryStorage, 'get', breakdown)
+    monkeypatch.setattr(MemoryStorage, 'get_multi', get_multi)
+
+    a = MemoryStorage()
+    b = MemoryStorage()
+    item = Item(u'UID:1')
+    expected_href, etag = a.upload(item)
+
+    sync(a, b, {})
+    assert get_multi_calls == [[expected_href]]
