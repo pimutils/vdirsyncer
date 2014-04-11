@@ -16,7 +16,7 @@ from requests import Response
 class TestHttpStorage(object):
 
     def test_list(self, monkeypatch):
-        collection_url = 'http://127.0.0.1/calendar/collection/'
+        collection_url = 'http://127.0.0.1/calendar/collection.ics'
 
         items = [
             dedent(b'''

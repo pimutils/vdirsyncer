@@ -7,8 +7,8 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-from .base import Item
-from .http import HttpStorageBase
+from .base import Storage, Item
+from .http import prepare_auth, prepare_verify, USERAGENT
 from .. import exceptions
 from .. import log
 from ..utils import request
@@ -24,7 +24,7 @@ CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
 CONFIG_DT_FORMAT = '%Y-%m-%d'
 
 
-class DavStorage(HttpStorageBase):
+class DavStorage(Storage):
 
     # the file extension of items. Useful for testing against radicale.
     fileext = None
@@ -42,10 +42,39 @@ class DavStorage(HttpStorageBase):
     leif_class = None
 
     _session = None
-    _repr_attributes = ('url', 'username')
+    _repr_attributes = ('username', 'url')
 
-    def __init__(self, **kwargs):
+    def __init__(self, url, username='', password='', collection=None,
+                 verify=True, auth=None, useragent=USERAGENT, **kwargs):
+        '''
+        :param url: Base URL or an URL to a collection. Autodiscovery should be
+            done via :py:meth:`DavStorage.discover`.
+        :param username: Username for authentication.
+        :param password: Password for authentication.
+        :param verify: Verify SSL certificate, default True.
+        :param auth: Authentication method, from {'basic', 'digest'}, default
+            'basic'.
+        :param useragent: Default 'vdirsyncer'.
+        '''
+
         super(DavStorage, self).__init__(**kwargs)
+
+        if username and not password:
+            password = get_password(username, url)
+
+        self._settings = {
+            'verify': prepare_verify(verify),
+            'auth': prepare_auth(auth, username, password)
+        }
+        self.username, self.password = username, password
+        self.useragent = useragent
+
+        url = url.rstrip('/') + '/'
+        if collection is not None:
+            url = urlparse.urljoin(url, collection)
+        self.url = url.rstrip('/') + '/'
+        self.parsed_url = urlparse.urlparse(self.url)
+        self.collection = collection
 
         headers = self._default_headers()
         headers['Depth'] = 1
@@ -57,6 +86,12 @@ class DavStorage(HttpStorageBase):
         response.raise_for_status()
         if self.dav_header not in response.headers.get('DAV', ''):
             raise exceptions.StorageError('URL is not a collection')
+
+    def _default_headers(self):
+        return {
+            'User-Agent': self.useragent,
+            'Content-Type': 'application/xml; charset=UTF-8'
+        }
 
     @classmethod
     def discover(cls, url, **kwargs):
