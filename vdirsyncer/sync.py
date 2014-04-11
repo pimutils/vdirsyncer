@@ -22,27 +22,23 @@ import vdirsyncer.log
 sync_logger = vdirsyncer.log.get('sync')
 
 
-def prepare_list(storage, href_to_uid):
+def prepare_list(storage, href_to_status):
+    download = []
     for href, etag in storage.list():
         props = {'etag': etag}
-        if href in href_to_uid:
-            props['uid'] = href_to_uid[href]
+        if href in href_to_status:
+            uid, old_etag = href_to_status[href]
+            props['uid'] = uid
+            if etag != old_etag:
+                download.append(href)
         else:
-            item, new_etag = storage.get(href)
-            assert etag == new_etag
-            props['uid'] = item.uid
-            props['item'] = item
+            download.append(href)
         yield href, props
 
-
-def prefetch(storage, item_list, hrefs):
-    hrefs_to_prefetch = []
-    for href in hrefs:
-        if 'item' not in item_list[href]:
-            hrefs_to_prefetch.append(href)
-    for href, item, etag in storage.get_multi(hrefs_to_prefetch):
-        assert item_list[href]['etag'] == etag
-        item_list[href]['item'] = item
+    if download:
+        for href, item, etag in storage.get_multi(download):
+            props = {'item': item, 'uid': item.uid, 'etag': etag}
+            yield href, props
 
 
 def sync(storage_a, storage_b, status, conflict_resolution=None):
@@ -60,32 +56,28 @@ def sync(storage_a, storage_b, status, conflict_resolution=None):
         provided, the sync function will raise
         :py:exc:`vdirsyncer.exceptions.SyncConflict`.
     '''
-    a_href_to_uid = dict(
-        (href_a, uid)
+    a_href_to_status = dict(
+        (href_a, (uid, etag_a))
         for uid, (href_a, etag_a, href_b, etag_b) in status.iteritems()
     )
-    b_href_to_uid = dict(
-        (href_b, uid)
+    b_href_to_status = dict(
+        (href_b, (uid, etag_b))
         for uid, (href_a, etag_a, href_b, etag_b) in status.iteritems()
     )
     # href => {'etag': etag, 'item': optional item, 'uid': uid}
-    list_a = dict(prepare_list(storage_a, a_href_to_uid))
-    list_b = dict(prepare_list(storage_b, b_href_to_uid))
+    list_a = dict(prepare_list(storage_a, a_href_to_status))
+    list_b = dict(prepare_list(storage_b, b_href_to_status))
 
     a_uid_to_href = dict((x['uid'], href) for href, x in list_a.iteritems())
     b_uid_to_href = dict((x['uid'], href) for href, x in list_b.iteritems())
-    del a_href_to_uid, b_href_to_uid
+    del a_href_to_status, b_href_to_status
 
     storages = {
         'a': (storage_a, list_a, a_uid_to_href),
         'b': (storage_b, list_b, b_uid_to_href)
     }
 
-    actions, prefetch_from_a, prefetch_from_b = \
-        get_actions(storages, status)
-
-    prefetch(storage_a, list_a, prefetch_from_a)
-    prefetch(storage_b, list_b, prefetch_from_b)
+    actions = get_actions(storages, status)
 
     for action in actions:
         action(storages, status, conflict_resolution)
@@ -180,8 +172,6 @@ def action_conflict_resolve(uid):
 
 
 def get_actions(storages, status):
-    prefetch_from_a = []
-    prefetch_from_b = []
     actions = []
 
     storage_a, list_a, a_uid_to_href = storages['a']
@@ -203,23 +193,17 @@ def get_actions(storages, status):
             if a and b:  # missing status
                 actions.append(action_conflict_resolve(uid))
             elif a and not b:  # new item was created in a
-                prefetch_from_a.append(href_a)
                 actions.append(action_upload(uid, 'a', 'b'))
             elif not a and b:  # new item was created in b
-                prefetch_from_b.append(href_b)
                 actions.append(action_upload(uid, 'b', 'a'))
         else:
             _, status_etag_a, _, status_etag_b = status[uid]
             if a and b:
                 if a['etag'] != status_etag_a and b['etag'] != status_etag_b:
-                    prefetch_from_a.append(href_a)
-                    prefetch_from_b.append(href_b)
                     actions.append(action_conflict_resolve(uid))
                 elif a['etag'] != status_etag_a:  # item was updated in a
-                    prefetch_from_a.append(href_a)
                     actions.append(action_update(uid, 'a', 'b'))
                 elif b['etag'] != status_etag_b:  # item was updated in b
-                    prefetch_from_b.append(href_b)
                     actions.append(action_update(uid, 'b', 'a'))
             elif a and not b:  # was deleted from b
                 actions.append(action_delete(uid, 'a'))
@@ -228,4 +212,4 @@ def get_actions(storages, status):
             elif not a and not b:  # was deleted from a and b
                 actions.append(action_delete(uid, None))
 
-    return actions, prefetch_from_a, prefetch_from_b
+    return actions
