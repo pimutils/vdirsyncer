@@ -9,6 +9,8 @@
 
 import os
 import pytest
+import datetime
+from textwrap import dedent
 
 from .. import StorageTests
 import vdirsyncer.exceptions as exceptions
@@ -112,7 +114,7 @@ class TestCaldavStorage(DavStorageTests):
         ])
 
     @pytest.mark.parametrize('item_type', ['VTODO', 'VEVENT'])
-    def test_item_types(self, item_type):
+    def test_item_types_correctness(self, item_type):
         other_item_type = 'VTODO' if item_type == 'VEVENT' else 'VEVENT'
         kw = self.get_storage_args()
         s = self.storage_class(item_types=(item_type,), **kw)
@@ -129,6 +131,84 @@ class TestCaldavStorage(DavStorageTests):
         ((href2, etag2),) = s.list()
         assert href2 == href
         assert etag2 == etag
+
+    @pytest.mark.parametrize('item_types', [
+        ('VTODO',),
+        ('VEVENT',),
+        ('VTODO', 'VEVENT'),
+        ('VTODO', 'VEVENT', 'VJOURNAL'),
+    ])
+    def test_item_types_performance(self, item_types, monkeypatch):
+        kw = self.get_storage_args()
+        s = self.storage_class(item_types=item_types, **kw)
+
+        old_list = s._list
+        calls = []
+
+        def _list(*a, **kw):
+            calls.append(None)
+            return old_list(*a, **kw)
+
+        monkeypatch.setattr(s, '_list', _list)
+
+        list(s.list())
+        assert len(calls) == len(item_types)
+
+    @pytest.mark.xfail(dav_server.startswith('radicale_'),
+                       reason='Radicale doesn\'t support timeranges.')
+    def test_timerange_correctness(self):
+        kw = self.get_storage_args()
+        start_date = datetime.datetime(2013, 9, 10)
+        end_date = datetime.datetime(2013, 9, 13)
+        s = self.storage_class(start_date=start_date, end_date=end_date, **kw)
+
+        too_old_item = self._create_bogus_item('1', item_template=dedent(u'''
+            BEGIN:VCALENDAR
+            VERSION:2.0
+            PRODID:-//hacksw/handcal//NONSGML v1.0//EN
+            BEGIN:VEVENT
+            DTSTART:19970714T170000Z
+            DTEND:19970715T035959Z
+            SUMMARY:Bastille Day Party
+            X-SOMETHING:{r}
+            UID:{uid}
+            END:VEVENT
+            END:VCALENDAR
+            ''').strip())
+
+        too_new_item = self._create_bogus_item('2', item_template=dedent(u'''
+            BEGIN:VCALENDAR
+            VERSION:2.0
+            PRODID:-//hacksw/handcal//NONSGML v1.0//EN
+            BEGIN:VEVENT
+            DTSTART:20150714T170000Z
+            DTEND:20150715T035959Z
+            SUMMARY:Another Bastille Day Party
+            X-SOMETHING:{r}
+            UID:{uid}
+            END:VEVENT
+            END:VCALENDAR
+            ''').strip())
+
+        good_item = self._create_bogus_item('3', item_template=dedent(u'''
+            BEGIN:VCALENDAR
+            VERSION:2.0
+            PRODID:-//hacksw/handcal//NONSGML v1.0//EN
+            BEGIN:VEVENT
+            DTSTART:20130911T170000Z
+            DTEND:20130912T035959Z
+            SUMMARY:What's with all these Bastille Day Partys
+            X-SOMETHING:{r}
+            UID:{uid}
+            END:VEVENT
+            END:VCALENDAR
+            ''').strip())
+
+        s.upload(too_old_item)
+        s.upload(too_new_item)
+        href, etag = s.upload(good_item)
+
+        assert list(s.list()) == [(href, etag)]
 
     def test_item_types_passed_as_string(self):
         kw = self.get_storage_args()
