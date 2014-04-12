@@ -440,11 +440,8 @@ class CaldavStorage(DavStorage):
     :param start_date: Start date of timerange to show, default -inf.
     :param end_date: End date of timerange to show, default +inf.
     :param item_types: A tuple of collection types to show from the server.
-        For example, if you want to only get VEVENTs, pass ``('VEVENT',)``.
-        Falsy values mean "get all types". Dependent on server
-        functionality, no clientside validation of results. This currently
-        only affects the `list` method, but this shouldn't cause problems
-        in the normal usecase.
+        For example, if you want to only get VEVENTs, pass ``VEVENT``.
+        Dependent on server functionality, no clientside validation of results.
     '''
 
     storage_name = 'caldav'
@@ -469,7 +466,7 @@ class CaldavStorage(DavStorage):
     get_multi_data_query = '{urn:ietf:params:xml:ns:caldav}calendar-data'
 
     def __init__(self, start_date=None, end_date=None,
-                 item_types=(), **kwargs):
+                 item_types='VTODO, VEVENT', **kwargs):
         super(CaldavStorage, self).__init__(**kwargs)
         if isinstance(item_types, str):
             item_types = [x.strip() for x in item_types.split(',')]
@@ -489,29 +486,34 @@ class CaldavStorage(DavStorage):
     @staticmethod
     def _get_list_filters(components, start, end):
 
-        if not components:
-            components = ('VTODO', 'VEVENT')
-
-        caldavfilter = '''
-            <C:comp-filter name="VCALENDAR">
-                <C:comp-filter name="{component}">
-                    {timefilter}
+        if components:
+            caldavfilter = '''
+                <C:comp-filter name="VCALENDAR">
+                    <C:comp-filter name="{component}">
+                        {timefilter}
+                    </C:comp-filter>
                 </C:comp-filter>
-            </C:comp-filter>
-            '''
+                '''
 
-        if start is not None and end is not None:
-            start = start.strftime(CALDAV_DT_FORMAT)
-            end = end.strftime(CALDAV_DT_FORMAT)
+            if start is not None and end is not None:
+                start = start.strftime(CALDAV_DT_FORMAT)
+                end = end.strftime(CALDAV_DT_FORMAT)
 
-            timefilter = ('<C:time-range start="{start}" end="{end}"/>'
-                          .format(start=start, end=end))
+                timefilter = ('<C:time-range start="{start}" end="{end}"/>'
+                              .format(start=start, end=end))
+            else:
+                timefilter = ''
+
+            for component in components:
+                yield caldavfilter.format(component=component,
+                                          timefilter=timefilter)
         else:
-            timefilter = ''
-
-        for component in components:
-            yield caldavfilter.format(component=component,
-                                      timefilter=timefilter)
+            if start is not None and end is not None:
+                for x in CaldavStorage._get_list_filters(('VTODO', 'VEVENT'),
+                                                         start, end):
+                    yield x
+            else:
+                yield '<C:comp-filter name="VCALENDAR"/>'
 
     def list(self):
         data = '''<?xml version="1.0" encoding="utf-8" ?>
