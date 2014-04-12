@@ -136,7 +136,7 @@ class TestCaldavStorage(DavStorageTests):
         ('VTODO',),
         ('VEVENT',),
         ('VTODO', 'VEVENT'),
-        ('VTODO', 'VEVENT', 'VJOURNAL'),
+        ('VTODO', 'VEVENT', 'VJOURNAL')
     ])
     def test_item_types_performance(self, item_types, monkeypatch):
         kw = self.get_storage_args()
