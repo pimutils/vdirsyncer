@@ -4,10 +4,10 @@ env:
     global:
         - IS_TRAVIS=true
     matrix:
-        - DAV_SERVER=radicale_filesystem REQUIREMENTS=release
-        - DAV_SERVER=radicale_filesystem REQUIREMENTS=devel
-        - DAV_SERVER=radicale_database REQUIREMENTS=release
-        - DAV_SERVER=radicale_database REQUIREMENTS=devel
+        - DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=release
+        - DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=devel
+        - DAV_SERVER=radicale RADICALE_BACKEND=database REQUIREMENTS=release
+        - DAV_SERVER=radicale RADICALE_BACKEND=database REQUIREMENTS=devel
         - DAV_SERVER=owncloud REQUIREMENTS=release
 
 install:
@@ -21,5 +21,5 @@ script:
 matrix:
     allow_failures:
         # radicale db storage is broken in 0.8
-        - env: DAV_SERVER=radicale_database REQUIREMENTS=release
+        - env: DAV_SERVER=radicale RADICALE_BACKEND=database REQUIREMENTS=release
         - env: DAV_SERVER=owncloud REQUIREMENTS=release

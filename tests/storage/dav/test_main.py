@@ -19,11 +19,11 @@ from vdirsyncer.storage.dav import CaldavStorage, CarddavStorage
 import requests.exceptions
 
 
-dav_server = os.environ.get('DAV_SERVER', '').strip() or 'radicale_filesystem'
-if dav_server.startswith('radicale_'):
-    from ._radicale import ServerMixin
+dav_server = os.environ.get('DAV_SERVER', '').strip() or 'radicale'
+if dav_server == 'radicale':
+    from tests.storage.dav.servers.radicale import ServerMixin
 elif dav_server == 'owncloud':
-    from ._owncloud import ServerMixin
+    from tests.storage.dav.servers.owncloud import ServerMixin
 else:
     raise RuntimeError('{} is not a known DAV server.'.format(dav_server))
 
@@ -154,7 +154,7 @@ class TestCaldavStorage(DavStorageTests):
         list(s.list())
         assert len(calls) == len(item_types)
 
-    @pytest.mark.xfail(dav_server.startswith('radicale_'),
+    @pytest.mark.xfail(dav_server == 'radicale',
                        reason='Radicale doesn\'t support timeranges.')
     def test_timerange_correctness(self):
         kw = self.get_storage_args()

@@ -4,8 +4,8 @@ htmlcov
 .coverage
 build
 env
-owncloud-testserver
 *.egg-info
 .cache
 .xprocess
 dist
+tests/storage/dav/servers/*/*
