@@ -20,20 +20,14 @@ import requests.exceptions
 
 
 dav_server = os.environ.get('DAV_SERVER', '').strip() or 'radicale'
-if dav_server == 'radicale':
-    from tests.storage.dav.servers.radicale import ServerMixin
-elif dav_server == 'owncloud':
-    from tests.storage.dav.servers.owncloud import ServerMixin
-else:
-    raise RuntimeError('{} is not a known DAV server.'.format(dav_server))
 
-try:
-    import radicale
-    radicale_version = radicale.VERSION
-    del radicale
-except ImportError:
-    radicale_version = None
+def _get_server_mixin(server_name):
+    from . import __name__ as base
+    x = __import__('{}.servers.{}'.format(base, server_name), fromlist=[''])
+    print(dir(x))
+    return x.ServerMixin
 
+ServerMixin = _get_server_mixin(dav_server)
 
 VCARD_TEMPLATE = u'''BEGIN:VCARD
 VERSION:3.0
