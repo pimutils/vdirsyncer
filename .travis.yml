@@ -15,7 +15,6 @@ install:
     - "pip install coveralls"
 script:
     - "coverage run --source=vdirsyncer/,tests/ --module pytest"
-    - "coverage report --show-missing"
     - "travis_retry coveralls"
 
 matrix:
