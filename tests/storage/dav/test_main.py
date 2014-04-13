@@ -16,6 +16,8 @@ from .. import StorageTests
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.dav import CaldavStorage, CarddavStorage
+import vdirsyncer.exceptions
+import requests
 import requests.exceptions
 
 
@@ -209,6 +211,36 @@ class TestCaldavStorage(DavStorageTests):
         b = self.storage_class(item_types=('VTODO', 'VEVENT'), **kw)
         assert a.item_types == b.item_types == ('VTODO', 'VEVENT')
 
+    def test_invalid_resource(self, monkeypatch):
+        calls = []
+        args = self.get_storage_args(collection=None)
+
+        def request(session, method, url, data=None, headers=None, auth=None,
+                    verify=None):
+            assert method == 'OPTIONS'
+            assert url == args['url']
+            calls.append(None)
+
+            r = requests.Response()
+            r.status_code = 200
+            r._content = 'Hello World.'
+            return r
+
+        monkeypatch.setattr('requests.sessions.Session.request', request)
+
+        with pytest.raises(vdirsyncer.exceptions.StorageError):
+            s = self.storage_class(**args)
+        assert len(calls) == 1
+
+    def test_empty_get_multi_performance(self, monkeypatch):
+        s = self._get_storage()
+        
+        def breakdown(*a, **kw):
+            raise AssertionError('Expected not to be called.')
+
+        monkeypatch.setattr('requests.sessions.Session.request', breakdown)
+
+        assert list(s.get_multi([])) == []
 
 class TestCarddavStorage(DavStorageTests):
     storage_class = CarddavStorage

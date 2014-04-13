@@ -48,6 +48,10 @@ class StorageTests(object):
             assert etag == etag2
             assert 'UID:{}'.format(item.uid) in item.raw
 
+    def test_empty_get_multi(self):
+        s = self._get_storage()
+        assert list(s.get_multi([])) == []
+
     def test_upload_already_existing(self):
         s = self._get_storage()
         item = self._create_bogus_item(1)
@@ -87,6 +91,12 @@ class StorageTests(object):
             s.update(href, item, '"lolnope"')
         with pytest.raises(exceptions.PreconditionFailed):
             s.delete(href, '"lolnope"')
+
+    def test_delete(self):
+        s = self._get_storage()
+        href, etag = s.upload(self._create_bogus_item(1))
+        s.delete(href, etag)
+        assert not list(s.list())
 
     def test_delete_nonexisting(self):
         s = self._get_storage()
@@ -146,3 +156,9 @@ class StorageTests(object):
         # Can't do stronger assertion because of radicale, which needs a
         # fileextension to guess the collection type.
         assert 'test2' in s.collection
+
+    def test_has(self):
+        s = self._get_storage()
+        assert not s.has('asd')
+        href, etag = s.upload(self._create_bogus_item(1))
+        assert s.has(href)
