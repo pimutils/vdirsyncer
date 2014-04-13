@@ -132,11 +132,6 @@ def _main(env, file_cfg):
     general, all_pairs, all_storages = file_cfg
     app = argvard.Argvard()
 
-    @app.main()
-    def app_main(context):
-        # https://github.com/DasIch/argvard/issues/2
-        app.options['--help'].function(context)
-
     @app.option('--verbosity verbosity')
     def verbose_option(context, verbosity):
         '''
