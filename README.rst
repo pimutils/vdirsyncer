@@ -6,6 +6,9 @@ vdirsyncer synchronizes your calendars and addressbooks between two storages.
 The supported storages are CalDAV, CardDAV, arbitrary HTTP resources and
 `vdir <https://github.com/untitaker/vdir>`_.
 
+It aims to be for CalDAV and CardDAV what `OfflineIMAP
+<http://offlineimap.org/>`_ is for IMAP.
+
 .. image:: https://travis-ci.org/untitaker/vdirsyncer.png?branch=master
     :target: https://travis-ci.org/untitaker/vdirsyncer
 
@@ -15,9 +18,6 @@ The supported storages are CalDAV, CardDAV, arbitrary HTTP resources and
 While i use it daily and haven't experienced data loss (even when vdirsyncer
 crashed), i don't know if the documentation is sufficient. If you have any
 questions regarding the usage, feel free to open a new issue.
-
-It aims to be for CalDAV and CardDAV what
-`OfflineIMAP <http://offlineimap.org/>`_ is for IMAP.
 
 CardDAV/CalDAV Server Support
 =============================
