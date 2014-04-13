@@ -22,5 +22,8 @@ class TestMemoryStorage(StorageTests):
     def test_discover(self):
         '''This test doesn't make any sense here.'''
 
+    def test_discover_collection_arg(self):
+        '''This test doesn't make any sense here.'''
+
     def test_collection_arg(self):
         '''This test doesn't make any sense here.'''

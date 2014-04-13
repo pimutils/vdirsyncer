@@ -134,6 +134,13 @@ class StorageTests(object):
 
         assert not collections
 
+    def test_discover_collection_arg(self):
+        args = self.get_storage_args(collection='lol')
+        with pytest.raises(TypeError) as excinfo:
+            list(self.storage_class.discover(**args))
+
+        assert 'collection argument must not be given' in str(excinfo.value)
+
     def test_collection_arg(self):
         s = self.storage_class(**self.get_storage_args(collection='test2'))
         # Can't do stronger assertion because of radicale, which needs a
