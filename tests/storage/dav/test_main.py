@@ -24,7 +24,6 @@ dav_server = os.environ.get('DAV_SERVER', '').strip() or 'radicale'
 def _get_server_mixin(server_name):
     from . import __name__ as base
     x = __import__('{}.servers.{}'.format(base, server_name), fromlist=[''])
-    print(dir(x))
     return x.ServerMixin
 
 ServerMixin = _get_server_mixin(dav_server)
