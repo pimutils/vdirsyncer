@@ -145,7 +145,7 @@ class StorageTests(object):
         assert not collections
 
     def test_discover_collection_arg(self):
-        args = self.get_storage_args(collection='lol')
+        args = self.get_storage_args(collection='test2')
         with pytest.raises(TypeError) as excinfo:
             list(self.storage_class.discover(**args))
 

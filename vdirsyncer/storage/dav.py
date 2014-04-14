@@ -136,6 +136,8 @@ class DavStorage(Storage):
     def _check_response(response):
         if response.status_code == 412:
             raise exceptions.PreconditionFailed(response.reason)
+        if response.status_code == 404:
+            raise exceptions.NotFoundError(response.reason)
         response.raise_for_status()
 
     def get(self, href):
@@ -158,7 +160,7 @@ class DavStorage(Storage):
             data=data,
             headers=self._default_headers()
         )
-        response.raise_for_status()
+        self._check_response(response)
         root = etree.XML(response.content)  # etree only can handle bytes
         rv = []
         hrefs_left = set(hrefs)
@@ -190,7 +192,7 @@ class DavStorage(Storage):
     def has(self, href):
         try:
             self.get(href)
-        except exceptions.PreconditionFailed:
+        except exceptions.NotFoundError:
             return False
         else:
             return True
@@ -240,8 +242,6 @@ class DavStorage(Storage):
             href,
             headers=headers
         )
-        if response.status_code == 404:
-            raise exceptions.NotFoundError(href)
         self._check_response(response)
 
     def _list(self, xml):
