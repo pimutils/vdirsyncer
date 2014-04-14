@@ -237,11 +237,25 @@ class DavStorage(Storage):
         self._check_response(response)
 
     def _list(self, xml):
+        headers = self._default_headers()
+
+        # CardDAV: The request MUST include a Depth header. The scope of the
+        # query is determined by the value of the Depth header. For example,
+        # to query all address object resources in an address book collection,
+        # the REPORT would use the address book collection as the Request- URI
+        # and specify a Depth of 1 or infinity.
+        # http://tools.ietf.org/html/rfc6352#section-8.6
+        #
+        # CalDAV:
+        # The request MAY include a Depth header.  If no Depth header is
+        # included, Depth:0 is assumed.
+        # http://tools.ietf.org/search/rfc4791#section-7.8
+        headers['Depth'] = 'infinity'
         response = self._request(
             'REPORT',
             '',
             data=xml,
-            headers=self._default_headers()
+            headers=headers
         )
         response.raise_for_status()
         root = etree.XML(response.content)
