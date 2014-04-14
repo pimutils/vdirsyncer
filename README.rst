@@ -22,7 +22,7 @@ questions regarding the usage, feel free to open a new issue.
 CardDAV/CalDAV Server Support
 =============================
 
-vdirsyncer is currently tested against the latest versions Radicale and
+vdirsyncer is currently tested against the latest versions of Radicale and
 ownCloud. While Radicale seems to work perfectly, ownCloud currently has
 problems detecting collisions and race-conditions. However, given that this is
 a problem with every setup involving ownCloud, and that ownCloud is widely
