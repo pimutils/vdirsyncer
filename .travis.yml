@@ -19,6 +19,5 @@ script:
 
 matrix:
     allow_failures:
-        # radicale db storage is broken in 0.8
+        # radicale db storage is broken in 0.8, all tests fail
         - env: DAV_SERVER=radicale RADICALE_BACKEND=database REQUIREMENTS=release
-        - env: DAV_SERVER=owncloud REQUIREMENTS=release

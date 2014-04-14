@@ -162,3 +162,4 @@ class StorageTests(object):
         assert not s.has('asd')
         href, etag = s.upload(self._create_bogus_item(1))
         assert s.has(href)
+        assert not s.has('asd')

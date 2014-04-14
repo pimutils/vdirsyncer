@@ -109,12 +109,16 @@ class FilesystemStorage(Storage):
 
     def get(self, href):
         fpath = self._get_filepath(href)
-        with open(fpath, 'rb') as f:
-            return (Item(f.read().decode(self.encoding)),
-                    _get_etag(fpath))
-
-    def has(self, href):
-        return os.path.isfile(self._get_filepath(href))
+        try:
+            with open(fpath, 'rb') as f:
+                return (Item(f.read().decode(self.encoding)),
+                        _get_etag(fpath))
+        except IOError as e:
+            import errno
+            if e.errno == errno.ENOENT:
+                raise exceptions.NotFoundError(href)
+            else:
+                raise
 
     def upload(self, item):
         href = self._get_href(item.uid)

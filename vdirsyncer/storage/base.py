@@ -7,6 +7,7 @@
     :license: MIT, see LICENSE for more details.
 '''
 
+from .. import exceptions
 
 class Item(object):
 
@@ -80,6 +81,8 @@ class Storage(object):
         '''
         :param href: href to fetch
         :returns: (item, etag)
+        :raises: :exc:`vdirsyncer.exceptions.PreconditionFailed` if item can't
+            be found.
         '''
         raise NotImplementedError()
 
@@ -87,7 +90,7 @@ class Storage(object):
         '''
         :param hrefs: list of hrefs to fetch
         :raises: :exc:`vdirsyncer.exceptions.PreconditionFailed` if one of the
-        items couldn't be found.
+            items couldn't be found.
         :returns: iterable of (href, item, etag)
         '''
         for href in hrefs:
@@ -99,7 +102,12 @@ class Storage(object):
         check if item exists by href
         :returns: True or False
         '''
-        raise NotImplementedError()
+        try:
+            self.get(href)
+        except exceptions.PreconditionFailed:
+            return False
+        else:
+            return True
 
     def upload(self, item):
         '''

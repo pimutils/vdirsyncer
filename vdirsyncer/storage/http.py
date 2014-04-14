@@ -115,6 +115,3 @@ class HttpStorage(Storage):
     def get(self, href):
         x = self._items[href]
         return x, hashlib.sha256(x.raw).hexdigest()
-
-    def has(self, href):
-        return href in self._items

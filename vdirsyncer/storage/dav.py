@@ -189,14 +189,6 @@ class DavStorage(Storage):
             raise exceptions.NotFoundError(href)
         return rv
 
-    def has(self, href):
-        try:
-            self.get(href)
-        except exceptions.NotFoundError:
-            return False
-        else:
-            return True
-
     def _put(self, href, item, etag):
         headers = self._default_headers()
         headers['Content-Type'] = self.item_mimetype
