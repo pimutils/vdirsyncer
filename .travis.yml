@@ -6,7 +6,6 @@ env:
     matrix:
         - DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=release
         - DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=devel
-        - DAV_SERVER=radicale RADICALE_BACKEND=database REQUIREMENTS=release
         - DAV_SERVER=radicale RADICALE_BACKEND=database REQUIREMENTS=devel
         - DAV_SERVER=owncloud REQUIREMENTS=release
 
@@ -16,8 +15,3 @@ install:
 script:
     - "coverage run --source=vdirsyncer/,tests/ --module pytest"
     - "travis_retry coveralls"
-
-matrix:
-    allow_failures:
-        # radicale db storage is broken in 0.8, all tests fail
-        - env: DAV_SERVER=radicale RADICALE_BACKEND=database REQUIREMENTS=release
