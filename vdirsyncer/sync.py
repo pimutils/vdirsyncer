@@ -77,7 +77,7 @@ def sync(storage_a, storage_b, status, conflict_resolution=None):
         'b': (storage_b, list_b, b_uid_to_href)
     }
 
-    actions = get_actions(storages, status)
+    actions = list(get_actions(storages, status))
 
     for action in actions:
         action(storages, status, conflict_resolution)
@@ -172,8 +172,6 @@ def action_conflict_resolve(uid):
 
 
 def get_actions(storages, status):
-    actions = []
-
     storage_a, list_a, a_uid_to_href = storages['a']
     storage_b, list_b, b_uid_to_href = storages['b']
 
@@ -191,25 +189,23 @@ def get_actions(storages, status):
         b = list_b.get(href_b, None)
         if uid not in status:
             if a and b:  # missing status
-                actions.append(action_conflict_resolve(uid))
+                yield action_conflict_resolve(uid)
             elif a and not b:  # new item was created in a
-                actions.append(action_upload(uid, 'a', 'b'))
+                yield action_upload(uid, 'a', 'b')
             elif not a and b:  # new item was created in b
-                actions.append(action_upload(uid, 'b', 'a'))
+                yield action_upload(uid, 'b', 'a')
         else:
             _, status_etag_a, _, status_etag_b = status[uid]
             if a and b:
                 if a['etag'] != status_etag_a and b['etag'] != status_etag_b:
-                    actions.append(action_conflict_resolve(uid))
+                    yield action_conflict_resolve(uid)
                 elif a['etag'] != status_etag_a:  # item was updated in a
-                    actions.append(action_update(uid, 'a', 'b'))
+                    yield action_update(uid, 'a', 'b')
                 elif b['etag'] != status_etag_b:  # item was updated in b
-                    actions.append(action_update(uid, 'b', 'a'))
+                    yield action_update(uid, 'b', 'a')
             elif a and not b:  # was deleted from b
-                actions.append(action_delete(uid, 'a'))
+                yield action_delete(uid, 'a')
             elif not a and b:  # was deleted from a
-                actions.append(action_delete(uid, 'b'))
+                yield action_delete(uid, 'b')
             elif not a and not b:  # was deleted from a and b
-                actions.append(action_delete(uid, None))
-
-    return actions
+                yield action_delete(uid, None)
