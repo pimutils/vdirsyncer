@@ -43,6 +43,7 @@ create table property (
 
 storage_backend = os.environ.get('RADICALE_BACKEND', '') or 'filesystem'
 
+
 def do_the_radicale_dance(tmpdir):
     # All of radicale is already global state, the cleanliness of the code and
     # all hope is already lost. This function runs before every test.

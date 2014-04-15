@@ -335,7 +335,7 @@ class CaldavStorage(DavStorage):
             end = end.strftime(CALDAV_DT_FORMAT)
 
             timefilter = ('<C:time-range start="{start}" end="{end}"/>'
-                .format(start=start, end=end))
+                          .format(start=start, end=end))
         else:
             timefilter = ''
 

@@ -167,6 +167,7 @@ def test_conflict_resolution_new_etags_without_changes():
     sync(a, b, status)
     assert status == {'1': (href_a, etag_a, href_b, etag_b)}
 
+
 def test_uses_get_multi(monkeypatch):
     def breakdown(*a, **kw):
         raise AssertionError('Expected use of get_multi')

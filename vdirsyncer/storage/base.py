@@ -9,6 +9,7 @@
 
 from .. import exceptions
 
+
 class Item(object):
 
     '''should-be-immutable wrapper class for VCALENDAR and VCARD'''

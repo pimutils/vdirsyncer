@@ -23,6 +23,7 @@ import requests.exceptions
 
 dav_server = os.environ.get('DAV_SERVER', '').strip() or 'radicale'
 
+
 def _get_server_mixin(server_name):
     from . import __name__ as base
     x = __import__('{}.servers.{}'.format(base, server_name), fromlist=[''])
@@ -100,7 +101,6 @@ class DavStorageTests(ServerMixin, StorageTests):
                        reason='See issue #16')
     def test_update_nonexisting(self):
         super(DavStorageTests, self).test_update_nonexisting()
-
 
 
 class TestCaldavStorage(DavStorageTests):
@@ -240,18 +240,19 @@ class TestCaldavStorage(DavStorageTests):
         monkeypatch.setattr('requests.sessions.Session.request', request)
 
         with pytest.raises(vdirsyncer.exceptions.StorageError):
-            s = self.storage_class(**args)
+            self.storage_class(**args)
         assert len(calls) == 1
 
     def test_empty_get_multi_performance(self, monkeypatch):
         s = self._get_storage()
-        
+
         def breakdown(*a, **kw):
             raise AssertionError('Expected not to be called.')
 
         monkeypatch.setattr('requests.sessions.Session.request', breakdown)
 
         assert list(s.get_multi([])) == []
+
 
 class TestCarddavStorage(DavStorageTests):
     storage_class = CarddavStorage
