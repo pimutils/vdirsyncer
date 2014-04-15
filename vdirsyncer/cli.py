@@ -150,6 +150,7 @@ def _main(env, file_cfg):
         normal user.
 
         '''
+        verbosity = verbosity.upper()
         x = getattr(log.logging, verbosity, None)
         if x is None:
             raise ValueError(u'Invalid verbosity value: {}'.format(verbosity))
