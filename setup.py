@@ -14,7 +14,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='vdirsyncer',
-    version='0.1.2',
+    version='0.1.3',
     author='Markus Unterwaditzer',
     author_email='markus@unterwaditzer.net',
     url='https://github.com/untitaker/vdirsyncer',
