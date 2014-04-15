@@ -1,7 +1,7 @@
 #!/bin/sh
 echo "The shell is $SHELL"
 set -e
-[ -n "$DAV_SERVER" ] || DAV_SERVER=radicale_filesystem
+[ -n "$DAV_SERVER" ] || DAV_SERVER=radicale
 [ -n "$REQUIREMENTS" ] || REQUIREMENTS=release
 TESTSERVER_BASE=./tests/storage/dav/servers/
 
