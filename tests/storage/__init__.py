@@ -9,6 +9,7 @@
 
 from vdirsyncer.storage.base import Item
 import vdirsyncer.exceptions as exceptions
+from vdirsyncer.utils import text_type
 from .. import assert_item_equals
 import random
 import pytest
@@ -33,7 +34,7 @@ class StorageTests(object):
     def test_generic(self):
         items = map(self._create_bogus_item, range(1, 10))
         for i, item in enumerate(items):
-            assert item.uid == unicode(i + 1), item.raw
+            assert item.uid == text_type(i + 1), item.raw
         s = self._get_storage()
         hrefs = []
         for item in items:

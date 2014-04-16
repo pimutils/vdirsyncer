@@ -10,7 +10,7 @@
 import os
 from vdirsyncer.storage.base import Storage, Item
 import vdirsyncer.exceptions as exceptions
-from vdirsyncer.utils import expand_path
+from vdirsyncer.utils import expand_path, text_type
 import vdirsyncer.log as log
 logger = log.get('storage.filesystem')
 
@@ -76,7 +76,7 @@ class FilesystemStorage(Storage):
             if os.path.exists(path):
                 raise IOError('{} is not a directory.')
             if create:
-                os.makedirs(path, 0750)
+                os.makedirs(path, 0o750)
             else:
                 raise IOError('Directory {} does not exist. Use create = '
                               'True in your configuration to automatically '
@@ -125,6 +125,10 @@ class FilesystemStorage(Storage):
         fpath = self._get_filepath(href)
         if os.path.exists(fpath):
             raise exceptions.AlreadyExistingError(item.uid)
+
+        if not isinstance(item.raw, text_type):
+            raise TypeError('item.raw must be a unicode string.')
+
         with safe_write(fpath, 'wb+') as f:
             f.write(item.raw.encode(self.encoding))
             return href, f.get_etag()
@@ -139,6 +143,9 @@ class FilesystemStorage(Storage):
         actual_etag = _get_etag(fpath)
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
+
+        if not isinstance(item.raw, text_type):
+            raise TypeError('item.raw must be a unicode string.')
 
         with safe_write(fpath, 'wb') as f:
             f.write(item.raw.encode(self.encoding))

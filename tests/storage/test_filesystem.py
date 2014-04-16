@@ -46,8 +46,8 @@ class TestFilesystemStorage(StorageTests):
         s = self.storage_class(str(tmpdir), '.txt')
 
         class BrokenItem(object):
-            raw = b'Ц, Ш, Л, ж, Д, З, Ю'
+            raw = u'Ц, Ш, Л, ж, Д, З, Ю'.encode('utf-8')
             uid = 'jeezus'
-        with pytest.raises(UnicodeError):
+        with pytest.raises(TypeError):
             s.upload(BrokenItem)
         assert not tmpdir.listdir()

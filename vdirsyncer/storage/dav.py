@@ -11,10 +11,9 @@ from .base import Storage, Item
 from .http import prepare_auth, prepare_verify, USERAGENT
 from .. import exceptions
 from .. import log
-from ..utils import request, get_password
+from ..utils import request, get_password, urlparse
 import requests
 import datetime
-import urlparse
 from lxml import etree
 
 
@@ -166,7 +165,7 @@ class DavStorage(Storage):
         hrefs_left = set(hrefs)
         for element in root.iter('{DAV:}response'):
             href = self._normalize_href(
-                element.find('{DAV:}href').text.decode(response.encoding))
+                element.find('{DAV:}href').text)
             raw = element \
                 .find('{DAV:}propstat') \
                 .find('{DAV:}prop') \

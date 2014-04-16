@@ -8,22 +8,30 @@
 '''
 
 import os
+import sys
 import vdirsyncer.log
+import requests
 
 
-try:  # pragma: no cover
-    import urllib.parse as urlparse
-except ImportError:  # pragma: no cover
+PY2 = sys.version_info[0] == 2
+
+
+if PY2:
     import urlparse
+    text_type = unicode
+    iteritems = lambda x: x.iteritems()
+    itervalues = lambda x: x.itervalues()
+else:
+    import urllib.parse as urlparse
+    text_type = str
+    iteritems = lambda x: x.items()
+    itervalues = lambda x: x.values()
 
 
 try:
     import keyring
 except ImportError:
     keyring = None
-
-
-import requests
 
 
 password_key_prefix = 'vdirsyncer:'

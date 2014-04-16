@@ -8,6 +8,7 @@
 '''
 
 from .. import exceptions
+from .. import utils
 
 
 class Item(object):
@@ -15,7 +16,7 @@ class Item(object):
     '''should-be-immutable wrapper class for VCALENDAR and VCARD'''
 
     def __init__(self, raw):
-        assert type(raw) is unicode
+        assert isinstance(raw, utils.text_type)
         raw = raw.splitlines()
         self.uid = None
 

@@ -18,29 +18,25 @@ class TestHttpStorage(object):
         collection_url = 'http://127.0.0.1/calendar/collection.ics'
 
         items = [
-            dedent(b'''
-                    BEGIN:VEVENT
-                    SUMMARY:Eine Kurzinfo
-                    DESCRIPTION:Beschreibung des Termines
-                    END:VEVENT
-                   ''').strip(),
-            dedent(b'''
-                    BEGIN:VEVENT
-                    SUMMARY:Eine zweite Kurzinfo
-                    DESCRIPTION:Beschreibung des anderen Termines
-                    BEGIN:VALARM
-                    ACTION:AUDIO
-                    TRIGGER:19980403T120000
-                    ATTACH;FMTTYPE=audio/basic:http://host.com/pub/ssbanner.aud
-                    REPEAT:4
-                    DURATION:PT1H
-                    END:VALARM
-                    END:VEVENT
-                   ''').strip()
+            (u'BEGIN:VEVENT\n'
+             u'SUMMARY:Eine Kurzinfo\n'
+             u'DESCRIPTION:Beschreibung des Termines\n'
+             u'END:VEVENT'),
+            (u'BEGIN:VEVENT\n'
+             u'SUMMARY:Eine zweite Kurzinfo\n'
+             u'DESCRIPTION:Beschreibung des anderen Termines\n'
+             u'BEGIN:VALARM\n'
+             u'ACTION:AUDIO\n'
+             u'TRIGGER:19980403T120000\n'
+             u'ATTACH;FMTTYPE=audio/basic:http://host.com/pub/ssbanner.aud\n'
+             u'REPEAT:4\n'
+             u'DURATION:PT1H\n'
+             u'END:VALARM\n'
+             u'END:VEVENT')
         ]
 
         responses = [
-            '\n'.join([b'BEGIN:VCALENDAR'] + items + [b'END:VCALENDAR'])
+            u'\n'.join([u'BEGIN:VCALENDAR'] + items + [u'END:VCALENDAR'])
         ] * 2
 
         def get(method, url, *a, **kw):
@@ -49,7 +45,8 @@ class TestHttpStorage(object):
             r = Response()
             r.status_code = 200
             assert responses
-            r._content = responses.pop()
+            r._content = responses.pop().encode('utf-8')
+            r.encoding = 'utf-8'
             return r
 
         monkeypatch.setattr('requests.request', get)

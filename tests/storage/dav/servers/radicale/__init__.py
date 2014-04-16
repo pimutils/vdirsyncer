@@ -2,8 +2,8 @@
 
 import sys
 import os
-import urlparse
 import pytest
+from vdirsyncer.utils import urlparse
 
 from werkzeug.test import Client
 from werkzeug.wrappers import BaseResponse as WerkzeugResponse

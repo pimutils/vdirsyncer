@@ -10,7 +10,6 @@
 import os
 import sys
 import json
-import ConfigParser
 from vdirsyncer.sync import sync
 from vdirsyncer.utils import expand_path, split_dict, parse_options
 from vdirsyncer.storage import storage_names
@@ -18,11 +17,17 @@ import vdirsyncer.log as log
 import argvard
 
 
+try:
+    from ConfigParser import RawConfigParser
+except ImportError:
+    from configparser import RawConfigParser
+
+
 cli_logger = log.get('cli')
 
 
 def load_config(fname, pair_options=('collections', 'conflict_resolution')):
-    c = ConfigParser.RawConfigParser()
+    c = RawConfigParser()
     c.read(fname)
 
     get_options = lambda s: dict(parse_options(c.items(s)))

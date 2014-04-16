@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 '''
     vdirsyncer.storage.http
@@ -8,10 +7,10 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-import urlparse
 import hashlib
 from .base import Storage, Item
-from vdirsyncer.utils import expand_path, get_password, request
+from vdirsyncer.utils import expand_path, get_password, request, urlparse, \
+     text_type
 
 USERAGENT = 'vdirsyncer'
 
@@ -59,7 +58,7 @@ def prepare_auth(auth, username, password):
 
 
 def prepare_verify(verify):
-    if isinstance(verify, (str, unicode)):
+    if isinstance(verify, (text_type, bytes)):
         return expand_path(verify)
     return verify
 
@@ -110,8 +109,8 @@ class HttpStorage(Storage):
             self._items[uid] = item
 
         for uid, item in self._items.items():
-            yield uid, hashlib.sha256(item.raw).hexdigest()
+            yield uid, hashlib.sha256(item.raw.encode('utf-8')).hexdigest()
 
     def get(self, href):
         x = self._items[href]
-        return x, hashlib.sha256(x.raw).hexdigest()
+        return x, hashlib.sha256(x.raw.encode('utf-8')).hexdigest()

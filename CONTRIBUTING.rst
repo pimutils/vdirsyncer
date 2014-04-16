@@ -3,8 +3,8 @@
   * Make sure you have the latest version by executing ``pip install --user
     --upgrade vdirsyncer``.
 
-  * Include your configuration, the commands you're executing, and their
-    output.
+  * Include the Python version, your configuration, the commands you're
+    executing, and their output.
 
   * Use ``--verbosity=DEBUG`` when including output from vdirsyncer.
 
