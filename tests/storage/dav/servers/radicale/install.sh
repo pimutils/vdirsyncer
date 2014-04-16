@@ -14,5 +14,5 @@ fi
 pip install werkzeug $radicale_pkg
 
 if [ "$RADICALE_BACKEND" = "database" ]; then
-    pip install sqlalchemy pysqlite
+    pip install sqlalchemy
 fi
