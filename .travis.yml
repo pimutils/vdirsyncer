@@ -3,8 +3,6 @@ python:
     - "2.7"
     - "3.3"
 env:
-    global:
-        - IS_TRAVIS=true
     matrix:
         - DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=release
         - DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=devel
