@@ -23,7 +23,7 @@ except ImportError:
     from configparser import RawConfigParser
 
 
-cli_logger = log.get('cli')
+cli_logger = log.get(__name__)
 
 
 def load_config(fname, pair_options=('collections', 'conflict_resolution')):

@@ -12,7 +12,7 @@ from vdirsyncer.storage.base import Storage, Item
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.utils import expand_path, text_type
 import vdirsyncer.log as log
-logger = log.get('storage.filesystem')
+logger = log.get(__name__)
 
 
 def _get_etag(fpath):

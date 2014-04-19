@@ -25,7 +25,7 @@ loggers = {}
 
 
 def get(name):
-    name = 'vdirsyncer.' + name
+    assert name.startswith('vdirsyncer.')
     if name not in loggers:
         loggers[name] = create_logger(name)
     return loggers[name]

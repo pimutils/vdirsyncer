@@ -9,8 +9,12 @@
 
 import os
 import sys
-import vdirsyncer.log
 import requests
+
+from . import log
+
+
+logger = log.get(__name__)
 
 
 PY2 = sys.version_info[0] == 2
@@ -139,7 +143,6 @@ def get_password(username, resource):
     """
     import getpass
 
-    logger = vdirsyncer.log.get('sync')
 
     for func in (_password_from_netrc, _password_from_keyring):
         password = func(username, resource)
@@ -167,8 +170,6 @@ def get_password(username, resource):
 def request(method, url, data=None, headers=None, auth=None, verify=None,
             session=None):
     '''wrapper method for requests, to ease logging and mocking'''
-
-    logger = vdirsyncer.log.get('utils')
 
     if session is None:
         func = requests.request

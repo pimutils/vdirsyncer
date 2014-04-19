@@ -20,7 +20,7 @@ import itertools
 import vdirsyncer.exceptions as exceptions
 import vdirsyncer.log
 from .utils import iteritems, itervalues
-sync_logger = vdirsyncer.log.get('sync')
+sync_logger = vdirsyncer.log.get(__name__)
 
 
 def prepare_list(storage, href_to_status):
