@@ -190,23 +190,48 @@ def _main(env, file_cfg):
             config_a.update(all_storages[a_name])
             config_b = dict(storage_defaults)
             config_b.update(all_storages[b_name])
-            a = storage_instance_from_config(config_a)
-            b = storage_instance_from_config(config_b)
 
-            def x(a=a, b=b, pair_name=pair_name, collection=collection):
-                status_name = \
-                    '_'.join(filter(bool, (pair_name, collection)))
-                pair_description = \
-                    ' from '.join(filter(bool, (collection, pair_name)))
-                cli_logger.info('Syncing {}'.format(pair_description))
-                status = load_status(general['status_path'], status_name)
-                sync(a, b, status,
-                     pair_options.get('conflict_resolution', None))
-                save_status(general['status_path'], status_name, status)
-            actions.append(x)
 
-        for action in actions:
-            action()
+            actions.append({
+                'config_a': config_a,
+                'config_b': config_b,
+                'pair_name': pair_name,
+                'collection': collection,
+                'pair_options': pair_options,
+                'general': general
+            })
+
+        processes = general.get('processes', 0) or len(actions)
+        cli_logger.debug('Using {} processes.'.format(processes))
+
+        if processes == 1:
+            cli_logger.debug('Not using multiprocessing.')
+            _map = map
+        else:
+            cli_logger.debug('Using multiprocessing.')
+            from multiprocessing import Pool
+            p = Pool(processes=general.get('processes', 0) or len(actions))
+            _map = p.map
+
+        _map(_sync_collection, actions)
 
     app.register_command('sync', sync_command)
     app()
+
+def _sync_collection(x):
+    return sync_collection(**x)
+
+def sync_collection(config_a, config_b, pair_name, collection, pair_options,
+                    general):
+    a = storage_instance_from_config(config_a)
+    b = storage_instance_from_config(config_b)
+
+    status_name = \
+            '_'.join(filter(bool, (pair_name, collection)))
+    pair_description = \
+            ' from '.join(filter(bool, (collection, pair_name)))
+    cli_logger.info('Syncing {}'.format(pair_description))
+    status = load_status(general['status_path'], status_name)
+    sync(a, b, status,
+         pair_options.get('conflict_resolution', None))
+    save_status(general['status_path'], status_name, status)
