@@ -201,9 +201,19 @@ def _main(env, file_cfg):
                 'general': general
             })
 
-        from multiprocessing import Pool
-        p = Pool(processes=general.get('processes', 0) or len(actions))
-        p.map(_sync_collection, actions)
+        processes = general.get('processes', 0) or len(actions)
+        cli_logger.debug('Using {} processes.'.format(processes))
+
+        if processes == 1:
+            cli_logger.debug('Not using multiprocessing.')
+            _map = map
+        else:
+            cli_logger.debug('Using multiprocessing.')
+            from multiprocessing import Pool
+            p = Pool(processes=general.get('processes', 0) or len(actions))
+            _map = p.map
+
+        _map(_sync_collection, actions)
 
     app.register_command('sync', sync_command)
     app()
