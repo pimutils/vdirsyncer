@@ -82,19 +82,23 @@ def storage_instance_from_config(config):
         return cls(**config)
     except TypeError as e:
         import inspect
-        x = cli_logger.critical
         spec = inspect.getargspec(cls.__init__)
-        required_args = set(spec.args[:-len(spec.defaults)])
+        all = set(spec.args[1:])  # skip self
+        required = set(spec.args[1:-len(spec.defaults)])
+        given = set(config)
+        missing = required - given
+        invalid = given - set(spec.args)
 
-        x(str(e))
-        x('')
-        x('Unable to initialize storage {}.'.format(storage_name))
-        x('Here are the required arguments for the storage:')
-        x(list(required_args - {'self'}))
-        x('Here are the optional arguments:')
-        x(list(set(spec.args) - required_args))
-        x('And here are the ones you gave: ')
-        x(list(config))
+        if missing:
+            cli_logger.critical(
+                u'error: {} storage requires the parameters: {}'
+                .format(storage_name, u', '.join(missing)))
+
+        if invalid:
+            cli_logger.critical(
+                u'error: {} storage doesn\'t take the parameters: {}'
+                .format(storage_name, u', '.join(invalid)))
+
         sys.exit(1)
 
 
