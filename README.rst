@@ -73,4 +73,5 @@ How to run the tests
 License
 =======
 
-vdirsyncer is released under the MIT License, see ``LICENSE`` for more details.
+vdirsyncer is released under the Expat/MIT License, see ``LICENSE`` for more
+details.
