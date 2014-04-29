@@ -74,20 +74,29 @@ def save_status(basepath, pair_name, status):
             f.write('\n')
 
 
-def storage_instance_from_config(config):
+def storage_instance_from_config(config, description=None):
+    '''
+    :param config: A configuration dictionary to pass as kwargs to the class
+        corresponding to config['type']
+    :param description: A name for the storage for debugging purposes
+    '''
+
     config = dict(config)
     storage_name = config.pop('type')
     cls = storage_names[storage_name]
     try:
         return cls(**config)
-    except TypeError as e:
-        import inspect
-        spec = inspect.getargspec(cls.__init__)
-        all = set(spec.args[1:])  # skip self
-        required = set(spec.args[1:-len(spec.defaults)])
+    except TypeError:
+        all, required = get_init_args(cls)
         given = set(config)
         missing = required - given
-        invalid = given - set(spec.args)
+        invalid = given - all
+
+        cli_logger.critical('error: Failed to initialize {}'
+                            .format(description or storage_name))
+
+        if not missing and not invalid:
+            cli_logger.exception('')
 
         if missing:
             cli_logger.critical(
@@ -100,6 +109,22 @@ def storage_instance_from_config(config):
                 .format(storage_name, u', '.join(invalid)))
 
         sys.exit(1)
+
+
+def get_init_args(cls):
+    from vdirsyncer.storage.base import Storage
+    import inspect
+
+    if cls is Storage:
+        return set(), set()
+
+    spec = inspect.getargspec(cls.__init__)
+    all = set(spec.args[1:])
+    required = set(spec.args[1:-len(spec.defaults)])
+    supercls = next(x for x in cls.__mro__[1:] if hasattr(x, '__init__'))
+    s_all, s_required = get_init_args(supercls)
+
+    return all | s_all, required | s_required
 
 
 def main():
@@ -195,7 +220,6 @@ def _main(env, file_cfg):
             config_b = dict(storage_defaults)
             config_b.update(all_storages[b_name])
 
-
             actions.append({
                 'config_a': config_a,
                 'config_b': config_b,
@@ -222,18 +246,19 @@ def _main(env, file_cfg):
     app.register_command('sync', sync_command)
     app()
 
+
 def _sync_collection(x):
     return sync_collection(**x)
 
+
 def sync_collection(config_a, config_b, pair_name, collection, pair_options,
                     general):
-    a = storage_instance_from_config(config_a)
-    b = storage_instance_from_config(config_b)
+    status_name = '_'.join(filter(bool, (pair_name, collection)))
+    pair_description = ' from '.join(filter(bool, (collection, pair_name)))
 
-    status_name = \
-            '_'.join(filter(bool, (pair_name, collection)))
-    pair_description = \
-            ' from '.join(filter(bool, (collection, pair_name)))
+    a = storage_instance_from_config(config_a, pair_description)
+    b = storage_instance_from_config(config_b, pair_description)
+
     cli_logger.info('Syncing {}'.format(pair_description))
     status = load_status(general['status_path'], status_name)
     sync(a, b, status,
