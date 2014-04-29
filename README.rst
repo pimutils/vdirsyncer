@@ -67,8 +67,8 @@ How to run the tests
 
 ::
 
-    sh install-deps.sh
-    py.test tests/
+    sh build.sh install
+    sh build.sh run
 
 License
 =======
