@@ -1,5 +1,4 @@
 #!/bin/sh
-echo "The shell is $SHELL"
 set -e
 [ -n "$DAV_SERVER" ] || DAV_SERVER=radicale
 [ -n "$REQUIREMENTS" ] || REQUIREMENTS=release
@@ -36,7 +35,5 @@ davserver_owncloud() {
 davserver_radicale() {
     testserver_from_repo radicale
 }
-
-
 
 davserver_$DAV_SERVER
