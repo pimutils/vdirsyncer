@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
-_testserver_from_repo() {
+_davserver() {
     # Maybe tmpfs is mounted on /tmp/, can't harm anyway.
     if [ ! -d $TESTSERVER_BASE$1/ ]; then
         git clone --depth=1 \
@@ -13,22 +13,9 @@ _testserver_from_repo() {
     sh install.sh
 }
 
-_install_testrunner() {
-    $PIP_INSTALL pytest pytest-xprocess git+https://github.com/geier/leif
-}
-
-_davserver_owncloud() {
-    _testserver_from_repo owncloud
-}
-
-_davserver_radicale() {
-    _testserver_from_repo radicale
-}
-
-
 install_build_tests() {
-    _install_testrunner
-    _davserver_$DAV_SERVER
+    $PIP_INSTALL pytest pytest-xprocess git+https://github.com/geier/leif
+    _davserver $DAV_SERVER
     if [ "$TRAVIS" = "true" ]; then
         export CFLAGS=-O0  # speed up builds of packages which don't have wheels
         $PIP_INSTALL --upgrade wheel pip setuptools
