@@ -12,7 +12,7 @@ _davserver() {
 }
 
 install_build_tests() {
-    $PIP_INSTALL pytest pytest-xprocess git+https://github.com/geier/leif
+    $PIP_INSTALL coverage pytest pytest-xprocess git+https://github.com/geier/leif
     _davserver $DAV_SERVER
     if [ "$TRAVIS" = "true" ]; then
         export CFLAGS=-O0  # speed up builds of packages which don't have wheels
