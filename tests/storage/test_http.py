@@ -7,7 +7,6 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-from textwrap import dedent
 from vdirsyncer.storage.http import HttpStorage
 from requests import Response
 

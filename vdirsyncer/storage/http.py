@@ -10,7 +10,7 @@
 import hashlib
 from .base import Storage, Item
 from vdirsyncer.utils import expand_path, get_password, request, urlparse, \
-     text_type
+    text_type
 
 USERAGENT = 'vdirsyncer'
 

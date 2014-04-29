@@ -143,7 +143,6 @@ def get_password(username, resource):
     """
     import getpass
 
-
     for func in (_password_from_netrc, _password_from_keyring):
         password = func(username, resource)
         if password is not None:
