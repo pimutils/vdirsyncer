@@ -6,11 +6,9 @@ _davserver() {
         git clone --depth=1 \
             https://github.com/untitaker/$1-testserver.git \
             /tmp/$1-testserver
-        mkdir testservers
         ln -s /tmp/$1-testserver $TESTSERVER_BASE$1
     fi
-    cd $TESTSERVER_BASE$1
-    sh install.sh
+    (cd $TESTSERVER_BASE$1 && sh install.sh)
 }
 
 install_build_tests() {
