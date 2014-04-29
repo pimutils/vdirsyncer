@@ -29,6 +29,14 @@ _davserver_radicale() {
 install_build_tests() {
     _install_testrunner
     _davserver_$DAV_SERVER
+    if [ "$TRAVIS" = "true" ]; then
+        export CFLAGS=-O0  # speed up builds of packages which don't have wheels
+        $PIP_INSTALL --upgrade wheel pip setuptools
+        PIP_INSTALL="pip install --use-wheel --find-links=http://dev.unterwaditzer.net/vdirsyncer/wheels/"
+        $PIP_INSTALL coveralls
+    fi
+
+    $PIP_INSTALL --editable .
 }
 
 run_build_tests() {
@@ -56,14 +64,6 @@ TESTSERVER_BASE=./tests/storage/dav/servers/
 install_builds() {
     echo "Installing for $BUILD"
     PIP_INSTALL="pip install"
-    if [ "$TRAVIS" = "true" ]; then
-        export CFLAGS=-O0  # speed up builds of packages which don't have wheels
-        $PIP_INSTALL --upgrade wheel pip setuptools
-        PIP_INSTALL="pip install --use-wheel --find-links=http://dev.unterwaditzer.net/vdirsyncer/wheels/"
-        $PIP_INSTALL coveralls
-    fi
-
-    $PIP_INSTALL --editable .
     install_build_$BUILD
 }
 
