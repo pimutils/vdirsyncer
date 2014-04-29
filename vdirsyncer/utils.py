@@ -22,7 +22,7 @@ PY2 = sys.version_info[0] == 2
 
 if PY2:
     import urlparse
-    text_type = unicode
+    text_type = unicode  # flake8: noqa
     iteritems = lambda x: x.iteritems()
     itervalues = lambda x: x.itervalues()
 else:

@@ -38,7 +38,7 @@ def test_parse_options():
         # Yes, we want a very strong typecheck here, because we actually have
         # to differentiate between bool and int, and in Python 2, bool is a
         # subclass of int.
-        assert type(a[key]) is type(expected[key])
+        assert type(a[key]) is type(expected[key])  # flake8: noqa
 
 
 def test_get_password_from_netrc(monkeypatch):
