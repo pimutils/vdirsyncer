@@ -30,7 +30,7 @@ def load_config(fname, pair_options=('collections', 'conflict_resolution')):
     c = RawConfigParser()
     c.read(fname)
 
-    get_options = lambda s: dict(parse_options(c.items(s)))
+    get_options = lambda s: dict(parse_options(c.items(s), section=s))
 
     pairs = {}
     storages = {}

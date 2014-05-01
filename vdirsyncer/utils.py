@@ -59,8 +59,13 @@ def split_dict(d, f):
     return a, b
 
 
-def parse_options(items):
+def parse_options(items, section=None):
     for key, value in items:
+        if len(value.splitlines()) > 1:
+            raise ValueError('Section {!r}, option {!r}: '
+                             'No multiline-values allowed.'
+                             .format(section, key))
+
         if value.lower() in ('yes', 'true', 'on'):
             value = True
         elif value.lower() in ('no', 'false', 'off'):
