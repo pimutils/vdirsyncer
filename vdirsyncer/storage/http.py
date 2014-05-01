@@ -16,9 +16,17 @@ USERAGENT = 'vdirsyncer'
 
 
 def split_collection(text):
+    '''
+    This is a horrible "parser", but Python tooling isn't much better. The only
+    library which supports both calendars and addressbooks (VObject) is Python
+    2 only and doesn't seem maintained anymore, the other one (icalendar) only
+    handles calendars... which wouldn't eliminate this function anyway. Let's
+    just hope this handles all cases.
+    '''
     item = []
     collection_type = None
     item_type = None
+    timezone = None
     for line in text.splitlines():
         if u':' not in line:
             item.append(line)
@@ -30,15 +38,21 @@ def split_collection(text):
             elif item_type is None:
                 item_type = value
                 item.append(line)
+                if item_type == u'VTIMEZONE':
+                    timezone = item
             else:
                 item.append(line)
         elif key == u'END':
             if value == collection_type:
                 break
             elif value == item_type:
+                if timezone is not None and item_type != u'VTIMEZONE':
+                    item.extend(timezone)
                 item.append(line)
-                yield Item(u'\n'.join(item))
+                if item_type != u'VTIMEZONE':
+                    yield Item(u'\n'.join(item))
                 item = []
+                item_type = None
             else:
                 item.append(line)
         else:
