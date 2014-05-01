@@ -24,6 +24,7 @@ class TestHttpStorage(object):
             (u'BEGIN:VEVENT\n'
              u'SUMMARY:Eine zweite Kurzinfo\n'
              u'DESCRIPTION:Beschreibung des anderen Termines\n'
+             u' With an extra line for description\n'
              u'BEGIN:VALARM\n'
              u'ACTION:AUDIO\n'
              u'TRIGGER:19980403T120000\n'

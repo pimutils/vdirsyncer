@@ -20,7 +20,8 @@ def split_collection(text):
     collection_type = None
     item_type = None
     for line in text.splitlines():
-        if not line.strip():
+        if u':' not in line:
+            item.append(line)
             continue
         key, value = (x.strip() for x in line.split(u':', 1))
         if key == u'BEGIN':
