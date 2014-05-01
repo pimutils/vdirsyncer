@@ -190,11 +190,6 @@ def _main(env, file_cfg):
             raise ValueError(u'Invalid verbosity value: {}'.format(verbosity))
         log.set_level(x)
 
-    @app.option('--quiet|-q')
-    def quiet_option(context=None):
-        '''Print less information than normal.'''
-        log.set_level(log.logging.WARNING)
-
     sync_command = argvard.Command()
 
     @sync_command.option('--force-delete status_name')
