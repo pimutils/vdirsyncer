@@ -42,7 +42,8 @@ def prepare_list(storage, href_to_status):
             yield href, props
 
 
-def sync(storage_a, storage_b, status, conflict_resolution=None):
+def sync(storage_a, storage_b, status, conflict_resolution=None,
+         force_delete=False):
     '''Syncronizes two storages.
 
     :param storage_a: The first storage
@@ -56,6 +57,10 @@ def sync(storage_a, storage_b, status, conflict_resolution=None):
     :param conflict_resolution: Either 'a wins' or 'b wins'. If none is
         provided, the sync function will raise
         :py:exc:`vdirsyncer.exceptions.SyncConflict`.
+    :param force_delete: When one storage got completely emptied between two
+        syncs, :py:exc:`vdirsyncer.exceptions.StorageEmpty` is raised for
+        safety. Setting this parameter to ``True`` disables this safety
+        measure.
     '''
     a_href_to_status = dict(
         (href_a, (uid, etag_a))
@@ -68,6 +73,9 @@ def sync(storage_a, storage_b, status, conflict_resolution=None):
     # href => {'etag': etag, 'item': optional item, 'uid': uid}
     list_a = dict(prepare_list(storage_a, a_href_to_status))
     list_b = dict(prepare_list(storage_b, b_href_to_status))
+
+    if bool(list_a) != bool(list_b) and status and not force_delete:
+        raise exceptions.StorageEmpty(storage_b if list_a else storage_a)
 
     a_uid_to_href = dict((x['uid'], href) for href, x in iteritems(list_a))
     b_uid_to_href = dict((x['uid'], href) for href, x in iteritems(list_b))

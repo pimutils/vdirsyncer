@@ -14,6 +14,7 @@ from vdirsyncer.sync import sync
 from vdirsyncer.utils import expand_path, split_dict, parse_options
 from vdirsyncer.storage import storage_names
 import vdirsyncer.log as log
+import vdirsyncer.exceptions as exceptions
 import argvard
 
 
@@ -196,6 +197,11 @@ def _main(env, file_cfg):
 
     sync_command = argvard.Command()
 
+    @sync_command.option('--force-delete status_name')
+    def force_delete(context, status_name):
+        '''Pretty please delete all my data.'''
+        context.setdefault('force_delete', set()).add(status_name)
+
     @sync_command.main('[pairs...]')
     def sync_main(context, pairs=None):
         '''
@@ -209,6 +215,7 @@ def _main(env, file_cfg):
         from the pair "bob".
         '''
         actions = []
+        force_delete = context.get('force_delete', set())
         for pair_name, collection in parse_pairs_args(pairs, all_pairs):
             a_name, b_name, pair_options, storage_defaults = \
                 all_pairs[pair_name]
@@ -225,7 +232,8 @@ def _main(env, file_cfg):
                 'pair_name': pair_name,
                 'collection': collection,
                 'pair_options': pair_options,
-                'general': general
+                'general': general,
+                'force_delete': force_delete
             })
 
         processes = general.get('processes', 0) or len(actions)
@@ -249,7 +257,7 @@ def _sync_collection(x):
 
 
 def sync_collection(config_a, config_b, pair_name, collection, pair_options,
-                    general):
+                    general, force_delete):
     status_name = '_'.join(filter(bool, (pair_name, collection)))
     pair_description = ' from '.join(filter(bool, (collection, pair_name)))
 
@@ -258,6 +266,20 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
 
     cli_logger.info('Syncing {}'.format(pair_description))
     status = load_status(general['status_path'], status_name)
-    sync(a, b, status,
-         pair_options.get('conflict_resolution', None))
+    try:
+        sync(
+            a, b, status,
+            conflict_resolution=pair_options.get('conflict_resolution', None),
+            force_delete=status_name in force_delete
+        )
+    except exceptions.StorageEmpty as e:
+        side = 'a' if e.empty_storage is a else 'b'
+        storage = e.empty_storage
+        cli_logger.error('{pair_description}: Storage "{side}" ({storage}) '
+                         'was completely emptied. Use "--force-delete '
+                         '{status_name}" to synchronize that emptyness to '
+                         'the other side, or delete the status by yourself to '
+                         'restore the empty side from the other one.'
+                         .format(**locals()))
+        sys.exit(1)
     save_status(general['status_path'], status_name, status)

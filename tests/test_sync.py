@@ -91,6 +91,7 @@ def test_deletion():
 
     item = Item(u'UID:1')
     a.upload(item)
+    a.upload(Item(u'UID:2'))
     sync(a, b, status)
     b.delete('1.txt', b.get('1.txt')[1])
     sync(a, b, status)
@@ -192,3 +193,17 @@ def test_uses_get_multi(monkeypatch):
 
     sync(a, b, {})
     assert get_multi_calls == [[expected_href]]
+
+
+def test_empty_storage_dataloss():
+    a = MemoryStorage()
+    b = MemoryStorage()
+    a.upload(Item(u'UID:1'))
+    a.upload(Item(u'UID:2'))
+    status = {}
+    sync(a, b, status)
+    with pytest.raises(exceptions.StorageEmpty):
+        sync(MemoryStorage(), b, status)
+
+    with pytest.raises(exceptions.StorageEmpty):
+        sync(a, MemoryStorage(), status)

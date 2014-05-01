@@ -51,3 +51,12 @@ class SyncError(Error):
 
 class SyncConflict(SyncError):
     pass
+
+
+class StorageEmpty(SyncError):
+    '''One storage unexpectedly got completely empty between two
+    synchronizations. The first argument is the empty storage.'''
+
+    @property
+    def empty_storage(self):
+        return self.args[0]
