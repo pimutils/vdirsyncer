@@ -39,8 +39,7 @@ def load_config(fname, pair_options=('collections', 'conflict_resolution')):
         pair_name = section[len('pair '):]
         options = get_options(section)
         a, b = options.pop('a'), options.pop('b')
-        p, s = \
-            split_dict(options, lambda x: x in pair_options)
+        p, s = split_dict(options, lambda x: x in pair_options)
         pairs[pair_name] = a, b, p, s
 
     for section in c.sections():
