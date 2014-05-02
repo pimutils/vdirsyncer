@@ -62,6 +62,21 @@ def split_dict(d, f):
 def parse_options(items, section=None):
     for key, value in items:
         if len(value.splitlines()) > 1:
+            # The reason we use comma-separated values instead of
+            # multiline-values for lists is simple: ConfigParser's barrier for
+            # mistaking an arbitrary line for the continuation of a value is
+            # awfully low.
+            #
+            # Take this example:
+            #
+            # foo = bar
+            #  # my comment
+            #
+            # For reasons beyond my understanding ConfigParser only requires
+            # one space to interpret the line as part of a multiline-value.
+            # Related to that, it also parses any inline-comments as value:
+            #
+            # foo = bar  # this comment is part of the value!
             raise ValueError('Section {!r}, option {!r}: '
                              'No multiline-values allowed.'
                              .format(section, key))
