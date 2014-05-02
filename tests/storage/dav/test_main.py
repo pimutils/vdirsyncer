@@ -240,7 +240,7 @@ class TestCaldavStorage(DavStorageTests):
 
         monkeypatch.setattr('requests.sessions.Session.request', request)
 
-        with pytest.raises(exceptions.StorageError):
+        with pytest.raises(ValueError):
             self.storage_class(**args)
         assert len(calls) == 1
 

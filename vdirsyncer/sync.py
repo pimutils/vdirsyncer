@@ -22,6 +22,28 @@ from .utils import iteritems, itervalues
 sync_logger = log.get(__name__)
 
 
+class SyncError(exceptions.Error):
+    '''Errors related to synchronization.'''
+
+
+class SyncConflict(SyncError):
+    '''
+    Two items changed since the last sync, they now have different contents and
+    no conflict resolution method was given.
+    '''
+
+
+class StorageEmpty(SyncError):
+    '''
+    One storage unexpectedly got completely empty between two synchronizations.
+    The first argument is the empty storage.
+    '''
+
+    @property
+    def empty_storage(self):
+        return self.args[0]
+
+
 def prepare_list(storage, href_to_status):
     download = []
     for href, etag in storage.list():
@@ -55,9 +77,9 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
         If this is the first sync, an empty dictionary should be provided.
     :param conflict_resolution: Either 'a wins' or 'b wins'. If none is
         provided, the sync function will raise
-        :py:exc:`vdirsyncer.exceptions.SyncConflict`.
+        :py:exc:`SyncConflict`.
     :param force_delete: When one storage got completely emptied between two
-        syncs, :py:exc:`vdirsyncer.exceptions.StorageEmpty` is raised for
+        syncs, :py:exc:`StorageEmpty` is raised for
         safety. Setting this parameter to ``True`` disables this safety
         measure.
     '''
@@ -74,7 +96,7 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
     list_b = dict(prepare_list(storage_b, b_href_to_status))
 
     if bool(list_a) != bool(list_b) and status and not force_delete:
-        raise exceptions.StorageEmpty(storage_b if list_a else storage_a)
+        raise StorageEmpty(storage_b if list_a else storage_a)
 
     a_uid_to_href = dict((x['uid'], href) for href, x in iteritems(list_a))
     b_uid_to_href = dict((x['uid'], href) for href, x in iteritems(list_b))
@@ -165,7 +187,7 @@ def action_conflict_resolve(uid):
             sync_logger.info('...same content on both sides.')
             status[uid] = a_href, a_meta['etag'], b_href, b_meta['etag']
         elif conflict_resolution is None:
-            raise exceptions.SyncConflict()
+            raise SyncConflict()
         elif conflict_resolution == 'a wins':
             sync_logger.info('...{} wins.'.format(a_storage))
             action_update(uid, 'a', 'b')(storages, status, conflict_resolution)

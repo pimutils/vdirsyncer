@@ -84,7 +84,7 @@ class DavStorage(Storage):
         )
         response.raise_for_status()
         if self.dav_header not in response.headers.get('DAV', ''):
-            raise exceptions.StorageError('URL is not a collection')
+            raise ValueError('URL is not a collection')
 
     def _default_headers(self):
         return {

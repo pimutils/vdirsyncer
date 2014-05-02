@@ -3,6 +3,9 @@
     vdirsyncer.exceptions
     ~~~~~~~~~~~~~~~~~~~~~
 
+    Contains exception classes used by vdirsyncer. Not all exceptions are here,
+    only the most commonly used ones.
+
     :copyright: (c) 2014 Markus Unterwaditzer
     :license: MIT, see LICENSE for more details.
 '''
@@ -33,29 +36,3 @@ class AlreadyExistingError(PreconditionFailed):
 
 class WrongEtagError(PreconditionFailed):
     '''Wrong etag'''
-
-
-class StorageError(Error):
-    '''Internal or initialization errors with storage.'''
-
-
-class SyncError(Error):
-    '''Errors related to synchronization.'''
-
-
-class SyncConflict(SyncError):
-    '''
-    Two items changed since the last sync, they now have different contents and
-    no conflict resolution method was given.
-    '''
-
-
-class StorageEmpty(SyncError):
-    '''
-    One storage unexpectedly got completely empty between two synchronizations.
-    The first argument is the empty storage.
-    '''
-
-    @property
-    def empty_storage(self):
-        return self.args[0]

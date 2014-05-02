@@ -10,10 +10,9 @@
 import pytest
 
 from . import assert_item_equals, normalize_item
-import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.memory import MemoryStorage
-from vdirsyncer.sync import sync
+from vdirsyncer.sync import sync, SyncConflict, StorageEmpty
 
 
 def empty_storage(x):
@@ -51,7 +50,7 @@ def test_missing_status_and_different_items():
     item2 = Item(u'UID:1\nhoho')
     a.upload(item1)
     b.upload(item2)
-    with pytest.raises(exceptions.SyncConflict):
+    with pytest.raises(SyncConflict):
         sync(a, b, status)
     assert not status
     sync(a, b, status, conflict_resolution='a wins')
@@ -137,7 +136,7 @@ def test_conflict_resolution_both_etags_new(winning_storage):
     assert status
     a.update(href_a, Item(u'UID:1\nitem a'), etag_a)
     b.update(href_b, Item(u'UID:1\nitem b'), etag_b)
-    with pytest.raises(exceptions.SyncConflict):
+    with pytest.raises(SyncConflict):
         sync(a, b, status)
     sync(a, b, status, conflict_resolution='{} wins'.format(winning_storage))
     item_a, _ = a.get(href_a)
@@ -203,8 +202,8 @@ def test_empty_storage_dataloss():
     a.upload(Item(u'UID:2'))
     status = {}
     sync(a, b, status)
-    with pytest.raises(exceptions.StorageEmpty):
+    with pytest.raises(StorageEmpty):
         sync(MemoryStorage(), b, status)
 
-    with pytest.raises(exceptions.StorageEmpty):
+    with pytest.raises(StorageEmpty):
         sync(a, MemoryStorage(), status)
