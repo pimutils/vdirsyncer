@@ -150,7 +150,7 @@ def get_init_args(cls):
 def main():
     env = os.environ
 
-    fname = env.get('VDIRSYNCER_CONFIG', expand_path('~/.vdirsyncer/config'))
+    fname = expand_path(env.get('VDIRSYNCER_CONFIG', '~/.vdirsyncer/config'))
     cfg = load_config(fname)
     _main(env, cfg)
 
