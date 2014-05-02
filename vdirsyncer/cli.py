@@ -74,7 +74,12 @@ def load_status(basepath, pair_name):
 
 
 def save_status(basepath, pair_name, status):
-    full_path = os.path.join(expand_path(basepath), pair_name)
+    base_path = expand_path(basepath)
+    full_path = os.path.join(base_path, pair_name)
+
+    if not os.path.exists(base_path):
+        os.makedirs(base_path)
+
     with open(full_path, 'w+') as f:
         for k, v in status.items():
             json.dump((k, v), f)
