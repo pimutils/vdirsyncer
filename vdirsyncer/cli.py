@@ -55,6 +55,15 @@ def load_config(fname, pair_options=('collections', 'conflict_resolution')):
             cli_logger.error(
                 'Unknown section in {}: {}'.format(fname, section))
 
+    if not "general" in locals():
+        cli_logger.error("""Unable to find general section in your configuration. 
+                You should copy example.cfg (.local/lib/python2.7/site-packages/vdirsyncer/example.cfg
+                or /usr/local/lib/python2.7/site-packages/vdirsyncer/example.cfg) file into 
+                ~/.vdirsyncer/config, and edit it.
+                """)
+        general = {}
+
+
     return general, pairs, storages
 
 
