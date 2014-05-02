@@ -32,6 +32,10 @@ cli_logger = log.get(__name__)
 PROJECT_HOME = 'https://github.com/untitaker/vdirsyncer'
 
 
+class CliError(RuntimeError):
+    pass
+
+
 def get_status_name(pair, collection):
     if collection is None:
         return pair
@@ -69,14 +73,14 @@ def load_config(fname, pair_options=('collections', 'conflict_resolution')):
         elif section == 'general':
             general = get_options(section)
         else:
-            cli_logger.error(
-                'Unknown section in {}: {}'.format(fname, section))
+            cli_logger.error('Unknown section in {}: {}'
+                             .format(fname, section))
 
     if general is None:
-        cli_logger.error('Unable to find general section. You should copy the '
-                         'example config from the repository and edit it.')
-        cli_logger.error(PROJECT_HOME)
-        sys.exit(1)
+        raise CliError(
+            'Unable to find general section. You should copy the example '
+            'config from the repository and edit it.\n{}'.format(PROJECT_HOME)
+        )
 
     return general, pairs, storages
 
@@ -94,10 +98,10 @@ def save_status(path, status_name, status):
     base_path = os.path.dirname(full_path)
 
     if os.path.isfile(base_path):
-        raise RuntimeError('{} is probably a legacy file and could be removed '
-                           'automatically, but this choice is left to the '
-                           'user. If you think this is an error, please file '
-                           'a bug at {}'.format(base_path, PROJECT_HOME))
+        raise CliError('{} is probably a legacy file and could be removed '
+                       'automatically, but this choice is left to the '
+                       'user. If you think this is an error, please file '
+                       'a bug at {}'.format(base_path, PROJECT_HOME))
     if not os.path.exists(base_path):
         os.makedirs(base_path)
 
@@ -279,7 +283,12 @@ def _main(env, file_cfg):
             p.map_async(_sync_collection, actions).get(10**9)
 
     app.register_command('sync', sync_command)
-    app()
+
+    try:
+        app()
+    except CliError as e:
+        cli_logger.critical(str(e))
+        sys.exit(1)
 
 
 def _sync_collection(x):
@@ -306,12 +315,11 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
     except exceptions.StorageEmpty as e:
         side = 'a' if e.empty_storage is a else 'b'
         storage = e.empty_storage
-        cli_logger.critical(
+        raise CliError(
             '{collection_description}: Storage "{side}" ({storage}) was '
             'completely emptied. Use "--force-delete {status_name}" to '
             'synchronize that emptyness to the other side, or delete the '
             'status by yourself to restore the items from the non-empty '
             'side.'.format(**locals())
         )
-        sys.exit(1)
     save_status(general['status_path'], status_name, status)
