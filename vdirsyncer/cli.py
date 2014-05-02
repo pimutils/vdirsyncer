@@ -123,7 +123,7 @@ def storage_instance_from_config(config, description=None):
     cls = storage_names[storage_name]
     try:
         return cls(**config)
-    except TypeError:
+    except Exception:
         all, required = get_init_args(cls)
         given = set(config)
         missing = required - given
