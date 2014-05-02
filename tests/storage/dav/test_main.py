@@ -7,18 +7,19 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-import os
-import pytest
 import datetime
+import os
 from textwrap import dedent
+
+import pytest
+
+import requests
+import requests.exceptions
 
 from .. import StorageTests
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.dav import CaldavStorage, CarddavStorage
-import vdirsyncer.exceptions
-import requests
-import requests.exceptions
 
 
 dav_server = os.environ.get('DAV_SERVER', '').strip() or 'radicale'
@@ -239,7 +240,7 @@ class TestCaldavStorage(DavStorageTests):
 
         monkeypatch.setattr('requests.sessions.Session.request', request)
 
-        with pytest.raises(vdirsyncer.exceptions.StorageError):
+        with pytest.raises(exceptions.StorageError):
             self.storage_class(**args)
         assert len(calls) == 1
 

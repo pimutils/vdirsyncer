@@ -6,13 +6,14 @@
     :copyright: (c) 2014 Markus Unterwaditzer
     :license: MIT, see LICENSE for more details.
 '''
-
-from vdirsyncer.storage.base import Item
-import vdirsyncer.exceptions as exceptions
-from vdirsyncer.utils import text_type
-from .. import assert_item_equals
 import random
+
 import pytest
+
+from .. import assert_item_equals
+import vdirsyncer.exceptions as exceptions
+from vdirsyncer.storage.base import Item
+from vdirsyncer.utils import text_type
 
 
 class StorageTests(object):

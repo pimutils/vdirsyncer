@@ -8,10 +8,12 @@
 '''
 
 import os
-from vdirsyncer.storage.base import Storage, Item
+
+from .base import Item, Storage
 import vdirsyncer.exceptions as exceptions
-from vdirsyncer.utils import expand_path, text_type
 import vdirsyncer.log as log
+from vdirsyncer.utils import expand_path, text_type
+
 logger = log.get(__name__)
 
 

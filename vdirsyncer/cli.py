@@ -7,15 +7,18 @@
     :license: MIT, see LICENSE for more details.
 '''
 
+import json
 import os
 import sys
-import json
-from vdirsyncer.sync import sync
-from vdirsyncer.utils import expand_path, split_dict, parse_options
-from vdirsyncer.storage import storage_names
-import vdirsyncer.log as log
-import vdirsyncer.exceptions as exceptions
+
 import argvard
+
+from .storage import storage_names
+from .sync import sync
+from .utils import expand_path, parse_options, split_dict
+
+import vdirsyncer.exceptions as exceptions
+import vdirsyncer.log as log
 
 
 try:

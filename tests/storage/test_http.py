@@ -7,8 +7,9 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-from vdirsyncer.storage.http import HttpStorage, split_collection
 from requests import Response
+
+from vdirsyncer.storage.http import HttpStorage, split_collection
 
 
 def test_split_collection_timezones():

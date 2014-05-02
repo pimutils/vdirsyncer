@@ -8,8 +8,9 @@
 '''
 
 import random
-from vdirsyncer.storage.base import Storage
+
 import vdirsyncer.exceptions as exceptions
+from vdirsyncer.storage.base import Storage
 
 
 def _get_etag():

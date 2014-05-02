@@ -8,10 +8,12 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-import pytest
 import os
-from vdirsyncer.storage.filesystem import FilesystemStorage
+
+import pytest
+
 from . import StorageTests
+from vdirsyncer.storage.filesystem import FilesystemStorage
 
 
 class TestFilesystemStorage(StorageTests):

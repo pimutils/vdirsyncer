@@ -6,15 +6,16 @@
     :copyright: (c) 2014 Markus Unterwaditzer, Christian Geier and contributors
     :license: MIT, see LICENSE for more details.
 '''
-
-from .base import Storage, Item
-from .http import prepare_auth, prepare_verify, USERAGENT
-from .. import exceptions
-from .. import log
-from ..utils import request, get_password, urlparse
-import requests
 import datetime
+
 from lxml import etree
+
+import requests
+
+from .base import Item, Storage
+from .http import prepare_auth, prepare_verify, USERAGENT
+
+from .. import exceptions, log, utils
 
 
 dav_logger = log.get(__name__)
@@ -58,7 +59,7 @@ class DavStorage(Storage):
         super(DavStorage, self).__init__(**kwargs)
 
         if username and not password:
-            password = get_password(username, url)
+            password = utils.get_password(username, url)
 
         self._settings = {
             'verify': prepare_verify(verify),
@@ -69,9 +70,9 @@ class DavStorage(Storage):
 
         url = url.rstrip('/') + '/'
         if collection is not None:
-            url = urlparse.urljoin(url, collection)
+            url = utils.urlparse.urljoin(url, collection)
         self.url = url.rstrip('/') + '/'
-        self.parsed_url = urlparse.urlparse(self.url)
+        self.parsed_url = utils.urlparse.urlparse(self.url)
         self.collection = collection
 
         headers = self._default_headers()
@@ -103,7 +104,7 @@ class DavStorage(Storage):
             ssl_verify=kwargs.get('verify', True)
         )
         for c in d.discover():
-            collection = urlparse.urljoin(url, c['href'])
+            collection = utils.urlparse.urljoin(url, c['href'])
             if collection.startswith(url):
                 collection = collection[len(url):]
             collection = collection.rstrip('/')
@@ -114,9 +115,9 @@ class DavStorage(Storage):
     def _normalize_href(self, href):
         '''Normalize the href to be a path only relative to hostname and
         schema.'''
-        x = urlparse.urljoin(self.url, href)
+        x = utils.urlparse.urljoin(self.url, href)
         assert x.startswith(self.url)
-        return urlparse.urlsplit(x).path
+        return utils.urlparse.urlsplit(x).path
 
     def _get_href(self, uid):
         return self._normalize_href(super(DavStorage, self)._get_href(uid))
@@ -127,8 +128,8 @@ class DavStorage(Storage):
         if self._session is None:
             self._session = requests.session()
         url = self.parsed_url.scheme + '://' + self.parsed_url.netloc + path
-        return request(method, url, data=data, headers=headers,
-                       session=self._session, **self._settings)
+        return utils.request(method, url, data=data, headers=headers,
+                             session=self._session, **self._settings)
 
     @staticmethod
     def _check_response(response):

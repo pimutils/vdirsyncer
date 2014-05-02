@@ -8,11 +8,12 @@
 '''
 
 import pytest
+
+from . import assert_item_equals, normalize_item
+import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.memory import MemoryStorage
 from vdirsyncer.sync import sync
-from . import assert_item_equals, normalize_item
-import vdirsyncer.exceptions as exceptions
 
 
 def empty_storage(x):

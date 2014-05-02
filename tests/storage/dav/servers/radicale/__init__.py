@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import sys
 import os
+import sys
+
 import pytest
-from vdirsyncer.utils import urlparse
 
 from werkzeug.test import Client
 from werkzeug.wrappers import BaseResponse as WerkzeugResponse
+
+from vdirsyncer.utils import urlparse
 
 
 RADICALE_SCHEMA = '''

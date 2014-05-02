@@ -8,9 +8,9 @@
 '''
 
 import hashlib
-from .base import Storage, Item
-from vdirsyncer.utils import expand_path, get_password, request, urlparse, \
-    text_type
+
+from .base import Item, Storage
+from ..utils import expand_path, get_password, request, text_type, urlparse
 
 USERAGENT = 'vdirsyncer'
 
