@@ -32,6 +32,12 @@ cli_logger = log.get(__name__)
 PROJECT_HOME = 'https://github.com/untitaker/vdirsyncer'
 
 
+def get_status_name(pair, collection):
+    if collection is None:
+        return pair
+    return pair + '/' + collection
+
+
 def load_config(fname, pair_options=('collections', 'conflict_resolution')):
     c = RawConfigParser()
     try:
@@ -282,8 +288,7 @@ def _sync_collection(x):
 
 def sync_collection(config_a, config_b, pair_name, collection, pair_options,
                     general, force_delete):
-    status_name = pair_name if collection is None \
-        else '{}/{}'.format(pair_name, collection)
+    status_name = get_status_name(pair_name, collection)
     collection_description = pair_name if collection is None \
         else '{} from {}'.format(collection, pair_name)
 
