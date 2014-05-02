@@ -33,6 +33,7 @@ def load_config(fname, pair_options=('collections', 'conflict_resolution')):
 
     get_options = lambda s: dict(parse_options(c.items(s), section=s))
 
+    general = None
     pairs = {}
     storages = {}
 
@@ -54,6 +55,12 @@ def load_config(fname, pair_options=('collections', 'conflict_resolution')):
         else:
             cli_logger.error(
                 'Unknown section in {}: {}'.format(fname, section))
+
+    if not general:
+        cli_logger.error('Unable to find general section. You should copy the '
+                         'example config from the repository and edit it.')
+        cli_logger.error('https://github.com/untitaker/vdirsyncer')
+        sys.exit(1)
 
     return general, pairs, storages
 
