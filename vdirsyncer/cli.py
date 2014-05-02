@@ -29,6 +29,8 @@ except ImportError:
 
 cli_logger = log.get(__name__)
 
+PROJECT_HOME = 'https://github.com/untitaker/vdirsyncer'
+
 
 def load_config(fname, pair_options=('collections', 'conflict_resolution')):
     c = RawConfigParser()
@@ -67,24 +69,29 @@ def load_config(fname, pair_options=('collections', 'conflict_resolution')):
     if general is None:
         cli_logger.error('Unable to find general section. You should copy the '
                          'example config from the repository and edit it.')
-        cli_logger.error('https://github.com/untitaker/vdirsyncer')
+        cli_logger.error(PROJECT_HOME)
         sys.exit(1)
 
     return general, pairs, storages
 
 
-def load_status(basepath, pair_name):
-    full_path = os.path.join(expand_path(basepath), pair_name)
+def load_status(basepath, status_name):
+    full_path = os.path.join(expand_path(basepath), status_name)
     if not os.path.exists(full_path):
         return {}
     with open(full_path) as f:
         return dict(json.loads(line) for line in f)
 
 
-def save_status(basepath, pair_name, status):
-    base_path = expand_path(basepath)
-    full_path = os.path.join(base_path, pair_name)
+def save_status(basepath, status_name, status):
+    full_path = os.path.join(basepath, status_name)
+    base_path = os.path.dirname(full_path)
 
+    if os.path.isfile(base_path):
+        raise RuntimeError('{} is probably a legacy file and could be removed '
+                           'automatically, but this choice is left to the '
+                           'user. If you think this is an error, please file '
+                           'a bug at {}'.format(base_path, PROJECT_HOME))
     if not os.path.exists(base_path):
         os.makedirs(base_path)
 
@@ -173,7 +180,7 @@ def parse_pairs_args(pairs_args, all_pairs):
             sys.exit(1)
 
         if collection is None:
-            collections = [x.strip() for x in
+            collections = [x.strip() or None for x in
                            pair_options.get('collections', '').split(',')]
         else:
             collections = [collection]
@@ -234,11 +241,13 @@ def _main(env, file_cfg):
         for pair_name, collection in parse_pairs_args(pairs, all_pairs):
             a_name, b_name, pair_options, storage_defaults = \
                 all_pairs[pair_name]
-            if collection:
-                storage_defaults['collection'] = collection
+
             config_a = dict(storage_defaults)
+            config_a['collection'] = collection
             config_a.update(all_storages[a_name])
+
             config_b = dict(storage_defaults)
+            config_b['collection'] = collection
             config_b.update(all_storages[b_name])
 
             actions.append({
@@ -273,13 +282,15 @@ def _sync_collection(x):
 
 def sync_collection(config_a, config_b, pair_name, collection, pair_options,
                     general, force_delete):
-    status_name = '_'.join(filter(bool, (pair_name, collection)))
-    pair_description = ' from '.join(filter(bool, (collection, pair_name)))
+    status_name = pair_name if collection is None \
+        else '{}/{}'.format(pair_name, collection)
+    collection_description = pair_name if collection is None \
+        else '{} from {}'.format(collection, pair_name)
 
-    a = storage_instance_from_config(config_a, pair_description)
-    b = storage_instance_from_config(config_b, pair_description)
+    a = storage_instance_from_config(config_a, collection_description)
+    b = storage_instance_from_config(config_b, collection_description)
 
-    cli_logger.info('Syncing {}'.format(pair_description))
+    cli_logger.info('Syncing {}'.format(collection_description))
     status = load_status(general['status_path'], status_name)
     try:
         sync(
@@ -290,11 +301,11 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
     except exceptions.StorageEmpty as e:
         side = 'a' if e.empty_storage is a else 'b'
         storage = e.empty_storage
-        cli_logger.error('{pair_description}: Storage "{side}" ({storage}) '
-                         'was completely emptied. Use "--force-delete '
-                         '{status_name}" to synchronize that emptyness to '
-                         'the other side, or delete the status by yourself to '
-                         'restore the empty side from the other one.'
-                         .format(**locals()))
+        cli_logger.error('{collection_description}: Storage "{side}" '
+                         '({storage}) was completely emptied. Use '
+                         '"--force-delete {status_name}" to synchronize that '
+                         'emptyness to the other side, or delete the status '
+                         'by yourself to restore the items from the non-empty '
+                         'side.'.format(**locals()))
         sys.exit(1)
     save_status(general['status_path'], status_name, status)
