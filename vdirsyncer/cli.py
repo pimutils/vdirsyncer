@@ -32,7 +32,12 @@ cli_logger = log.get(__name__)
 
 def load_config(fname, pair_options=('collections', 'conflict_resolution')):
     c = RawConfigParser()
-    c.read(fname)
+    try:
+        with open(fname) as f:
+            c.readfp(f)
+    except IOError:
+        cli_logger.exception('Error while trying to read config file.')
+        sys.exit(1)
 
     get_options = lambda s: dict(parse_options(c.items(s), section=s))
 
@@ -59,7 +64,7 @@ def load_config(fname, pair_options=('collections', 'conflict_resolution')):
             cli_logger.error(
                 'Unknown section in {}: {}'.format(fname, section))
 
-    if not general:
+    if general is None:
         cli_logger.error('Unable to find general section. You should copy the '
                          'example config from the repository and edit it.')
         cli_logger.error('https://github.com/untitaker/vdirsyncer')
