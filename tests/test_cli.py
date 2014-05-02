@@ -64,3 +64,21 @@ def test_storage_instance_from_config(monkeypatch):
     monkeypatch.setitem(vdirsyncer.storage.storage_names, 'lol', lol)
     config = {'type': 'lol', 'foo': 'bar', 'baz': 1}
     assert cli.storage_instance_from_config(config) == 'OK'
+
+
+def test_parse_pairs_args():
+    pairs = {
+        'foo': ('bar', 'baz', {'conflict_resolution': 'a wins'},
+                {'storage_option': True}),
+        'one': ('two', 'three', {'collections': 'a,b,c'}, {}),
+        'eins': ('zwei', 'drei', {'ha': True}, {})
+    }
+    assert list(
+        cli.parse_pairs_args(['foo/foocoll', 'one', 'eins'], pairs)
+    ) == [
+        ('foo', 'foocoll'),
+        ('one', 'a'),
+        ('one', 'b'),
+        ('one', 'c'),
+        ('eins', None)
+    ]
