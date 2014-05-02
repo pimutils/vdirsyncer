@@ -20,7 +20,6 @@ from lxml import etree
 dav_logger = log.get(__name__)
 
 CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
-CONFIG_DT_FORMAT = '%Y-%m-%d'
 
 
 class DavStorage(Storage):
