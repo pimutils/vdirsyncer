@@ -50,7 +50,7 @@ def split_collection(text):
                     item.extend(timezone)
                 item.append(line)
                 if item_type != u'VTIMEZONE':
-                    yield Item(u'\n'.join(item))
+                    yield Item(u'\n'.join(item), needs_uid=False)
                 item = []
                 item_type = None
             else:
