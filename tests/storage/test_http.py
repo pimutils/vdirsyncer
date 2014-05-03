@@ -49,14 +49,15 @@ def test_split_collection_timezones():
         u'END:VTIMEZONE'
     )
 
-    full = u'\n'.join(
+    full = list(
         (u'BEGIN:VCALENDAR',) +
         timezone + tuple(line for item in items for line in item) +
         (u'END:VCALENDAR',)
     )
 
-    given = [tuple(x.raw.splitlines()) for x in split_collection(full)]
-    expected = [item[:-1] + timezone + (item[-1],) for item in items]
+    given = [tuple(x) for x in split_collection(full)]
+    expected = [(u'BEGIN:VCALENDAR',) + timezone + item + (u'END:VCALENDAR',)
+                for item in items]
     print(given)
     print(expected)
     assert given == expected
@@ -110,7 +111,8 @@ def test_list(monkeypatch):
         assert etag2 == etag
         found_items[item.raw.strip()] = href
 
-    assert set(found_items) == set(items)
+    assert set(found_items) == set(u'BEGIN:VCALENDAR\n' + x + '\nEND:VCALENDAR'
+                                   for x in items)
 
     for href, etag in s.list():
         item, etag2 = s.get(href)

@@ -15,19 +15,11 @@ from ..utils import expand_path, get_password, request, text_type, urlparse
 USERAGENT = 'vdirsyncer'
 
 
-def split_collection(text):
-    '''
-    This is a horrible "parser", but Python tooling isn't much better. The only
-    library which supports both calendars and addressbooks (VObject) is Python
-    2 only and doesn't seem maintained anymore, the other one (icalendar) only
-    handles calendars... which wouldn't eliminate this function anyway. Let's
-    just hope this handles all cases.
-    '''
+def split_simple_collection(lines):
     item = []
     collection_type = None
     item_type = None
-    timezone = None
-    for line in text.splitlines():
+    for line in lines:
         if u':' not in line:
             item.append(line)
             continue
@@ -38,19 +30,14 @@ def split_collection(text):
             elif item_type is None:
                 item_type = value
                 item.append(line)
-                if item_type == u'VTIMEZONE':
-                    timezone = item
             else:
                 item.append(line)
         elif key == u'END':
             if value == collection_type:
                 break
             elif value == item_type:
-                if timezone is not None and item_type != u'VTIMEZONE':
-                    item.extend(timezone)
                 item.append(line)
-                if item_type != u'VTIMEZONE':
-                    yield Item(u'\n'.join(item), needs_uid=False)
+                yield item
                 item = []
                 item_type = None
             else:
@@ -59,6 +46,50 @@ def split_collection(text):
             if item_type is not None:
                 item.append(line)
 
+
+def wrap_items(items, collection_type, exclude=(u'VTIMEZONE',)):
+    for item in items:
+        key, value = (x.strip() for x in item[0].split(u':'))
+        if value in exclude:
+            yield item
+        else:
+            yield ([u'BEGIN:' + collection_type] + item +
+                   [u'END:' + collection_type])
+
+
+def inline_timezones(items):
+    timezone = None
+    for item in items:
+        if u':' not in item[0]:
+            import pdb
+            pdb.set_trace()
+
+        key, value = (x.strip() for x in item[0].split(u':'))
+        if value == u'VTIMEZONE':
+            if timezone is not None:
+                raise ValueError('Multiple timezones.')
+            timezone = item
+        else:
+            if timezone is not None:
+                item = [item[0]] + timezone + item[1:]
+            yield item
+
+
+def split_collection(lines):
+    collection_type = None
+    for line in lines:
+        key, value = (x.strip() for x in line.split(u':'))
+        if key == u'BEGIN':
+            collection_type = value
+            break
+
+    is_calendar = collection_type == u'VCALENDAR'
+    rv = split_simple_collection(lines)
+
+    if is_calendar:
+        rv = inline_timezones(wrap_items(rv, collection_type))
+
+    return rv
 
 def prepare_auth(auth, username, password):
     if (username and password) or auth == 'basic':
@@ -119,7 +150,8 @@ class HttpStorage(Storage):
         r = request('GET', self.url, **self._settings)
         r.raise_for_status()
         self._items.clear()
-        for i, item in enumerate(split_collection(r.text)):
+        for i, item in enumerate(split_collection(r.text.splitlines())):
+            item = Item(u'\n'.join(item), needs_uid=False)
             uid = item.uid if item.uid is not None else i
             self._items[uid] = item
 
