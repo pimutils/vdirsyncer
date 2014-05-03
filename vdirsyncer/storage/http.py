@@ -91,6 +91,7 @@ def split_collection(lines):
 
     return rv
 
+
 def prepare_auth(auth, username, password):
     if (username and password) or auth == 'basic':
         return (username, password)
