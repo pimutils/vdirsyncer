@@ -22,6 +22,7 @@ class StorageTests(object):
     def _create_bogus_item(self, uid, item_template=None):
         r = random.random()
         item_template = item_template or self.item_template
+        uid = '{}@vdirsyncer_tests'.format(uid)
         return Item(item_template.format(uid=uid, r=r))
 
     def get_storage_args(self, collection=None):
@@ -34,8 +35,6 @@ class StorageTests(object):
 
     def test_generic(self):
         items = map(self._create_bogus_item, range(1, 10))
-        for i, item in enumerate(items):
-            assert item.uid == text_type(i + 1), item.raw
         s = self._get_storage()
         hrefs = []
         for item in items:
