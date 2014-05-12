@@ -117,9 +117,10 @@ class DavStorage(Storage):
         schema.'''
         x = utils.urlparse.urljoin(self.url, href)
         assert x.startswith(self.url)
-        return utils.urlparse.urlsplit(x).path
+        return utils.urlunquote_plus(utils.urlparse.urlsplit(x).path)
 
     def _get_href(self, uid):
+        uid = utils.urlunquote_plus(uid)
         return self._normalize_href(super(DavStorage, self)._get_href(uid))
 
     def _request(self, method, path, data=None, headers=None):
