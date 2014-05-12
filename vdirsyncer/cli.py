@@ -14,10 +14,9 @@ import sys
 import argvard
 
 from .storage import storage_names
-from .sync import sync
+from .sync import sync, StorageEmpty
 from .utils import expand_path, parse_options, split_dict
 
-import vdirsyncer.exceptions as exceptions
 import vdirsyncer.log as log
 
 
@@ -312,7 +311,7 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
             conflict_resolution=pair_options.get('conflict_resolution', None),
             force_delete=status_name in force_delete
         )
-    except exceptions.StorageEmpty as e:
+    except StorageEmpty as e:
         side = 'a' if e.empty_storage is a else 'b'
         storage = e.empty_storage
         raise CliError(

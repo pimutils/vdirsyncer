@@ -153,8 +153,9 @@ class HttpStorage(Storage):
         self._items.clear()
         for i, item in enumerate(split_collection(r.text.splitlines())):
             item = Item(u'\n'.join(item), needs_uid=False)
-            uid = item.uid if item.uid is not None else i
-            self._items[uid] = item
+            if item.uid is None:
+                item.uid = i
+            self._items[item.uid] = item
 
         for uid, item in self._items.items():
             yield uid, hashlib.sha256(item.raw.encode('utf-8')).hexdigest()
