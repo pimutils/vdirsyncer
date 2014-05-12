@@ -153,13 +153,13 @@ class HttpStorage(Storage):
         self._items.clear()
         for i, item in enumerate(split_collection(r.text.splitlines())):
             item = Item(u'\n'.join(item), needs_uid=False)
+            etag = hashlib.sha256(item.raw.encode('utf-8')).hexdigest()
             if item.uid is None:
-                item.uid = i
-            self._items[item.uid] = item
+                item.uid = etag
+            self._items[item.uid] = item, etag
 
-        for uid, item in self._items.items():
-            yield uid, hashlib.sha256(item.raw.encode('utf-8')).hexdigest()
+        for href, (item, etag) in self._items.items():
+            yield href, etag
 
     def get(self, href):
-        x = self._items[href]
-        return x, hashlib.sha256(x.raw.encode('utf-8')).hexdigest()
+        return self._items[href]
