@@ -132,7 +132,8 @@ class HttpStorage(Storage):
 
         self._settings = {
             'verify': prepare_verify(verify),
-            'auth': prepare_auth(auth, username, password)
+            'auth': prepare_auth(auth, username, password),
+            'latin1_fallback': False
         }
         self.username, self.password = username, password
         self.useragent = useragent

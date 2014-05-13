@@ -187,7 +187,7 @@ def get_password(username, resource):
 
 
 def request(method, url, data=None, headers=None, auth=None, verify=None,
-            session=None):
+            session=None, latin1_fallback=True):
     '''wrapper method for requests, to ease logging and mocking'''
 
     if session is None:
@@ -200,7 +200,17 @@ def request(method, url, data=None, headers=None, auth=None, verify=None,
     logger.debug(data)
     logger.debug('Sending request...')
     r = func(method, url, data=data, headers=headers, auth=auth, verify=verify)
+
+    # See https://github.com/kennethreitz/requests/issues/2042
+    content_type = r.headers.get('Content-Type', '')
+    if not latin1_fallback and \
+       'charset' not in content_type and \
+       content_type.startswith('text/'):
+        logger.debug('Removing latin1 fallback')
+        r.encoding = None
+
     logger.debug(r.status_code)
     logger.debug(r.headers)
     logger.debug(r.content)
+
     return r

@@ -58,8 +58,6 @@ def test_split_collection_timezones():
     given = [tuple(x) for x in split_collection(full)]
     expected = [(u'BEGIN:VCALENDAR',) + timezone + item + (u'END:VCALENDAR',)
                 for item in items]
-    print(given)
-    print(expected)
     assert given == expected
 
 
@@ -72,7 +70,7 @@ def test_list(monkeypatch):
          u'DESCRIPTION:Beschreibung des Termines\n'
          u'END:VEVENT'),
         (u'BEGIN:VEVENT\n'
-         u'SUMMARY:Eine zweite Kurzinfo\n'
+         u'SUMMARY:Eine zweite Küèrzinfo\n'
          u'DESCRIPTION:Beschreibung des anderen Termines\n'
          u' With an extra line for description\n'
          u'BEGIN:VALARM\n'
@@ -96,7 +94,8 @@ def test_list(monkeypatch):
         r.status_code = 200
         assert responses
         r._content = responses.pop().encode('utf-8')
-        r.encoding = 'utf-8'
+        r.headers['Content-Type'] = 'text/icalendar'
+        r.encoding = 'ISO-8859-1'
         return r
 
     monkeypatch.setattr('requests.request', get)

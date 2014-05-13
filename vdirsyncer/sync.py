@@ -18,7 +18,7 @@
 import itertools
 
 from . import exceptions, log
-from .utils import iteritems, itervalues
+from .utils import iteritems
 sync_logger = log.get(__name__)
 
 
