@@ -21,9 +21,11 @@ def split_simple_collection(lines):
     item_type = None
     for line in lines:
         if u':' not in line:
-            item.append(line)
-            continue
-        key, value = (x.strip() for x in line.split(u':', 1))
+            key = line
+            value = None
+        else:
+            key, value = (x.strip() for x in line.split(u':', 1))
+
         if key == u'BEGIN':
             if collection_type is None:
                 collection_type = value
