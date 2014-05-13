@@ -45,9 +45,10 @@ class StorageEmpty(SyncError):
 
 
 def prepare_list(storage, href_to_status):
+    rv = {}
     download = []
     for href, etag in storage.list():
-        props = {'etag': etag}
+        props = rv[href] = {'etag': etag}
         if href in href_to_status:
             uid, old_etag = href_to_status[href]
             props['uid'] = uid
@@ -55,12 +56,16 @@ def prepare_list(storage, href_to_status):
                 download.append(href)
         else:
             download.append(href)
-        yield href, props
 
     if download:
         for href, item, etag in storage.get_multi(download):
-            props = {'item': item, 'uid': item.uid, 'etag': etag}
-            yield href, props
+            props = rv[href]
+            props['item'] = item
+            props['uid'] = item.uid
+            if props['etag'] != etag:
+                raise SyncConflict('Etag changed during sync.')
+
+    return rv
 
 
 def sync(storage_a, storage_b, status, conflict_resolution=None,
@@ -92,8 +97,8 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
         for uid, (href_a, etag_a, href_b, etag_b) in iteritems(status)
     )
     # href => {'etag': etag, 'item': optional item, 'uid': uid}
-    list_a = dict(prepare_list(storage_a, a_href_to_status))
-    list_b = dict(prepare_list(storage_b, b_href_to_status))
+    list_a = prepare_list(storage_a, a_href_to_status)
+    list_b = prepare_list(storage_b, b_href_to_status)
 
     if bool(list_a) != bool(list_b) and status and not force_delete:
         raise StorageEmpty(storage_b if list_a else storage_a)
@@ -205,10 +210,8 @@ def get_actions(storages, status):
     storage_a, list_a, a_uid_to_href = storages['a']
     storage_b, list_b, b_uid_to_href = storages['b']
 
-    uids_a = (x['uid'] for x in itervalues(list_a))
-    uids_b = (x['uid'] for x in itervalues(list_b))
     handled = set()
-    for uid in itertools.chain(uids_a, uids_b, status):
+    for uid in itertools.chain(a_uid_to_href, b_uid_to_href, status):
         if uid in handled:
             continue
         handled.add(uid)
