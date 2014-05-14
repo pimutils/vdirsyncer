@@ -217,7 +217,7 @@ def test_no_uids():
     status = {}
     sync(a, b, status)
 
-    a_items = [a.get(href)[0].raw for href, etag in a.list()]
-    b_items = [b.get(href)[0].raw for href, etag in b.list()]
+    a_items = set(a.get(href)[0].raw for href, etag in a.list())
+    b_items = set(b.get(href)[0].raw for href, etag in b.list())
 
-    assert a_items == b_items == [u'ASDF', u'FOOBAR']
+    assert a_items == b_items == {u'ASDF', u'FOOBAR'}
