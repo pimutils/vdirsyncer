@@ -15,7 +15,7 @@ class Item(object):
 
     '''should-be-immutable wrapper class for VCALENDAR and VCARD'''
 
-    def __init__(self, raw, needs_uid=True):
+    def __init__(self, raw):
         assert isinstance(raw, utils.text_type)
         raw = raw.splitlines()
         self.uid = None
@@ -23,9 +23,6 @@ class Item(object):
         for line in raw:
             if line.startswith(u'UID:'):
                 self.uid = line[4:].strip()
-
-        if needs_uid and self.uid is None:
-            raise ValueError('Item has not uid.')
 
         self.raw = u'\n'.join(raw)
 

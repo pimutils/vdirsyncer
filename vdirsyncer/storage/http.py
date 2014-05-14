@@ -155,7 +155,7 @@ class HttpStorage(Storage):
         r.raise_for_status()
         self._items.clear()
         for i, item in enumerate(split_collection(r.text.splitlines())):
-            item = Item(u'\n'.join(item), needs_uid=False)
+            item = Item(u'\n'.join(item))
             etag = hashlib.sha256(item.raw.encode('utf-8')).hexdigest()
             if item.uid is None:
                 item.uid = etag
