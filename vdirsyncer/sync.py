@@ -61,7 +61,7 @@ def prepare_list(storage, href_to_status):
         for href, item, etag in storage.get_multi(download):
             props = rv[href]
             props['item'] = item
-            props['ident'] = item.uid or item.hash
+            props['ident'] = item.ident
             if props['etag'] != etag:
                 raise SyncConflict('Etag changed during sync.')
 

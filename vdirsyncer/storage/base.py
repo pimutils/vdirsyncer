@@ -15,12 +15,27 @@ from .. import utils
 
 class Item(object):
 
-    '''should-be-immutable wrapper class for VCALENDAR and VCARD'''
+    '''should-be-immutable wrapper class for VCALENDAR (VEVENT, VTODO) and
+    VCARD'''
+
+    uid = None
+    '''Global identifier of the item, across storages, doesn't change after a
+    modification of the item.'''
+
+    raw = None
+    '''Raw content of the item, which vdirsyncer doesn't validate in any
+    way.'''
+
+    hash = None
+    '''Hash of self.raw, used for etags.'''
+
+    ident = None
+    '''Used for generating hrefs and matching up items during synchronization.
+    This is either the UID or the hash of the item's content.'''
 
     def __init__(self, raw):
         assert isinstance(raw, utils.text_type)
         raw = raw.splitlines()
-        self.uid = None
 
         for line in raw:
             if line.startswith(u'UID:'):
@@ -30,6 +45,7 @@ class Item(object):
 
         self.raw = u'\n'.join(raw)
         self.hash = hashlib.sha256(self.raw.encode('utf-8')).hexdigest()
+        self.ident = self.uid or self.hash
 
 
 class Storage(object):
@@ -40,7 +56,6 @@ class Storage(object):
     Terminology:
       - ITEM: Instance of the Item class, represents a calendar event, task or
           contact.
-      - UID: String; Global identifier of the item, across storages.
       - HREF: String; Per-storage identifier of item, might be UID. The reason
           items aren't just referenced by their UID is because the CalDAV and
           CardDAV specifications make this imperformant to implement.
@@ -71,7 +86,7 @@ class Storage(object):
         raise NotImplementedError()
 
     def _get_href(self, item):
-        return (item.uid or item.hash) + self.fileext
+        return item.ident + self.fileext
 
     def __repr__(self):
         return '<{}(**{})>'.format(

@@ -122,7 +122,7 @@ class DavStorage(Storage):
         return utils.urlunquote_plus(utils.urlparse.urlsplit(x).path)
 
     def _get_href(self, item):
-        href = utils.urlunquote_plus(item.uid or item.hash) + self.fileext
+        href = utils.urlunquote_plus(item.ident) + self.fileext
         return self._normalize_href(href)
 
     def _request(self, method, path, data=None, headers=None):
