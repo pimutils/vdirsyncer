@@ -22,7 +22,9 @@ class Item(object):
 
         for line in raw:
             if line.startswith(u'UID:'):
-                self.uid = line[4:].strip()
+                uid = line[4:].strip()
+                if uid:
+                    self.uid = uid
 
         self.raw = u'\n'.join(raw)
 
