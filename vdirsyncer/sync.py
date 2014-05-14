@@ -195,10 +195,12 @@ def action_conflict_resolve(ident):
             raise SyncConflict()
         elif conflict_resolution == 'a wins':
             sync_logger.info('...{} wins.'.format(a_storage))
-            action_update(ident, 'a', 'b')(storages, status, conflict_resolution)
+            action_update(ident, 'a', 'b')(storages, status,
+                                           conflict_resolution)
         elif conflict_resolution == 'b wins':
             sync_logger.info('...{} wins.'.format(b_storage))
-            action_update(ident, 'b', 'a')(storages, status, conflict_resolution)
+            action_update(ident, 'b', 'a')(storages, status,
+                                           conflict_resolution)
         else:
             raise ValueError('Invalid conflict resolution mode: {}'
                              .format(conflict_resolution))

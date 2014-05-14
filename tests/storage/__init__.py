@@ -107,7 +107,7 @@ class StorageTests(object):
         assert not list(s.list())
         s.upload(self._create_bogus_item())
         assert list(s.list())
- 
+
     def test_discover(self):
         collections = set()
 

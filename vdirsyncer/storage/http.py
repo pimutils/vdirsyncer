@@ -7,8 +7,6 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-import hashlib
-
 from .base import Item, Storage
 from ..utils import expand_path, get_password, request, text_type, urlparse
 
