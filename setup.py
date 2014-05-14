@@ -14,14 +14,14 @@ from setuptools import setup, find_packages
 
 setup(
     name='vdirsyncer',
-    version='0.1.4',
+    version='0.1.5',
     author='Markus Unterwaditzer',
     author_email='markus@unterwaditzer.net',
     url='https://github.com/untitaker/vdirsyncer',
     description='A syncronization tool for vdir',
     license='MIT',
     long_description=open('README.rst').read(),
-    packages=find_packages(exclude=['tests']),
+    packages=find_packages(exclude=['tests.*', 'tests']),
     include_package_data=True,
     entry_points={
         'console_scripts': ['vdirsyncer = vdirsyncer.cli:main']
