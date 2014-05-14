@@ -123,7 +123,7 @@ class FilesystemStorage(Storage):
         href = self._get_href(item)
         fpath = self._get_filepath(href)
         if os.path.exists(fpath):
-            raise exceptions.AlreadyExistingError(item.uid)
+            raise exceptions.AlreadyExistingError(item)
 
         if not isinstance(item.raw, text_type):
             raise TypeError('item.raw must be a unicode string.')
@@ -134,7 +134,7 @@ class FilesystemStorage(Storage):
 
     def update(self, href, item, etag):
         fpath = self._get_filepath(href)
-        if href != self._get_href(item):
+        if href != self._get_href(item) and item.uid:
             logger.warning('href != uid + fileext: href={}; uid={}'
                            .format(href, item.uid))
         if not os.path.exists(fpath):

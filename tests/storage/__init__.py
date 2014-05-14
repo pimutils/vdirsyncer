@@ -17,13 +17,12 @@ from vdirsyncer.utils import text_type
 
 
 class StorageTests(object):
-    item_template = u'UID:{uid}\nX-SOMETHING:{r}'
+    item_template = u'X-SOMETHING:{r}'
 
-    def _create_bogus_item(self, uid, item_template=None):
+    def _create_bogus_item(self, item_template=None):
         r = random.random()
         item_template = item_template or self.item_template
-        uid = '{}@vdirsyncer_tests'.format(uid)
-        return Item(item_template.format(uid=uid, r=r))
+        return Item(item_template.format(r=r))
 
     def get_storage_args(self, collection=None):
         raise NotImplementedError()
@@ -34,7 +33,7 @@ class StorageTests(object):
         return s
 
     def test_generic(self):
-        items = map(self._create_bogus_item, range(1, 10))
+        items = [self._create_bogus_item() for i in range(1, 10)]
         s = self._get_storage()
         hrefs = []
         for item in items:
@@ -47,7 +46,6 @@ class StorageTests(object):
             assert s.has(href)
             item, etag2 = s.get(href)
             assert etag == etag2
-            assert 'UID:{}'.format(item.uid) in item.raw
 
     def test_empty_get_multi(self):
         s = self._get_storage()
@@ -55,30 +53,30 @@ class StorageTests(object):
 
     def test_upload_already_existing(self):
         s = self._get_storage()
-        item = self._create_bogus_item(1)
+        item = self._create_bogus_item()
         s.upload(item)
         with pytest.raises(exceptions.PreconditionFailed):
             s.upload(item)
 
     def test_upload(self):
         s = self._get_storage()
-        item = self._create_bogus_item(1)
+        item = self._create_bogus_item()
         href, etag = s.upload(item)
         assert_item_equals(s.get(href)[0], item)
 
     def test_update(self):
         s = self._get_storage()
-        item = self._create_bogus_item(1)
+        item = self._create_bogus_item()
         href, etag = s.upload(item)
         assert_item_equals(s.get(href)[0], item)
 
-        new_item = self._create_bogus_item(1)
+        new_item = self._create_bogus_item()
         s.update(href, new_item, etag)
         assert_item_equals(s.get(href)[0], new_item)
 
     def test_update_nonexisting(self):
         s = self._get_storage()
-        item = self._create_bogus_item(1)
+        item = self._create_bogus_item()
         with pytest.raises(exceptions.PreconditionFailed):
             s.update(s._get_href(item), item, '"123"')
         with pytest.raises(exceptions.PreconditionFailed):
@@ -86,7 +84,7 @@ class StorageTests(object):
 
     def test_wrong_etag(self):
         s = self._get_storage()
-        item = self._create_bogus_item(1)
+        item = self._create_bogus_item()
         href, etag = s.upload(item)
         with pytest.raises(exceptions.PreconditionFailed):
             s.update(href, item, '"lolnope"')
@@ -95,7 +93,7 @@ class StorageTests(object):
 
     def test_delete(self):
         s = self._get_storage()
-        href, etag = s.upload(self._create_bogus_item(1))
+        href, etag = s.upload(self._create_bogus_item())
         s.delete(href, etag)
         assert not list(s.list())
 
@@ -107,9 +105,9 @@ class StorageTests(object):
     def test_list(self):
         s = self._get_storage()
         assert not list(s.list())
-        s.upload(self._create_bogus_item('1'))
+        s.upload(self._create_bogus_item())
         assert list(s.list())
-
+ 
     def test_discover(self):
         collections = set()
 
@@ -123,7 +121,7 @@ class StorageTests(object):
                     **self.get_storage_args(collection=collection))
 
                 # radicale ignores empty collections during discovery
-                item = self._create_bogus_item(str(i))
+                item = self._create_bogus_item()
                 s.upload(item)
 
                 collections.add(s.collection)
@@ -161,15 +159,6 @@ class StorageTests(object):
     def test_has(self):
         s = self._get_storage()
         assert not s.has('asd')
-        href, etag = s.upload(self._create_bogus_item(1))
+        href, etag = s.upload(self._create_bogus_item())
         assert s.has(href)
         assert not s.has('asd')
-
-    def test_upload_without_uid(self):
-        lines = [x for x in self._create_bogus_item('1').raw.splitlines()
-                 if u'UID' not in x]
-        item = Item(u'\n'.join(lines))
-
-        s = self._get_storage()
-        href, etag = s.upload(item)
-        assert s.has(href)

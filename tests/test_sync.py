@@ -33,13 +33,13 @@ def test_missing_status():
     a = MemoryStorage()
     b = MemoryStorage()
     status = {}
-    item = Item(u'UID:1')
-    a.upload(item)
-    b.upload(item)
+    item = Item(u'asdf')
+    href_a, _ = a.upload(item)
+    href_b, _ = b.upload(item)
     sync(a, b, status)
     assert len(status) == 1
-    assert a.has('1.txt')
-    assert b.has('1.txt')
+    assert a.has(href_a)
+    assert b.has(href_b)
 
 
 def test_missing_status_and_different_items():
@@ -207,3 +207,17 @@ def test_empty_storage_dataloss():
 
     with pytest.raises(StorageEmpty):
         sync(a, MemoryStorage(), status)
+
+
+def test_no_uids():
+    a = MemoryStorage()
+    b = MemoryStorage()
+    href_a, _ = a.upload(Item(u'ASDF'))
+    href_b, _ = b.upload(Item(u'FOOBAR'))
+    status = {}
+    sync(a, b, status)
+
+    a_items = [a.get(href)[0].raw for href, etag in a.list()]
+    b_items = [b.get(href)[0].raw for href, etag in b.list()]
+
+    assert a_items == b_items == [u'ASDF', u'FOOBAR']

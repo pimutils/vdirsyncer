@@ -47,7 +47,7 @@ class MemoryStorage(Storage):
         return href, etag
 
     def update(self, href, item, etag):
-        if href != self._get_href(item) or href not in self.items:
+        if href not in self.items:
             raise exceptions.NotFoundError(href)
         actual_etag, _ = self.items[href]
         if etag != actual_etag:

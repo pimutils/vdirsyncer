@@ -44,7 +44,6 @@ ORG:Self Employed
 TEL;TYPE=WORK;TYPE=VOICE:412 605 0499
 TEL;TYPE=FAX:412 605 0705
 URL:http://www.example.com
-UID:{uid}
 X-SOMETHING:{r}
 END:VCARD'''
 
@@ -58,7 +57,6 @@ DTSTAMP:20130730T074543Z
 LAST-MODIFIED;VALUE=DATE-TIME:20140122T151338Z
 SEQUENCE:2
 SUMMARY:Book: Kowlani - Tödlicher Staub
-UID:{uid}
 X-SOMETHING:{r}
 END:VTODO
 END:VCALENDAR'''
@@ -72,7 +70,6 @@ DTSTART:19970714T170000Z
 DTEND:19970715T035959Z
 SUMMARY:Bastille Day Party
 X-SOMETHING:{r}
-UID:{uid}
 END:VEVENT
 END:VCALENDAR'''
 
@@ -85,7 +82,7 @@ templates = {
 
 class DavStorageTests(ServerMixin, StorageTests):
     def test_dav_broken_item(self):
-        item = Item(u'UID:1')
+        item = Item(u'HAHA:YES')
         s = self._get_storage()
         try:
             s.upload(item)
@@ -110,8 +107,8 @@ class TestCaldavStorage(DavStorageTests):
     item_template = TASK_TEMPLATE
 
     def test_both_vtodo_and_vevent(self):
-        task = self._create_bogus_item(1, item_template=TASK_TEMPLATE)
-        event = self._create_bogus_item(2, item_template=EVENT_TEMPLATE)
+        task = self._create_bogus_item(item_template=TASK_TEMPLATE)
+        event = self._create_bogus_item(item_template=EVENT_TEMPLATE)
         s = self._get_storage()
         href_etag_task = s.upload(task)
         href_etag_event = s.upload(event)
@@ -127,14 +124,14 @@ class TestCaldavStorage(DavStorageTests):
         s = self.storage_class(item_types=(item_type,), **kw)
         try:
             s.upload(self._create_bogus_item(
-                1, item_template=templates[other_item_type]))
+                item_template=templates[other_item_type]))
             s.upload(self._create_bogus_item(
-                5, item_template=templates[other_item_type]))
+                item_template=templates[other_item_type]))
         except (exceptions.Error, requests.exceptions.HTTPError):
             pass
         href, etag = \
             s.upload(self._create_bogus_item(
-                3, item_template=templates[item_type]))
+                item_template=templates[item_type]))
         ((href2, etag2),) = s.list()
         assert href2 == href
         assert etag2 == etag
@@ -169,7 +166,7 @@ class TestCaldavStorage(DavStorageTests):
         end_date = datetime.datetime(2013, 9, 13)
         s = self.storage_class(start_date=start_date, end_date=end_date, **kw)
 
-        too_old_item = self._create_bogus_item('1', item_template=dedent(u'''
+        too_old_item = self._create_bogus_item(item_template=dedent(u'''
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN
@@ -178,12 +175,11 @@ class TestCaldavStorage(DavStorageTests):
             DTEND:19970715T035959Z
             SUMMARY:Bastille Day Party
             X-SOMETHING:{r}
-            UID:{uid}
             END:VEVENT
             END:VCALENDAR
             ''').strip())
 
-        too_new_item = self._create_bogus_item('2', item_template=dedent(u'''
+        too_new_item = self._create_bogus_item(item_template=dedent(u'''
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN
@@ -192,12 +188,11 @@ class TestCaldavStorage(DavStorageTests):
             DTEND:20150715T035959Z
             SUMMARY:Another Bastille Day Party
             X-SOMETHING:{r}
-            UID:{uid}
             END:VEVENT
             END:VCALENDAR
             ''').strip())
 
-        good_item = self._create_bogus_item('3', item_template=dedent(u'''
+        good_item = self._create_bogus_item(item_template=dedent(u'''
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN
@@ -206,7 +201,6 @@ class TestCaldavStorage(DavStorageTests):
             DTEND:20130912T035959Z
             SUMMARY:What's with all these Bastille Day Partys
             X-SOMETHING:{r}
-            UID:{uid}
             END:VEVENT
             END:VCALENDAR
             ''').strip())
