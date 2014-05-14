@@ -45,6 +45,7 @@ TEL;TYPE=WORK;TYPE=VOICE:412 605 0499
 TEL;TYPE=FAX:412 605 0705
 URL:http://www.example.com
 X-SOMETHING:{r}
+UID:{r}
 END:VCARD'''
 
 
@@ -58,6 +59,7 @@ LAST-MODIFIED;VALUE=DATE-TIME:20140122T151338Z
 SEQUENCE:2
 SUMMARY:Book: Kowlani - Tödlicher Staub
 X-SOMETHING:{r}
+UID:{r}
 END:VTODO
 END:VCALENDAR'''
 
@@ -70,6 +72,7 @@ DTSTART:19970714T170000Z
 DTEND:19970715T035959Z
 SUMMARY:Bastille Day Party
 X-SOMETHING:{r}
+UID:{r}
 END:VEVENT
 END:VCALENDAR'''
 
@@ -175,6 +178,7 @@ class TestCaldavStorage(DavStorageTests):
             DTEND:19970715T035959Z
             SUMMARY:Bastille Day Party
             X-SOMETHING:{r}
+            UID:{r}
             END:VEVENT
             END:VCALENDAR
             ''').strip())
@@ -188,6 +192,7 @@ class TestCaldavStorage(DavStorageTests):
             DTEND:20150715T035959Z
             SUMMARY:Another Bastille Day Party
             X-SOMETHING:{r}
+            UID:{r}
             END:VEVENT
             END:VCALENDAR
             ''').strip())
@@ -201,6 +206,7 @@ class TestCaldavStorage(DavStorageTests):
             DTEND:20130912T035959Z
             SUMMARY:What's with all these Bastille Day Partys
             X-SOMETHING:{r}
+            UID:{r}
             END:VEVENT
             END:VCALENDAR
             ''').strip())
