@@ -7,6 +7,8 @@
     :license: MIT, see LICENSE for more details.
 '''
 
+import hashlib
+
 from .. import exceptions
 from .. import utils
 
@@ -27,6 +29,7 @@ class Item(object):
                     self.uid = uid
 
         self.raw = u'\n'.join(raw)
+        self.hash = hashlib.sha256(self.raw.encode('utf-8')).hexdigest()
 
 
 class Storage(object):
@@ -67,8 +70,8 @@ class Storage(object):
         '''
         raise NotImplementedError()
 
-    def _get_href(self, uid):
-        return uid + self.fileext
+    def _get_href(self, item):
+        return (item.uid or item.hash) + self.fileext
 
     def __repr__(self):
         return '<{}(**{})>'.format(

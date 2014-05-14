@@ -100,9 +100,6 @@ class FilesystemStorage(Storage):
     def _get_filepath(self, href):
         return os.path.join(self.path, href)
 
-    def _get_href(self, uid):
-        return uid + self.fileext
-
     def list(self):
         for fname in os.listdir(self.path):
             fpath = os.path.join(self.path, fname)
@@ -123,7 +120,7 @@ class FilesystemStorage(Storage):
                 raise
 
     def upload(self, item):
-        href = self._get_href(item.uid)
+        href = self._get_href(item)
         fpath = self._get_filepath(href)
         if os.path.exists(fpath):
             raise exceptions.AlreadyExistingError(item.uid)
@@ -137,7 +134,7 @@ class FilesystemStorage(Storage):
 
     def update(self, href, item, etag):
         fpath = self._get_filepath(href)
-        if href != self._get_href(item.uid):
+        if href != self._get_href(item):
             logger.warning('href != uid + fileext: href={}; uid={}'
                            .format(href, item.uid))
         if not os.path.exists(fpath):

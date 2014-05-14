@@ -106,7 +106,7 @@ def test_list(monkeypatch):
 
     for href, etag in s.list():
         item, etag2 = s.get(href)
-        assert item.uid is not None
+        assert item.uid is None
         assert etag2 == etag
         found_items[item.raw.strip()] = href
 
@@ -115,6 +115,6 @@ def test_list(monkeypatch):
 
     for href, etag in s.list():
         item, etag2 = s.get(href)
-        assert item.uid is not None
+        assert item.uid is None
         assert etag2 == etag
         assert found_items[item.raw.strip()] == href

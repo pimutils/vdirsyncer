@@ -115,13 +115,15 @@ class DavStorage(Storage):
     def _normalize_href(self, href):
         '''Normalize the href to be a path only relative to hostname and
         schema.'''
+        if not href:
+            raise ValueError(href)
         x = utils.urlparse.urljoin(self.url, href)
         assert x.startswith(self.url)
         return utils.urlunquote_plus(utils.urlparse.urlsplit(x).path)
 
-    def _get_href(self, uid):
-        uid = utils.urlunquote_plus(uid)
-        return self._normalize_href(super(DavStorage, self)._get_href(uid))
+    def _get_href(self, item):
+        href = utils.urlunquote_plus(item.uid or item.hash) + self.fileext
+        return self._normalize_href(href)
 
     def _request(self, method, path, data=None, headers=None):
         path = path or self.parsed_url.path
@@ -218,7 +220,7 @@ class DavStorage(Storage):
         return self._put(href, item, etag)
 
     def upload(self, item):
-        href = self._get_href(item.uid)
+        href = self._get_href(item)
         return self._put(href, item, None)
 
     def delete(self, href, etag):

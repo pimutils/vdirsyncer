@@ -80,7 +80,7 @@ class StorageTests(object):
         s = self._get_storage()
         item = self._create_bogus_item(1)
         with pytest.raises(exceptions.PreconditionFailed):
-            s.update(s._get_href('1'), item, '"123"')
+            s.update(s._get_href(item), item, '"123"')
         with pytest.raises(exceptions.PreconditionFailed):
             s.update('huehue', item, '"123"')
 
@@ -164,3 +164,12 @@ class StorageTests(object):
         href, etag = s.upload(self._create_bogus_item(1))
         assert s.has(href)
         assert not s.has('asd')
+
+    def test_upload_without_uid(self):
+        lines = [x for x in self._create_bogus_item('1').raw.splitlines()
+                 if u'UID' not in x]
+        item = Item(u'\n'.join(lines))
+
+        s = self._get_storage()
+        href, etag = s.upload(item)
+        assert s.has(href)
