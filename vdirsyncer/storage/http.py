@@ -7,89 +7,54 @@
     :license: MIT, see LICENSE for more details.
 '''
 
+import icalendar.cal
+import icalendar.parser
+
 from .base import Item, Storage
-from ..utils import expand_path, get_password, request, text_type, urlparse
+from ..utils import expand_path, get_password, itervalues, request, \
+    text_type, urlparse
 
 USERAGENT = 'vdirsyncer'
 
 
-def split_simple_collection(lines):
-    item = []
-    collection_type = None
-    item_type = None
-    for line in lines:
-        if u':' not in line:
-            key = line
-            value = None
-        else:
-            key, value = (x.strip() for x in line.split(u':', 1))
+def split_collection(text, inline=(u'VTIMEZONE',),
+                     wrap_items_with=(u'VCALENDAR',)):
+    assert isinstance(text, text_type)
+    collection = icalendar.cal.Component.from_ical(text)
+    items = collection.subcomponents
 
-        if key == u'BEGIN':
-            if collection_type is None:
-                collection_type = value
-            elif item_type is None:
-                item_type = value
-                item.append(line)
-            else:
-                item.append(line)
-        elif key == u'END':
-            if value == collection_type:
-                break
-            elif value == item_type:
-                item.append(line)
-                yield item
-                item = []
-                item_type = None
-            else:
-                item.append(line)
-        else:
-            if item_type is not None:
-                item.append(line)
+    if collection.name in wrap_items_with:
+        start = u'BEGIN:{}'.format(collection.name)
+        end = u'END:{}'.format(collection.name)
+    else:
+        start = end = u''
 
-
-def wrap_items(items, collection_type, exclude=(u'VTIMEZONE',)):
+    inlined_items = {}
     for item in items:
-        key, value = (x.strip() for x in item[0].split(u':'))
-        if value in exclude:
-            yield item
-        else:
-            yield ([u'BEGIN:' + collection_type] + item +
-                   [u'END:' + collection_type])
+        if item.name in inline:
+            inlined_items[item.name] = item
 
-
-def inline_timezones(items):
-    timezone = None
     for item in items:
-        if u':' not in item[0]:
-            import pdb
-            pdb.set_trace()
+        if item.name not in inline:
+            lines = []
+            lines.append(start)
+            for inlined_item in itervalues(inlined_items):
+                lines.extend(to_unicode_lines(inlined_item))
 
-        key, value = (x.strip() for x in item[0].split(u':'))
-        if value == u'VTIMEZONE':
-            if timezone is not None:
-                raise ValueError('Multiple timezones.')
-            timezone = item
-        else:
-            if timezone is not None:
-                item = [item[0]] + timezone + item[1:]
-            yield item
+            lines.extend(to_unicode_lines(item))
+            lines.append(end)
+            lines.append(u'')
+
+            yield u''.join(line + u'\r\n' for line in lines if line)
 
 
-def split_collection(lines):
-    collection_type = None
-    for line in lines:
-        key, value = (x.strip() for x in line.split(u':'))
-        if key == u'BEGIN':
-            collection_type = value
-            break
+def to_unicode_lines(item):
+    '''icalendar doesn't provide an efficient way of getting the ical data as
+    unicode. So let's do it ourselves.'''
 
-    is_calendar = collection_type == u'VCALENDAR'
-    rv = split_simple_collection(lines)
-
-    if is_calendar:
-        rv = inline_timezones(wrap_items(rv, collection_type))
-
-    return rv
+    for content_line in item.content_lines():
+        if content_line:
+            yield icalendar.parser.foldline(content_line)
 
 
 def prepare_auth(auth, username, password):
@@ -152,8 +117,8 @@ class HttpStorage(Storage):
         r = request('GET', self.url, **self._settings)
         r.raise_for_status()
         self._items.clear()
-        for i, item in enumerate(split_collection(r.text.splitlines())):
-            item = Item(u'\n'.join(item))
+        for i, item in enumerate(split_collection(r.text)):
+            item = Item(item)
             self._items[self._get_href(item)] = item, item.hash
 
         for href, (item, etag) in self._items.items():

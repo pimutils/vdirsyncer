@@ -9,55 +9,63 @@
 
 from requests import Response
 
+from tests import normalize_item, SIMPLE_TEMPLATE, BARE_EVENT_TEMPLATE
 from vdirsyncer.storage.http import HttpStorage, split_collection
+
+
+def test_split_collection_simple():
+    input = u'\r\n'.join((
+        u'BEGIN:VADDRESSBOOK',
+        SIMPLE_TEMPLATE.format(r=123),
+        SIMPLE_TEMPLATE.format(r=345),
+        SIMPLE_TEMPLATE.format(r=678),
+        u'END:VADDRESSBOOK'
+    ))
+
+    given = split_collection(input)
+    expected = [
+        SIMPLE_TEMPLATE.format(r=123),
+        SIMPLE_TEMPLATE.format(r=345),
+        SIMPLE_TEMPLATE.format(r=678)
+    ]
+
+    assert set(normalize_item(item) for item in given) == \
+        set(normalize_item(item) for item in expected)
 
 
 def test_split_collection_timezones():
     items = [
-        (
-            u'BEGIN:VEVENT',
-            u'SUMMARY:Eine Kurzinfo',
-            u'DESCRIPTION:Beschreibung des Termines',
-            u'END:VEVENT'
-        ),
-        (
-            u'BEGIN:VEVENT',
-            u'SUMMARY:Eine zweite Kurzinfo',
-            u'DESCRIPTION:Beschreibung des anderen Termines',
-            u' With an extra line for description',
-            u'BEGIN:VALARM',
-            u'ACTION:AUDIO',
-            u'TRIGGER:19980403T120000',
-            u'ATTACH;FMTTYPE=audio/basic:http://host.com/pub/ssbanner.aud',
-            u'REPEAT:4',
-            u'DURATION:PT1H',
-            u'END:VALARM',
-            u'END:VEVENT'
-        )
+        BARE_EVENT_TEMPLATE.format(r=123),
+        BARE_EVENT_TEMPLATE.format(r=345)
     ]
 
     timezone = (
-        u'BEGIN:VTIMEZONE',
-        u'TZID:/mozilla.org/20070129_1/Asia/Tokyo',
-        u'X-LIC-LOCATION:Asia/Tokyo',
-        u'BEGIN:STANDARD',
-        u'TZOFFSETFROM:+0900',
-        u'TZOFFSETTO:+0900',
-        u'TZNAME:JST',
-        u'DTSTART:19700101T000000',
-        u'END:STANDARD',
+        u'BEGIN:VTIMEZONE\r\n'
+        u'TZID:/mozilla.org/20070129_1/Asia/Tokyo\r\n'
+        u'X-LIC-LOCATION:Asia/Tokyo\r\n'
+        u'BEGIN:STANDARD\r\n'
+        u'TZOFFSETFROM:+0900\r\n'
+        u'TZOFFSETTO:+0900\r\n'
+        u'TZNAME:JST\r\n'
+        u'DTSTART:19700101T000000\r\n'
+        u'END:STANDARD\r\n'
         u'END:VTIMEZONE'
     )
 
-    full = list(
-        (u'BEGIN:VCALENDAR',) +
-        timezone + tuple(line for item in items for line in item) +
-        (u'END:VCALENDAR',)
+    full = u'\r\n'.join(
+        [u'BEGIN:VCALENDAR'] +
+        items +
+        [timezone, u'END:VCALENDAR']
     )
 
-    given = [tuple(x) for x in split_collection(full)]
-    expected = [(u'BEGIN:VCALENDAR',) + timezone + item + (u'END:VCALENDAR',)
-                for item in items]
+    given = set(normalize_item(item) for item in split_collection(full))
+    expected = set(
+        normalize_item(u'\r\n'.join((
+            u'BEGIN:VCALENDAR', item, timezone, u'END:VCALENDAR'
+        )))
+        for item in items
+    )
+
     assert given == expected
 
 
@@ -72,7 +80,6 @@ def test_list(monkeypatch):
         (u'BEGIN:VEVENT\n'
          u'SUMMARY:Eine zweite Küèrzinfo\n'
          u'DESCRIPTION:Beschreibung des anderen Termines\n'
-         u' With an extra line for description\n'
          u'BEGIN:VALARM\n'
          u'ACTION:AUDIO\n'
          u'TRIGGER:19980403T120000\n'
@@ -108,13 +115,15 @@ def test_list(monkeypatch):
         item, etag2 = s.get(href)
         assert item.uid is None
         assert etag2 == etag
-        found_items[item.raw.strip()] = href
+        found_items[normalize_item(item)] = href
 
-    assert set(found_items) == set(u'BEGIN:VCALENDAR\n' + x + '\nEND:VCALENDAR'
-                                   for x in items)
+    expected = set(normalize_item(u'BEGIN:VCALENDAR\n' + x + '\nEND:VCALENDAR')
+                   for x in items)
+
+    assert set(found_items) == expected
 
     for href, etag in s.list():
         item, etag2 = s.get(href)
         assert item.uid is None
         assert etag2 == etag
-        assert found_items[item.raw.strip()] == href
+        assert found_items[normalize_item(item)] == href
