@@ -37,9 +37,9 @@ class safe_write(object):
         self.write = f.write
         return self
 
-    def __exit__(self, type, value, tb):
+    def __exit__(self, cls, value, tb):
         self.f.close()
-        if type is None:
+        if cls is None:
             os.rename(self.tmppath, self.fpath)
         else:
             os.remove(self.tmppath)
