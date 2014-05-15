@@ -7,13 +7,12 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-import itertools
 import icalendar.cal
 import icalendar.parser
 
 from .base import Item, Storage
 from ..utils import expand_path, get_password, itervalues, request, \
-     text_type, urlparse
+    text_type, urlparse
 
 USERAGENT = 'vdirsyncer'
 

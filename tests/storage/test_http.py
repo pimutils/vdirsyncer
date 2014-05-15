@@ -29,9 +29,8 @@ def test_split_collection_simple():
         SIMPLE_TEMPLATE.format(r=678)
     ]
 
-    assert set(normalize_item(item) for item in split_collection(input)) == \
-            set(normalize_item(item) for item in expected)
-
+    assert set(normalize_item(item) for item in given) == \
+        set(normalize_item(item) for item in expected)
 
 
 def test_split_collection_timezones():
