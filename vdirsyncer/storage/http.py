@@ -117,7 +117,7 @@ class HttpStorage(Storage):
         r = request('GET', self.url, **self._settings)
         r.raise_for_status()
         self._items.clear()
-        for i, item in enumerate(split_collection(r.text)):
+        for item in split_collection(r.text):
             item = Item(item)
             self._items[self._get_href(item)] = item, item.hash
 
