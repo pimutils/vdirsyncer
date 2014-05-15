@@ -29,7 +29,8 @@ setup(
     install_requires=[
         'argvard>=0.3.0',
         'requests',
-        'lxml'
+        'lxml',
+        'icalendar>=3.6'
     ],
     extras_require={'keyring': ['keyring']}
 )
