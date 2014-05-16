@@ -44,7 +44,8 @@ class Item(object):
                     self.uid = uid
 
         self.raw = u'\n'.join(raw)
-        self.hash = hashlib.sha256(self.raw.encode('utf-8')).hexdigest()
+        self.hash = hashlib.sha256(
+            self.raw.strip().encode('utf-8')).hexdigest()
         self.ident = self.uid or self.hash
 
 

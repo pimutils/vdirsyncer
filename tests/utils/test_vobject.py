@@ -7,29 +7,37 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-from vdirsyncer.utils.vobject import split_collection
+from vdirsyncer.utils.vobject import split_collection, join_collection
 
 from .. import normalize_item, SIMPLE_TEMPLATE, BARE_EVENT_TEMPLATE
 
 
+_simple_joined = u'\r\n'.join((
+    u'BEGIN:VADDRESSBOOK',
+    SIMPLE_TEMPLATE.format(r=123),
+    SIMPLE_TEMPLATE.format(r=345),
+    SIMPLE_TEMPLATE.format(r=678),
+    u'END:VADDRESSBOOK'
+))
+
+_simple_split = [
+    SIMPLE_TEMPLATE.format(r=123),
+    SIMPLE_TEMPLATE.format(r=345),
+    SIMPLE_TEMPLATE.format(r=678)
+]
+
+
 def test_split_collection_simple():
-    input = u'\r\n'.join((
-        u'BEGIN:VADDRESSBOOK',
-        SIMPLE_TEMPLATE.format(r=123),
-        SIMPLE_TEMPLATE.format(r=345),
-        SIMPLE_TEMPLATE.format(r=678),
-        u'END:VADDRESSBOOK'
-    ))
+    given = split_collection(_simple_joined)
+    assert [normalize_item(item) for item in given] == \
+        [normalize_item(item) for item in _simple_split]
 
-    given = split_collection(input)
-    expected = [
-        SIMPLE_TEMPLATE.format(r=123),
-        SIMPLE_TEMPLATE.format(r=345),
-        SIMPLE_TEMPLATE.format(r=678)
-    ]
 
-    assert set(normalize_item(item) for item in given) == \
-        set(normalize_item(item) for item in expected)
+def test_join_collection_simple():
+    given = join_collection(_simple_split, wrapper=u'VADDRESSBOOK')
+    print(given)
+    print(_simple_joined)
+    assert normalize_item(given) == normalize_item(_simple_joined)
 
 
 def test_split_collection_timezones():

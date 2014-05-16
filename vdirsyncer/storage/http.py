@@ -10,6 +10,7 @@
 from .base import Item, Storage
 from ..utils import expand_path, get_password, request, text_type, urlparse
 from ..utils.vobject import split_collection
+from ..exceptions import NotFoundError
 
 USERAGENT = 'vdirsyncer'
 
@@ -36,6 +37,7 @@ def prepare_verify(verify):
 
 class HttpStorage(Storage):
     _repr_attributes = ('username', 'url')
+    _items = None
 
     def __init__(self, url, username='', password='', collection=None,
                  verify=True, auth=None, useragent=USERAGENT, **kwargs):
@@ -67,7 +69,6 @@ class HttpStorage(Storage):
         self.url = url
         self.parsed_url = urlparse.urlparse(self.url)
         self.collection = collection
-        self._items = {}
 
     def _default_headers(self):
         return {'User-Agent': self.useragent}
@@ -75,13 +76,24 @@ class HttpStorage(Storage):
     def list(self):
         r = request('GET', self.url, **self._settings)
         r.raise_for_status()
-        self._items.clear()
+        self._items = {}
+        rv = []
         for item in split_collection(r.text):
             item = Item(item)
-            self._items[self._get_href(item)] = item, item.hash
+            href = self._get_href(item)
+            etag = item.hash
+            self._items[href] = item, etag
+            rv.append((href, etag))
 
-        for href, (item, etag) in self._items.items():
-            yield href, etag
+        # we can't use yield here because we need to populate our
+        # dict even if the user doesn't exhaust the iterator
+        return rv
 
     def get(self, href):
-        return self._items[href]
+        if self._items is None:
+            self.list()
+
+        try:
+            return self._items[href]
+        except KeyError:
+            raise NotFoundError(href)

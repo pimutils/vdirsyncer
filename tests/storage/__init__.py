@@ -10,14 +10,14 @@ import random
 
 import pytest
 
-from .. import assert_item_equals
+from .. import assert_item_equals, SIMPLE_TEMPLATE
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
 from vdirsyncer.utils import text_type
 
 
 class StorageTests(object):
-    item_template = u'X-SOMETHING:{r}'
+    item_template = SIMPLE_TEMPLATE
 
     def _create_bogus_item(self, item_template=None):
         r = random.random()
