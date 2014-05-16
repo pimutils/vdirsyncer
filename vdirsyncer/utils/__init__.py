@@ -11,7 +11,7 @@ import os
 import sys
 import requests
 
-from . import log
+from .. import log
 
 
 logger = log.get(__name__)
