@@ -30,7 +30,8 @@ setup(
         'argvard>=0.3.0',
         'requests',
         'lxml',
-        'icalendar>=3.6'
+        'icalendar>=3.6',
+        'requests_toolbelt>=0.3.0'
     ],
     extras_require={'keyring': ['keyring']}
 )
