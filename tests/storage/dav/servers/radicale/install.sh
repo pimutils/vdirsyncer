@@ -11,7 +11,7 @@ else
     echo "Invalid requirements envvar"
     false
 fi
-pip install werkzeug $radicale_pkg
+pip install wsgi_intercept $radicale_pkg
 
 if [ "$RADICALE_BACKEND" = "database" ]; then
     pip install sqlalchemy

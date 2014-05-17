@@ -4,11 +4,10 @@ import os
 import sys
 
 import pytest
+import wsgi_intercept
+import wsgi_intercept.requests_intercept
 
-from werkzeug.test import Client
-from werkzeug.wrappers import BaseResponse as WerkzeugResponse
-
-from vdirsyncer.utils import urlparse
+wsgi_intercept.requests_intercept.install()
 
 
 RADICALE_SCHEMA = '''
@@ -90,27 +89,15 @@ def do_the_radicale_dance(tmpdir):
 class ServerMixin(object):
 
     @pytest.fixture(autouse=True)
-    def setup(self, monkeypatch, tmpdir):
+    def setup(self, request, tmpdir):
         do_the_radicale_dance(str(tmpdir))
         from radicale import Application
-        app = Application()
-        c = Client(app, WerkzeugResponse)
 
-        from requests import Response
+        wsgi_intercept.add_wsgi_intercept('127.0.0.1', 80, Application)
 
-        def send(self, request, *args, **kwargs):
-            path = urlparse.urlparse(request.url).path
-            wr = c.open(path=path, method=request.method,
-                        data=request.body, headers=dict(request.headers))
-            r = Response()
-            r.request = request
-            r._content = wr.get_data(as_text=False)
-            r.headers = wr.headers
-            r.encoding = wr.charset
-            r.status_code = wr.status_code
-            return r
-
-        monkeypatch.setattr('requests.adapters.HTTPAdapter.send', send)
+        def teardown():
+            wsgi_intercept.remove_wsgi_intercept('127.0.0.1', 80)
+        request.addfinalizer(teardown)
 
     def get_storage_args(self, collection='test'):
         url = 'http://127.0.0.1/bob/'
