@@ -39,7 +39,6 @@ def split_collection(text, inline=(u'VTIMEZONE',),
 
             lines.extend(to_unicode_lines(item))
             lines.append(end)
-            lines.append(u'')
 
             yield u''.join(line + u'\r\n' for line in lines if line)
 

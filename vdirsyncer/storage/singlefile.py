@@ -8,6 +8,7 @@
 '''
 
 import os
+import collections
 
 from .base import Item, Storage
 import vdirsyncer.exceptions as exceptions
@@ -59,8 +60,7 @@ class SingleFileStorage(Storage):
         self.wrapper = wrapper
 
     def list(self):
-        self._items = {}
-        text = None
+        self._items = collections.OrderedDict()
 
         try:
             with open(self.path, self._read_mode) as f:
