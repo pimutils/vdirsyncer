@@ -23,8 +23,11 @@ def prepare_auth(auth, username, password):
             from requests.auth import HTTPDigestAuth
             return HTTPDigestAuth(username, password)
         elif auth == 'guess' or auth is None:
-            from requests_toolbelt import GuessAuth
-            return GuessAuth(username, password)
+            import requests_toolbelt
+            if not hasattr(requests_toolbelt, 'GuessAuth'):
+                raise RuntimeError('Your version of requests_toolbelt is too '
+                                   'old.')
+            return requests_toolbelt.GuessAuth(username, password)
         else:
             raise ValueError('Unknown authentication method: {}'.format(auth))
     elif auth:
