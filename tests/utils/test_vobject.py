@@ -7,9 +7,11 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-from vdirsyncer.utils.vobject import split_collection, join_collection
+from vdirsyncer.utils.vobject import split_collection, join_collection, \
+    hash_item
 
-from .. import normalize_item, SIMPLE_TEMPLATE, BARE_EVENT_TEMPLATE
+from .. import normalize_item, SIMPLE_TEMPLATE, BARE_EVENT_TEMPLATE, \
+    EVENT_TEMPLATE
 
 
 _simple_joined = u'\r\n'.join((
@@ -74,3 +76,10 @@ def test_split_collection_timezones():
     )
 
     assert given == expected
+
+
+def test_hash_item():
+    a = EVENT_TEMPLATE.format(r=1)
+    b = u'\n'.join(line for line in a.splitlines()
+                   if u'PRODID' not in line and u'VERSION' not in line)
+    assert hash_item(a) == hash_item(b)

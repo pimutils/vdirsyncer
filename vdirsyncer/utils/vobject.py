@@ -6,10 +6,25 @@
     :copyright: (c) 2014 Markus Unterwaditzer
     :license: MIT, see LICENSE for more details.
 '''
+import hashlib
+
 import icalendar.cal
 import icalendar.parser
 
 from . import text_type, itervalues
+
+
+def hash_item(text):
+    try:
+        lines = to_unicode_lines(icalendar.cal.Component.from_ical(text))
+    except Exception:
+        lines = sorted(text.splitlines())
+
+    hashable = u'\r\n'.join(line.strip() for line in lines
+                            if line.strip() and
+                            u'PRODID' not in line and
+                            u'VERSION' not in line)
+    return hashlib.sha256(hashable.encode('utf-8')).hexdigest()
 
 
 def split_collection(text, inline=(u'VTIMEZONE',),
