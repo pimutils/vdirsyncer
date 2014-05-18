@@ -219,3 +219,35 @@ def request(method, url, data=None, headers=None, auth=None, verify=None,
     logger.debug(r.content)
 
     return r
+
+
+class safe_write(object):
+    f = None
+    tmppath = None
+    fpath = None
+    mode = None
+
+    def __init__(self, fpath, mode):
+        self.tmppath = fpath + '.tmp'
+        self.fpath = fpath
+        self.mode = mode
+
+    def __enter__(self):
+        self.f = f = open(self.tmppath, self.mode)
+        self.write = f.write
+        return self
+
+    def __exit__(self, cls, value, tb):
+        self.f.close()
+        if cls is None:
+            os.rename(self.tmppath, self.fpath)
+        else:
+            os.remove(self.tmppath)
+
+    def get_etag(self):
+        self.f.flush()
+        return get_etag_from_file(self.tmppath)
+
+
+def get_etag_from_file(fpath):
+    return '{:.9f}'.format(os.path.getmtime(fpath))

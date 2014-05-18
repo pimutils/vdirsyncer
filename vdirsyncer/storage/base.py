@@ -7,7 +7,6 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-import hashlib
 
 from .. import exceptions
 from .. import utils
@@ -35,16 +34,15 @@ class Item(object):
 
     def __init__(self, raw):
         assert isinstance(raw, utils.text_type)
-        raw = raw.splitlines()
 
-        for line in raw:
+        for line in raw.splitlines():
             if line.startswith(u'UID:'):
                 uid = line[4:].strip()
                 if uid:
                     self.uid = uid
 
-        self.raw = u'\n'.join(raw)
-        self.hash = hashlib.sha256(self.raw.encode('utf-8')).hexdigest()
+        self.raw = raw
+        self.hash = utils.vobject.hash_item(raw)
         self.ident = self.uid or self.hash
 
 
