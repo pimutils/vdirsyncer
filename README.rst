@@ -15,35 +15,6 @@ It aims to be for CalDAV and CardDAV what `OfflineIMAP
 .. image:: https://coveralls.io/repos/untitaker/vdirsyncer/badge.png?branch=master
     :target: https://coveralls.io/r/untitaker/vdirsyncer?branch=master
 
-While i use it daily and haven't experienced data loss (even when vdirsyncer
-crashed), i don't know if the documentation is sufficient. If you have any
-questions regarding the usage, feel free to open a new issue.
-
-CardDAV/CalDAV Server Support
-=============================
-
-vdirsyncer is currently tested against the latest versions of Radicale and
-ownCloud.
-
-Radicale
---------
-
-Radicale doesn't `support time ranges in the calendar-query of CalDAV/CardDAV
-<https://github.com/Kozea/Radicale/issues/146>`_, so setting ``start_date`` and
-``end_date`` in vdirsyncer's configuration will have no or unpredicted
-consequences.
-
-ownCloud
---------
-
-ownCloud uses SabreDAV, which had problems detecting collisions and
-race-conditions. The problems were reported and are fixed in SabreDAV's repo.
-See `Bug #16 <https://github.com/untitaker/vdirsyncer/issues/16>`_ for more
-information.
-
-However, given that this is a problem with every setup involving ownCloud, and
-that ownCloud is widely used, it apparently isn't big enough of a problem yet.
-
 How to use
 ==========
 
@@ -57,7 +28,8 @@ Then copy ``example.cfg`` to ``~/.vdirsyncer/config`` and edit it. You can use t
 `VDIRSYNCER_CONFIG` environment variable to change the path vdirsyncer will
 read the config from.
 
-Run ``vdirsyncer --help``.
+Run ``vdirsyncer --help`` and check out `the documentation
+<https://vdirsyncer.readthedocs.org/>`_.
 
 How to run the tests
 ====================
@@ -66,9 +38,3 @@ How to run the tests
 
     sh build.sh install
     sh build.sh run
-
-License
-=======
-
-vdirsyncer is released under the Expat/MIT License, see ``LICENSE`` for more
-details.

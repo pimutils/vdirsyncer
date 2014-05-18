@@ -7,6 +7,7 @@ vdirsyncer
 
    storages
    keyring
+   server_support
    troubleshooting
    license
 
