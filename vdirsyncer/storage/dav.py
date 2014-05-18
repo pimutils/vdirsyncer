@@ -379,7 +379,6 @@ class CarddavStorage(DavStorage):
     CardDAV. Usable as ``carddav`` in the config file.
     ''' + DavStorage.__doc__
 
-
     fileext = '.vcf'
     item_mimetype = 'text/vcard'
     dav_header = 'addressbook'

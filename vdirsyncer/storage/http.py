@@ -36,7 +36,6 @@ def prepare_verify(verify):
 
 
 class HttpStorage(Storage):
-    
     '''
     Use a simple ``.ics`` file (or similar) from the web. Usable as ``http`` in
     the config file.
@@ -63,7 +62,7 @@ class HttpStorage(Storage):
 
         [storage holidays_remote]
         type = http
-        url = https://mozorg.cdn.mozilla.net/media/caldata/QueenslandHolidays.ics
+        url = https://example.com/holidays_from_hicksville.ics
     '''
 
     _repr_attributes = ('username', 'url')
