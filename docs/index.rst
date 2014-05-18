@@ -1,6 +1,7 @@
-==========
-vdirsyncer
-==========
+.. include:: ../README.rst
+
+Table of Contents
+=================
 
 .. toctree::
    :maxdepth: 1
@@ -10,5 +11,3 @@ vdirsyncer
    server_support
    troubleshooting
    license
-
-.. include:: ../README.rst
