@@ -10,14 +10,14 @@ import random
 
 import pytest
 
-from .. import assert_item_equals
+from .. import assert_item_equals, SIMPLE_TEMPLATE
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
-from vdirsyncer.utils import text_type
+from vdirsyncer.utils import text_type, iteritems
 
 
 class StorageTests(object):
-    item_template = u'X-SOMETHING:{r}'
+    item_template = SIMPLE_TEMPLATE
 
     def _create_bogus_item(self, item_template=None):
         r = random.random()
@@ -164,3 +164,17 @@ class StorageTests(object):
         href, etag = s.upload(self._create_bogus_item())
         assert s.has(href)
         assert not s.has('asd')
+
+    def test_update_others_stay_the_same(self):
+        s = self._get_storage()
+        info = dict([
+            s.upload(self._create_bogus_item()),
+            s.upload(self._create_bogus_item()),
+            s.upload(self._create_bogus_item()),
+            s.upload(self._create_bogus_item())
+        ])
+
+        assert dict(
+            (href, etag) for href, item, etag
+            in s.get_multi(href for href, etag in iteritems(info))
+        ) == info
