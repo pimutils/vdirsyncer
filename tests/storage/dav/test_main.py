@@ -61,6 +61,16 @@ class DavStorageTests(ServerMixin, StorageTests):
     def test_update_nonexisting(self):
         super(DavStorageTests, self).test_update_nonexisting()
 
+    def test_dav_empty_get_multi_performance(self, monkeypatch):
+        s = self._get_storage()
+
+        def breakdown(*a, **kw):
+            raise AssertionError('Expected not to be called.')
+
+        monkeypatch.setattr('requests.sessions.Session.request', breakdown)
+
+        assert list(s.get_multi([])) == []
+
 
 class TestCaldavStorage(DavStorageTests):
     storage_class = CaldavStorage
@@ -201,16 +211,6 @@ class TestCaldavStorage(DavStorageTests):
         with pytest.raises(ValueError):
             self.storage_class(**args)
         assert len(calls) == 1
-
-    def test_empty_get_multi_performance(self, monkeypatch):
-        s = self._get_storage()
-
-        def breakdown(*a, **kw):
-            raise AssertionError('Expected not to be called.')
-
-        monkeypatch.setattr('requests.sessions.Session.request', breakdown)
-
-        assert list(s.get_multi([])) == []
 
 
 class TestCarddavStorage(DavStorageTests):
