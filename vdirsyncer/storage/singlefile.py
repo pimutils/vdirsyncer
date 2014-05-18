@@ -21,9 +21,11 @@ logger = log.get(__name__)
 
 class SingleFileStorage(Storage):
     '''Save data in single VCALENDAR file, like Orage -- a calendar app for
-    XFCE -- and Radicale do. Hashes are etags, UIDs or hashes are hrefs.
+    XFCE -- and Radicale do. Usable as ``singlefile`` in the config file.
 
-    This storage has many raceconditions and is very slow.'''
+    This storage has many raceconditions and is very slow. What this basically
+    means is that you shouldn't use this storage unless you have to (e.g. you
+    use a calendar client which requires it)'''
 
     _repr_attributes = ('path',)
 

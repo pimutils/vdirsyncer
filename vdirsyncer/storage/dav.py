@@ -25,6 +25,16 @@ CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
 
 class DavStorage(Storage):
 
+    '''
+    :param url: Base URL or an URL to a collection.
+    :param username: Username for authentication.
+    :param password: Password for authentication.
+    :param verify: Verify SSL certificate, default True.
+    :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. Default
+        ``guess``.
+    :param useragent: Default 'vdirsyncer'.
+    '''
+
     # the file extension of items. Useful for testing against radicale.
     fileext = None
     # mimetype of items
@@ -45,17 +55,6 @@ class DavStorage(Storage):
 
     def __init__(self, url, username='', password='', collection=None,
                  verify=True, auth=None, useragent=USERAGENT, **kwargs):
-        '''
-        :param url: Base URL or an URL to a collection. Autodiscovery should be
-            done via :py:meth:`DavStorage.discover`.
-        :param username: Username for authentication.
-        :param password: Password for authentication.
-        :param verify: Verify SSL certificate, default True.
-        :param auth: Authentication method, from {'basic', 'digest'}, default
-            'basic'.
-        :param useragent: Default 'vdirsyncer'.
-        '''
-
         super(DavStorage, self).__init__(**kwargs)
 
         if username and not password:
@@ -271,6 +270,19 @@ class DavStorage(Storage):
 
 class CaldavStorage(DavStorage):
 
+    __doc__ = '''
+    CalDAV. Usable as ``caldav`` in the config file.
+    ''' + DavStorage.__doc__ + '''
+    :param start_date: Start date of timerange to show, default -inf.
+    :param end_date: End date of timerange to show, default +inf.
+    :param item_types: A tuple of collection types to show from the server.
+        For example, if you want to only get VEVENTs, pass ``('VEVENT',)``.
+        Falsy values mean "get all types". Dependent on server
+        functionality, no clientside validation of results. This currently
+        only affects the `list` method, but this shouldn't cause problems
+        in the normal usecase.
+    '''
+
     fileext = '.ics'
     item_mimetype = 'text/calendar'
     dav_header = 'calendar-access'
@@ -293,16 +305,6 @@ class CaldavStorage(DavStorage):
 
     def __init__(self, start_date=None, end_date=None,
                  item_types=(), **kwargs):
-        '''
-        :param start_date: Start date of timerange to show, default -inf.
-        :param end_date: End date of timerange to show, default +inf.
-        :param item_types: A tuple of collection types to show from the server.
-            For example, if you want to only get VEVENTs, pass ``('VEVENT',)``.
-            Falsy values mean "get all types". Dependent on server
-            functionality, no clientside validation of results. This currently
-            only affects the `list` method, but this shouldn't cause problems
-            in the normal usecase.
-        '''
         super(CaldavStorage, self).__init__(**kwargs)
         if isinstance(item_types, str):
             item_types = [x.strip() for x in item_types.split(',')]
@@ -372,6 +374,11 @@ class CaldavStorage(DavStorage):
 
 
 class CarddavStorage(DavStorage):
+
+    __doc__ = '''
+    CardDAV. Usable as ``carddav`` in the config file.
+    ''' + DavStorage.__doc__
+
 
     fileext = '.vcf'
     item_mimetype = 'text/vcard'

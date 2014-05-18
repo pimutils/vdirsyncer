@@ -20,25 +20,26 @@ logger = log.get(__name__)
 
 class FilesystemStorage(Storage):
 
-    '''Saves data in vdir collection
-    mtime is etag
-    filename without path is href'''
+    '''
+    Saves each item in its own file, given a directory. Can be used with `khal
+    <http://lostpackets.de/khal/>`_. See also `vdir
+    <https://github.com/untitaker/vdir>`_ for a more formal description of the
+    format.
+
+    :param path: Absolute path to a vdir or collection, depending on the
+        collection parameter (see :py:class:`vdirsyncer.storage.base.Storage`).
+    :param fileext: The file extension to use (e.g. ``.txt``). Contained in the
+        href, so if you change the file extension after a sync, this will
+        trigger a re-download of everything (but *should* not cause data-loss
+        of any kind).
+    :param encoding: File encoding for items.
+    :param create: Create directories if they don't exist.
+    '''
 
     _repr_attributes = ('path',)
 
     def __init__(self, path, fileext, collection=None, encoding='utf-8',
                  create=True, **kwargs):
-        '''
-        :param path: Absolute path to a vdir or collection, depending on the
-            collection parameter (see
-            :py:class:`vdirsyncer.storage.base.Storage`).
-        :param fileext: The file extension to use (e.g. `".txt"`). Contained in
-            the href, so if you change the file extension after a sync, this
-            will trigger a re-download of everything (but *should* not cause
-            data-loss of any kind).
-        :param encoding: File encoding for items.
-        :param create: Create directories if they don't exist.
-        '''
         super(FilesystemStorage, self).__init__(**kwargs)
         path = expand_path(path)
         if collection is not None:

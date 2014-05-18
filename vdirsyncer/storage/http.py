@@ -36,21 +36,41 @@ def prepare_verify(verify):
 
 
 class HttpStorage(Storage):
+    
+    '''
+    Use a simple ``.ics`` file (or similar) from the web. Usable as ``http`` in
+    the config file.
+
+    :param url: URL to the ``.ics`` file.
+    :param username: Username for authentication.
+    :param password: Password for authentication.
+    :param verify: Verify SSL certificate, default True.
+    :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. Default
+        ``guess``.
+    :param useragent: Default 'vdirsyncer'.
+
+    A simple example::
+
+        # HTTP CALENDAR
+        [pair holidays]
+        a = holidays_local
+        b = holidays_remote
+
+        [storage holidays_local]
+        type = filesystem
+        path = ~/.config/vdir/calendars/holidays/
+        fileext = .ics
+
+        [storage holidays_remote]
+        type = http
+        url = https://mozorg.cdn.mozilla.net/media/caldata/QueenslandHolidays.ics
+    '''
+
     _repr_attributes = ('username', 'url')
     _items = None
 
     def __init__(self, url, username='', password='', collection=None,
                  verify=True, auth=None, useragent=USERAGENT, **kwargs):
-        '''
-        :param url: Base URL or an URL to a collection. Autodiscovery should be
-            done via :py:meth:`DavStorage.discover`.
-        :param username: Username for authentication.
-        :param password: Password for authentication.
-        :param verify: Verify SSL certificate, default True.
-        :param auth: Authentication method, from {'basic', 'digest'}, default
-            'basic'.
-        :param useragent: Default 'vdirsyncer'.
-        '''
         super(HttpStorage, self).__init__(**kwargs)
 
         if username and not password:
