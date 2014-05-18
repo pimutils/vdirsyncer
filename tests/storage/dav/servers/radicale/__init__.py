@@ -66,8 +66,7 @@ def do_the_radicale_dance(tmpdir):
     import radicale.auth.http
 
     def is_authenticated(user, password):
-        assert user == 'bob' and password == 'bob'
-        return True
+        return user == 'bob' and password == 'bob'
     radicale.auth.http.is_authenticated = is_authenticated
 
     if storage_backend == 'filesystem':

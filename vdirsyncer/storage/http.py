@@ -16,17 +16,25 @@ USERAGENT = 'vdirsyncer'
 
 
 def prepare_auth(auth, username, password):
-    if auth == 'basic':
-        return (username, password)
-    elif auth == 'digest':
-        from requests.auth import HTTPDigestAuth
-        return HTTPDigestAuth(username, password)
-    elif auth is None:
-        if username and password:
+    if username and password:
+        if auth == 'basic':
             return (username, password)
-        return None
+        elif auth == 'digest':
+            from requests.auth import HTTPDigestAuth
+            return HTTPDigestAuth(username, password)
+        elif auth == 'guess' or auth is None:
+            import requests_toolbelt
+            if not hasattr(requests_toolbelt, 'GuessAuth'):
+                raise RuntimeError('Your version of requests_toolbelt is too '
+                                   'old.')
+            return requests_toolbelt.GuessAuth(username, password)
+        else:
+            raise ValueError('Unknown authentication method: {}'.format(auth))
+    elif auth:
+        raise ValueError('For {} authentication, you need to specify username '
+                         'and password.'.format(auth))
     else:
-        raise ValueError('Unknown authentication method: {}'.format(auth))
+        return None
 
 
 def prepare_verify(verify):
