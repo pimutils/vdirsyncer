@@ -1,6 +1,6 @@
-============
-All storages
-============
+==================
+Supported storages
+==================
 
 This page enlists all storages vdirsyncer supports out of the box.
 

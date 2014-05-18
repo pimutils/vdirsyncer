@@ -1,22 +1,13 @@
-.. vdirsyncer documentation master file, created by
-   sphinx-quickstart on Sun May 18 21:53:35 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to vdirsyncer's documentation!
-======================================
-
-Contents:
+==========
+vdirsyncer
+==========
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
+   storages
+   keyring
+   troubleshooting
+   license
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+.. include:: ../README.rst

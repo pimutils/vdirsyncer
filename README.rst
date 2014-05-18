@@ -57,10 +57,7 @@ Then copy ``example.cfg`` to ``~/.vdirsyncer/config`` and edit it. You can use t
 `VDIRSYNCER_CONFIG` environment variable to change the path vdirsyncer will
 read the config from.
 
-Run ``vdirsyncer --help``. If you experience any problems, consult the `wiki's
-troubleshooting page
-<https://github.com/untitaker/vdirsyncer/wiki/Troubleshooting>`_ or create a
-new issue.
+Run ``vdirsyncer --help``.
 
 How to run the tests
 ====================
