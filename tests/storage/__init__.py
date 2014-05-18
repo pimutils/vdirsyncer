@@ -71,7 +71,9 @@ class StorageTests(object):
         assert_item_equals(s.get(href)[0], item)
 
         new_item = self._create_bogus_item()
-        s.update(href, new_item, etag)
+        new_etag = s.update(href, new_item, etag)
+        # See https://github.com/untitaker/vdirsyncer/issues/48
+        assert isinstance(new_etag, (bytes, text_type))
         assert_item_equals(s.get(href)[0], new_item)
 
     def test_update_nonexisting(self):

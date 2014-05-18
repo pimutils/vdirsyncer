@@ -217,7 +217,8 @@ class DavStorage(Storage):
         href = self._normalize_href(href)
         if etag is None:
             raise ValueError('etag must be given and must not be None.')
-        return self._put(href, item, etag)
+        href, etag = self._put(href, item, etag)
+        return etag
 
     def upload(self, item):
         href = self._get_href(item)

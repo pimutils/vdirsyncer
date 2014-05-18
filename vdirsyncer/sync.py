@@ -18,7 +18,7 @@
 import itertools
 
 from . import exceptions, log
-from .utils import iteritems
+from .utils import iteritems, text_type
 sync_logger = log.get(__name__)
 
 
@@ -152,6 +152,7 @@ def action_update(ident, source, dest):
         old_etag = dest_list[dest_href]['etag']
         item = source_list[source_href]['item']
         dest_etag = dest_storage.update(dest_href, item, old_etag)
+        assert isinstance(dest_etag, (bytes, text_type))
 
         source_status = (source_href, source_etag)
         dest_status = (dest_href, dest_etag)
