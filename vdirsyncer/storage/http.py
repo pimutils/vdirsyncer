@@ -15,12 +15,14 @@ USERAGENT = 'vdirsyncer'
 
 
 def prepare_auth(auth, username, password):
-    if (username and password) or auth == 'basic':
+    if auth == 'basic':
         return (username, password)
     elif auth == 'digest':
         from requests.auth import HTTPDigestAuth
         return HTTPDigestAuth(username, password)
     elif auth is None:
+        if username and password:
+            return (username, password)
         return None
     else:
         raise ValueError('Unknown authentication method: {}'.format(auth))
