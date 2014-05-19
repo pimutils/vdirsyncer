@@ -12,13 +12,9 @@ It aims to be for CalDAV and CardDAV what `OfflineIMAP
 <http://offlineimap.org/>`_ is for IMAP.
 
 .. image:: https://travis-ci.org/untitaker/vdirsyncer.png?branch=master
-    :width: 77px
-    :height: 19px
     :target: https://travis-ci.org/untitaker/vdirsyncer
 
 .. image:: https://coveralls.io/repos/untitaker/vdirsyncer/badge.png?branch=master
-    :width: 86px
-    :height: 18px
     :target: https://coveralls.io/r/untitaker/vdirsyncer?branch=master
 
 How to use
