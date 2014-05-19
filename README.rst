@@ -3,8 +3,10 @@ vdirsyncer
 ==========
 
 vdirsyncer synchronizes your calendars and addressbooks between two storages.
-The supported storages are CalDAV, CardDAV, arbitrary HTTP resources and
-`vdir <https://github.com/untitaker/vdir>`_.
+The supported storages are CalDAV, CardDAV, arbitrary HTTP resources, `vdir
+<https://github.com/untitaker/vdir>`_ and some more. The documentation contains
+a full `list of supported storages
+<https://vdirsyncer.readthedocs.org/en/latest/storages.html>`_.
 
 It aims to be for CalDAV and CardDAV what `OfflineIMAP
 <http://offlineimap.org/>`_ is for IMAP.
