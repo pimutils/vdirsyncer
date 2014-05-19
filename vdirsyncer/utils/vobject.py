@@ -22,8 +22,8 @@ def hash_item(text):
 
     hashable = u'\r\n'.join(line.strip() for line in lines
                             if line.strip() and
-                            u'PRODID' not in line and
-                            u'VERSION' not in line)
+                            not line.startswith(u'PRODID:') and
+                            not line.startswith(u'VERSION:'))
     return hashlib.sha256(hashable.encode('utf-8')).hexdigest()
 
 
