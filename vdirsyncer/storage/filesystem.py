@@ -13,7 +13,7 @@ from .base import Item, Storage
 import vdirsyncer.exceptions as exceptions
 import vdirsyncer.log as log
 from vdirsyncer.utils import expand_path, text_type, safe_write, \
-    get_etag_from_file
+    get_etag_from_file, checkdir
 
 logger = log.get(__name__)
 
@@ -44,16 +44,7 @@ class FilesystemStorage(Storage):
         path = expand_path(path)
         if collection is not None:
             path = os.path.join(path, collection)
-        if not os.path.isdir(path):
-            if os.path.exists(path):
-                raise IOError('{} is not a directory.')
-            if create:
-                os.makedirs(path, 0o750)
-            else:
-                raise IOError('Directory {} does not exist. Use create = '
-                              'True in your configuration to automatically '
-                              'create it, or create it '
-                              'yourself.'.format(path))
+        checkdir(path, create=create)
         self.collection = collection
         self.path = path
         self.encoding = encoding

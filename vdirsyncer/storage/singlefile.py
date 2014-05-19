@@ -13,7 +13,7 @@ import collections
 from .base import Item, Storage
 import vdirsyncer.exceptions as exceptions
 import vdirsyncer.log as log
-from vdirsyncer.utils import expand_path, safe_write, itervalues
+from vdirsyncer.utils import expand_path, safe_write, itervalues, checkfile
 from vdirsyncer.utils.vobject import split_collection, join_collection
 
 logger = log.get(__name__)
@@ -44,17 +44,11 @@ class SingleFileStorage(Storage):
             raise ValueError('collection is not a valid argument for {}'
                              .format(type(self).__name__))
 
-        if not os.path.isfile(path):
-            if os.path.exists(path):
-                raise IOError('{} is not a file.'.format(path))
-            if create:
-                self._write_mode = 'wb+'
-                self._append_mode = 'ab+'
-            else:
-                raise IOError('File {} does not exist. Use create = '
-                              'True in your configuration to automatically '
-                              'create it, or create it '
-                              'yourself.'.format(path))
+        checkfile(path, create=create)
+
+        if create:
+            self._write_mode = 'wb+'
+            self._append_mode = 'ab+'
 
         self.path = path
         self.encoding = encoding

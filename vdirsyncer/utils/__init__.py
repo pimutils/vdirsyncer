@@ -276,3 +276,26 @@ def get_class_init_args(cls):
     s_all, s_required = get_class_init_args(supercls)
 
     return all | s_all, required | s_required
+
+def checkdir(path, create=False):
+    if not os.path.isdir(path):
+        if os.path.exists(path):
+            raise IOError('{} is not a directory.'.format(path))
+        if create:
+            os.makedirs(path, 0o750)
+        else:
+            raise IOError('Directory {} does not exist. Use create = '
+                          'True in your configuration to automatically '
+                          'create it, or create it '
+                          'yourself.'.format(path))
+
+def checkfile(path, create=False):
+    checkdir(os.path.dirname(path), create=create)
+    if not os.path.isfile(path):
+        if os.path.exists(path):
+            raise IOError('{} is not a file.'.format(path))
+        if not create:
+            raise IOError('File {} does not exist. Use create = '
+                          'True in your configuration to automatically '
+                          'create it, or create it '
+                          'yourself.'.format(path))
