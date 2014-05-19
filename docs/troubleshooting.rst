@@ -6,8 +6,9 @@ Troubleshooting
     routines:X509_load_cert_crl_file:system lib**
 
     vdirsyncer cannot find the path to your certificate bundle, you need to
-    supply it as a parameter to ssl_verify in your config file, e.g.
-    ssl_verify: /usr/share/ca-certificates/cacert.org/cacert.org_root.crt.
+    supply it as a parameter to ``verify`` in your config file, e.g.::
+
+        verify = /usr/share/ca-certificates/cacert.org/cacert.org_root.crt
 
   - **During sync an error occurs: TypeError: request() got an unexpected keyword
     argument 'verify'**
