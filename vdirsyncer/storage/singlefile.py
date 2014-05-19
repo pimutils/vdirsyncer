@@ -7,7 +7,6 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-import os
 import collections
 
 from .base import Item, Storage
