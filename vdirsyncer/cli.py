@@ -147,8 +147,6 @@ def storage_instance_from_config(config, description=None):
         sys.exit(1)
 
 
-
-
 def main():
     env = os.environ
 
@@ -298,13 +296,16 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
             force_delete=status_name in force_delete
         )
     except StorageEmpty as e:
-        side = 'a' if e.empty_storage is a else 'b'
-        storage = e.empty_storage
         raise CliError(
             '{collection_description}: Storage "{side}" ({storage}) was '
             'completely emptied. Use "--force-delete {status_name}" to '
             'synchronize that emptyness to the other side, or delete the '
             'status by yourself to restore the items from the non-empty '
-            'side.'.format(**locals())
+            'side.'.format(
+                collection_description=collection_description,
+                side='a' if e.empty_storage is a else 'b',
+                storage=e.empty_storage,
+                status_name=status_name
+            )
         )
     save_status(general['status_path'], status_name, status)
