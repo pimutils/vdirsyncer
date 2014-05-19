@@ -251,3 +251,28 @@ class safe_write(object):
 
 def get_etag_from_file(fpath):
     return '{:.9f}'.format(os.path.getmtime(fpath))
+
+
+def get_class_init_args(cls):
+    '''
+    Get args which are taken during class initialization. Assumes that all
+    classes' __init__ calls super().__init__ with the rest of the arguments.
+
+    :param cls: The class to inspect.
+    :returns: (all, required), where ``all`` is a set of all arguments the
+        class can take, and ``required`` is the subset of arguments the class
+        requires.
+    '''
+    import inspect
+
+    if cls is object:
+        return set(), set()
+
+    spec = inspect.getargspec(cls.__init__)
+    all = set(spec.args[1:])
+    required = set(spec.args[1:-len(spec.defaults or ())])
+    supercls = next(getattr(x.__init__, '__objclass__', x)
+                    for x in cls.__mro__[1:])
+    s_all, s_required = get_class_init_args(supercls)
+
+    return all | s_all, required | s_required

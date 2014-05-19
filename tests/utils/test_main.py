@@ -108,4 +108,19 @@ def test_get_password_from_system_keyring(monkeypatch, resources_to_test):
     assert netrc_calls == [hostname]
 
 
+def test_get_class_init_args():
+    class Foobar(object):
+        def __init__(self, foo, bar, baz=None):
+            pass
 
+    all, required = utils.get_class_init_args(Foobar)
+    assert all == {'foo', 'bar', 'baz'}
+    assert required == {'foo', 'bar'}
+
+
+def test_get_class_init_args_on_storage():
+    from vdirsyncer.storage.memory import MemoryStorage
+
+    all, required = utils.get_class_init_args(MemoryStorage)
+    assert not all
+    assert not required

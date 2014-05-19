@@ -15,7 +15,7 @@ import argvard
 
 from .storage import storage_names
 from .sync import sync, StorageEmpty
-from .utils import expand_path, parse_options, split_dict
+from .utils import expand_path, parse_options, split_dict, get_class_init_args
 
 import vdirsyncer.log as log
 
@@ -123,7 +123,7 @@ def storage_instance_from_config(config, description=None):
     try:
         return cls(**config)
     except Exception:
-        all, required = get_init_args(cls)
+        all, required = get_class_init_args(cls)
         given = set(config)
         missing = required - given
         invalid = given - all
@@ -147,20 +147,6 @@ def storage_instance_from_config(config, description=None):
         sys.exit(1)
 
 
-def get_init_args(cls):
-    from vdirsyncer.storage.base import Storage
-    import inspect
-
-    if cls is Storage:
-        return set(), set()
-
-    spec = inspect.getargspec(cls.__init__)
-    all = set(spec.args[1:])
-    required = set(spec.args[1:-len(spec.defaults)])
-    supercls = next(x for x in cls.__mro__[1:] if hasattr(x, '__init__'))
-    s_all, s_required = get_init_args(supercls)
-
-    return all | s_all, required | s_required
 
 
 def main():
