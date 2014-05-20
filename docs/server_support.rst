@@ -1,5 +1,5 @@
 ==============
-Server support
+Server Support
 ==============
 
 vdirsyncer is currently tested against the latest versions of Radicale and
