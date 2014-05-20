@@ -32,7 +32,7 @@ class DavStorage(Storage):
     :param verify: Verify SSL certificate, default True.
     :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. Default
         ``guess``.
-    :param useragent: Default 'vdirsyncer'.
+    :param useragent: Default ``vdirsyncer``.
     '''
 
     # the file extension of items. Useful for testing against radicale.
