@@ -30,6 +30,7 @@ Table of Contents
 .. toctree::
    :maxdepth: 1
 
+   tutorial
    storages
    keyring
    server_support
