@@ -24,6 +24,7 @@ By default, *vdirsyncer* looks for its configuration file at
 variable to change this path.
 
 ::
+
     [general]
     status_path = ~/.vdirsyncer/status/
 
