@@ -22,9 +22,9 @@ class FilesystemStorage(Storage):
 
     '''
     Saves each item in its own file, given a directory. Can be used with `khal
-    <http://lostpackets.de/khal/>`_. See also `vdir
-    <https://github.com/untitaker/vdir>`_ for a more formal description of the
-    format.
+    <http://lostpackets.de/khal/>`_. Usable as ``vdir`` in the config file. See
+    also `vdir <https://github.com/untitaker/vdir>`_ for a more formal
+    description of the format.
 
     :param path: Absolute path to a vdir or collection, depending on the
         collection parameter (see :py:class:`vdirsyncer.storage.base.Storage`).
