@@ -2,19 +2,31 @@
 Server Support
 ==============
 
-vdirsyncer is currently tested against the latest versions of Radicale and
-ownCloud.
+vdirsyncer is currently regularly and automatically tested against the latest
+versions of Radicale and ownCloud. In principle, vdirsyncer is supposed to run
+correctly with any remotely popular CalDAV or CardDAV server. 
+
+vdirsyncer's synchronization works best if the items have ``UID`` properties.
+Items which don't have this property still should be synchronized fine as of
+version 1.6, but for performance reasons, such items should rather be the
+exception than the rule. For a possible way to automatically fix such items,
+take a look at `vfix <https://github.com/geier/vfix>`_.
 
 Radicale
 ========
 
-Radicale doesn't `support time ranges in the calendar-query of CalDAV/CardDAV
+vdirsyncer is tested against the git version and the latest PyPI release of
+Radicale.
+
+Radicale doesn't `support time ranges in the calendar-query of CalDAV
 <https://github.com/Kozea/Radicale/issues/146>`_, so setting ``start_date`` and
-``end_date`` in vdirsyncer's configuration will have no or unpredicted
-consequences.
+``end_date`` for :py:class:`vdirsyncer.storage.CaldavStorage` will have no or
+unpredicted consequences.
 
 ownCloud
 ========
+
+vdirsyncer is tested against the latest version of ownCloud.
 
 ownCloud uses SabreDAV, which had problems detecting collisions and
 race-conditions. The problems were reported and are fixed in SabreDAV's repo.
