@@ -60,7 +60,6 @@ class HttpStorage(Storage):
 
     A simple example::
 
-        # HTTP CALENDAR
         [pair holidays]
         a = holidays_local
         b = holidays_remote

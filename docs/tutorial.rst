@@ -5,11 +5,11 @@ Tutorial
 Installation
 ============
 
- - Make sure you have Python 2.7+ or Python 3.3+ installed.
+- Make sure you have Python 2.7+ or Python 3.3+ installed.
 
- - ``pip install --user vdirsyncer``.
+- ``pip install --user vdirsyncer``.
 
- - Check if the ``vdirsyncer`` command is available.
+- Check if the ``vdirsyncer`` command is available.
 
 Configuration
 =============
@@ -69,14 +69,14 @@ But what if we want to synchronize multiple addressbooks from the same server?
 Of course we could create new pairs and storages for each addressbook, but that
 is very tedious to do. Instead we will use a shortcut:
 
-  - Remove the last segment from the URL, so that it ends with ``.../bob/``
-    instead of ``.../bob/default/``.
+- Remove the last segment from the URL, so that it ends with ``.../bob/``
+  instead of ``.../bob/default/``.
 
-  - Add the following line to the *pair* section::
-    
-        [pair my_contacts]
-        ...
-        collections = default,work
+- Add the following line to the *pair* section::
+
+      [pair my_contacts]
+      ...
+      collections = default,work
 
 This will synchronize
 ``https://owncloud.example.com/remote.php/carddav/addressbooks/bob/default/``
