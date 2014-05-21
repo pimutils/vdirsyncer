@@ -283,7 +283,7 @@ class CaldavStorage(DavStorage):
 
         start_date = datetime.now() - timedelta(days=365)
         end_date = datetime.now() + timedelta(days=365)
-        
+
     Either both or none have to be specified. The default is to synchronize
     everything.
 
