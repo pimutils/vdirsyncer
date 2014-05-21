@@ -51,9 +51,11 @@ class HttpStorage(Storage):
     :param url: URL to the ``.ics`` file.
     :param username: Username for authentication.
     :param password: Password for authentication.
-    :param verify: Verify SSL certificate, default True.
+    :param verify: Verify SSL certificate, default True. This can also be a
+        local path to a self-signed SSL certificate.
     :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. Default
-        ``guess``.
+        ``guess``. If you know yours, consider setting it explicitly for
+        performance.
     :param useragent: Default ``vdirsyncer``.
 
     A simple example::

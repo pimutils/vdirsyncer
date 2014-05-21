@@ -25,9 +25,7 @@ As all Python packages, vdirsyncer can be installed with ``pip``::
 
     pip install --user vdirsyncer
 
-Then copy ``example.cfg`` to ``~/.vdirsyncer/config`` and edit it. You can use the
-`VDIRSYNCER_CONFIG` environment variable to change the path vdirsyncer will
-read the config from.
+Then copy ``example.cfg`` to ``~/.vdirsyncer/config`` and edit it.
 
 Run ``vdirsyncer --help`` and check out `the documentation
 <https://vdirsyncer.readthedocs.org/>`_.

@@ -29,9 +29,11 @@ class DavStorage(Storage):
     :param url: Base URL or an URL to a collection.
     :param username: Username for authentication.
     :param password: Password for authentication.
-    :param verify: Verify SSL certificate, default True.
+    :param verify: Verify SSL certificate, default True. This can also be a
+        local path to a self-signed SSL certificate.
     :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. Default
-        ``guess``.
+        ``guess``. If you know yours, consider setting it explicitly for
+        performance.
     :param useragent: Default ``vdirsyncer``.
     '''
 
@@ -272,6 +274,19 @@ class CaldavStorage(DavStorage):
 
     __doc__ = '''
     CalDAV. Usable as ``caldav`` in the config file.
+
+    You can set a timerange to synchronize with the parameters ``start_date``
+    and ``end_date``. Inside those parameters, you can use any Python
+    expression to return a valid :py:class:`datetime.datetime` object. For
+    example, the following would synchronize the timerange from one year in the
+    past to one year in the future::
+
+        start_date = datetime.now() - timedelta(days=365)
+        end_date = datetime.now() + timedelta(days=365)
+        
+    Either both or none have to be specified. The default is to synchronize
+    everything.
+
     ''' + DavStorage.__doc__ + '''
     :param start_date: Start date of timerange to show, default -inf.
     :param end_date: End date of timerange to show, default +inf.

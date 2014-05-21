@@ -23,35 +23,21 @@ By default, *vdirsyncer* looks for its configuration file at
 ``~/.vdirsyncer/config``. You can use the ``VDIRSYNCER_CONFIG`` environment
 variable to change this path.
 
-::
+The config file should start with a :ref:`general_config <general section>`,
+where the only required parameter is ``status_path``. The following is a
+minimal example::
 
     [general]
     status_path = ~/.vdirsyncer/status/
 
-The config file should start with the *general section*, where the only required
-parameter is ``status_path``.The supported parameters are:
-
- - ``status_path``: A directory where vdirsyncer will store metadata for the
-   next sync. The data is needed to determine whether a new item means it has
-   been added on one side or deleted on the other.
-
- - ``processes`` defines the amount of maximal connections to use for syncing.
-   By default there is no limit, which means vdirsyncer will try to open a
-   connection for each collection to be synced. The value ``0`` is ignored.
-   Setting this to ``1`` will only synchronize one collection at a time.
-   
-   While this often greatly increases performance, you might have valid reasons
-   to set this to a smaller number. For example, your DAV server running on a
-   Raspberry Pi is so slow that multiple connections don't help much, since the
-   CPU and not the network is the bottleneck.
-
 After the general section, an arbitrary amount of *pair and storage sections*
 might come.
 
-A *pair* section defines two storages ``a`` and ``b`` which should be
-synchronized. The definition of these storages follows in *storage* sections.
-This format is copied from OfflineIMAP, where storages are called repositories
-and pairs are called accounts.
+A :ref:`pair section <pair_config>` defines two storages ``a`` and ``b`` which
+should be synchronized. The definition of these storages follows in
+:ref:`storage sections <storage_config>`.  This format is copied from
+OfflineIMAP, where storages are called repositories and pairs are called
+accounts.
 
 The following example synchronizes a single CardDAV-addressbook to
 ``~/.contacts/``::
