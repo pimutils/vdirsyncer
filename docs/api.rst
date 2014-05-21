@@ -1,8 +1,10 @@
-==================
+API
+===
+
+.. _storages:
+
 Supported Storages
 ==================
-
-This page enlists all storages vdirsyncer supports out of the box.
 
 .. module:: vdirsyncer.storage
 
