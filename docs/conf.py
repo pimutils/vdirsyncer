@@ -9,7 +9,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 project = u'vdirsyncer'
-copyright = u'2014, Markus Unterwaditzer'
+copyright = u'2014, Markus Unterwaditzer & contributors'
 
 import pkg_resources
 try:
@@ -46,6 +46,6 @@ man_pages = [
 
 texinfo_documents = [
     ('index', 'vdirsyncer', u'vdirsyncer Documentation',
-     u'Markus Unterwaditzer', 'vdirsyncer', 'One line description of project.',
-     'Miscellaneous'),
+     u'Markus Unterwaditzer', 'vdirsyncer',
+     'One line description of project.', 'Miscellaneous'),
 ]

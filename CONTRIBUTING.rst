@@ -13,3 +13,15 @@
   that syncronizes all the data. If you're looking for a viewer for the
   calendar data you've synced, `khal <https://github.com/geier/khal>`_ is what
   you're looking for.
+
+* If you're submitting pull requests:
+
+  * Make sure your tests pass on Travis.
+
+  * But not because you wrote too few tests.
+
+  * Write descriptive commit messages, mostly because i need to write a
+    changelog at some point. Use ``git rebase -i`` and ``git commit --ammend``
+    if needed.
+  
+  * Add yourself to ``CONTRIBUTORS.rst``.

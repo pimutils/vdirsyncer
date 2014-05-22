@@ -12,7 +12,7 @@
     The algorithm is based on the blogpost "How OfflineIMAP works" by Edward Z.
     Yang. http://blog.ezyang.com/2012/08/how-offlineimap-works/
 
-    :copyright: (c) 2014 Markus Unterwaditzer
+    :copyright: (c) 2014 Markus Unterwaditzer & contributors
     :license: MIT, see LICENSE for more details.
 '''
 import itertools
