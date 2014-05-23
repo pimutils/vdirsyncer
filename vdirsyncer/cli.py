@@ -14,7 +14,7 @@ import sys
 import argvard
 
 from .storage import storage_names
-from .sync import sync, StorageEmpty
+from .sync import sync, StorageEmpty, SyncConflict
 from .utils import expand_path, parse_options, split_dict, get_class_init_args
 
 import vdirsyncer.log as log
@@ -29,6 +29,7 @@ except ImportError:
 cli_logger = log.get(__name__)
 
 PROJECT_HOME = 'https://github.com/untitaker/vdirsyncer'
+DOCS_HOME = 'https://vdirsyncer.readthedocs.org/en/latest'
 
 
 class CliError(RuntimeError):
@@ -296,16 +297,30 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
             force_delete=status_name in force_delete
         )
     except StorageEmpty as e:
-        raise CliError(
-            '{collection_description}: Storage "{side}" ({storage}) was '
-            'completely emptied. Use "--force-delete {status_name}" to '
-            'synchronize that emptyness to the other side, or delete the '
-            'status by yourself to restore the items from the non-empty '
-            'side.'.format(
-                collection_description=collection_description,
+        cli_logger.critical(
+            '{collection}: Storage "{side}" ({storage}) was completely '
+            'emptied. Use "--force-delete {status_name}" to synchronize that '
+            'emptyness to the other side, or delete the status by yourself to '
+            'restore the items from the non-empty side.'.format(
+                collection=collection_description,
                 side='a' if e.empty_storage is a else 'b',
                 storage=e.empty_storage,
                 status_name=status_name
             )
         )
+    except SyncConflict as e:
+        cli_logger.critical(
+            '{collection}: One item changed on both sides. Resolve this '
+            'conflict manually, or by setting the `conflict_resolution` '
+            'parameter in your config file.\n'
+            'See also {docs}/api.html#pair-section\n'
+            'Item ID: {e.ident}\n'
+            'Item href on side A: {e.href_a}\n'
+            'Item href on side B: {e.href_b}\n'
+            .format(collection=collection_description, e=e, docs=DOCS_HOME)
+        )
+    except Exception:
+        cli_logger.exception('Unhandled exception occured while syncing {}.'
+                             .format(collection_description))
+
     save_status(general['status_path'], status_name, status)

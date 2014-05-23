@@ -25,6 +25,10 @@ sync_logger = log.get(__name__)
 class SyncError(exceptions.Error):
     '''Errors related to synchronization.'''
 
+    def __init__(self, *args, **kwargs):
+        self.__dict__.update(kwargs)
+        super(SyncError, self).__init__(*args)
+
 
 class SyncConflict(SyncError):
     '''
@@ -38,10 +42,6 @@ class StorageEmpty(SyncError):
     One storage unexpectedly got completely empty between two synchronizations.
     The first argument is the empty storage.
     '''
-
-    @property
-    def empty_storage(self):
-        return self.args[0]
 
 
 def prepare_list(storage, href_to_status):
@@ -63,7 +63,7 @@ def prepare_list(storage, href_to_status):
             props['item'] = item
             props['ident'] = item.ident
             if props['etag'] != etag:
-                raise SyncConflict('Etag changed during sync.')
+                raise SyncError('Etag changed during sync.')
 
     return rv
 
@@ -101,7 +101,7 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
     list_b = prepare_list(storage_b, b_href_to_status)
 
     if bool(list_a) != bool(list_b) and status and not force_delete:
-        raise StorageEmpty(storage_b if list_a else storage_a)
+        raise StorageEmpty(empty_storage=(storage_b if list_a else storage_a))
 
     a_ident_to_href = dict((x['ident'], href) for href, x in iteritems(list_a))
     b_ident_to_href = dict((x['ident'], href) for href, x in iteritems(list_b))
@@ -185,15 +185,15 @@ def action_conflict_resolve(ident):
                          .format(ident))
         a_storage, list_a, a_ident_to_href = storages['a']
         b_storage, list_b, b_ident_to_href = storages['b']
-        a_href = a_ident_to_href[ident]
-        b_href = b_ident_to_href[ident]
-        a_meta = list_a[a_href]
-        b_meta = list_b[b_href]
-        if a_meta['item'].raw == b_meta['item'].raw:
+        href_a = a_ident_to_href[ident]
+        href_b = b_ident_to_href[ident]
+        meta_a = list_a[href_a]
+        meta_b = list_b[href_b]
+        if meta_a['item'].raw == meta_b['item'].raw:
             sync_logger.info('...same content on both sides.')
-            status[ident] = a_href, a_meta['etag'], b_href, b_meta['etag']
+            status[ident] = href_a, meta_a['etag'], href_b, meta_b['etag']
         elif conflict_resolution is None:
-            raise SyncConflict()
+            raise SyncConflict(ident=ident, href_a=href_a, href_b=href_b)
         elif conflict_resolution == 'a wins':
             sync_logger.info('...{} wins.'.format(a_storage))
             action_update(ident, 'a', 'b')(storages, status,
