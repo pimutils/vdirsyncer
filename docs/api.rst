@@ -32,10 +32,6 @@ General Section
   Raspberry Pi is so slow that multiple connections don't help much, since the
   CPU and not the network is the bottleneck.
 
-- ``collections``: Optional, a comma-separated list of collections to
-  synchronize. If this parameter is omitted, it is assumed the storages are
-  already directly pointing to one collection each.
-
 .. _pair_config:
 
 Pair Section
@@ -49,6 +45,10 @@ Pair Section
     #conflict_resolution = ...
 
 - ``a`` and ``b`` reference the storages to sync by their names.
+
+- ``collections``: Optional, a comma-separated list of collections to
+  synchronize. If this parameter is omitted, it is assumed the storages are
+  already directly pointing to one collection each.
 
 - ``conflict_resolution``: Optional, define how conflicts should be handled.  A
   conflict occurs when one item changed on both sides since the last sync.
