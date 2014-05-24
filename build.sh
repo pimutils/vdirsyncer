@@ -4,7 +4,7 @@ _davserver() {
     # Maybe tmpfs is mounted on /tmp/, can't harm anyway.
     if [ ! -d $TESTSERVER_BASE$1/ ]; then
         git clone --depth=1 \
-            https://github.com/untitaker/$1-testserver.git \
+            https://github.com/vdirsyncer/$1-testserver.git \
             /tmp/$1-testserver
         ln -s /tmp/$1-testserver $TESTSERVER_BASE$1
     fi
