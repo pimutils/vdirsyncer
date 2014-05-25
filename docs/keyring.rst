@@ -22,17 +22,18 @@ System Keyring
 *vdirsyncer* can also use your system's password storage for saving password in
 a (more) secure way.
 
-To use it, you must install
-[keyring](https://bitbucket.org/kang/python-keyring-lib).
+To use it, you must install keyring_.
+
+.. _keyring: https://bitbucket.org/kang/python-keyring-lib
 
 *vdirsyncer* will use the full resource URL as the key when saving.
 
 When retrieving the key, it will try to remove segments of the URL's path until
 it finds a password. For example, if you save a password under the key
-`vdirsyncer:http://example.com`, it will be used as a fallback for all
-resources on `example.com`. If you additionally save a password under the key
-`vdirsyncer:http://example.com/special/`, that password will be used for all
-resources on `example.com` whose path starts with `/special/`.
+``vdirsyncer:http://example.com``, it will be used as a fallback for all
+resources on ``example.com``. If you additionally save a password under the key
+``vdirsyncer:http://example.com/special/``, that password will be used for all
+resources on ``example.com`` whose path starts with ``/special/``.
 
 *keyring* support these keyrings:
 
