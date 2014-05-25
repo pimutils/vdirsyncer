@@ -22,9 +22,28 @@ class SingleFileStorage(Storage):
     '''Save data in single VCALENDAR file, like Orage -- a calendar app for
     XFCE -- and Radicale do. Usable as ``singlefile`` in the config file.
 
-    This storage has many raceconditions and is very slow. What this basically
-    means is that you shouldn't use this storage unless you have to (e.g. you
-    use a calendar client which requires it)'''
+    .. note::
+        This storage has many raceconditions and is very slow. What this
+        basically means is that you shouldn't use this storage unless you have
+        to (e.g. you use a calendar client which requires it)
+
+    Example for syncing with :py:class:`vdirsyncer.storage.CaldavStorage`::
+
+        [pair my_calendar]
+        a = my_calendar_local
+        b = my_calendar_remote
+
+        [storage my_calendar_local]
+        type = singlefile
+        path = ~/my_calendar.ics
+
+        [storage my_calendar_remote]
+        type = caldav
+        url = https://caldav.example.org/username/my_calendar/
+        #username =
+        #password =
+
+    '''
 
     _repr_attributes = ('path',)
 
