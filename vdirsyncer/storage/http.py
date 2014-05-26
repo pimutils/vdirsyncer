@@ -103,7 +103,6 @@ class HttpStorage(Storage):
 
     def list(self):
         r = request('GET', self.url, **self._settings)
-        r.raise_for_status()
         self._items = {}
         rv = []
         for item in split_collection(r.text):
