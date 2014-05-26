@@ -27,6 +27,10 @@ class SingleFileStorage(Storage):
         basically means is that you shouldn't use this storage unless you have
         to (e.g. you use a calendar client which requires it)
 
+    :param path: The filepath to the file to be written to.
+    :param encoding: Which encoding the file should use. Defaults to UTF-8.
+    :param create: Create the file if it does not exist.
+
     Example for syncing with :py:class:`vdirsyncer.storage.CaldavStorage`::
 
         [pair my_calendar]
