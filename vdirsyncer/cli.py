@@ -138,7 +138,7 @@ def storage_instance_from_config(config, description=None):
         invalid = given - all
 
         cli_logger.critical('error: Failed to initialize {}'
-                            .format(description or storage_name))
+                            .format(description or cls.storage_name))
 
         if not missing and not invalid:
             cli_logger.exception('')
@@ -146,12 +146,12 @@ def storage_instance_from_config(config, description=None):
         if missing:
             cli_logger.critical(
                 u'error: {} storage requires the parameters: {}'
-                .format(storage_name, u', '.join(missing)))
+                .format(cls.storage_name, u', '.join(missing)))
 
         if invalid:
             cli_logger.critical(
                 u'error: {} storage doesn\'t take the parameters: {}'
-                .format(storage_name, u', '.join(invalid)))
+                .format(cls.storage_name, u', '.join(invalid)))
 
         sys.exit(1)
 

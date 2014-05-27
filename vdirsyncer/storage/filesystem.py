@@ -36,6 +36,7 @@ class FilesystemStorage(Storage):
     :param create: Create directories if they don't exist.
     '''
 
+    storage_name = 'filesystem'
     _repr_attributes = ('path',)
 
     def __init__(self, path, fileext, collection=None, encoding='utf-8',

@@ -17,10 +17,23 @@ from .filesystem import FilesystemStorage
 from .http import HttpStorage
 from .singlefile import SingleFileStorage
 
-storage_names = {
-    'caldav': CaldavStorage,
-    'carddav': CarddavStorage,
-    'filesystem': FilesystemStorage,
-    'http': HttpStorage,
-    'singlefile': SingleFileStorage
-}
+
+def _generate_storage_dict(*classes):
+    rv = {}
+    for cls in classes:
+        key = cls.storage_name
+        assert key
+        assert isinstance(key, str)
+        assert key not in rv
+        rv[key] = cls
+    return rv
+
+storage_names = _generate_storage_dict(
+    CaldavStorage,
+    CarddavStorage,
+    FilesystemStorage,
+    HttpStorage,
+    SingleFileStorage
+)
+
+del _generate_storage_dict

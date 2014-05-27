@@ -87,7 +87,6 @@ def test_expand_collection(monkeypatch):
                 s.collection = 'a{}'.format(i)
                 yield s
 
-
     class TypeB(object):
         @classmethod
         def discover(cls, **config):
@@ -99,7 +98,6 @@ def test_expand_collection(monkeypatch):
                 s = cls()
                 s.collection = 'b{}'.format(i)
                 yield s
-
 
     import vdirsyncer.storage
     monkeypatch.setitem(vdirsyncer.storage.storage_names, 'mytype_a', TypeA)

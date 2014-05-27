@@ -49,6 +49,7 @@ class SingleFileStorage(Storage):
 
     '''
 
+    storage_name = 'singlefile'
     _repr_attributes = ('path',)
 
     _write_mode = 'wb'
