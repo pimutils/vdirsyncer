@@ -50,6 +50,12 @@ Pair Section
   synchronize. If this parameter is omitted, it is assumed the storages are
   already directly pointing to one collection each.
 
+  Furthermore, there are the special values ``from a`` and ``from b``, which
+  tell vdirsyncer to try autodiscovery on a specific storage::
+
+      collections = from b,foo,bar  # all in storage b + "foo" + "bar"
+      collections = from b,from a  # all in both storages
+
 - ``conflict_resolution``: Optional, define how conflicts should be handled.  A
   conflict occurs when one item changed on both sides since the last sync.
   Valid values are ``a wins`` and ``b wins``. By default, vdirsyncer will show

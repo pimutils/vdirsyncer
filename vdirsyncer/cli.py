@@ -111,6 +111,15 @@ def save_status(path, status_name, status):
             f.write('\n')
 
 
+def storage_class_from_config(config):
+    config = dict(config)
+    storage_name = config.pop('type')
+    cls = storage_names.get(storage_name, None)
+    if cls is None:
+        raise KeyError('Unknown storage: {}'.format(storage_name))
+    return cls, config
+
+
 def storage_instance_from_config(config, description=None):
     '''
     :param config: A configuration dictionary to pass as kwargs to the class
@@ -118,9 +127,8 @@ def storage_instance_from_config(config, description=None):
     :param description: A name for the storage for debugging purposes
     '''
 
-    config = dict(config)
-    storage_name = config.pop('type')
-    cls = storage_names[storage_name]
+    cls, config = storage_class_from_config(config)
+
     try:
         return cls(**config)
     except Exception:
@@ -146,6 +154,20 @@ def storage_instance_from_config(config, description=None):
                 .format(storage_name, u', '.join(invalid)))
 
         sys.exit(1)
+
+
+def expand_collection(pair, collection, all_pairs, all_storages):
+    if collection in ('from a', 'from b'):
+        a_name, b_name, _, storage_defaults = all_pairs[pair]
+        config = dict(storage_defaults)
+        if collection == 'from a':
+            config.update(all_storages[a_name])
+        else:
+            config.update(all_storages[b_name])
+        cls, config = storage_class_from_config(config)
+        return (s.collection for s in cls.discover(**config))
+    else:
+        return [collection]
 
 
 def main():
@@ -231,28 +253,35 @@ def _main(env, file_cfg):
         from the pair "bob".
         '''
         actions = []
+        handled_collections = set()
         force_delete = context.get('force_delete', set())
-        for pair_name, collection in parse_pairs_args(pairs, all_pairs):
-            a_name, b_name, pair_options, storage_defaults = \
-                all_pairs[pair_name]
+        for pair_name, _collection in parse_pairs_args(pairs, all_pairs):
+            for collection in expand_collection(pair_name, _collection,
+                                                all_pairs, all_storages):
+                if (pair_name, collection) in handled_collections:
+                    continue
+                handled_collections.add((pair_name, collection))
 
-            config_a = dict(storage_defaults)
-            config_a['collection'] = collection
-            config_a.update(all_storages[a_name])
+                a_name, b_name, pair_options, storage_defaults = \
+                    all_pairs[pair_name]
 
-            config_b = dict(storage_defaults)
-            config_b['collection'] = collection
-            config_b.update(all_storages[b_name])
+                config_a = dict(storage_defaults)
+                config_a['collection'] = collection
+                config_a.update(all_storages[a_name])
 
-            actions.append({
-                'config_a': config_a,
-                'config_b': config_b,
-                'pair_name': pair_name,
-                'collection': collection,
-                'pair_options': pair_options,
-                'general': general,
-                'force_delete': force_delete
-            })
+                config_b = dict(storage_defaults)
+                config_b['collection'] = collection
+                config_b.update(all_storages[b_name])
+
+                actions.append({
+                    'config_a': config_a,
+                    'config_b': config_b,
+                    'pair_name': pair_name,
+                    'collection': collection,
+                    'pair_options': pair_options,
+                    'general': general,
+                    'force_delete': force_delete
+                })
 
         processes = general.get('processes', 0) or len(actions)
         cli_logger.debug('Using {} processes.'.format(processes))

@@ -66,6 +66,50 @@ def test_storage_instance_from_config(monkeypatch):
     assert cli.storage_instance_from_config(config) == 'OK'
 
 
+def test_expand_collection(monkeypatch):
+    x = lambda *a: list(cli.expand_collection(*a))
+    assert x(None, 'foo', None, None) == ['foo']
+    assert x(None, 'from lol', None, None) == ['from lol']
+
+    all_pairs = {'mypair': ('my_a', 'my_b', None, {'lol': True})}
+    all_storages = {'my_a': {'type': 'mytype_a', 'is_a': True},
+                    'my_b': {'type': 'mytype_b', 'is_b': True}}
+
+    class TypeA(object):
+        @classmethod
+        def discover(cls, **config):
+            assert config == {
+                'is_a': True,
+                'lol': True
+            }
+            for i in range(1, 4):
+                s = cls()
+                s.collection = 'a{}'.format(i)
+                yield s
+
+
+    class TypeB(object):
+        @classmethod
+        def discover(cls, **config):
+            assert config == {
+                'is_b': True,
+                'lol': True
+            }
+            for i in range(1, 4):
+                s = cls()
+                s.collection = 'b{}'.format(i)
+                yield s
+
+
+    import vdirsyncer.storage
+    monkeypatch.setitem(vdirsyncer.storage.storage_names, 'mytype_a', TypeA)
+    monkeypatch.setitem(vdirsyncer.storage.storage_names, 'mytype_b', TypeB)
+
+    assert x('mypair', 'mycoll', all_pairs, all_storages) == ['mycoll']
+    assert x('mypair', 'from a', all_pairs, all_storages) == ['a1', 'a2', 'a3']
+    assert x('mypair', 'from b', all_pairs, all_storages) == ['b1', 'b2', 'b3']
+
+
 def test_parse_pairs_args():
     pairs = {
         'foo': ('bar', 'baz', {'conflict_resolution': 'a wins'},

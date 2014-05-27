@@ -54,6 +54,7 @@ class FilesystemStorage(Storage):
     def discover(cls, path, **kwargs):
         if kwargs.pop('collection', None) is not None:
             raise TypeError('collection argument must not be given.')
+        path = expand_path(path)
         for collection in os.listdir(path):
             s = cls(path=path, collection=collection, **kwargs)
             yield s
