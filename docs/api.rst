@@ -48,13 +48,14 @@ Pair Section
 
 - ``collections``: Optional, a comma-separated list of collections to
   synchronize. If this parameter is omitted, it is assumed the storages are
-  already directly pointing to one collection each.
+  already directly pointing to one collection each. Specifying a collection
+  multiple times won't make vdirsyncer sync that collection more than once.
 
   Furthermore, there are the special values ``from a`` and ``from b``, which
   tell vdirsyncer to try autodiscovery on a specific storage::
 
       collections = from b,foo,bar  # all in storage b + "foo" + "bar"
-      collections = from b,from a  # all in both storages
+      collections = from b,from a  # all in storage a + all in storage b
 
 - ``conflict_resolution``: Optional, define how conflicts should be handled.  A
   conflict occurs when one item changed on both sides since the last sync.
