@@ -36,6 +36,7 @@ class FilesystemStorage(Storage):
     :param create: Create directories if they don't exist.
     '''
 
+    storage_name = 'filesystem'
     _repr_attributes = ('path',)
 
     def __init__(self, path, fileext, collection=None, encoding='utf-8',
@@ -54,6 +55,7 @@ class FilesystemStorage(Storage):
     def discover(cls, path, **kwargs):
         if kwargs.pop('collection', None) is not None:
             raise TypeError('collection argument must not be given.')
+        path = expand_path(path)
         for collection in os.listdir(path):
             s = cls(path=path, collection=collection, **kwargs)
             yield s

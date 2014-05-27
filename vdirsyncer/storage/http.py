@@ -74,6 +74,7 @@ class HttpStorage(Storage):
         url = https://example.com/holidays_from_hicksville.ics
     '''
 
+    storage_name = 'http'
     _repr_attributes = ('username', 'url')
     _items = None
 

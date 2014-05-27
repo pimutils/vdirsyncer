@@ -69,6 +69,7 @@ class Storage(object):
         looked for.
     '''
     fileext = '.txt'
+    storage_name = None  # the name used in the config file
     _repr_attributes = ()
 
     @classmethod

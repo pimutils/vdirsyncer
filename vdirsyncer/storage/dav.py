@@ -287,6 +287,7 @@ class CaldavStorage(DavStorage):
         in the normal usecase.
     '''
 
+    storage_name = 'caldav'
     fileext = '.ics'
     item_mimetype = 'text/calendar'
     dav_header = 'calendar-access'
@@ -383,6 +384,7 @@ class CarddavStorage(DavStorage):
     CardDAV. Usable as ``carddav`` in the config file.
     ''' + DavStorage.__doc__
 
+    storage_name = 'carddav'
     fileext = '.vcf'
     item_mimetype = 'text/vcard'
     dav_header = 'addressbook'
