@@ -76,17 +76,6 @@ class DavStorage(Storage):
         self.parsed_url = utils.urlparse.urlparse(self.url)
         self.collection = collection
 
-        headers = self._default_headers()
-        headers['Depth'] = 1
-        response = self._request(
-            'OPTIONS',
-            '',
-            headers=headers
-        )
-        response.raise_for_status()
-        if self.dav_header not in response.headers.get('DAV', ''):
-            raise ValueError('URL is not a collection')
-
     def _default_headers(self):
         return {
             'User-Agent': self.useragent,
@@ -131,17 +120,21 @@ class DavStorage(Storage):
         assert path.startswith(self.parsed_url.path)
         if self._session is None:
             self._session = requests.session()
+            self._check_collection()
         url = self.parsed_url.scheme + '://' + self.parsed_url.netloc + path
         return utils.request(method, url, data=data, headers=headers,
                              session=self._session, **self._settings)
 
-    @staticmethod
-    def _check_response(response):
-        if response.status_code == 412:
-            raise exceptions.PreconditionFailed(response.reason)
-        if response.status_code == 404:
-            raise exceptions.NotFoundError(response.reason)
-        response.raise_for_status()
+    def _check_collection(self):
+        headers = self._default_headers()
+        headers['Depth'] = 1
+        response = self._request(
+            'OPTIONS',
+            '',
+            headers=headers
+        )
+        if self.dav_header not in response.headers.get('DAV', ''):
+            raise ValueError('URL is not a collection')
 
     def get(self, href):
         ((actual_href, item, etag),) = self.get_multi([href])
@@ -163,7 +156,6 @@ class DavStorage(Storage):
             data=data,
             headers=self._default_headers()
         )
-        self._check_response(response)
         root = etree.XML(response.content)  # etree only can handle bytes
         rv = []
         hrefs_left = set(hrefs)
@@ -207,7 +199,6 @@ class DavStorage(Storage):
             data=item.raw.encode('utf-8'),
             headers=headers
         )
-        self._check_response(response)
         etag = response.headers.get('etag', None)
         if not etag:
             item2, etag = self.get(href)
@@ -233,12 +224,11 @@ class DavStorage(Storage):
             'If-Match': etag
         })
 
-        response = self._request(
+        self._request(
             'DELETE',
             href,
             headers=headers
         )
-        self._check_response(response)
 
     def _list(self, xml):
         headers = self._default_headers()
@@ -261,7 +251,6 @@ class DavStorage(Storage):
             data=xml,
             headers=headers
         )
-        response.raise_for_status()
         root = etree.XML(response.content)
         for element in root.iter('{DAV:}response'):
             etag = element.find('{DAV:}propstat').find(

@@ -197,7 +197,6 @@ class TestCaldavStorage(DavStorageTests):
 
         def request(session, method, url, data=None, headers=None, auth=None,
                     verify=None):
-            assert method == 'OPTIONS'
             assert url == args['url']
             calls.append(None)
 
@@ -209,7 +208,8 @@ class TestCaldavStorage(DavStorageTests):
         monkeypatch.setattr('requests.sessions.Session.request', request)
 
         with pytest.raises(ValueError):
-            self.storage_class(**args)
+            s = self.storage_class(**args)
+            list(s.list())
         assert len(calls) == 1
 
 

@@ -11,7 +11,7 @@ import os
 import sys
 import requests
 
-from .. import log
+from .. import log, exceptions
 
 
 logger = log.get(__name__)
@@ -218,6 +218,12 @@ def request(method, url, data=None, headers=None, auth=None, verify=None,
     logger.debug(r.headers)
     logger.debug(r.content)
 
+    if r.status_code == 412:
+        raise exceptions.PreconditionFailed(r.reason)
+    if r.status_code == 404:
+        raise exceptions.NotFoundError(r.reason)
+
+    r.raise_for_status()
     return r
 
 
