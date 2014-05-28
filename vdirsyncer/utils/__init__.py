@@ -53,6 +53,7 @@ def expand_path(p):
 
 
 def split_dict(d, f):
+    '''Puts key into first dict if f(key), otherwise in second dict'''
     a = {}
     b = {}
     for k, v in d.items():
