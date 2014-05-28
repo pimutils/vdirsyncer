@@ -10,7 +10,7 @@ import datetime
 
 from lxml import etree
 
-import requests
+from requests import session as requests_session
 
 from .base import Item, Storage
 from .http import prepare_auth, prepare_verify, USERAGENT
@@ -21,6 +21,206 @@ from .. import exceptions, log, utils
 dav_logger = log.get(__name__)
 
 CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
+
+
+class Discover(object):
+
+    xml_home = None
+    xml_collection = None
+
+    str_homeset = None
+
+    def __init__(self, session):
+        self.session = session
+
+    def _find_principal(self):
+        """tries to find the principal URL of the user
+        :returns: iterable (but should be only of element) of urls
+        :rtype: iterable(unicode)
+
+        """
+        headers = self.session.get_default_headers()
+        headers['Depth'] = 0
+        body = """
+        <d:propfind xmlns:d="DAV:">
+            <d:prop>
+                <d:current-user-principal />
+            </d:prop>
+        </d:propfind>
+        """
+        response = self.session.request('PROPFIND', '', headers=headers,
+                                        data=body)
+        root = etree.XML(response.content)
+
+        for element in root.iter('{*}current-user-principal'):
+            for principal in element.iter():  # should be only one
+                if principal.tag.endswith('href'):
+                    yield principal.text
+
+    def discover(self):
+        """discover all the user's CalDAV or CardDAV collections on the server
+        :returns: a list of the user's collections (as urls)
+        :rtype: list(unicode)
+        """
+        for principal in self._find_principal():
+            for home in self._find_home(principal):
+                for collection in self._find_collections(home):
+                    yield collection
+
+    def _find_home(self, principal):
+        headers = self.session.get_default_headers()
+        headers['Depth'] = 0
+        response = self.session.request('PROPFIND', principal, headers=headers,
+                                        data=self.xml_home,
+                                        is_subpath=False)
+
+        root = etree.fromstring(response.content)
+        for element in root.iter(self.str_homeset):
+            for homeset in element.iter():
+                if homeset.tag.endswith('href'):
+                    yield homeset.text
+
+    def _find_collections(self, home):
+        raise NotImplementedError()
+
+
+class CalDiscover(Discover):
+
+    xml_home = """
+    <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
+        <d:prop>
+            <c:calendar-home-set />
+        </d:prop>
+    </d:propfind>
+    """
+    xml_collection = """
+    <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
+        <d:prop>
+            <d:resourcetype />
+            <d:displayname />
+            <c:supported-calendar-component-set />
+        </d:prop>
+    </d:propfind>
+    """
+    str_homeset = '{*}calendar-home-set'
+
+    def _find_collections(self, home):
+        """find all CalDAV collections under `home`"""
+
+        headers = self.session.get_default_headers()
+        headers['Depth'] = 1
+        response = self.session.request('PROPFIND', home, headers=headers,
+                                        data=self.xml_collection,
+                                        is_subpath=False)
+        root = etree.XML(response.content)
+        for response in root.iter('{*}response'):
+            prop = response.find('{*}propstat/{*}prop')
+            if prop.find('{*}resourcetype/{*}calendar') is None:
+                continue
+
+            displayname = prop.find('{*}displayname')
+            collection = {
+                'href': response.find('{*}href').text,
+                'displayname': '' if displayname is None else displayname.text
+            }
+
+            component_set = prop.find('{*}supported-calendar-component-set')
+            if component_set is not None:
+                for one in component_set:
+                    collection[one.get('name')] = True
+
+            yield collection
+
+
+class CardDiscover(Discover):
+    xml_home = """
+    <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:carddav">
+        <d:prop>
+            <c:addressbook-home-set />
+        </d:prop>
+    </d:propfind>
+    """
+    xml_collection = """
+    <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:cardav">
+        <d:prop>
+            <d:resourcetype />
+            <c:addressbook />
+        </d:prop>
+    </d:propfind>
+    """
+    str_homeset = '{*}addressbook-home-set'
+
+    def _find_collections(self, home):
+        """find all CardDAV collections under `home`"""
+        headers = self.session.get_default_headers()
+        headers['Depth'] = 1
+        response = self.session.request('PROPFIND', home, headers=headers,
+                                        data=self.xml_collection,
+                                        is_subpath=False)
+
+        root = etree.XML(response.content)
+        for response in root.iter('{*}response'):
+            prop = response.find('{*}propstat/{*}prop')
+            if prop.find('{*}resourcetype/{*}addressbook') is None:
+                continue
+
+            displayname = prop.find('{*}displayname')
+            yield {
+                'href': response.find('{*}href').text,
+                'displayname': '' if displayname is None else displayname.text
+            }
+
+
+class DavSession(object):
+    '''
+    A helper class to connect to DAV servers.
+    '''
+
+    def __init__(self, url, username='', password='', verify=True, auth=None,
+                 useragent=USERAGENT, dav_header=None):
+        if username and not password:
+            password = utils.get_password(username, url)
+
+        self._settings = {
+            'verify': prepare_verify(verify),
+            'auth': prepare_auth(auth, username, password)
+        }
+        self.useragent = useragent
+        self.url = url.rstrip('/') + '/'
+        self.parsed_url = utils.urlparse.urlparse(self.url)
+        self.dav_header = dav_header
+        self._session = None
+
+    def request(self, method, path, data=None, headers=None,
+                is_subpath=True):
+        url = self.url
+        if path:
+            url = utils.urlparse.urljoin(self.url, path)
+        assert url.startswith(self.url) or not is_subpath
+        if self._session is None:
+            self._session = requests_session()
+            self._check_dav_header()
+        return utils.request(method, url, data=data, headers=headers,
+                             session=self._session, **self._settings)
+
+    def _check_dav_header(self):
+        if self.dav_header is None:
+            return
+        headers = self.get_default_headers()
+        headers['Depth'] = 1
+        response = self.request(
+            'OPTIONS',
+            '',
+            headers=headers
+        )
+        if self.dav_header not in response.headers.get('DAV', ''):
+            raise ValueError('URL is not a collection')
+
+    def get_default_headers(self):
+        return {
+            'User-Agent': self.useragent,
+            'Content-Type': 'application/xml; charset=UTF-8'
+        }
 
 
 class DavStorage(Storage):
@@ -47,10 +247,8 @@ class DavStorage(Storage):
     get_multi_template = None
     # The LXML query for extracting results in get_multi
     get_multi_data_query = None
-    # The leif class to use for autodiscovery
-    # This should be the class *name* (i.e. "module attribute name") instead of
-    # the class, because leif is an optional dependency
-    leif_class = None
+    # The Discover subclass to use
+    discovery_class = None
 
     _session = None
     _repr_attributes = ('username', 'url')
@@ -59,46 +257,25 @@ class DavStorage(Storage):
                  verify=True, auth=None, useragent=USERAGENT, **kwargs):
         super(DavStorage, self).__init__(**kwargs)
 
-        if username and not password:
-            password = utils.get_password(username, url)
-
-        self._settings = {
-            'verify': prepare_verify(verify),
-            'auth': prepare_auth(auth, username, password)
-        }
-        self.username, self.password = username, password
-        self.useragent = useragent
-
         url = url.rstrip('/') + '/'
         if collection is not None:
             url = utils.urlparse.urljoin(url, collection)
-        self.url = url.rstrip('/') + '/'
-        self.parsed_url = utils.urlparse.urlparse(self.url)
+        self.session = DavSession(url, username, password, verify, auth,
+                                  useragent, dav_header=self.dav_header)
         self.collection = collection
-
-    def _default_headers(self):
-        return {
-            'User-Agent': self.useragent,
-            'Content-Type': 'application/xml; charset=UTF-8'
-        }
 
     @classmethod
     def discover(cls, url, **kwargs):
         if kwargs.pop('collection', None) is not None:
             raise TypeError('collection argument must not be given.')
-        from leif import leif
-        d = getattr(leif, cls.leif_class)(
-            url,
-            user=kwargs.get('username', None),
-            password=kwargs.get('password', None),
-            ssl_verify=kwargs.get('verify', True)
-        )
+        discover_args, _ = utils.split_dict(kwargs, lambda key: key in (
+            'username', 'password', 'verify', 'auth', 'useragent'
+        ))
+        d = cls.discovery_class(DavSession(
+            url=url, dav_header=None, **discover_args))
         for c in d.discover():
-            collection = utils.urlparse.urljoin(url, c['href'])
-            if collection.startswith(url):
-                collection = collection[len(url):]
-            collection = collection.rstrip('/')
-            s = cls(url=url, collection=collection, **kwargs)
+            base, collection = c['href'].rstrip('/').rsplit('/', 1)
+            s = cls(url=base, collection=collection, **kwargs)
             s.displayname = c['displayname']
             yield s
 
@@ -107,34 +284,13 @@ class DavStorage(Storage):
         schema.'''
         if not href:
             raise ValueError(href)
-        x = utils.urlparse.urljoin(self.url, href)
-        assert x.startswith(self.url)
+        x = utils.urlparse.urljoin(self.session.url, href)
+        assert x.startswith(self.session.url)
         return utils.urlunquote_plus(utils.urlparse.urlsplit(x).path)
 
     def _get_href(self, item):
         href = utils.urlunquote_plus(item.ident) + self.fileext
         return self._normalize_href(href)
-
-    def _request(self, method, path, data=None, headers=None):
-        path = path or self.parsed_url.path
-        assert path.startswith(self.parsed_url.path)
-        if self._session is None:
-            self._session = requests.session()
-            self._check_collection()
-        url = self.parsed_url.scheme + '://' + self.parsed_url.netloc + path
-        return utils.request(method, url, data=data, headers=headers,
-                             session=self._session, **self._settings)
-
-    def _check_collection(self):
-        headers = self._default_headers()
-        headers['Depth'] = 1
-        response = self._request(
-            'OPTIONS',
-            '',
-            headers=headers
-        )
-        if self.dav_header not in response.headers.get('DAV', ''):
-            raise ValueError('URL is not a collection')
 
     def get(self, href):
         ((actual_href, item, etag),) = self.get_multi([href])
@@ -150,11 +306,11 @@ class DavStorage(Storage):
         for href in hrefs:
             href_xml.append('<D:href>{}</D:href>'.format(href))
         data = self.get_multi_template.format(hrefs='\n'.join(href_xml))
-        response = self._request(
+        response = self.session.request(
             'REPORT',
             '',
             data=data,
-            headers=self._default_headers()
+            headers=self.session.get_default_headers()
         )
         root = etree.XML(response.content)  # etree only can handle bytes
         rv = []
@@ -185,7 +341,7 @@ class DavStorage(Storage):
         return rv
 
     def _put(self, href, item, etag):
-        headers = self._default_headers()
+        headers = self.session.get_default_headers()
         headers['Content-Type'] = self.item_mimetype
         if etag is None:
             headers['If-None-Match'] = '*'
@@ -193,7 +349,7 @@ class DavStorage(Storage):
             assert etag[0] == etag[-1] == '"'
             headers['If-Match'] = etag
 
-        response = self._request(
+        response = self.session.request(
             'PUT',
             href,
             data=item.raw.encode('utf-8'),
@@ -218,20 +374,20 @@ class DavStorage(Storage):
 
     def delete(self, href, etag):
         href = self._normalize_href(href)
-        headers = self._default_headers()
+        headers = self.session.get_default_headers()
         assert etag[0] == etag[-1] == '"'
         headers.update({
             'If-Match': etag
         })
 
-        self._request(
+        self.session.request(
             'DELETE',
             href,
             headers=headers
         )
 
     def _list(self, xml):
-        headers = self._default_headers()
+        headers = self.session.get_default_headers()
 
         # CardDAV: The request MUST include a Depth header. The scope of the
         # query is determined by the value of the Depth header. For example,
@@ -245,7 +401,7 @@ class DavStorage(Storage):
         # included, Depth:0 is assumed.
         # http://tools.ietf.org/search/rfc4791#section-7.8
         headers['Depth'] = 'infinity'
-        response = self._request(
+        response = self.session.request(
             'REPORT',
             '',
             data=xml,
@@ -291,7 +447,7 @@ class CaldavStorage(DavStorage):
     fileext = '.ics'
     item_mimetype = 'text/calendar'
     dav_header = 'calendar-access'
-    leif_class = 'CalDiscover'
+    discovery_class = CalDiscover
 
     start_date = None
     end_date = None
@@ -388,7 +544,7 @@ class CarddavStorage(DavStorage):
     fileext = '.vcf'
     item_mimetype = 'text/vcard'
     dav_header = 'addressbook'
-    leif_class = 'CardDiscover'
+    discovery_class = CardDiscover
 
     get_multi_template = '''<?xml version="1.0" encoding="utf-8" ?>
             <C:addressbook-multiget xmlns:D="DAV:"
