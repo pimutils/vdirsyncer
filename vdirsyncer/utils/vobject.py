@@ -13,18 +13,36 @@ import icalendar.parser
 
 from . import text_type, itervalues
 
+IGNORE_PROPS = frozenset((
+    # PRODID is changed by radicale for some reason after upload
+    'PRODID',
+    # VERSION can get lost in singlefile storage
+    'VERSION',
+    # X-RADICALE-NAME is used by radicale, because hrefs don't really exist in
+    # their filesystem backend
+    'X-RADICALE-NAME',
+    # REV is from the VCARD specification and is supposed to change when the
+    # item does -- however, we can determine that ourselves
+    'REV'
+))
 
-def hash_item(text):
+
+def normalize_item(text, ignore_props=IGNORE_PROPS):
+    
     try:
         lines = to_unicode_lines(icalendar.cal.Component.from_ical(text))
     except Exception:
         lines = sorted(text.splitlines())
 
-    hashable = u'\r\n'.join(line.strip() for line in lines
-                            if line.strip() and
-                            not line.startswith(u'PRODID:') and
-                            not line.startswith(u'VERSION:'))
-    return hashlib.sha256(hashable.encode('utf-8')).hexdigest()
+    return u'\r\n'.join(line.strip()
+                        for line in lines
+                        if line.strip() and
+                        not any(line.startswith(p + ':')
+                                for p in IGNORE_PROPS))
+
+
+def hash_item(text):
+    return hashlib.sha256(normalize_item(text).encode('utf-8')).hexdigest()
 
 
 def split_collection(text, inline=(u'VTIMEZONE',),
@@ -67,34 +85,49 @@ def to_unicode_lines(item):
             yield icalendar.parser.foldline(content_line)
 
 
-def join_collection(items, wrapper=None):
-    timezones = {}
+def join_collection(items, wrappers={
+    u'VCALENDAR': (u'VCALENDAR', (u'VTIMEZONE',)),
+    u'VCARD': (u'VADDRESSBOOK', ())
+}):
+    '''
+    :param wrappers: {
+        item_type: wrapper_type, items_to_inline
+    }
+    '''
+    inline = {}
     components = []
+    wrapper_type = None
+    inline_types = None
+    item_type = None
+
+    def handle_item(item):
+        if item.name in inline_types:
+            inline[item.name] = item
+        else:
+            components.append(item)
 
     for item in items:
         component = icalendar.cal.Component.from_ical(item)
-        if component.name == u'VCALENDAR':
-            assert wrapper is None or wrapper == u'VCALENDAR'
-            wrapper = u'VCALENDAR'
-            for subcomponent in component.subcomponents:
-                if subcomponent.name == u'VTIMEZONE':
-                    timezones[subcomponent['TZID']] = subcomponent
-                else:
-                    components.append(subcomponent)
-        else:
-            if component.name == u'VCARD':
-                assert wrapper is None or wrapper == u'VADDRESSBOOK'
-                wrapper = u'VADDRESSBOOK'
-            components.append(component)
+
+        if item_type is None:
+            item_type = component.name
+            wrapper_type, inline_types = wrappers[item_type]
+
+        if component.name == item_type:
+            if item_type == wrapper_type:
+                for subcomponent in component.subcomponents:
+                    handle_item(subcomponent)
+            else:
+                handle_item(component)
 
     start = end = u''
-    if wrapper is not None:
-        start = u'BEGIN:{}'.format(wrapper)
-        end = u'END:{}'.format(wrapper)
+    if wrapper_type is not None:
+        start = u'BEGIN:{}'.format(wrapper_type)
+        end = u'END:{}'.format(wrapper_type)
 
     lines = [start]
-    for timezone in itervalues(timezones):
-        lines.extend(to_unicode_lines(timezone))
+    for inlined_item in itervalues(inline):
+        lines.extend(to_unicode_lines(inlined_item))
     for component in components:
         lines.extend(to_unicode_lines(component))
     lines.append(end)

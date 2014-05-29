@@ -36,7 +36,10 @@ def test_split_collection_simple():
 
 
 def test_join_collection_simple():
-    given = join_collection(_simple_split, wrapper=u'VADDRESSBOOK')
+    item_type = _simple_split[0].splitlines()[0][len(u'BEGIN:'):]
+    given = join_collection(_simple_split, wrappers={
+        item_type: (u'VADDRESSBOOK', ())
+    })
     print(given)
     print(_simple_joined)
     assert normalize_item(given) == normalize_item(_simple_joined)

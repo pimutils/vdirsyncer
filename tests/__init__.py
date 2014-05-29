@@ -11,25 +11,14 @@
 
 import vdirsyncer.log
 from vdirsyncer.utils import text_type
+from vdirsyncer.utils.vobject import normalize_item as _normalize_item
 vdirsyncer.log.set_level(vdirsyncer.log.logging.DEBUG)
 
 
 def normalize_item(item):
-    # - X-RADICALE-NAME is used by radicale, because hrefs don't really exist
-    #   in their filesystem backend
-    # - PRODID is changed by radicale for some reason after upload, but nobody
-    #   cares about that anyway
-    rv = []
     if not isinstance(item, text_type):
         item = item.raw
-
-    for line in item.splitlines():
-        line = line.strip()
-        line = line.strip().split(u':', 1)
-        if line[0] in ('X-RADICALE-NAME', 'PRODID', 'REV'):
-            continue
-        rv.append(u':'.join(line))
-    return tuple(sorted(rv))
+    return tuple(sorted(_normalize_item(item).splitlines()))
 
 
 def assert_item_equals(a, b):

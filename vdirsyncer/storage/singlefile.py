@@ -58,7 +58,7 @@ class SingleFileStorage(Storage):
 
     _items = None
 
-    def __init__(self, path, wrapper=None, encoding='utf-8', create=True,
+    def __init__(self, path, encoding='utf-8', create=True,
                  collection=None, **kwargs):
         super(SingleFileStorage, self).__init__(**kwargs)
         path = expand_path(path)
@@ -76,7 +76,6 @@ class SingleFileStorage(Storage):
         self.path = path
         self.encoding = encoding
         self.create = create
-        self.wrapper = wrapper
 
     def list(self):
         self._items = collections.OrderedDict()
@@ -88,6 +87,9 @@ class SingleFileStorage(Storage):
             import errno
             if e.errno != errno.ENOENT or not self.create:  # file not found
                 raise
+            text = None
+
+        if not text:
             return ()
 
         rv = []
@@ -149,7 +151,6 @@ class SingleFileStorage(Storage):
     def _write(self):
         text = join_collection(
             (item.raw for item, etag in itervalues(self._items)),
-            wrapper=self.wrapper
         )
         try:
             with safe_write(self.path, self._write_mode) as f:

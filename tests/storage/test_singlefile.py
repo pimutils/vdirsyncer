@@ -9,7 +9,7 @@
 
 import pytest
 
-from .. import assert_item_equals
+from .. import assert_item_equals, EVENT_TEMPLATE
 from . import StorageTests
 from vdirsyncer.storage.singlefile import SingleFileStorage
 
@@ -17,13 +17,14 @@ from vdirsyncer.storage.singlefile import SingleFileStorage
 class TestSingleFileStorage(StorageTests):
 
     storage_class = SingleFileStorage
+    item_template = EVENT_TEMPLATE
 
     @pytest.fixture(autouse=True)
     def setup(self, tmpdir):
         self._path = str(tmpdir.join('test.txt'))
 
     def get_storage_args(self, **kwargs):
-        return dict(path=self._path, wrapper=u'MYWRAPPER')
+        return dict(path=self._path)
 
     def test_discover(self):
         '''This test doesn't make any sense here.'''
