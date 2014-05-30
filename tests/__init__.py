@@ -18,7 +18,8 @@ vdirsyncer.log.set_level(vdirsyncer.log.logging.DEBUG)
 def normalize_item(item):
     if not isinstance(item, text_type):
         item = item.raw
-    return tuple(sorted(_normalize_item(item).splitlines()))
+    return tuple(sorted(_normalize_item(
+        item, use_icalendar=False).splitlines()))
 
 
 def assert_item_equals(a, b):

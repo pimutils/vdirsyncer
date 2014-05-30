@@ -27,8 +27,10 @@ IGNORE_PROPS = frozenset((
 ))
 
 
-def normalize_item(text, ignore_props=IGNORE_PROPS):
+def normalize_item(text, ignore_props=IGNORE_PROPS, use_icalendar=True):
     try:
+        if not use_icalendar:
+            raise Exception()
         lines = to_unicode_lines(icalendar.cal.Component.from_ical(text))
     except Exception:
         lines = sorted(text.splitlines())
