@@ -7,7 +7,7 @@ Installation
 
 - Make sure you have Python 2.7+ or Python 3.3+ installed.
 
-- ``pip install --user vdirsyncer``.
+- ``pip install --user vdirsyncer``
 
 - Check if the ``vdirsyncer`` command is available.
 
