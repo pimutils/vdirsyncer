@@ -18,7 +18,8 @@ vdirsyncer.log.set_level(vdirsyncer.log.logging.DEBUG)
 def normalize_item(item):
     if not isinstance(item, text_type):
         item = item.raw
-    return tuple(sorted(_normalize_item(item).splitlines()))
+    return tuple(sorted(_normalize_item(
+        item, use_icalendar=False).splitlines()))
 
 
 def assert_item_equals(a, b):
@@ -30,11 +31,11 @@ VERSION:3.0
 FN:Cyrus Daboo
 N:Daboo;Cyrus
 ADR;TYPE=POSTAL:;2822 Email HQ;Suite 2821;RFCVille;PA;15213;USA
-EMAIL;TYPE=INTERNET;TYPE=PREF:cyrus@example.com
+EMAIL;TYPE=PREF:cyrus@example.com
 NICKNAME:me
 NOTE:Example VCard.
 ORG:Self Employed
-TEL;TYPE=WORK;TYPE=VOICE:412 605 0499
+TEL;TYPE=VOICE:412 605 0499
 TEL;TYPE=FAX:412 605 0705
 URL:http://www.example.com
 X-SOMETHING:{r}

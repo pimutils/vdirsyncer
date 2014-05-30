@@ -10,22 +10,21 @@
 from vdirsyncer.utils.vobject import split_collection, join_collection, \
     hash_item
 
-from .. import normalize_item, SIMPLE_TEMPLATE, BARE_EVENT_TEMPLATE, \
+from .. import normalize_item, VCARD_TEMPLATE, BARE_EVENT_TEMPLATE, \
     EVENT_TEMPLATE
-
 
 _simple_joined = u'\r\n'.join((
     u'BEGIN:VADDRESSBOOK',
-    SIMPLE_TEMPLATE.format(r=123),
-    SIMPLE_TEMPLATE.format(r=345),
-    SIMPLE_TEMPLATE.format(r=678),
+    VCARD_TEMPLATE.format(r=123),
+    VCARD_TEMPLATE.format(r=345),
+    VCARD_TEMPLATE.format(r=678),
     u'END:VADDRESSBOOK'
 ))
 
 _simple_split = [
-    SIMPLE_TEMPLATE.format(r=123),
-    SIMPLE_TEMPLATE.format(r=345),
-    SIMPLE_TEMPLATE.format(r=678)
+    VCARD_TEMPLATE.format(r=123),
+    VCARD_TEMPLATE.format(r=345),
+    VCARD_TEMPLATE.format(r=678)
 ]
 
 
@@ -36,10 +35,7 @@ def test_split_collection_simple():
 
 
 def test_join_collection_simple():
-    item_type = _simple_split[0].splitlines()[0][len(u'BEGIN:'):]
-    given = join_collection(_simple_split, wrappers={
-        item_type: (u'VADDRESSBOOK', ())
-    })
+    given = join_collection(_simple_split)
     print(given)
     print(_simple_joined)
     assert normalize_item(given) == normalize_item(_simple_joined)

@@ -13,7 +13,17 @@ import icalendar.parser
 
 from . import text_type, itervalues
 
-IGNORE_PROPS = frozenset((
+
+def _process_properties(*s):
+    rv = set()
+    for key in s:
+        rv.add(key + ':')
+        rv.add(key + ';')
+
+    return frozenset(rv)
+
+
+IGNORE_PROPS = _process_properties(
     # PRODID is changed by radicale for some reason after upload
     'PRODID',
     # VERSION can get lost in singlefile storage
@@ -24,11 +34,13 @@ IGNORE_PROPS = frozenset((
     # REV is from the VCARD specification and is supposed to change when the
     # item does -- however, we can determine that ourselves
     'REV'
-))
+)
 
 
-def normalize_item(text, ignore_props=IGNORE_PROPS):
+def normalize_item(text, ignore_props=IGNORE_PROPS, use_icalendar=True):
     try:
+        if not use_icalendar:
+            raise Exception()
         lines = to_unicode_lines(icalendar.cal.Component.from_ical(text))
     except Exception:
         lines = sorted(text.splitlines())
@@ -36,7 +48,7 @@ def normalize_item(text, ignore_props=IGNORE_PROPS):
     return u'\r\n'.join(line.strip()
                         for line in lines
                         if line.strip() and
-                        not any(line.startswith(p + ':')
+                        not any(line.startswith(p)
                                 for p in IGNORE_PROPS))
 
 
@@ -81,6 +93,7 @@ def to_unicode_lines(item):
 
     for content_line in item.content_lines():
         if content_line:
+            content_line = content_line.replace(u'\\;', u';')
             yield icalendar.parser.foldline(content_line)
 
 
