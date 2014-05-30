@@ -20,7 +20,7 @@ def _process_properties(*s):
         rv.add(key + ':')
         rv.add(key + ';')
 
-    return frozenset(rv)
+    return tuple(rv)
 
 
 IGNORE_PROPS = _process_properties(
@@ -48,8 +48,7 @@ def normalize_item(text, ignore_props=IGNORE_PROPS, use_icalendar=True):
     return u'\r\n'.join(line.strip()
                         for line in lines
                         if line.strip() and
-                        not any(line.startswith(p)
-                                for p in IGNORE_PROPS))
+                        not line.startswith(IGNORE_PROPS))
 
 
 def hash_item(text):
