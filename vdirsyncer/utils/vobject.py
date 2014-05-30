@@ -93,6 +93,9 @@ def to_unicode_lines(item):
 
     for content_line in item.content_lines():
         if content_line:
+            # https://github.com/untitaker/vdirsyncer/issues/70
+            # icalendar escapes semicolons which are not supposed to get
+            # escaped, because it is not aware of vcard
             content_line = content_line.replace(u'\\;', u';')
             yield icalendar.parser.foldline(content_line)
 
