@@ -40,9 +40,9 @@ Version 0.1.5
 
 - Many doc fixes
 
-- vdirsyncer now doesn't necessarily need UIDs anymore for syncronization.
+- vdirsyncer now doesn't necessarily need UIDs anymore for synchronization.
 
 - vdirsyncer now aborts if one collection got completely emptied between
-  syncronizations. See `#42`_.
+  synchronizations. See `#42`_.
 
 .. _`#42`: https://github.com/untitaker/vdirsyncer/issues/42

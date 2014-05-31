@@ -70,7 +70,7 @@ def prepare_list(storage, href_to_status):
 
 def sync(storage_a, storage_b, status, conflict_resolution=None,
          force_delete=False):
-    '''Syncronizes two storages.
+    '''Synchronizes two storages.
 
     :param storage_a: The first storage
     :type storage_a: :class:`vdirsyncer.storage.base.Storage`

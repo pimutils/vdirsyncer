@@ -3,7 +3,7 @@
     vdirsyncer
     ~~~~~~~~~~
 
-    vdirsyncer is a syncronization tool for vdir. See the README for more
+    vdirsyncer is a synchronization tool for vdir. See the README for more
     details.
 
     :copyright: (c) 2014 Markus Unterwaditzer & contributors

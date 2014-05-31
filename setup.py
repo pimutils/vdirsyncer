@@ -3,7 +3,7 @@
     vdirsyncer
     ~~~~~~~~~~
 
-    vdirsyncer is a syncronization tool for vdir. See the README for more
+    vdirsyncer is a synchronization tool for vdir. See the README for more
     details.
 
     :copyright: (c) 2014 Markus Unterwaditzer & contributors
@@ -18,7 +18,7 @@ setup(
     author='Markus Unterwaditzer',
     author_email='markus@unterwaditzer.net',
     url='https://github.com/untitaker/vdirsyncer',
-    description='A syncronization tool for vdir',
+    description='A synchronization tool for vdir',
     license='MIT',
     long_description=open('README.rst').read(),
     packages=find_packages(exclude=['tests.*', 'tests']),

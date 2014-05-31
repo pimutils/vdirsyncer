@@ -243,7 +243,7 @@ def _main(env, file_cfg):
     @sync_command.main('[pairs...]')
     def sync_main(context, pairs=None):
         '''
-        Syncronize the given pairs. If no pairs are given, all will be
+        Synchronize the given pairs. If no pairs are given, all will be
         synchronized.
 
         Examples:
