@@ -22,6 +22,8 @@ class SingleFileStorage(Storage):
     '''Save data in single VCALENDAR file, like Orage -- a calendar app for
     XFCE -- and Radicale do. Usable as ``singlefile`` in the config file.
 
+    .. versionadded:: 0.1.6
+
     .. note::
         This storage has many raceconditions and is very slow. What this
         basically means is that you shouldn't use this storage unless you have
