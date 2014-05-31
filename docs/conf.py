@@ -28,7 +28,14 @@ version = '.'.join(release.split('.')[:2])  # The short X.Y version.
 exclude_patterns = ['_build']
 
 pygments_style = 'sphinx'
-html_theme = 'default'
+
+import os
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+
+if not on_rtd:
+    import sphinx_rtd_theme
+    html_theme = 'sphinx_rtd_theme'
+    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 html_static_path = ['_static']
 htmlhelp_basename = 'vdirsyncerdoc'

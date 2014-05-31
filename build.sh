@@ -28,9 +28,11 @@ install_build_tests() {
 }
 
 run_build_tests() {
-    coverage run --source=vdirsyncer/,tests/ --module pytest
     if [ "$TRAVIS" = "true" ]; then
+        coverage run --source=vdirsyncer/,tests/ --module pytest
         coveralls
+    else
+        py.test
     fi
 }
 
@@ -42,11 +44,34 @@ run_build_style() {
     flake8 vdirsyncer tests
 }
 
+install_build_docs() {
+    $PIP_INSTALL sphinx sphinx_rtd_theme
+    $PIP_INSTALL -e .
+}
+
+run_build_docs() {
+    cd docs
+    make html
+}
+
 
 [ -n "$BUILD" ] || BUILD=tests
 [ -n "$DAV_SERVER" ] || DAV_SERVER=radicale
 [ -n "$REQUIREMENTS" ] || REQUIREMENTS=release
 COMMAND="$1"
+if [ -z "$COMMAND" ]; then
+    echo "Usage:"
+    echo "build.sh run      # run build"
+    echo "build.sh install  # install dependencies"
+    echo
+    echo "Environment variable combinations:"
+    echo "BUILD=tests  # install and run tests"
+    echo "             # (using Radicale, see .travis.yml for more)"
+    echo "BUILD=style  # install and run stylechecker (flake8)"
+    echo "BUILD=docs   # install sphinx and build HTML docs"
+    exit 1
+fi
+
 TESTSERVER_BASE=./tests/storage/dav/servers/
 
 install_builds() {
