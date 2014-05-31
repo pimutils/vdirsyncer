@@ -24,4 +24,5 @@
     changelog at some point. Use ``git rebase -i`` and ``git commit --ammend``
     if needed.
   
-  * Add yourself to ``CONTRIBUTORS.rst``.
+  * Add yourself to ``CONTRIBUTORS.rst`` and also add an entry to
+    ``CHANGELOG.rst`` if you think your change is relevant to end users.
