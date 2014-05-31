@@ -42,6 +42,7 @@ install_build_style() {
 
 run_build_style() {
     flake8 vdirsyncer tests
+    ! git grep -i syncroniz
 }
 
 install_build_docs() {
