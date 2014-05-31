@@ -23,7 +23,7 @@ By default, *vdirsyncer* looks for its configuration file at
 ``~/.vdirsyncer/config``. You can use the ``VDIRSYNCER_CONFIG`` environment
 variable to change this path.
 
-The config file should start with a :ref:`general_config <general section>`,
+The config file should start with a :ref:`general section <general_config>`,
 where the only required parameter is ``status_path``. The following is a
 minimal example::
 

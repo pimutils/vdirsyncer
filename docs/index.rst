@@ -20,4 +20,5 @@ Table of Contents
    keyring
    server_support
    troubleshooting
+   changelog
    license
