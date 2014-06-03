@@ -10,6 +10,7 @@ import hashlib
 
 import icalendar.cal
 import icalendar.parser
+import icalendar.caselessdict
 
 from . import text_type, itervalues
 
@@ -35,6 +36,15 @@ IGNORE_PROPS = _process_properties(
     # item does -- however, we can determine that ourselves
     'REV'
 )
+
+# Whether the installed icalendar version has
+# https://github.com/collective/icalendar/pull/136
+# (support for keeping the order of properties and parameters)
+#
+# This basically checks whether the superclass of all icalendar classes has a
+# method from OrderedDict.
+ICALENDAR_ORIGINAL_ORDER_SUPPORT = \
+    hasattr(icalendar.caselessdict.CaselessDict, '__reversed__')
 
 
 def normalize_item(text, ignore_props=IGNORE_PROPS, use_icalendar=True):
@@ -90,7 +100,12 @@ def to_unicode_lines(item):
     '''icalendar doesn't provide an efficient way of getting the ical data as
     unicode. So let's do it ourselves.'''
 
-    for content_line in item.content_lines():
+    if ICALENDAR_ORIGINAL_ORDER_SUPPORT:
+        content_lines = item.content_lines(sorted=False)
+    else:
+        content_lines = item.content_lines()
+
+    for content_line in content_lines:
         if content_line:
             # https://github.com/untitaker/vdirsyncer/issues/70
             # icalendar escapes semicolons which are not supposed to get
