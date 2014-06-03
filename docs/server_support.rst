@@ -8,7 +8,7 @@ correctly with any remotely popular CalDAV or CardDAV server.
 
 vdirsyncer's synchronization works best if the items have ``UID`` properties.
 Items which don't have this property still should be synchronized fine as of
-version 1.6, but for performance reasons, such items should rather be the
+version 1.5, but for performance reasons, such items should rather be the
 exception than the rule. For a possible way to automatically fix such items,
 take a look at `vfix <https://github.com/geier/vfix>`_.
 
