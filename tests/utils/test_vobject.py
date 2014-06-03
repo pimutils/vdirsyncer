@@ -7,8 +7,7 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-from vdirsyncer.utils.vobject import split_collection, join_collection, \
-    hash_item
+import vdirsyncer.utils.vobject as vobject
 
 from .. import normalize_item, VCARD_TEMPLATE, BARE_EVENT_TEMPLATE, \
     EVENT_TEMPLATE
@@ -18,7 +17,7 @@ _simple_joined = u'\r\n'.join((
     VCARD_TEMPLATE.format(r=123),
     VCARD_TEMPLATE.format(r=345),
     VCARD_TEMPLATE.format(r=678),
-    u'END:VADDRESSBOOK'
+    u'END:VADDRESSBOOK\r\n'
 ))
 
 _simple_split = [
@@ -29,16 +28,19 @@ _simple_split = [
 
 
 def test_split_collection_simple():
-    given = split_collection(_simple_joined)
+    given = list(vobject.split_collection(_simple_joined))
     assert [normalize_item(item) for item in given] == \
         [normalize_item(item) for item in _simple_split]
+    if vobject.ICALENDAR_ORIGINAL_ORDER_SUPPORT:
+        assert [x.splitlines() for x in given] == \
+            [x.splitlines() for x in _simple_split]
 
 
 def test_join_collection_simple():
-    given = join_collection(_simple_split)
-    print(given)
-    print(_simple_joined)
+    given = vobject.join_collection(_simple_split)
     assert normalize_item(given) == normalize_item(_simple_joined)
+    if vobject.ICALENDAR_ORIGINAL_ORDER_SUPPORT:
+        assert given.splitlines() == _simple_joined.splitlines()
 
 
 def test_split_collection_timezones():
@@ -66,7 +68,8 @@ def test_split_collection_timezones():
         [timezone, u'END:VCALENDAR']
     )
 
-    given = set(normalize_item(item) for item in split_collection(full))
+    given = set(normalize_item(item)
+                for item in vobject.split_collection(full))
     expected = set(
         normalize_item(u'\r\n'.join((
             u'BEGIN:VCALENDAR', item, timezone, u'END:VCALENDAR'
@@ -81,4 +84,4 @@ def test_hash_item():
     a = EVENT_TEMPLATE.format(r=1)
     b = u'\n'.join(line for line in a.splitlines()
                    if u'PRODID' not in line and u'VERSION' not in line)
-    assert hash_item(a) == hash_item(b)
+    assert vobject.hash_item(a) == vobject.hash_item(b)
