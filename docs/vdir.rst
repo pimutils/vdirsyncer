@@ -61,3 +61,23 @@ Reading from vdirs
 
 - The ``ident`` part of the filename *should not* be parsed to improve the
   speed of item lookup.
+
+Rationale
+=========
+
+Performance
+-----------
+
+Currently, vdirs suffer from a rather major performance problem, one which
+current implementations try to mitigate by building up indices of the
+collections for faster search and lookup.
+
+The reason items' filenames don't contain any extra information is simple: The
+solutions presented induced duplication of data, where one duplicate might
+become out of date because of bad implementations. As it stands right now, a
+index format could be formalized separately though.
+
+vdirsyncer doesn't really have to bother about efficient item lookup, because
+its synchronization algorithm needs to fetch the whole list of items anyway.
+Detecting changes is easily implemented by checking the files' modification
+time.
