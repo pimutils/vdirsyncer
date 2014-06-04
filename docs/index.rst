@@ -21,4 +21,5 @@ Table of Contents
    server_support
    troubleshooting
    changelog
+   vdir
    license
