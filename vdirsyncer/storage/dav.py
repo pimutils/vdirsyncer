@@ -265,7 +265,7 @@ class DavStorage(Storage):
         self.collection = collection
 
         # defined for _repr_attributes
-        self.username = username  
+        self.username = username
         self.url = url
 
     @classmethod
