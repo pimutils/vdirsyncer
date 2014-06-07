@@ -178,3 +178,7 @@ class StorageTests(object):
             (href, etag) for href, item, etag
             in s.get_multi(href for href, etag in iteritems(info))
         ) == info
+
+    def test_repr(self):
+        s = self._get_storage()
+        assert self.storage_class.__name__ in repr(s)

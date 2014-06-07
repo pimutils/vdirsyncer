@@ -264,6 +264,10 @@ class DavStorage(Storage):
                                   useragent, dav_header=self.dav_header)
         self.collection = collection
 
+        # defined for _repr_attributes
+        self.username = username  
+        self.url = url
+
     @classmethod
     def discover(cls, url, **kwargs):
         if kwargs.pop('collection', None) is not None:
