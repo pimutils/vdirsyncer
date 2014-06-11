@@ -11,7 +11,7 @@ import os
 import requests
 
 from .. import log, exceptions
-from .compat import urlparse
+from .compat import urlparse, get_raw_input
 
 
 logger = log.get(__name__)
@@ -164,7 +164,7 @@ def get_password(username, resource):
         answer = None
         while answer not in ['', 'y', 'n']:
             prompt = 'Save this password in the keyring? [y/N] '
-            answer = raw_input(prompt).lower()
+            answer = get_raw_input(prompt).lower()
         if answer == 'y':
             keyring.set_password(password_key_prefix + resource,
                                  username, password)
