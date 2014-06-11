@@ -9,10 +9,7 @@
 
 
 from .. import exceptions
-from .. import utils
-
-
-Item = utils.vobject.Item
+from vdirsyncer.utils.vobject import Item  # noqa
 
 
 class Storage(object):
