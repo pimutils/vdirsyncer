@@ -110,14 +110,23 @@ class Item(object):
         content.'''
         return self.uid or self.hash
 
+    @cached_property
+    def parsed(self):
+        try:
+            return icalendar.cal.Component.from_ical(self.raw)
+        except Exception:
+            return None
 
-def normalize_item(text, ignore_props=IGNORE_PROPS, use_icalendar=True):
-    try:
-        if not use_icalendar:
-            raise Exception()
-        lines = to_unicode_lines(icalendar.cal.Component.from_ical(text))
-    except Exception:
-        lines = sorted(text.splitlines())
+
+def normalize_item(item, ignore_props=IGNORE_PROPS, use_icalendar=True):
+    if not isinstance(item, Item):
+        item = Item(item)
+    if use_icalendar and item.parsed is not None:
+        # We have to explicitly check "is not None" here because VCALENDARS
+        # with only subcomponents and no own properties are also false-ish.
+        lines = to_unicode_lines(item.parsed)
+    else:
+        lines = sorted(item.raw.splitlines())
 
     return u'\r\n'.join(line.strip()
                         for line in lines
