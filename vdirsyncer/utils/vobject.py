@@ -46,39 +46,69 @@ IGNORE_PROPS = _process_properties(
 ICALENDAR_ORIGINAL_ORDER_SUPPORT = \
     hasattr(icalendar.caselessdict.CaselessDict, '__reversed__')
 
+_missing = object()
+
+
+class cached_property(object):
+    '''
+    Copied from Werkzeug.
+    Copyright 2007-2014 Armin Ronacher
+    '''
+
+    def __init__(self, func, name=None, doc=None):
+        self.__name__ = name or func.__name__
+        self.__module__ = func.__module__
+        self.__doc__ = doc or func.__doc__
+        self.func = func
+
+    def __get__(self, obj, type=None):
+        if obj is None:
+            return self
+        value = obj.__dict__.get(self.__name__, _missing)
+        if value is _missing:
+            value = self.func(obj)
+            obj.__dict__[self.__name__] = value
+        return value
+
 
 class Item(object):
 
     '''should-be-immutable wrapper class for VCALENDAR (VEVENT, VTODO) and
     VCARD'''
 
-    uid = None
-    '''Global identifier of the item, across storages, doesn't change after a
-    modification of the item.'''
-
-    raw = None
-    '''Raw content of the item, which vdirsyncer doesn't validate in any
-    way.'''
-
-    hash = None
-    '''Hash of self.raw, used for etags.'''
-
-    ident = None
-    '''Used for generating hrefs and matching up items during synchronization.
-    This is either the UID or the hash of the item's content.'''
-
     def __init__(self, raw):
         assert isinstance(raw, text_type)
 
-        for line in raw.splitlines():
+        self._raw = raw
+
+    @cached_property
+    def raw(self):
+        '''Raw content of the item, which vdirsyncer doesn't validate in any
+        way.'''
+        return self._raw
+
+    @cached_property
+    def uid(self):
+        '''Global identifier of the item, across storages, doesn't change after
+        a modification of the item.'''
+
+        for line in self.raw.splitlines():
             if line.startswith(u'UID:'):
                 uid = line[4:].strip()
                 if uid:
-                    self.uid = uid
+                    return uid
 
-        self.raw = raw
-        self.hash = hash_item(raw)
-        self.ident = self.uid or self.hash
+    @cached_property
+    def hash(self):
+        '''Hash of self.raw, used for etags.'''
+        return hash_item(self.raw)
+
+    @cached_property
+    def ident(self):
+        '''Used for generating hrefs and matching up items during
+        synchronization. This is either the UID or the hash of the item's
+        content.'''
+        return self.uid or self.hash
 
 
 def normalize_item(text, ignore_props=IGNORE_PROPS, use_icalendar=True):
