@@ -8,33 +8,13 @@
 '''
 
 import os
-import sys
 import requests
 
 from .. import log, exceptions
+from .compat import urlparse
 
 
 logger = log.get(__name__)
-
-
-PY2 = sys.version_info[0] == 2
-
-
-if PY2:
-    import urlparse
-    from urllib import \
-         quote_plus as urlquote_plus, \
-         unquote_plus as urlunquote_plus
-    text_type = unicode  # flake8: noqa
-    iteritems = lambda x: x.iteritems()
-    itervalues = lambda x: x.itervalues()
-else:
-    import urllib.parse as urlparse
-    urlquote_plus = urlparse.quote_plus
-    urlunquote_plus = urlparse.unquote_plus
-    text_type = str
-    iteritems = lambda x: x.items()
-    itervalues = lambda x: x.values()
 
 
 try:
@@ -284,6 +264,7 @@ def get_class_init_args(cls):
 
     return all | s_all, required | s_required
 
+
 def checkdir(path, create=False):
     if not os.path.isdir(path):
         if os.path.exists(path):
@@ -295,6 +276,7 @@ def checkdir(path, create=False):
                           'True in your configuration to automatically '
                           'create it, or create it '
                           'yourself.'.format(path))
+
 
 def checkfile(path, create=False):
     checkdir(os.path.dirname(path), create=create)

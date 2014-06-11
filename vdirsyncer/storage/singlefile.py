@@ -12,8 +12,9 @@ import collections
 from .base import Item, Storage
 import vdirsyncer.exceptions as exceptions
 import vdirsyncer.log as log
-from vdirsyncer.utils import expand_path, safe_write, itervalues, checkfile
-from vdirsyncer.utils.vobject import split_collection, join_collection
+from ..utils import expand_path, safe_write, checkfile
+from ..utils.compat import itervalues
+from ..utils.vobject import split_collection, join_collection
 
 logger = log.get(__name__)
 

@@ -13,7 +13,7 @@ import pytest
 from .. import assert_item_equals, SIMPLE_TEMPLATE
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
-from vdirsyncer.utils import text_type, iteritems
+from vdirsyncer.utils.compat import text_type, iteritems
 
 
 class StorageTests(object):

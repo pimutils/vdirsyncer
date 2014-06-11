@@ -8,7 +8,8 @@
 '''
 
 from .base import Item, Storage
-from ..utils import expand_path, get_password, request, text_type, urlparse
+from ..utils import expand_path, get_password, request
+from ..utils.compat import text_type, urlparse
 from ..utils.vobject import split_collection
 from ..exceptions import NotFoundError
 

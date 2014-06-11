@@ -10,7 +10,7 @@
 '''
 
 import vdirsyncer.log
-from vdirsyncer.utils import text_type
+from vdirsyncer.utils.compat import text_type
 from vdirsyncer.utils.vobject import normalize_item as _normalize_item
 vdirsyncer.log.set_level(vdirsyncer.log.logging.DEBUG)
 

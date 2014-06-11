@@ -12,7 +12,7 @@ import icalendar.cal
 import icalendar.parser
 import icalendar.caselessdict
 
-from . import text_type, itervalues
+from .compat import text_type, itervalues
 
 
 def _process_properties(*s):

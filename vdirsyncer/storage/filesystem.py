@@ -12,8 +12,8 @@ import os
 from .base import Item, Storage
 import vdirsyncer.exceptions as exceptions
 import vdirsyncer.log as log
-from vdirsyncer.utils import expand_path, text_type, safe_write, \
-    get_etag_from_file, checkdir
+from ..utils import expand_path, safe_write, get_etag_from_file, checkdir
+from ..utils.compat import text_type
 
 logger = log.get(__name__)
 

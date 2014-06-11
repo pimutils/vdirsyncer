@@ -10,6 +10,7 @@
 
 from .. import exceptions
 from .. import utils
+from ..utils.compat import text_type
 
 
 class Item(object):
@@ -33,7 +34,7 @@ class Item(object):
     This is either the UID or the hash of the item's content.'''
 
     def __init__(self, raw):
-        assert isinstance(raw, utils.text_type)
+        assert isinstance(raw, text_type)
 
         for line in raw.splitlines():
             if line.startswith(u'UID:'):
