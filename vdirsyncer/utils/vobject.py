@@ -91,6 +91,15 @@ class Item(object):
     def uid(self):
         '''Global identifier of the item, across storages, doesn't change after
         a modification of the item.'''
+        stack = [self.parsed]
+        while stack:
+            component = stack.pop()
+            if not component:
+                continue
+            uid = component.get('UID', None)
+            if uid:
+                return uid
+            stack.extend(component.subcomponents)
 
         for line in self.raw.splitlines():
             if line.startswith(u'UID:'):

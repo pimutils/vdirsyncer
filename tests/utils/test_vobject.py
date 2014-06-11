@@ -85,3 +85,11 @@ def test_hash_item():
     b = u'\n'.join(line for line in a.splitlines()
                    if u'PRODID' not in line and u'VERSION' not in line)
     assert vobject.hash_item(a) == vobject.hash_item(b)
+
+
+def test_multiline_uid():
+    a = (u'BEGIN:FOO\r\n'
+         u'UID:123456789abcd\r\n'
+         u' efgh\r\n'
+         u'END:FOO\r\n')
+    assert vobject.Item(a).uid == u'123456789abcdefgh'
