@@ -12,6 +12,7 @@ import icalendar.cal
 import icalendar.parser
 import icalendar.caselessdict
 
+from . import cached_property
 from .compat import text_type, itervalues
 
 
@@ -47,13 +48,71 @@ ICALENDAR_ORIGINAL_ORDER_SUPPORT = \
     hasattr(icalendar.caselessdict.CaselessDict, '__reversed__')
 
 
-def normalize_item(text, ignore_props=IGNORE_PROPS, use_icalendar=True):
-    try:
-        if not use_icalendar:
-            raise Exception()
-        lines = to_unicode_lines(icalendar.cal.Component.from_ical(text))
-    except Exception:
-        lines = sorted(text.splitlines())
+class Item(object):
+
+    '''should-be-immutable wrapper class for VCALENDAR (VEVENT, VTODO) and
+    VCARD'''
+
+    def __init__(self, raw):
+        assert isinstance(raw, text_type)
+
+        self._raw = raw
+
+    @cached_property
+    def raw(self):
+        '''Raw content of the item, which vdirsyncer doesn't validate in any
+        way.'''
+        return self._raw
+
+    @cached_property
+    def uid(self):
+        '''Global identifier of the item, across storages, doesn't change after
+        a modification of the item.'''
+        stack = [self.parsed]
+        while stack:
+            component = stack.pop()
+            if component is None:
+                continue
+            uid = component.get('UID', None)
+            if uid:
+                return uid
+            stack.extend(component.subcomponents)
+
+        for line in self.raw.splitlines():
+            if line.startswith(u'UID:'):
+                uid = line[4:].strip()
+                if uid:
+                    return uid
+
+    @cached_property
+    def hash(self):
+        '''Hash of self.raw, used for etags.'''
+        return hash_item(self.raw)
+
+    @cached_property
+    def ident(self):
+        '''Used for generating hrefs and matching up items during
+        synchronization. This is either the UID or the hash of the item's
+        content.'''
+        return self.uid or self.hash
+
+    @cached_property
+    def parsed(self):
+        try:
+            return icalendar.cal.Component.from_ical(self.raw)
+        except Exception:
+            return None
+
+
+def normalize_item(item, ignore_props=IGNORE_PROPS, use_icalendar=True):
+    if not isinstance(item, Item):
+        item = Item(item)
+    if use_icalendar and item.parsed is not None:
+        # We have to explicitly check "is not None" here because VCALENDARS
+        # with only subcomponents and no own properties are also false-ish.
+        lines = to_unicode_lines(item.parsed)
+    else:
+        lines = sorted(item.raw.splitlines())
 
     return u'\r\n'.join(line.strip()
                         for line in lines

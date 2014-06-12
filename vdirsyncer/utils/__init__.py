@@ -15,6 +15,7 @@ from .compat import urlparse, get_raw_input
 
 
 logger = log.get(__name__)
+_missing = object()
 
 
 try:
@@ -288,3 +289,25 @@ def checkfile(path, create=False):
                           'True in your configuration to automatically '
                           'create it, or create it '
                           'yourself.'.format(path))
+
+
+class cached_property(object):
+    '''
+    Copied from Werkzeug.
+    Copyright 2007-2014 Armin Ronacher
+    '''
+
+    def __init__(self, func, name=None, doc=None):
+        self.__name__ = name or func.__name__
+        self.__module__ = func.__module__
+        self.__doc__ = doc or func.__doc__
+        self.func = func
+
+    def __get__(self, obj, type=None):
+        if obj is None:
+            return self
+        value = obj.__dict__.get(self.__name__, _missing)
+        if value is _missing:
+            value = self.func(obj)
+            obj.__dict__[self.__name__] = value
+        return value
