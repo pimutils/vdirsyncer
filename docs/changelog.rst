@@ -8,7 +8,7 @@ package maintainers. For further info, see the git commit log.
 Version 0.2.0
 =============
 
-*unreleased*
+*released on 12 June 2014*
 
 - vdirsyncer now depends on the ``icalendar`` package from PyPI, to get rid of
   its own broken parser.
