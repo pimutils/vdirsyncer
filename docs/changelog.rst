@@ -5,7 +5,7 @@ Changelog
 This changelog only contains information that might be useful to end users and
 package maintainers. For further info, see the git commit log.
 
-Version 0.1.6
+Version 0.2.0
 =============
 
 *unreleased*

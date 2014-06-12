@@ -9,12 +9,22 @@
     :copyright: (c) 2014 Markus Unterwaditzer & contributors
     :license: MIT, see LICENSE for more details.
 '''
-
+import ast
+import re
 from setuptools import setup, find_packages
+
+
+_version_re = re.compile(r'__version__\s+=\s+(.*)')
+
+
+with open('vdirsyncer/__init__.py', 'rb') as f:
+    version = str(ast.literal_eval(_version_re.search(
+        f.read().decode('utf-8')).group(1)))
+
 
 setup(
     name='vdirsyncer',
-    version='0.1.5',
+    version=version,
     author='Markus Unterwaditzer',
     author_email='markus@unterwaditzer.net',
     url='https://github.com/untitaker/vdirsyncer',
