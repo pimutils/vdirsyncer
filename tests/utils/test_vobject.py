@@ -94,6 +94,7 @@ def test_multiline_uid():
          u'END:FOO\r\n')
     assert vobject.Item(a).uid == u'123456789abcdefgh'
 
+
 def test_multiline_uid_complex():
     a = u'''
 BEGIN:VCALENDAR
