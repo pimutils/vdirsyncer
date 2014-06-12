@@ -71,7 +71,7 @@ class Item(object):
         stack = [self.parsed]
         while stack:
             component = stack.pop()
-            if not component:
+            if component is None:
                 continue
             uid = component.get('UID', None)
             if uid:
