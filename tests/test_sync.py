@@ -12,7 +12,7 @@ import pytest
 from . import assert_item_equals, normalize_item
 from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.memory import MemoryStorage
-from vdirsyncer.sync import sync, SyncConflict, StorageEmpty
+from vdirsyncer.sync import sync, SyncConflict, StorageEmpty, BothReadOnly
 
 
 def empty_storage(x):
@@ -221,3 +221,25 @@ def test_no_uids():
     b_items = set(b.get(href)[0].raw for href, etag in b.list())
 
     assert a_items == b_items == {u'ASDF', u'FOOBAR'}
+
+
+def test_both_readonly():
+    a = MemoryStorage(read_only=True)
+    b = MemoryStorage(read_only=True)
+    assert a.read_only
+    assert b.read_only
+    status = {}
+    with pytest.raises(BothReadOnly):
+        sync(a, b, status)
+
+
+def test_readonly():
+    a = MemoryStorage()
+    b = MemoryStorage(read_only=True)
+    status = {}
+    href_a, _ = a.upload(Item(u'UID:1'))
+    href_b, _ = b.upload(Item(u'UID:2'))
+    sync(a, b, status)
+    assert len(status) == 2 and a.has(href_a) and not b.has(href_a)
+    sync(a, b, status)
+    assert len(status) == 1 and not a.has(href_a) and not b.has(href_a)

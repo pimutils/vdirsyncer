@@ -52,8 +52,8 @@ class HttpStorage(Storage):
     .. note::
 
         This is a read-only storage. If you sync this with
-        read-and-write-storages (such as CalDAV), make sure not to change
-        anything on the other side, otherwise vdirsyncer will crash.
+        read-and-write-storages (such as CalDAV), any changes on the other side
+        will get reverted.
 
     :param url: URL to the ``.ics`` file.
     :param username: Username for authentication.
@@ -82,6 +82,7 @@ class HttpStorage(Storage):
     '''
 
     storage_name = 'http'
+    read_only = True
     _repr_attributes = ('username', 'url')
     _items = None
 

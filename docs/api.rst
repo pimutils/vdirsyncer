@@ -74,6 +74,10 @@ Storage Section
 
 - ``type`` defines which kind of storage is defined. See :ref:`storages`.
 
+- ``read_only`` defines whether the storage should be regarded as a read-only
+  storage, defaulting to ``False``. Setting this to ``True`` effectively means
+  synchronization will discard any changes made to the other side.
+
 - Any further parameters are passed on to the storage class.
 
 .. _storages:
