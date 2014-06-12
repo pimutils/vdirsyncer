@@ -40,7 +40,7 @@ create table property (
        value text not null,
        collection_path varchar(200) references collection (path),
        primary key (name, collection_path));
-'''
+'''.split(';')
 
 storage_backend = os.environ.get('RADICALE_BACKEND', '') or 'filesystem'
 
@@ -78,7 +78,7 @@ def do_the_radicale_dance(tmpdir):
         from radicale.storage import database
 
         s = database.Session()
-        for line in RADICALE_SCHEMA.split(';'):
+        for line in RADICALE_SCHEMA:
             s.execute(line)
         s.commit()
     else:
