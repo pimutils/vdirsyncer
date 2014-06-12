@@ -7,6 +7,8 @@
     :license: MIT, see LICENSE for more details.
 '''
 
+import pytest
+
 from requests import Response
 
 from tests import normalize_item
@@ -71,3 +73,13 @@ def test_list(monkeypatch):
         assert item.uid is None
         assert etag2 == etag
         assert found_items[normalize_item(item)] == href
+
+
+def test_readonly_param():
+    url = u'http://example.com/'
+    with pytest.raises(ValueError):
+        HttpStorage(url=url, read_only=False)
+
+    a = HttpStorage(url=url, read_only=True).read_only
+    b = HttpStorage(url=url, read_only=None).read_only
+    assert a is b is True
