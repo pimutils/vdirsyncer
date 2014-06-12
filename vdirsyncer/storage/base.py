@@ -36,7 +36,16 @@ class Storage(object):
     '''
     fileext = '.txt'
     storage_name = None  # the name used in the config file
+    read_only = None
     _repr_attributes = ()
+
+    def __init__(self, read_only=None):
+        if read_only is None:
+            read_only = self.read_only
+        if self.read_only is not None and read_only != self.read_only:
+            raise ValueError('read_only must be {}'
+                             .format(repr(self.read_only)))
+        self.read_only = bool(read_only)
 
     @classmethod
     def discover(cls, **kwargs):

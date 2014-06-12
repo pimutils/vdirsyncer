@@ -27,6 +27,9 @@ Version 0.1.6
   values ``from a`` and ``from b`` for automatically discovering collections.
   See :ref:`pair_config`.
 
+- The ``read_only`` parameter was added to storage sections. See
+  :ref:`storage_config`.
+
 .. _`#48`: https://github.com/untitaker/vdirsyncer/issues/48
 
 Version 0.1.5

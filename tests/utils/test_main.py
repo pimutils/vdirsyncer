@@ -122,5 +122,5 @@ def test_get_class_init_args_on_storage():
     from vdirsyncer.storage.memory import MemoryStorage
 
     all, required = utils.get_class_init_args(MemoryStorage)
-    assert not all
+    assert all == set(['read_only'])
     assert not required

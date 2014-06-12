@@ -44,6 +44,13 @@ class StorageEmpty(SyncError):
     '''
 
 
+class BothReadOnly(SyncError):
+    '''
+    Both storages are marked as read-only. Synchronization is therefore not
+    possible.
+    '''
+
+
 def prepare_list(storage, href_to_status):
     rv = {}
     download = []
@@ -88,6 +95,8 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
         safety. Setting this parameter to ``True`` disables this safety
         measure.
     '''
+    if False not in (storage_a.read_only, storage_b.read_only):
+        raise BothReadOnly()
     a_href_to_status = dict(
         (href_a, (ident, etag_a))
         for ident, (href_a, etag_a, href_b, etag_b) in iteritems(status)
@@ -127,12 +136,18 @@ def action_upload(ident, source, dest):
 
         source_href = source_ident_to_href[ident]
         source_etag = source_list[source_href]['etag']
-
-        item = source_list[source_href]['item']
-        dest_href, dest_etag = dest_storage.upload(item)
-
         source_status = (source_href, source_etag)
-        dest_status = (dest_href, dest_etag)
+
+        dest_status = (None, None)
+
+        if dest_storage.read_only:
+            sync_logger.warning('{dest} is read-only. Skipping update...'
+                                .format(dest=dest_storage))
+        else:
+            item = source_list[source_href]['item']
+            dest_href, dest_etag = dest_storage.upload(item)
+            dest_status = (dest_href, dest_etag)
+
         status[ident] = source_status + dest_status if source == 'a' else \
             dest_status + source_status
 
@@ -145,17 +160,25 @@ def action_update(ident, source, dest):
         dest_storage, dest_list, dest_ident_to_href = storages[dest]
         sync_logger.info('Copying (updating) item {} to {}'
                          .format(ident, dest_storage))
+
         source_href = source_ident_to_href[ident]
         source_etag = source_list[source_href]['etag']
+        source_status = (source_href, source_etag)
 
         dest_href = dest_ident_to_href[ident]
-        old_etag = dest_list[dest_href]['etag']
-        item = source_list[source_href]['item']
-        dest_etag = dest_storage.update(dest_href, item, old_etag)
-        assert isinstance(dest_etag, (bytes, text_type))
-
-        source_status = (source_href, source_etag)
+        dest_etag = dest_list[dest_href]['etag']
         dest_status = (dest_href, dest_etag)
+
+        if dest_storage.read_only:
+            sync_logger.info('{dest} is read-only. Skipping update...'
+                             .format(dest=dest_storage))
+        else:
+            item = source_list[source_href]['item']
+            dest_etag = dest_storage.update(dest_href, item, dest_etag)
+            assert isinstance(dest_etag, (bytes, text_type))
+
+            dest_status = (dest_href, dest_etag)
+
         status[ident] = source_status + dest_status if source == 'a' else \
             dest_status + source_status
 
@@ -168,12 +191,17 @@ def action_delete(ident, dest):
             dest_storage, dest_list, dest_ident_to_href = storages[dest]
             sync_logger.info('Deleting item {} from {}'
                              .format(ident, dest_storage))
-            dest_href = dest_ident_to_href[ident]
-            dest_etag = dest_list[dest_href]['etag']
-            dest_storage.delete(dest_href, dest_etag)
+            if dest_storage.read_only:
+                sync_logger.warning('{dest} is read-only, skipping deletion...'
+                                    .format(dest=dest_storage))
+            else:
+                dest_href = dest_ident_to_href[ident]
+                dest_etag = dest_list[dest_href]['etag']
+                dest_storage.delete(dest_href, dest_etag)
         else:
             sync_logger.info('Deleting status info for nonexisting item {}'
                              .format(ident))
+
         del status[ident]
 
     return inner
