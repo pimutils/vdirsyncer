@@ -49,12 +49,6 @@ class HttpStorage(Storage):
     Use a simple ``.ics`` file (or similar) from the web. Usable as ``http`` in
     the config file.
 
-    .. note::
-
-        This is a read-only storage. If you sync this with
-        read-and-write-storages (such as CalDAV), any changes on the other side
-        will get reverted.
-
     :param url: URL to the ``.ics`` file.
     :param username: Username for authentication.
     :param password: Password for authentication.

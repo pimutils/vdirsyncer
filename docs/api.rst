@@ -75,8 +75,9 @@ Storage Section
 - ``type`` defines which kind of storage is defined. See :ref:`storages`.
 
 - ``read_only`` defines whether the storage should be regarded as a read-only
-  storage, defaulting to ``False``. Setting this to ``True`` effectively means
-  synchronization will discard any changes made to the other side.
+  storage. The value ``True`` means synchronization will discard any changes
+  made to the other side. The value ``False`` implies normal 2-way
+  synchronization.
 
 - Any further parameters are passed on to the storage class.
 
@@ -87,12 +88,26 @@ Supported Storages
 
 .. module:: vdirsyncer.storage
 
+Read-write storages
+-------------------
+
+These storages generally support reading and changing of their items. Their
+default value for ``read_only`` is ``False``, but can be set to ``True`` if
+wished.
+
 .. autoclass:: CaldavStorage
 
 .. autoclass:: CarddavStorage
 
 .. autoclass:: FilesystemStorage
 
-.. autoclass:: HttpStorage
-
 .. autoclass:: SingleFileStorage
+
+Read-only storages
+------------------
+
+These storages don't support writing of their items, consequently ``read_only``
+is set to ``True`` by default. Changing ``read_only`` to ``False`` on them
+might eventually lead to a crash of vdirsyncer when trying to write to them.
+
+.. autoclass:: HttpStorage
