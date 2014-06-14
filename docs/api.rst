@@ -108,6 +108,6 @@ Read-only storages
 
 These storages don't support writing of their items, consequently ``read_only``
 is set to ``True`` by default. Changing ``read_only`` to ``False`` on them
-might eventually lead to a crash of vdirsyncer when trying to write to them.
+leads to an error.
 
 .. autoclass:: HttpStorage

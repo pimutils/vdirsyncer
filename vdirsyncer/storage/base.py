@@ -34,23 +34,27 @@ class Storage(object):
         to many collections (e.g. a vdir) and the given collection name will be
         looked for.
     '''
+
     fileext = '.txt'
-    storage_name = None  # the name used in the config file
+    storage_name = None  # The name used in the config file.
+
+    # A value of True means the storage does not support write-methods such as
+    # upload, update and delete.  A value of False means the storage does
+    # support those methods, but it may also be used in read-only mode.
     read_only = None
+
+    # The attribute values to show in the representation of the storage.
     _repr_attributes = ()
 
     def __init__(self, read_only=None):
-        if read_only is None:
-            read_only = self.read_only
-        if self.read_only is not None and read_only != self.read_only:
-            raise ValueError('read_only must be {}'
-                             .format(repr(self.read_only)))
+        if self.read_only and not read_only:
+            raise ValueError('This storage is read-only.')
         self.read_only = bool(read_only)
 
     @classmethod
     def discover(cls, **kwargs):
-        '''
-        Discover collections given a basepath or -URL to many collections.
+        '''Discover collections given a basepath or -URL to many collections.
+
         :param **kwargs: Keyword arguments to additionally pass to the storage
             instances returned. You shouldn't pass `collection` here, otherwise
             TypeError will be raised.
@@ -75,7 +79,8 @@ class Storage(object):
         raise NotImplementedError()
 
     def get(self, href):
-        '''
+        '''Fetch a single item.
+
         :param href: href to fetch
         :returns: (item, etag)
         :raises: :exc:`vdirsyncer.exceptions.PreconditionFailed` if item can't
@@ -84,7 +89,11 @@ class Storage(object):
         raise NotImplementedError()
 
     def get_multi(self, hrefs):
-        '''
+        '''Fetch multiple items.
+        
+        Functionally similar to :py:meth:`get`, but might bring performance
+        benefits on some storages when used cleverly.
+
         :param hrefs: list of hrefs to fetch
         :raises: :exc:`vdirsyncer.exceptions.PreconditionFailed` if one of the
             items couldn't be found.
@@ -95,8 +104,8 @@ class Storage(object):
             yield href, item, etag
 
     def has(self, href):
-        '''
-        check if item exists by href
+        '''Check if an item exists by its href.
+
         :returns: True or False
         '''
         try:
@@ -107,27 +116,30 @@ class Storage(object):
             return True
 
     def upload(self, item):
-        '''
-        Upload a new item, raise
-        :exc:`vdirsyncer.exceptions.PreconditionFailed` if it already exists.
+        '''Upload a new item.
+
+        :raises: :exc:`vdirsyncer.exceptions.PreconditionFailed` if there is
+            already an item with that href.
+
         :returns: (href, etag)
         '''
         raise NotImplementedError()
 
     def update(self, href, item, etag):
-        '''
-        Update the item, raise
-        :exc:`vdirsyncer.exceptions.PreconditionFailed` if the etag on the
-        server doesn't match the given etag or if the item doesn't exist.
+        '''Update an item.
+
+        :raises: :exc:`vdirsyncer.exceptions.PreconditionFailed` if the etag on
+            the server doesn't match the given etag or if the item doesn't
+            exist.
 
         :returns: etag
         '''
         raise NotImplementedError()
 
     def delete(self, href, etag):
-        '''
-        Delete the item by href, raise
-        :exc:`vdirsyncer.exceptions.PreconditionFailed` when item has a
-        different etag or doesn't exist.
+        '''Delete an item by href.
+
+        :raises: :exc:`vdirsyncer.exceptions.PreconditionFailed` when item has
+            a different etag or doesn't exist.
         '''
         raise NotImplementedError()
