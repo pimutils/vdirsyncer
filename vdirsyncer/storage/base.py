@@ -41,12 +41,14 @@ class Storage(object):
     # A value of True means the storage does not support write-methods such as
     # upload, update and delete.  A value of False means the storage does
     # support those methods, but it may also be used in read-only mode.
-    read_only = None
+    read_only = False
 
     # The attribute values to show in the representation of the storage.
     _repr_attributes = ()
 
     def __init__(self, read_only=None):
+        if read_only is None:
+            read_only = self.read_only
         if self.read_only and not read_only:
             raise ValueError('This storage is read-only.')
         self.read_only = bool(read_only)
