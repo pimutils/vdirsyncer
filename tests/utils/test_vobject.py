@@ -12,25 +12,42 @@ import vdirsyncer.utils.vobject as vobject
 from .. import normalize_item, VCARD_TEMPLATE, BARE_EVENT_TEMPLATE, \
     EVENT_TEMPLATE
 
-_simple_joined = u'\r\n'.join((
-    u'BEGIN:VADDRESSBOOK',
-    VCARD_TEMPLATE.format(r=123),
-    VCARD_TEMPLATE.format(r=345),
-    VCARD_TEMPLATE.format(r=678),
-    u'END:VADDRESSBOOK\r\n'
-))
-
 _simple_split = [
     VCARD_TEMPLATE.format(r=123),
     VCARD_TEMPLATE.format(r=345),
     VCARD_TEMPLATE.format(r=678)
 ]
 
+_simple_joined = u'\r\n'.join(
+    [u'BEGIN:VADDRESSBOOK'] +
+    _simple_split +
+    [u'END:VADDRESSBOOK\r\n']
+)
+
 
 def test_split_collection_simple():
     given = list(vobject.split_collection(_simple_joined))
+
     assert [normalize_item(item) for item in given] == \
         [normalize_item(item) for item in _simple_split]
+
+    if vobject.ICALENDAR_ORIGINAL_ORDER_SUPPORT:
+        assert [x.splitlines() for x in given] == \
+            [x.splitlines() for x in _simple_split]
+
+
+def test_split_collection_multiple_wrappers():
+    joined = u'\r\n'.join(
+        u'BEGIN:VADDRESSBOOK\r\n' +
+        x +
+        u'\r\nEND:VADDRESSBOOK\r\n'
+        for x in _simple_split
+    )
+    given = list(vobject.split_collection(joined))
+
+    assert [normalize_item(item) for item in given] == \
+        [normalize_item(item) for item in _simple_split]
+
     if vobject.ICALENDAR_ORIGINAL_ORDER_SUPPORT:
         assert [x.splitlines() for x in given] == \
             [x.splitlines() for x in _simple_split]

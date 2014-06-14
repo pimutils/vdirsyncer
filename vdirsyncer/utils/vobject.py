@@ -12,7 +12,7 @@ import icalendar.cal
 import icalendar.parser
 import icalendar.caselessdict
 
-from . import cached_property
+from . import cached_property, split_sequence
 from .compat import text_type, itervalues
 
 
@@ -128,25 +128,33 @@ def split_collection(text, inline=(u'VTIMEZONE',),
                      wrap_items_with=(u'VCALENDAR',)):
     '''Emits items in the order they occur in the text.'''
     assert isinstance(text, text_type)
-    collection = icalendar.cal.Component.from_ical(text)
-    items = collection.subcomponents
+    collections = icalendar.cal.Component.from_ical(text, multiple=True)
+    assert collections
+    collection_name = None
 
-    if collection.name in wrap_items_with:
-        start = u'BEGIN:{}'.format(collection.name)
-        end = u'END:{}'.format(collection.name)
-    else:
-        start = end = u''
+    for collection in collections:
+        items = collection.subcomponents
+        if collection_name is None:
+            collection_name = collection.name
 
-    inlined_items = {}
-    for item in items:
-        if item.name in inline:
-            inlined_items[item.name] = item
+            if collection_name in wrap_items_with:
+                start = u'BEGIN:{}'.format(collection_name)
+                end = u'END:{}'.format(collection_name)
+            else:
+                start = end = u''
 
-    for item in items:
-        if item.name not in inline:
+        if collection.name != collection.name:
+            raise ValueError('Different types of components at top-level. '
+                             'Expected {}, got {}.'
+                             .format(collection_name, collection.name))
+
+        inlined_items, normal_items = \
+            split_sequence(items, lambda item: item.name in inline)
+
+        for item in normal_items:
             lines = []
             lines.append(start)
-            for inlined_item in itervalues(inlined_items):
+            for inlined_item in inlined_items:
                 lines.extend(to_unicode_lines(inlined_item))
 
             lines.extend(to_unicode_lines(item))

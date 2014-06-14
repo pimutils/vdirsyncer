@@ -11,7 +11,7 @@ import os
 import requests
 
 from .. import log, exceptions
-from .compat import urlparse, get_raw_input
+from .compat import urlparse, get_raw_input, iteritems
 
 
 logger = log.get(__name__)
@@ -35,13 +35,19 @@ def expand_path(p):
 
 def split_dict(d, f):
     '''Puts key into first dict if f(key), otherwise in second dict'''
-    a = {}
-    b = {}
-    for k, v in d.items():
-        if f(k):
-            a[k] = v
+    a, b = split_sequence(iteritems(d), lambda item: f(item[0]))
+    return dict(a), dict(b)
+
+
+def split_sequence(s, f):
+    '''Puts item into first list if f(item), else in second list'''
+    a = []
+    b = []
+    for item in s:
+        if f(item):
+            a.append(item)
         else:
-            b[k] = v
+            b.append(item)
 
     return a, b
 
