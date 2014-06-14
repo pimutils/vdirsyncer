@@ -130,15 +130,23 @@ def split_collection(text, inline=(u'VTIMEZONE',),
     assert isinstance(text, text_type)
     collections = icalendar.cal.Component.from_ical(text, multiple=True)
     assert collections
+    collection_name = None
 
     for collection in collections:
         items = collection.subcomponents
+        if collection_name is None:
+            collection_name = collection.name
 
-        if collection.name in wrap_items_with:
-            start = u'BEGIN:{}'.format(collection.name)
-            end = u'END:{}'.format(collection.name)
-        else:
-            start = end = u''
+            if collection_name in wrap_items_with:
+                start = u'BEGIN:{}'.format(collection_name)
+                end = u'END:{}'.format(collection_name)
+            else:
+                start = end = u''
+
+        if collection.name != collection.name:
+            raise ValueError('Different types of components at top-level. '
+                             'Expected {}, got {}.'
+                             .format(collection_name, collection.name))
 
         inlined_items, normal_items = \
             split_sequence(items, lambda item: item.name in inline)
