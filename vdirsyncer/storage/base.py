@@ -92,7 +92,7 @@ class Storage(object):
 
     def get_multi(self, hrefs):
         '''Fetch multiple items.
-        
+
         Functionally similar to :py:meth:`get`, but might bring performance
         benefits on some storages when used cleverly.
 
