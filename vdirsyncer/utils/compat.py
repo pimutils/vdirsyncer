@@ -20,7 +20,6 @@ if PY2:
     text_type = unicode  # flake8: noqa
     iteritems = lambda x: x.iteritems()
     itervalues = lambda x: x.itervalues()
-    get_raw_input = raw_input
 else:
     import urllib.parse as urlparse
     urlquote_plus = urlparse.quote_plus
@@ -28,4 +27,3 @@ else:
     text_type = str
     iteritems = lambda x: x.items()
     itervalues = lambda x: x.values()
-    get_raw_input = input
