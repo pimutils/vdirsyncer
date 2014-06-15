@@ -130,7 +130,8 @@ class TestCaldavStorage(DavStorageTests):
         monkeypatch.setattr(s, '_list', _list)
 
         rv = list(s.list())
-        if dav_server != 'radicale' or item.parsed.name in s.item_types:
+        if (dav_server != 'radicale' and not s.item_types) \
+           or item.parsed.name in s.item_types:
             assert rv == [(href, etag)]
         assert len(calls) == (len(item_types) or 1)
 
