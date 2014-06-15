@@ -475,7 +475,8 @@ class CaldavStorage(DavStorage):
                  item_types='VTODO, VEVENT', **kwargs):
         super(CaldavStorage, self).__init__(**kwargs)
         if isinstance(item_types, str):
-            item_types = [x.strip() for x in item_types.split(',')]
+            item_types = filter(bool,
+                                (x.strip() for x in item_types.split(',')))
         self.item_types = tuple(item_types)
         if (start_date is None) != (end_date is None):
             raise ValueError('If start_date is given, '
