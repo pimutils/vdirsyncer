@@ -293,14 +293,17 @@ def _main(env, file_cfg):
             cli_logger.debug('Using multiprocessing.')
             from multiprocessing import Pool
             p = Pool(processes=general.get('processes', 0) or len(actions))
-            p.map_async(_sync_collection, actions).get(10**9)
+            if not all(p.map_async(_sync_collection, actions).get(10**9)):
+                raise CliError()
 
     app.register_command('sync', sync_command)
 
     try:
         app()
     except CliError as e:
-        cli_logger.critical(str(e))
+        msg = str(e)
+        if msg:
+            cli_logger.critical(msg)
         sys.exit(1)
 
 
@@ -319,6 +322,7 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
 
     cli_logger.info('Syncing {}'.format(collection_description))
     status = load_status(general['status_path'], status_name)
+    rv = True
     try:
         sync(
             a, b, status,
@@ -326,6 +330,7 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
             force_delete=status_name in force_delete
         )
     except StorageEmpty as e:
+        rv = False
         cli_logger.critical(
             '{collection}: Storage "{side}" ({storage}) was completely '
             'emptied. Use "--force-delete {status_name}" to synchronize that '
@@ -338,6 +343,7 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
             )
         )
     except SyncConflict as e:
+        rv = False
         cli_logger.critical(
             '{collection}: One item changed on both sides. Resolve this '
             'conflict manually, or by setting the `conflict_resolution` '
@@ -349,7 +355,9 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
             .format(collection=collection_description, e=e, docs=DOCS_HOME)
         )
     except Exception:
+        rv = False
         cli_logger.exception('Unhandled exception occured while syncing {}.'
                              .format(collection_description))
 
     save_status(general['status_path'], status_name, status)
+    return rv
