@@ -15,18 +15,25 @@ take a look at `vfix <https://github.com/geier/vfix>`_.
 Radicale
 ========
 
-vdirsyncer is tested against the git version and the latest PyPI release of
+Vdirsyncer is tested against the git version and the latest PyPI release of
 Radicale.
 
-Radicale doesn't `support time ranges in the calendar-query of CalDAV
-<https://github.com/Kozea/Radicale/issues/146>`_, so setting ``start_date`` and
-``end_date`` for :py:class:`vdirsyncer.storage.CaldavStorage` will have no or
-unpredicted consequences.
+- Radicale doesn't `support time ranges in the calendar-query of CalDAV
+  <https://github.com/Kozea/Radicale/issues/146>`_, so setting ``start_date``
+  and ``end_date`` for :py:class:`vdirsyncer.storage.CaldavStorage` will have
+  no or unpredicted consequences.
+
+- Versions of Radicale older than 0.9b1 don't support the necessary
+  functionality for efficient querying for all items of a collection.
+  Vdirsyncer's defaults are supposed to deal with this situation, but if you're
+  using :py:class:`vdirsyncer.storage.CaldavStorage` and set ``item_types`` to
+  an empty value (``item_types =``), these versions of Radicale will not work
+  properly.
 
 ownCloud
 ========
 
-vdirsyncer is tested against the latest version of ownCloud.
+Vdirsyncer is tested against the latest version of ownCloud.
 
 ownCloud uses SabreDAV, which had problems detecting collisions and
 race-conditions. The problems were reported and are fixed in SabreDAV's repo.
