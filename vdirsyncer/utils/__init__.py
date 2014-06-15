@@ -10,9 +10,10 @@
 import os
 
 import requests
+import click
 
 from .. import exceptions, log
-from .compat import get_raw_input, iteritems, urlparse
+from .compat import iteritems, urlparse
 
 
 logger = log.get(__name__)
@@ -155,8 +156,6 @@ def get_password(username, resource):
 
 
     """
-    import getpass
-
     for func in (_password_from_netrc, _password_from_keyring):
         password = func(username, resource)
         if password is not None:
@@ -164,18 +163,14 @@ def get_password(username, resource):
                          .format(username, func.__doc__))
             return password
 
-    prompt = ('Server password for {} at the resource {}: '
+    prompt = ('Server password for {} at the resource {}'
               .format(username, resource))
-    password = getpass.getpass(prompt=prompt)
+    password = click.prompt(prompt=prompt, hide_input=True)
 
-    if keyring is not None:
-        answer = None
-        while answer not in ['', 'y', 'n']:
-            prompt = 'Save this password in the keyring? [y/N] '
-            answer = get_raw_input(prompt).lower()
-        if answer == 'y':
-            keyring.set_password(password_key_prefix + resource,
-                                 username, password)
+    if keyring is not None and \
+       click.confirm('Save this password in the keyring?', default=False):
+        keyring.set_password(password_key_prefix + resource,
+                             username, password)
 
     return password
 

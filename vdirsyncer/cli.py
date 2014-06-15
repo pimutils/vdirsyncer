@@ -11,7 +11,7 @@ import json
 import os
 import sys
 
-import argvard
+import click
 
 from . import log
 from .storage import storage_names
@@ -206,41 +206,29 @@ def parse_pairs_args(pairs_args, all_pairs):
 
 def _main(env, file_cfg):
     general, all_pairs, all_storages = file_cfg
-    app = argvard.Argvard()
 
-    @app.option('--verbosity verbosity')
-    def verbose_option(context, verbosity):
+    @click.group()
+    @click.option('--verbosity', '-v', default='INFO',
+                  help='Either CRITICAL, ERROR, WARNING, INFO or DEBUG')
+    def app(verbosity):
         '''
-        Basically Python logging levels.
-
-        CRITICAL: Config errors, at most.
-
-        ERROR: Normal errors, at most.
-
-        WARNING: Problems of which vdirsyncer thinks that it can handle them
-        itself, but which might crash other clients.
-
-        INFO: Normal output.
-
-        DEBUG: Show e.g. HTTP traffic. Not supposed to be readable by the
-        normal user.
-
+        vdirsyncer -- synchronize calendars and contacts
         '''
         verbosity = verbosity.upper()
         x = getattr(log.logging, verbosity, None)
         if x is None:
-            raise ValueError(u'Invalid verbosity value: {}'.format(verbosity))
-        log.set_level(x)
+            cli_logger.critical(u'Invalid verbosity value: {}'
+                                .format(verbosity))
+            sys.exit(1)
+        else:
+            log.set_level(x)
 
-    sync_command = argvard.Command()
-
-    @sync_command.option('--force-delete status_name')
-    def force_delete(context, status_name):
-        '''Pretty please delete all my data.'''
-        context.setdefault('force_delete', set()).add(status_name)
-
-    @sync_command.main('[pairs...]')
-    def sync_main(context, pairs=None):
+    @app.command()
+    @click.argument('pairs', nargs=-1)
+    @click.option('--force-delete', multiple=True,
+                  help=('Disable data-loss protection for the given pairs. '
+                        'Can be passed multiple times'))
+    def sync(pairs, force_delete):
         '''
         Synchronize the given pairs. If no pairs are given, all will be
         synchronized.
@@ -253,7 +241,7 @@ def _main(env, file_cfg):
         '''
         actions = []
         handled_collections = set()
-        force_delete = context.get('force_delete', set())
+        force_delete = set(force_delete)
         for pair_name, _collection in parse_pairs_args(pairs, all_pairs):
             for collection in expand_collection(pair_name, _collection,
                                                 all_pairs, all_storages):
@@ -293,16 +281,12 @@ def _main(env, file_cfg):
             from multiprocessing import Pool
             p = Pool(processes=general.get('processes', 0) or len(actions))
             if not all(p.map_async(_sync_collection, actions).get(10**9)):
-                raise CliError()
-
-    app.register_command('sync', sync_command)
+                sys.exit(1)
 
     try:
         app()
     except CliError as e:
-        msg = str(e)
-        if msg:
-            cli_logger.critical(msg)
+        cli_logger.critical(str(e))
         sys.exit(1)
 
 
