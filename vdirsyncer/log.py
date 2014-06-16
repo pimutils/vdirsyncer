@@ -10,7 +10,19 @@ import logging
 import sys
 
 
-stdout_handler = logging.StreamHandler(sys.stdout)
+class StdHandler(logging.StreamHandler):
+    '''Required hack for supporting streams monkeypatched by click.'''
+    def __init__(self, name):
+        logging.Handler.__init__(self)
+        self._name = name
+        self.stream
+
+    @property
+    def stream(self):
+        return getattr(sys, self._name)
+
+
+stdout_handler = StdHandler('stdout')
 default_level = logging.INFO
 
 

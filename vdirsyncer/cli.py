@@ -169,14 +169,6 @@ def expand_collection(pair, collection, all_pairs, all_storages):
         return [collection]
 
 
-def main():
-    env = os.environ
-
-    fname = expand_path(env.get('VDIRSYNCER_CONFIG', '~/.vdirsyncer/config'))
-    cfg = load_config(fname)
-    _main(env, cfg)
-
-
 def parse_pairs_args(pairs_args, all_pairs):
     if not pairs_args:
         pairs_args = list(all_pairs)
@@ -204,13 +196,12 @@ def parse_pairs_args(pairs_args, all_pairs):
             yield pair, c
 
 
-def _main(env, file_cfg):
-    general, all_pairs, all_storages = file_cfg
-
+def _create_app():
     @click.group()
     @click.option('--verbosity', '-v', default='INFO',
                   help='Either CRITICAL, ERROR, WARNING, INFO or DEBUG')
-    def app(verbosity):
+    @click.pass_context
+    def app(ctx, verbosity):
         '''
         vdirsyncer -- synchronize calendars and contacts
         '''
@@ -223,12 +214,21 @@ def _main(env, file_cfg):
         else:
             log.set_level(x)
 
+        if ctx.obj is None:
+            ctx.obj = {}
+
+        if 'config' not in ctx.obj:
+            fname = expand_path(os.environ.get('VDIRSYNCER_CONFIG',
+                                               '~/.vdirsyncer/config'))
+            ctx.obj['config'] = load_config(fname)
+
     @app.command()
     @click.argument('pairs', nargs=-1)
     @click.option('--force-delete', multiple=True,
                   help=('Disable data-loss protection for the given pairs. '
                         'Can be passed multiple times'))
-    def sync(pairs, force_delete):
+    @click.pass_context
+    def sync(ctx, pairs, force_delete):
         '''
         Synchronize the given pairs. If no pairs are given, all will be
         synchronized.
@@ -239,6 +239,8 @@ def _main(env, file_cfg):
         `vdirsyncer sync bob/first_collection` will sync "first_collection"
         from the pair "bob".
         '''
+        general, all_pairs, all_storages = ctx.obj['config']
+
         actions = []
         handled_collections = set()
         force_delete = set(force_delete)
@@ -275,19 +277,20 @@ def _main(env, file_cfg):
 
         if processes == 1:
             cli_logger.debug('Not using multiprocessing.')
-            map(_sync_collection, actions)
+            rv = (_sync_collection(x) for x in actions)
         else:
             cli_logger.debug('Using multiprocessing.')
             from multiprocessing import Pool
             p = Pool(processes=general.get('processes', 0) or len(actions))
-            if not all(p.map_async(_sync_collection, actions).get(10**9)):
-                sys.exit(1)
+            rv = p.map_async(_sync_collection, actions).get(10**9)
 
-    try:
-        app()
-    except CliError as e:
-        cli_logger.critical(str(e))
-        sys.exit(1)
+        if not all(rv):
+            sys.exit(1)
+
+    return app
+
+app = _create_app()
+del _create_app
 
 
 def _sync_collection(x):
@@ -344,3 +347,11 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
 
     save_status(general['status_path'], status_name, status)
     return rv
+
+
+def main():
+    try:
+        app()
+    except CliError as e:
+        cli_logger.critical(str(e))
+        sys.exit(1)

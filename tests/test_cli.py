@@ -8,6 +8,8 @@
 '''
 from textwrap import dedent
 
+from click.testing import CliRunner
+
 import vdirsyncer.cli as cli
 
 
@@ -124,3 +126,33 @@ def test_parse_pairs_args():
         ('one', 'c'),
         ('eins', None)
     ]
+
+
+def test_simple_run(tmpdir):
+    runner = CliRunner()
+    config_file = tmpdir.join('config')
+    config_file.write(dedent('''
+    [general]
+    status_path = {0}/status/
+
+    [pair my_pair]
+    a = my_a
+    b = my_b
+
+    [storage my_a]
+    type = filesystem
+    path = {0}/path_a/
+    fileext = .txt
+
+    [storage my_b]
+    type = filesystem
+    path = {0}/path_b/
+    fileext = .txt
+    ''').format(str(tmpdir)))
+
+    result = runner.invoke(
+        cli.app, ['sync'],
+        env={'VDIRSYNCER_CONFIG': str(config_file)}
+    )
+    assert not result.exception
+    assert result.output.lower().strip() == 'syncing my_pair'
