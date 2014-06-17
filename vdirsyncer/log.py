@@ -7,22 +7,36 @@
     :license: MIT, see LICENSE for more details.
 '''
 import logging
-import sys
+import click
 
 
-class StdHandler(logging.StreamHandler):
-    '''Required hack for supporting streams monkeypatched by click.'''
-    def __init__(self, name):
-        logging.Handler.__init__(self)
-        self._name = name
-        self.stream
+class ColorFormatter(logging.Formatter):
+    colors = {
+        'error': dict(fg='red'),
+        'exception': dict(fg='red'),
+        'critical': dict(fg='red'),
+        'debug': dict(fg='blue'),
+        'warning': dict(fg='yellow')
+    }
 
-    @property
-    def stream(self):
-        return getattr(sys, self._name)
+    def format(self, record):
+        if not record.exc_info:
+            level = record.levelname.lower()
+            if level in self.colors:
+                prefix = click.style('{}: '.format(level),
+                                     **self.colors[level])
+                record.msg = prefix + record.msg
+
+        return logging.Formatter.format(self, record)
 
 
-stdout_handler = StdHandler('stdout')
+class ClickStream(object):
+    def write(self, string):
+        click.echo(string.rstrip())
+
+
+stdout_handler = logging.StreamHandler(ClickStream())
+stdout_handler.formatter = ColorFormatter()
 default_level = logging.INFO
 
 
