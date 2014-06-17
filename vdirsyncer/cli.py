@@ -317,7 +317,7 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
         )
     except StorageEmpty as e:
         rv = False
-        cli_logger.critical(
+        cli_logger.error(
             '{collection}: Storage "{side}" ({storage}) was completely '
             'emptied. Use "--force-delete {status_name}" to synchronize that '
             'emptyness to the other side, or delete the status by yourself to '
@@ -330,7 +330,7 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
         )
     except SyncConflict as e:
         rv = False
-        cli_logger.critical(
+        cli_logger.error(
             '{collection}: One item changed on both sides. Resolve this '
             'conflict manually, or by setting the `conflict_resolution` '
             'parameter in your config file.\n'
