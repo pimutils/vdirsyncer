@@ -64,13 +64,22 @@ def prepare_list(storage, href_to_status):
         else:
             download.append(href)
 
-    if download:
-        for href, item, etag in storage.get_multi(download):
-            props = rv[href]
-            props['item'] = item
-            props['ident'] = item.ident
-            if props['etag'] != etag:
-                raise SyncError('Etag changed during sync.')
+    prefetch(storage, rv, download)
+    return rv
+
+
+def prefetch(storage, rv, hrefs):
+    if rv is None:
+        rv = {}
+    if not hrefs:
+        return rv
+
+    for href, item, etag in storage.get_multi(hrefs):
+        props = rv.setdefault(href, {'etag': etag})
+        props['item'] = item
+        props['ident'] = item.ident
+        if props['etag'] != etag:
+            raise SyncError('Etag changed during sync.')
 
     return rv
 
