@@ -40,10 +40,14 @@ stdout_handler.formatter = ColorFormatter()
 default_level = logging.INFO
 
 
+def add_handler(handler):
+    for logger in loggers.values():
+        logger.addHandler(handler)
+
+
 def create_logger(name):
     x = logging.getLogger(name)
     x.setLevel(default_level)
-    x.addHandler(stdout_handler)
     return x
 
 
