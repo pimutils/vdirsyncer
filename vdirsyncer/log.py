@@ -32,7 +32,7 @@ class ColorFormatter(logging.Formatter):
 
 class ClickStream(object):
     def write(self, string):
-        click.echo(string.rstrip())
+        click.echo(string, nl=False)
 
 
 stdout_handler = logging.StreamHandler(ClickStream())
