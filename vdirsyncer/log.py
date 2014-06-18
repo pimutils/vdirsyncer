@@ -7,17 +7,47 @@
     :license: MIT, see LICENSE for more details.
 '''
 import logging
-import sys
+import click
 
 
-stdout_handler = logging.StreamHandler(sys.stdout)
+class ColorFormatter(logging.Formatter):
+    colors = {
+        'error': dict(fg='red'),
+        'exception': dict(fg='red'),
+        'critical': dict(fg='red'),
+        'debug': dict(fg='blue'),
+        'warning': dict(fg='yellow')
+    }
+
+    def format(self, record):
+        if not record.exc_info:
+            level = record.levelname.lower()
+            if level in self.colors:
+                prefix = click.style('{}: '.format(level),
+                                     **self.colors[level])
+                record.msg = prefix + record.msg
+
+        return logging.Formatter.format(self, record)
+
+
+class ClickStream(object):
+    def write(self, string):
+        click.echo(string, nl=False)
+
+
+stdout_handler = logging.StreamHandler(ClickStream())
+stdout_handler.formatter = ColorFormatter()
 default_level = logging.INFO
+
+
+def add_handler(handler):
+    for logger in loggers.values():
+        logger.addHandler(handler)
 
 
 def create_logger(name):
     x = logging.getLogger(name)
     x.setLevel(default_level)
-    x.addHandler(stdout_handler)
     return x
 
 

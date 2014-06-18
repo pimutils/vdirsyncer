@@ -10,8 +10,9 @@
 import json
 import os
 import sys
+import functools
 
-import argvard
+import click
 
 from . import log
 from .storage import storage_names
@@ -169,14 +170,6 @@ def expand_collection(pair, collection, all_pairs, all_storages):
         return [collection]
 
 
-def main():
-    env = os.environ
-
-    fname = expand_path(env.get('VDIRSYNCER_CONFIG', '~/.vdirsyncer/config'))
-    cfg = load_config(fname)
-    _main(env, cfg)
-
-
 def parse_pairs_args(pairs_args, all_pairs):
     if not pairs_args:
         pairs_args = list(all_pairs)
@@ -204,43 +197,55 @@ def parse_pairs_args(pairs_args, all_pairs):
             yield pair, c
 
 
-def _main(env, file_cfg):
-    general, all_pairs, all_storages = file_cfg
-    app = argvard.Argvard()
+def _create_app():
+    def catch_errors(f):
+        @functools.wraps(f)
+        def inner(*a, **kw):
+            try:
+                f(*a, **kw)
+            except CliError as e:
+                cli_logger.critical(str(e))
+                sys.exit(1)
 
-    @app.option('--verbosity verbosity')
-    def verbose_option(context, verbosity):
-        '''
-        Basically Python logging levels.
+        return inner
 
-        CRITICAL: Config errors, at most.
-
-        ERROR: Normal errors, at most.
-
-        WARNING: Problems of which vdirsyncer thinks that it can handle them
-        itself, but which might crash other clients.
-
-        INFO: Normal output.
-
-        DEBUG: Show e.g. HTTP traffic. Not supposed to be readable by the
-        normal user.
-
-        '''
-        verbosity = verbosity.upper()
-        x = getattr(log.logging, verbosity, None)
+    def validate_verbosity(ctx, param, value):
+        x = getattr(log.logging, value.upper(), None)
         if x is None:
-            raise ValueError(u'Invalid verbosity value: {}'.format(verbosity))
-        log.set_level(x)
+            raise click.BadParameter('Invalid verbosity value {}. Must be '
+                                     'CRITICAL, ERROR, WARNING, INFO or DEBUG'
+                                     .format(value))
+        return x
 
-    sync_command = argvard.Command()
+    @click.group()
+    @click.option('--verbosity', '-v', default='INFO',
+                  callback=validate_verbosity,
+                  help='Either CRITICAL, ERROR, WARNING, INFO or DEBUG')
+    @click.pass_context
+    @catch_errors
+    def app(ctx, verbosity):
+        '''
+        vdirsyncer -- synchronize calendars and contacts
+        '''
+        log.add_handler(log.stdout_handler)
+        log.set_level(verbosity)
 
-    @sync_command.option('--force-delete status_name')
-    def force_delete(context, status_name):
-        '''Pretty please delete all my data.'''
-        context.setdefault('force_delete', set()).add(status_name)
+        if ctx.obj is None:
+            ctx.obj = {}
 
-    @sync_command.main('[pairs...]')
-    def sync_main(context, pairs=None):
+        if 'config' not in ctx.obj:
+            fname = expand_path(os.environ.get('VDIRSYNCER_CONFIG',
+                                               '~/.vdirsyncer/config'))
+            ctx.obj['config'] = load_config(fname)
+
+    @app.command()
+    @click.argument('pairs', nargs=-1)
+    @click.option('--force-delete', multiple=True,
+                  help=('Disable data-loss protection for the given pairs. '
+                        'Can be passed multiple times'))
+    @click.pass_context
+    @catch_errors
+    def sync(ctx, pairs, force_delete):
         '''
         Synchronize the given pairs. If no pairs are given, all will be
         synchronized.
@@ -251,9 +256,11 @@ def _main(env, file_cfg):
         `vdirsyncer sync bob/first_collection` will sync "first_collection"
         from the pair "bob".
         '''
+        general, all_pairs, all_storages = ctx.obj['config']
+
         actions = []
         handled_collections = set()
-        force_delete = context.get('force_delete', set())
+        force_delete = set(force_delete)
         for pair_name, _collection in parse_pairs_args(pairs, all_pairs):
             for collection in expand_collection(pair_name, _collection,
                                                 all_pairs, all_storages):
@@ -287,23 +294,20 @@ def _main(env, file_cfg):
 
         if processes == 1:
             cli_logger.debug('Not using multiprocessing.')
-            map(_sync_collection, actions)
+            rv = (_sync_collection(x) for x in actions)
         else:
             cli_logger.debug('Using multiprocessing.')
             from multiprocessing import Pool
             p = Pool(processes=general.get('processes', 0) or len(actions))
-            if not all(p.map_async(_sync_collection, actions).get(10**9)):
-                raise CliError()
+            rv = p.map_async(_sync_collection, actions).get(10**9)
 
-    app.register_command('sync', sync_command)
+        if not all(rv):
+            sys.exit(1)
 
-    try:
-        app()
-    except CliError as e:
-        msg = str(e)
-        if msg:
-            cli_logger.critical(msg)
-        sys.exit(1)
+    return app
+
+app = main = _create_app()
+del _create_app
 
 
 def _sync_collection(x):
@@ -330,7 +334,7 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
         )
     except StorageEmpty as e:
         rv = False
-        cli_logger.critical(
+        cli_logger.error(
             '{collection}: Storage "{side}" ({storage}) was completely '
             'emptied. Use "--force-delete {status_name}" to synchronize that '
             'emptyness to the other side, or delete the status by yourself to '
@@ -343,7 +347,7 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
         )
     except SyncConflict as e:
         rv = False
-        cli_logger.critical(
+        cli_logger.error(
             '{collection}: One item changed on both sides. Resolve this '
             'conflict manually, or by setting the `conflict_resolution` '
             'parameter in your config file.\n'
