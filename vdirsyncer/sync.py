@@ -104,8 +104,9 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
         safety. Setting this parameter to ``True`` disables this safety
         measure.
     '''
-    if False not in (storage_a.read_only, storage_b.read_only):
+    if storage_a.read_only and storage_b.read_only:
         raise BothReadOnly()
+
     a_href_to_status = dict(
         (href_a, (ident, etag_a))
         for ident, (href_a, etag_a, href_b, etag_b) in iteritems(status)
