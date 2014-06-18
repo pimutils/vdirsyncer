@@ -129,7 +129,6 @@ def test_parse_pairs_args():
 
 
 def test_simple_run(tmpdir):
-    runner = CliRunner()
     config_file = tmpdir.join('config')
     config_file.write(dedent('''
     [general]
@@ -150,9 +149,37 @@ def test_simple_run(tmpdir):
     fileext = .txt
     ''').format(str(tmpdir)))
 
+    runner = CliRunner()
     result = runner.invoke(
         cli.app, ['sync'],
         env={'VDIRSYNCER_CONFIG': str(config_file)}
     )
     assert not result.exception
     assert result.output.lower().strip() == 'syncing my_pair'
+
+
+def test_missing_general_section(tmpdir):
+    config_file = tmpdir.join('config')
+    config_file.write(dedent('''
+    [pair my_pair]
+    a = my_a
+    b = my_b
+
+    [storage my_a]
+    type = filesystem
+    path = {0}/path_a/
+    fileext = .txt
+
+    [storage my_b]
+    type = filesystem
+    path = {0}/path_b/
+    fileext = .txt
+    ''').format(str(tmpdir)))
+
+    runner = CliRunner()
+    result = runner.invoke(
+        cli.app, ['sync'],
+        env={'VDIRSYNCER_CONFIG': str(config_file)}
+    )
+    assert result.exception
+    assert 'unable to find general section' in result.output.lower()
