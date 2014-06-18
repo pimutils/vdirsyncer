@@ -10,6 +10,7 @@
 import json
 import os
 import sys
+import functools
 
 import click
 
@@ -197,24 +198,37 @@ def parse_pairs_args(pairs_args, all_pairs):
 
 
 def _create_app():
+    def catch_errors(f):
+        @functools.wraps(f)
+        def inner(*a, **kw):
+            try:
+                f(*a, **kw)
+            except CliError as e:
+                cli_logger.critical(str(e))
+                sys.exit(1)
+
+        return inner
+
+    def validate_verbosity(ctx, param, value):
+        x = getattr(log.logging, value.upper(), None)
+        if x is None:
+            raise click.BadParameter('Invalid verbosity value {}. Must be '
+                                     'CRITICAL, ERROR, WARNING, INFO or DEBUG'
+                                     .format(value))
+        return x
+
     @click.group()
     @click.option('--verbosity', '-v', default='INFO',
+                  callback=validate_verbosity,
                   help='Either CRITICAL, ERROR, WARNING, INFO or DEBUG')
     @click.pass_context
+    @catch_errors
     def app(ctx, verbosity):
         '''
         vdirsyncer -- synchronize calendars and contacts
         '''
         log.add_handler(log.stdout_handler)
-
-        verbosity = verbosity.upper()
-        x = getattr(log.logging, verbosity, None)
-        if x is None:
-            cli_logger.critical(u'Invalid verbosity value: {}'
-                                .format(verbosity))
-            sys.exit(1)
-        else:
-            log.set_level(x)
+        log.set_level(verbosity)
 
         if ctx.obj is None:
             ctx.obj = {}
@@ -230,6 +244,7 @@ def _create_app():
                   help=('Disable data-loss protection for the given pairs. '
                         'Can be passed multiple times'))
     @click.pass_context
+    @catch_errors
     def sync(ctx, pairs, force_delete):
         '''
         Synchronize the given pairs. If no pairs are given, all will be
@@ -291,7 +306,7 @@ def _create_app():
 
     return app
 
-app = _create_app()
+app = main = _create_app()
 del _create_app
 
 
@@ -349,11 +364,3 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
 
     save_status(general['status_path'], status_name, status)
     return rv
-
-
-def main():
-    try:
-        app()
-    except CliError as e:
-        cli_logger.critical(str(e))
-        sys.exit(1)

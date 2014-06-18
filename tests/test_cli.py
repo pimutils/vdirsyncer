@@ -182,4 +182,4 @@ def test_missing_general_section(tmpdir):
         env={'VDIRSYNCER_CONFIG': str(config_file)}
     )
     assert result.exception
-    assert 'unable to find general section' in result.output.lower()
+    assert 'critical: unable to find general section' in result.output.lower()
