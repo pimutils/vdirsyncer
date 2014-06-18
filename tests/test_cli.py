@@ -149,13 +149,14 @@ def test_simple_run(tmpdir):
     fileext = .txt
     ''').format(str(tmpdir)))
 
-    runner = CliRunner()
-    result = runner.invoke(
-        cli.app, ['sync'],
-        env={'VDIRSYNCER_CONFIG': str(config_file)}
-    )
+    runner = CliRunner(env={'VDIRSYNCER_CONFIG': str(config_file)})
+    result = runner.invoke(cli.app, ['sync'])
     assert not result.exception
     assert result.output.lower().strip() == 'syncing my_pair'
+
+    tmpdir.join('path_a/haha.txt').write('UID:haha')
+    result = runner.invoke(cli.app, ['sync'])
+    assert tmpdir.join('path_b/haha.txt').read() == 'UID:haha'
 
 
 def test_missing_general_section(tmpdir):
@@ -183,3 +184,19 @@ def test_missing_general_section(tmpdir):
     )
     assert result.exception
     assert 'critical: unable to find general section' in result.output.lower()
+
+
+def test_verbosity(tmpdir):
+    runner = CliRunner()
+    config_file = tmpdir.join('config')
+    config_file.write(dedent('''
+    [general]
+    status_path = {0}/status/
+    ''').format(str(tmpdir)))
+
+    result = runner.invoke(
+        cli.app, ['--verbosity=HAHA', 'sync'],
+        env={'VDIRSYNCER_CONFIG': str(config_file)}
+    )
+    assert result.exception
+    assert 'invalid verbosity value'
