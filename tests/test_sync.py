@@ -9,10 +9,11 @@
 
 import pytest
 
-from . import assert_item_equals, normalize_item
 from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.memory import MemoryStorage
-from vdirsyncer.sync import sync, SyncConflict, StorageEmpty, BothReadOnly
+from vdirsyncer.sync import BothReadOnly, StorageEmpty, SyncConflict, sync
+
+from . import assert_item_equals, normalize_item
 
 
 def empty_storage(x):

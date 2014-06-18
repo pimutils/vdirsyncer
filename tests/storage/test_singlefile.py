@@ -9,9 +9,10 @@
 
 import pytest
 
-from .. import assert_item_equals, EVENT_TEMPLATE
-from . import StorageTests
 from vdirsyncer.storage.singlefile import SingleFileStorage
+
+from . import StorageTests
+from .. import EVENT_TEMPLATE, assert_item_equals
 
 
 class TestSingleFileStorage(StorageTests):

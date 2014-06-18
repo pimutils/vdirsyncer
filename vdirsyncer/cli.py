@@ -13,11 +13,10 @@ import sys
 
 import argvard
 
+from . import log
 from .storage import storage_names
-from .sync import sync, StorageEmpty, SyncConflict
-from .utils import expand_path, parse_options, split_dict, get_class_init_args
-
-import vdirsyncer.log as log
+from .sync import StorageEmpty, SyncConflict, sync
+from .utils import expand_path, get_class_init_args, parse_options, split_dict
 
 
 try:

@@ -9,11 +9,11 @@
 import hashlib
 
 import icalendar.cal
-import icalendar.parser
 import icalendar.caselessdict
+import icalendar.parser
 
 from . import cached_property, split_sequence
-from .compat import text_type, itervalues
+from .compat import itervalues, text_type
 
 
 def _process_properties(*s):

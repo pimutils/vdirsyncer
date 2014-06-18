@@ -8,8 +8,9 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-from . import StorageTests
 from vdirsyncer.storage.memory import MemoryStorage
+
+from . import StorageTests
 
 
 class TestMemoryStorage(StorageTests):

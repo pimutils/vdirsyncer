@@ -12,8 +12,9 @@ import os
 
 import pytest
 
-from . import StorageTests
 from vdirsyncer.storage.filesystem import FilesystemStorage
+
+from . import StorageTests
 
 
 class TestFilesystemStorage(StorageTests):

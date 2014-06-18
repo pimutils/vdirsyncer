@@ -9,8 +9,8 @@
 
 import vdirsyncer.utils.vobject as vobject
 
-from .. import normalize_item, VCARD_TEMPLATE, BARE_EVENT_TEMPLATE, \
-    EVENT_TEMPLATE
+from .. import BARE_EVENT_TEMPLATE, EVENT_TEMPLATE, VCARD_TEMPLATE, \
+    normalize_item
 
 _simple_split = [
     VCARD_TEMPLATE.format(r=123),

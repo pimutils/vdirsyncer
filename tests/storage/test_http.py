@@ -12,6 +12,7 @@ import pytest
 from requests import Response
 
 from tests import normalize_item
+
 from vdirsyncer.storage.http import HttpStorage
 
 

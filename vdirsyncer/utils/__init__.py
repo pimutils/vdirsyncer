@@ -8,10 +8,11 @@
 '''
 
 import os
+
 import requests
 
-from .. import log, exceptions
-from .compat import urlparse, get_raw_input, iteritems
+from .. import exceptions, log
+from .compat import get_raw_input, iteritems, urlparse
 
 
 logger = log.get(__name__)

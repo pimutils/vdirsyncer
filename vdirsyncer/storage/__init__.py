@@ -12,7 +12,7 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-from .dav import CarddavStorage, CaldavStorage
+from .dav import CaldavStorage, CarddavStorage
 from .filesystem import FilesystemStorage
 from .http import HttpStorage
 from .singlefile import SingleFileStorage

@@ -4,6 +4,7 @@ import os
 import sys
 
 import pytest
+
 import wsgi_intercept
 import wsgi_intercept.requests_intercept
 

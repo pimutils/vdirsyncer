@@ -9,10 +9,9 @@
 
 import os
 
+from .. import exceptions, log
 from .base import Item, Storage
-import vdirsyncer.exceptions as exceptions
-import vdirsyncer.log as log
-from ..utils import expand_path, safe_write, get_etag_from_file, checkdir
+from ..utils import checkdir, expand_path, get_etag_from_file, safe_write
 from ..utils.compat import text_type
 
 logger = log.get(__name__)

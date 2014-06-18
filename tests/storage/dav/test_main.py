@@ -16,11 +16,13 @@ import pytest
 import requests
 import requests.exceptions
 
-from .. import StorageTests
-from tests import VCARD_TEMPLATE, TASK_TEMPLATE, EVENT_TEMPLATE
+from tests import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE
+
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.dav import CaldavStorage, CarddavStorage
+
+from .. import StorageTests
 
 
 dav_server = os.environ.get('DAV_SERVER', '').strip() or 'radicale'

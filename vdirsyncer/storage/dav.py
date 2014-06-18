@@ -12,10 +12,9 @@ from lxml import etree
 
 from requests import session as requests_session
 
-from .base import Item, Storage
-from .http import prepare_auth, prepare_verify, USERAGENT
-
 from .. import exceptions, log, utils
+from .base import Item, Storage
+from .http import USERAGENT, prepare_auth, prepare_verify
 
 
 dav_logger = log.get(__name__)
