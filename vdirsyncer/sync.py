@@ -127,7 +127,9 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
         action(storages, status, conflict_resolution)
 
 
-def action_upload(ident, source, dest):
+def action_upload(ident, dest):
+    source = 'a' if dest == 'b' else 'b'
+
     def inner(storages, status, conflict_resolution):
         source_storage, source_list, source_ident_to_href = storages[source]
         dest_storage, dest_list, dest_ident_to_href = storages[dest]
@@ -154,7 +156,9 @@ def action_upload(ident, source, dest):
     return inner
 
 
-def action_update(ident, source, dest):
+def action_update(ident, dest):
+    source = 'a' if dest == 'b' else 'b'
+
     def inner(storages, status, conflict_resolution):
         source_storage, source_list, source_ident_to_href = storages[source]
         dest_storage, dest_list, dest_ident_to_href = storages[dest]
@@ -224,12 +228,10 @@ def action_conflict_resolve(ident):
             raise SyncConflict(ident=ident, href_a=href_a, href_b=href_b)
         elif conflict_resolution == 'a wins':
             sync_logger.info('...{} wins.'.format(a_storage))
-            action_update(ident, 'a', 'b')(storages, status,
-                                           conflict_resolution)
+            action_update(ident, 'b')(storages, status, conflict_resolution)
         elif conflict_resolution == 'b wins':
             sync_logger.info('...{} wins.'.format(b_storage))
-            action_update(ident, 'b', 'a')(storages, status,
-                                           conflict_resolution)
+            action_update(ident, 'a')(storages, status, conflict_resolution)
         else:
             raise ValueError('Invalid conflict resolution mode: {}'
                              .format(conflict_resolution))
@@ -255,18 +257,18 @@ def get_actions(storages, status):
             if a and b:  # missing status
                 yield action_conflict_resolve(ident)
             elif a and not b:  # new item was created in a
-                yield action_upload(ident, 'a', 'b')
+                yield action_upload(ident, 'b')
             elif not a and b:  # new item was created in b
-                yield action_upload(ident, 'b', 'a')
+                yield action_upload(ident, 'a')
         else:
             _, status_etag_a, _, status_etag_b = status[ident]
             if a and b:
                 if a['etag'] != status_etag_a and b['etag'] != status_etag_b:
                     yield action_conflict_resolve(ident)
                 elif a['etag'] != status_etag_a:  # item was updated in a
-                    yield action_update(ident, 'a', 'b')
+                    yield action_update(ident, 'b')
                 elif b['etag'] != status_etag_b:  # item was updated in b
-                    yield action_update(ident, 'b', 'a')
+                    yield action_update(ident, 'a')
             elif a and not b:  # was deleted from b
                 yield action_delete(ident, 'a')
             elif not a and b:  # was deleted from a
