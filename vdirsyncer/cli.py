@@ -205,6 +205,8 @@ def _create_app():
         '''
         vdirsyncer -- synchronize calendars and contacts
         '''
+        log.add_handler(log.stdout_handler)
+
         verbosity = verbosity.upper()
         x = getattr(log.logging, verbosity, None)
         if x is None:
