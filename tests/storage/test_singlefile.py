@@ -33,8 +33,20 @@ class TestSingleFileStorage(StorageTests):
     def test_discover_collection_arg(self):
         '''This test doesn't make any sense here.'''
 
-    def test_collection_arg(self):
-        '''This test doesn't make any sense here.'''
+    def test_collection_arg(self, tmpdir):
+        with pytest.raises(ValueError):
+            self.storage_class(str(tmpdir.join('foo.ics')), collection='ha')
+
+    def test_create_arg(self, tmpdir):
+        s = self.storage_class(str(tmpdir) + '/foo.ics')
+        assert not s.list()
+
+        s.create = False
+        with pytest.raises(IOError):
+            s.list()
+
+        with pytest.raises(IOError):
+            s = self.storage_class(str(tmpdir) + '/foo.ics', create=False)
 
     def test_update(self):
         '''The original testcase tries to fetch with the old href. But this
