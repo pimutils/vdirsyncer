@@ -9,8 +9,9 @@
 
 import os
 
-import requests
 import click
+
+import requests
 
 from .. import exceptions, log
 from .compat import iteritems, urlparse
@@ -117,7 +118,9 @@ def _password_from_keyring(username, resource):
 
         parsed = urlparse.urlsplit(key)
         path = parsed.path
-        if path.endswith('/'):
+        if not path:
+            return None
+        elif path.endswith('/'):
             path = path.rstrip('/')
         else:
             path = path.rsplit('/', 1)[0] + '/'
@@ -165,7 +168,7 @@ def get_password(username, resource):
 
     prompt = ('Server password for {} at the resource {}'
               .format(username, resource))
-    password = click.prompt(prompt=prompt, hide_input=True)
+    password = click.prompt(prompt, hide_input=True)
 
     if keyring is not None and \
        click.confirm('Save this password in the keyring?', default=False):

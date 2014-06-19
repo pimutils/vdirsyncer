@@ -15,6 +15,10 @@ from vdirsyncer.utils.vobject import normalize_item as _normalize_item
 vdirsyncer.log.set_level(vdirsyncer.log.logging.DEBUG)
 
 
+def blow_up(*a, **kw):
+    raise AssertionError('Did not expect to be called.')
+
+
 def normalize_item(item):
     if not isinstance(item, text_type):
         item = item.raw

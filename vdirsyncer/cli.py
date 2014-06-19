@@ -7,10 +7,10 @@
     :license: MIT, see LICENSE for more details.
 '''
 
+import functools
 import json
 import os
 import sys
-import functools
 
 import click
 

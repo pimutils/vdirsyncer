@@ -7,11 +7,13 @@
     :license: MIT, see LICENSE for more details.
 '''
 
+import click
+from click.testing import CliRunner
 import pytest
 import vdirsyncer.utils as utils
 from vdirsyncer.utils.vobject import split_collection
 
-from .. import normalize_item, SIMPLE_TEMPLATE, BARE_EVENT_TEMPLATE
+from .. import blow_up, normalize_item, SIMPLE_TEMPLATE, BARE_EVENT_TEMPLATE
 
 
 def test_parse_options():
@@ -58,7 +60,7 @@ def test_get_password_from_netrc(monkeypatch):
             return username, 'bogus', password
 
     monkeypatch.setattr('netrc.netrc', Netrc)
-    monkeypatch.setattr('getpass.getpass', None)
+    monkeypatch.setattr('getpass.getpass', blow_up)
 
     _password = utils.get_password(username, resource)
     assert _password == password
@@ -101,11 +103,44 @@ def test_get_password_from_system_keyring(monkeypatch, resources_to_test):
             return None
 
     monkeypatch.setattr('netrc.netrc', Netrc)
-    monkeypatch.setattr('getpass.getpass', None)
+    monkeypatch.setattr('getpass.getpass', blow_up)
 
     _password = utils.get_password(username, resource)
     assert _password == password
     assert netrc_calls == [hostname]
+
+
+def test_get_password_from_prompt(monkeypatch):
+    getpass_calls = []
+
+    class Netrc(object):
+        def authenticators(self, hostname):
+            return None
+
+    class Keyring(object):
+        def get_password(self, *a, **kw):
+            return None
+
+    monkeypatch.setattr('netrc.netrc', Netrc)
+    monkeypatch.setattr(utils, 'keyring', Keyring())
+
+    user = 'my_user'
+    resource = 'http://example.com'
+
+    @click.command()
+    def fake_app():
+        x = utils.get_password(user, resource)
+        click.echo('Password is {}'.format(x))
+
+    runner = CliRunner()
+    result = runner.invoke(fake_app, input='my_password\n\n')
+    assert not result.exception
+    assert result.output.splitlines() == [
+        'Server password for {} at the resource {}: '.format(user, resource),
+        'Save this password in the keyring? [y/N]: ',
+        'Password is my_password'
+    ]
+
 
 
 def test_get_class_init_args():
