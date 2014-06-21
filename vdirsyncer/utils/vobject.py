@@ -143,7 +143,7 @@ def split_collection(text, inline=(u'VTIMEZONE',),
             else:
                 start = end = u''
 
-        if collection.name != collection.name:
+        if collection.name != collection_name:
             raise ValueError('Different types of components at top-level. '
                              'Expected {}, got {}.'
                              .format(collection_name, collection.name))
