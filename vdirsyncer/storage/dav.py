@@ -227,7 +227,7 @@ class DavStorage(Storage):
     '''
     .. note::
 
-        Please also see :ref:`server_support` for very important information,
+        Please also see :doc:`server_support` for very important information,
         as changing some of the default options might be very dangerous with
         some servers.
 
