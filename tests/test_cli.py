@@ -199,4 +199,4 @@ def test_verbosity(tmpdir):
         env={'VDIRSYNCER_CONFIG': str(config_file)}
     )
     assert result.exception
-    assert 'invalid verbosity value'
+    assert 'invalid verbosity value' in result.output.lower()
