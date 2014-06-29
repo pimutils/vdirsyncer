@@ -10,7 +10,7 @@
 from .base import Item, Storage
 from ..exceptions import NotFoundError
 from ..utils import expand_path, get_password, request
-from ..utils.compat import text_type, urlparse
+from ..utils.compat import iteritems, text_type, urlparse
 from ..utils.vobject import split_collection
 
 USERAGENT = 'vdirsyncer'
@@ -107,17 +107,14 @@ class HttpStorage(Storage):
     def list(self):
         r = request('GET', self.url, **self._settings)
         self._items = {}
-        rv = []
+
         for item in split_collection(r.text):
             item = Item(item)
             href = self._get_href(item)
             etag = item.hash
             self._items[href] = item, etag
-            rv.append((href, etag))
 
-        # we can't use yield here because we need to populate our
-        # dict even if the user doesn't exhaust the iterator
-        return rv
+        return ((href, etag) for href, (item, etag) in iteritems(self._items))
 
     def get(self, href):
         if self._items is None:

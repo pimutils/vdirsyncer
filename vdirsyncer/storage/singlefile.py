@@ -12,7 +12,7 @@ import collections
 from .. import exceptions, log
 from .base import Item, Storage
 from ..utils import checkfile, expand_path, safe_write
-from ..utils.compat import itervalues
+from ..utils.compat import iteritems, itervalues
 from ..utils.vobject import join_collection, split_collection
 
 logger = log.get(__name__)
@@ -94,17 +94,13 @@ class SingleFileStorage(Storage):
         if not text:
             return ()
 
-        rv = []
         for item in split_collection(text):
             item = Item(item)
             href = self._get_href(item)
             etag = item.hash
             self._items[href] = item, etag
-            rv.append((href, etag))
 
-        # we can't use yield here because we need to populate our
-        # dict even if the user doesn't exhaust the iterator
-        return rv
+        return ((href, etag) for href, (item, etag) in iteritems(self._items))
 
     def get(self, href):
         if self._items is None:
