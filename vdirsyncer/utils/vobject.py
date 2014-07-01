@@ -181,15 +181,21 @@ def to_unicode_lines(item):
             yield icalendar.parser.foldline(content_line)
 
 
-def join_collection(items, wrappers={
+_default_join_wrappers = {
     u'VCALENDAR': (u'VCALENDAR', (u'VTIMEZONE',)),
     u'VCARD': (u'VADDRESSBOOK', ())
-}):
+}
+
+
+def join_collection(items, wrappers=None):
     '''
     :param wrappers: {
         item_type: wrapper_type, items_to_inline
     }
     '''
+    if wrappers is None:
+        wrappers = _default_join_wrappers
+
     inline = {}
     components = []
     wrapper_type = None
