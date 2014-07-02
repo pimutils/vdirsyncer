@@ -14,6 +14,14 @@
 class Error(Exception):
     '''Baseclass for all errors.'''
 
+    def __init__(self, *args, **kwargs):
+        for key, value in kwargs.items():
+            if getattr(self, key, object()) is not None:
+                raise TypeError('Invalid argument: {}'.format(key))
+            setattr(self, key, value)
+
+        super(Error, self).__init__(*args)
+
 
 class PreconditionFailed(Error):
     '''

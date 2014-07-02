@@ -25,23 +25,32 @@ sync_logger = log.get(__name__)
 class SyncError(exceptions.Error):
     '''Errors related to synchronization.'''
 
-    def __init__(self, *args, **kwargs):
-        self.__dict__.update(kwargs)
-        super(SyncError, self).__init__(*args)
-
 
 class SyncConflict(SyncError):
     '''
     Two items changed since the last sync, they now have different contents and
     no conflict resolution method was given.
+
+    :param ident: The ident of the item.
+    :param href_a: The item's href on side A.
+    :param href_b: The item's href on side B.
     '''
+
+    ident = None
+    href_a = None
+    href_b = None
 
 
 class StorageEmpty(SyncError):
     '''
     One storage unexpectedly got completely empty between two synchronizations.
     The first argument is the empty storage.
+
+    :param empty_storage: The empty
+        :py:class:`vdirsyncer.storage.base.Storage`.
     '''
+
+    empty_storage = None
 
 
 class BothReadOnly(SyncError):
