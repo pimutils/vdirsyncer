@@ -23,12 +23,19 @@ Radicale.
   and ``end_date`` for :py:class:`vdirsyncer.storage.CaldavStorage` will have
   no or unpredicted consequences.
 
-- Versions of Radicale older than 0.9b1 don't support the necessary
-  functionality for efficient querying for all items of a collection.
-  Vdirsyncer's defaults are supposed to deal with this situation, but if you're
-  using :py:class:`vdirsyncer.storage.CaldavStorage` and set ``item_types`` to
-  an empty value (``item_types =``), these versions of Radicale will not work
-  properly.
+- `Versions of Radicale older than 0.9b1 choke on RFC-conform queries for all
+  items of a collection. <https://github.com/Kozea/Radicale/issues/143>`_.
+
+  Vdirsyncer's default value ``'VTODO, VEVENT'`` for
+  :py:class:`vdirsyncer.storage.CaldavStorage`'s ``item_types`` parameter will
+  work fine with these versions, and so will all values, except for the empty
+  one.
+
+  The empty value ``''`` will get vdirsyncer to send a single HTTP request to
+  fetch all items, instead of one HTTP request for each possible item type. As
+  the linked issue describes, old versions of Radicale expect a
+  non-RFC-compliant format for such queries, one which vdirsyncer doesn't
+  support.
 
 ownCloud
 ========
