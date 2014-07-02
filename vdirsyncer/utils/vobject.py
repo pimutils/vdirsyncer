@@ -50,18 +50,19 @@ ICALENDAR_ORIGINAL_ORDER_SUPPORT = \
 
 class Item(object):
 
-    '''should-be-immutable wrapper class for VCALENDAR (VEVENT, VTODO) and
+    '''Immutable wrapper class for VCALENDAR (VEVENT, VTODO) and
     VCARD'''
 
     def __init__(self, raw):
         assert isinstance(raw, text_type)
-
         self._raw = raw
 
     @cached_property
     def raw(self):
-        '''Raw content of the item, which vdirsyncer doesn't validate in any
-        way.'''
+        '''Raw content of the item, as unicode string.
+
+        Vdirsyncer doesn't validate the content in any way.
+        '''
         return self._raw
 
     @cached_property
