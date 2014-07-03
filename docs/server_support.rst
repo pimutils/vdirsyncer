@@ -24,7 +24,7 @@ Radicale.
   no or unpredicted consequences.
 
 - `Versions of Radicale older than 0.9b1 choke on RFC-conform queries for all
-  items of a collection. <https://github.com/Kozea/Radicale/issues/143>`_.
+  items of a collection <https://github.com/Kozea/Radicale/issues/143>`_.
 
   Vdirsyncer's default value ``'VTODO, VEVENT'`` for
   :py:class:`vdirsyncer.storage.CaldavStorage`'s ``item_types`` parameter will
