@@ -395,7 +395,7 @@ class DavStorage(Storage):
             headers=headers
         )
 
-    def _list(self, xml):
+    def _dav_query(self, xml):
         headers = self.session.get_default_headers()
 
         # CardDAV: The request MUST include a Depth header. The scope of the
@@ -542,7 +542,7 @@ class CaldavStorage(DavStorage):
 
         for caldavfilter in caldavfilters:
             xml = data.format(caldavfilter=caldavfilter)
-            for href, etag in self._list(xml):
+            for href, etag in self._dav_query(xml):
                 assert href not in hrefs
                 hrefs.add(href)
                 yield href, etag
@@ -573,13 +573,44 @@ class CarddavStorage(DavStorage):
     get_multi_data_query = '{urn:ietf:params:xml:ns:carddav}address-data'
 
     def list(self):
-        return self._list('''<?xml version="1.0" encoding="utf-8" ?>
-            <C:addressbook-query xmlns:D="DAV:"
-                    xmlns:C="urn:ietf:params:xml:ns:carddav">
+        headers = self.session.get_default_headers()
+        headers['Depth'] = 1
+
+        data = '''<?xml version="1.0" encoding="utf-8" ?>
+            <D:propfind xmlns:D="DAV:">
                 <D:prop>
+                    <D:resourcetype/>
+                    <D:getcontenttype/>
                     <D:getetag/>
                 </D:prop>
-                <C:filter>
-                    <C:comp-filter name="VCARD"/>
-                </C:filter>
-            </C:addressbook-query>''')
+            </D:propfind>
+            '''
+
+        # We use a PROPFIND request instead of addressbook-query due to issues
+        # with Zimbra. See https://github.com/untitaker/vdirsyncer/issues/83
+        response = self.session.request('PROPFIND', '', data=data,
+                                        headers=headers)
+
+        root = etree.XML(response.content)
+        hrefs = set()
+        for element in root.iter('{DAV:}response'):
+            prop = element.find('{DAV:}propstat').find('{DAV:}prop')
+
+            resource_type = prop.find('{DAV:}resourcetype')
+            if resource_type.find('{DAV:}collection') is not None:
+                continue
+
+            content_type = prop.find('{DAV:}getcontenttype')
+            # different servers give different getcontenttypes:
+            # "text/vcard", "text/x-vcard", "text/x-vcard; charset=utf-8",
+            # "text/directory;profile=vCard", "text/directory",
+            # "text/vcard; charset=utf-8"
+            if 'vcard' not in content_type.text.lower():
+                continue
+
+            href = self._normalize_href(element.find('{DAV:}href').text)
+            etag = prop.find('{DAV:}getetag').text
+
+            if href not in hrefs:
+                hrefs.add(href)
+                yield self._normalize_href(href), etag
