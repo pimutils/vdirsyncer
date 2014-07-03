@@ -122,14 +122,14 @@ class TestCaldavStorage(DavStorageTests):
         item = self._create_bogus_item()
         href, etag = s.upload(item)
 
-        old_list = s._list
+        old_dav_query = s._dav_query
         calls = []
 
-        def _list(*a, **kw):
+        def _dav_query(*a, **kw):
             calls.append(None)
-            return old_list(*a, **kw)
+            return old_dav_query(*a, **kw)
 
-        monkeypatch.setattr(s, '_list', _list)
+        monkeypatch.setattr(s, '_dav_query', _dav_query)
 
         rv = list(s.list())
         if (dav_server != 'radicale' and not s.item_types) \
