@@ -7,6 +7,7 @@
     :license: MIT, see LICENSE for more details.
 '''
 import logging
+import sys
 
 import click
 
@@ -26,44 +27,43 @@ class ColorFormatter(logging.Formatter):
             if level in self.colors:
                 prefix = click.style('{}: '.format(level),
                                      **self.colors[level])
-                record.msg = prefix + record.msg
+                record.msg = '\n'.join(prefix + x
+                                       for x in str(record.msg).splitlines())
 
         return logging.Formatter.format(self, record)
 
 
 class ClickStream(object):
     def write(self, string):
-        click.echo(string, nl=False)
+        click.echo(string, file=sys.stderr, nl=False)
 
 
 stdout_handler = logging.StreamHandler(ClickStream())
 stdout_handler.formatter = ColorFormatter()
-default_level = logging.INFO
 
+_level = logging.INFO
+_handlers = []
 
-def add_handler(handler):
-    for logger in loggers.values():
-        logger.addHandler(handler)
-
-
-def create_logger(name):
-    x = logging.getLogger(name)
-    x.setLevel(default_level)
-    return x
-
-
-loggers = {}
+_loggers = {}
 
 
 def get(name):
     assert name.startswith('vdirsyncer.')
-    if name not in loggers:
-        loggers[name] = create_logger(name)
-    return loggers[name]
+    if name not in _loggers:
+        _loggers[name] = x = logging.getLogger(name)
+        x.handlers = _handlers
+        x.setLevel(_level)
+
+    return _loggers[name]
+
+
+def add_handler(handler):
+    if handler not in _handlers:
+        _handlers.append(handler)
 
 
 def set_level(level):
-    global default_level
-    default_level = level
-    for logger in loggers.values():
-        logger.setLevel(level)
+    global _level
+    _level = level
+    for logger in _loggers.values():
+        logger.setLevel(_level)

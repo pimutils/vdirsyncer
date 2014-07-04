@@ -9,10 +9,8 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-import vdirsyncer.log
 from vdirsyncer.utils.compat import text_type
 from vdirsyncer.utils.vobject import normalize_item as _normalize_item
-vdirsyncer.log.set_level(vdirsyncer.log.logging.DEBUG)
 
 
 def blow_up(*a, **kw):
