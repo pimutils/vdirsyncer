@@ -5,6 +5,18 @@ Changelog
 This changelog only contains information that might be useful to end users and
 package maintainers. For further info, see the git commit log.
 
+Version 0.2.1
+=============
+
+*released on 05 July 2014*
+
+- Fix bug where vdirsyncer shows empty addressbooks when using CardDAV with
+  Zimbra.
+
+- Fix infinite loop when password doesn't exist in system keyring.
+
+- Colorized errors, warnings and debug messages.
+
 Version 0.2.0
 =============
 
