@@ -17,6 +17,8 @@ Version 0.2.1
 
 - Colorized errors, warnings and debug messages.
 
+- vdirsyncer now depends on the ``click`` package instead of argvard.
+
 Version 0.2.0
 =============
 
