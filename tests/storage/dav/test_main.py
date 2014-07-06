@@ -44,28 +44,23 @@ templates = {
 
 
 class DavStorageTests(ServerMixin, StorageTests):
-    def test_dav_broken_item(self):
+    def test_dav_broken_item(self, s):
         item = Item(u'HAHA:YES')
-        s = self._get_storage()
         try:
             s.upload(item)
         except (exceptions.Error, requests.exceptions.HTTPError):
             pass
         assert not list(s.list())
 
-    @pytest.mark.xfail(dav_server == 'owncloud',
-                       reason='See issue #16')
-    def test_wrong_etag(self):
-        super(DavStorageTests, self).test_wrong_etag()
+    @pytest.mark.xfail(dav_server == 'owncloud', reason='See issue #16')
+    def test_wrong_etag(self, s):
+        super(DavStorageTests, self).test_wrong_etag(s)
 
-    @pytest.mark.xfail(dav_server == 'owncloud',
-                       reason='See issue #16')
-    def test_update_nonexisting(self):
-        super(DavStorageTests, self).test_update_nonexisting()
+    @pytest.mark.xfail(dav_server == 'owncloud', reason='See issue #16')
+    def test_update_nonexisting(self, s):
+        super(DavStorageTests, self).test_update_nonexisting(s)
 
-    def test_dav_empty_get_multi_performance(self, monkeypatch):
-        s = self._get_storage()
-
+    def test_dav_empty_get_multi_performance(self, s, monkeypatch):
         def breakdown(*a, **kw):
             raise AssertionError('Expected not to be called.')
 
@@ -79,10 +74,9 @@ class TestCaldavStorage(DavStorageTests):
 
     item_template = TASK_TEMPLATE
 
-    def test_both_vtodo_and_vevent(self):
+    def test_both_vtodo_and_vevent(self, s):
         task = self._create_bogus_item(item_template=TASK_TEMPLATE)
         event = self._create_bogus_item(item_template=EVENT_TEMPLATE)
-        s = self._get_storage()
         href_etag_task = s.upload(task)
         href_etag_event = s.upload(event)
         assert set(s.list()) == set([
@@ -91,10 +85,9 @@ class TestCaldavStorage(DavStorageTests):
         ])
 
     @pytest.mark.parametrize('item_type', ['VTODO', 'VEVENT'])
-    def test_item_types_correctness(self, item_type):
+    def test_item_types_correctness(self, item_type, storage_args):
         other_item_type = 'VTODO' if item_type == 'VEVENT' else 'VEVENT'
-        kw = self.get_storage_args()
-        s = self.storage_class(item_types=(item_type,), **kw)
+        s = self.storage_class(item_types=(item_type,), **storage_args())
         try:
             s.upload(self._create_bogus_item(
                 item_template=templates[other_item_type]))
@@ -116,9 +109,9 @@ class TestCaldavStorage(DavStorageTests):
         ('VTODO', 'VEVENT', 'VJOURNAL'),
         ()
     ])
-    def test_item_types_performance(self, item_types, monkeypatch):
-        kw = self.get_storage_args()
-        s = self.storage_class(item_types=item_types, **kw)
+    def test_item_types_performance(self, storage_args, item_types,
+                                    monkeypatch):
+        s = self.storage_class(item_types=item_types, **storage_args())
         item = self._create_bogus_item()
         href, etag = s.upload(item)
 
@@ -139,11 +132,11 @@ class TestCaldavStorage(DavStorageTests):
 
     @pytest.mark.xfail(dav_server == 'radicale',
                        reason='Radicale doesn\'t support timeranges.')
-    def test_timerange_correctness(self):
-        kw = self.get_storage_args()
+    def test_timerange_correctness(self, storage_args):
         start_date = datetime.datetime(2013, 9, 10)
         end_date = datetime.datetime(2013, 9, 13)
-        s = self.storage_class(start_date=start_date, end_date=end_date, **kw)
+        s = self.storage_class(start_date=start_date, end_date=end_date,
+                               **storage_args())
 
         too_old_item = self._create_bogus_item(item_template=dedent(u'''
             BEGIN:VCALENDAR
@@ -193,15 +186,15 @@ class TestCaldavStorage(DavStorageTests):
 
         assert list(s.list()) == [(href, etag)]
 
-    def test_item_types_passed_as_string(self):
-        kw = self.get_storage_args()
+    def test_item_types_passed_as_string(self, storage_args):
+        kw = storage_args()
         a = self.storage_class(item_types='VTODO,VEVENT', **kw)
         b = self.storage_class(item_types=('VTODO', 'VEVENT'), **kw)
         assert a.item_types == b.item_types == ('VTODO', 'VEVENT')
 
-    def test_invalid_resource(self, monkeypatch):
+    def test_invalid_resource(self, monkeypatch, storage_args):
         calls = []
-        args = self.get_storage_args(collection=None)
+        args = storage_args(collection=None)
 
         def request(session, method, url, data=None, headers=None, auth=None,
                     verify=None):

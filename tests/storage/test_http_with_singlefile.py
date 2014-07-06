@@ -78,12 +78,11 @@ class TestHttpStorage(BaseStorageTests):
         return {'url': 'http://localhost:123/collection.txt',
                 'path': self.tmpfile}
 
-    def test_update(self):
+    def test_update(self, s):
         '''The original testcase tries to fetch with the old href. But this
         storage doesn't have real hrefs, so the href might change if the
         underlying UID changes. '''
 
-        s = self._get_storage()
         item = self._create_bogus_item()
         href, etag = s.upload(item)
         assert_item_equals(s.get(href)[0], item)

@@ -20,22 +20,31 @@ from .. import SIMPLE_TEMPLATE, assert_item_equals
 class BaseStorageTests(object):
     item_template = SIMPLE_TEMPLATE
 
+    @pytest.fixture
+    def storage_args(self):
+        return self.get_storage_args
+
+    def get_storage_args(self, collection=None):
+        raise NotImplementedError()
+
+    @pytest.fixture
+    def storage(self, storage_args):
+        def inner(**kw):
+            return self.storage_class(**storage_args(**kw))
+
+        return inner
+
+    @pytest.fixture
+    def s(self, storage):
+        return storage()
+
     def _create_bogus_item(self, item_template=None):
         r = random.random()
         item_template = item_template or self.item_template
         return Item(item_template.format(r=r))
 
-    def get_storage_args(self, collection=None):
-        raise NotImplementedError()
-
-    def _get_storage(self):
-        s = self.storage_class(**self.get_storage_args())
-        assert not list(s.list())
-        return s
-
-    def test_generic(self):
+    def test_generic(self, s):
         items = [self._create_bogus_item() for i in range(1, 10)]
-        s = self._get_storage()
         hrefs = []
         for item in items:
             hrefs.append(s.upload(item))
@@ -48,25 +57,21 @@ class BaseStorageTests(object):
             item, etag2 = s.get(href)
             assert etag == etag2
 
-    def test_empty_get_multi(self):
-        s = self._get_storage()
+    def test_empty_get_multi(self, s):
         assert list(s.get_multi([])) == []
 
-    def test_upload_already_existing(self):
-        s = self._get_storage()
+    def test_upload_already_existing(self, s):
         item = self._create_bogus_item()
         s.upload(item)
         with pytest.raises(exceptions.PreconditionFailed):
             s.upload(item)
 
-    def test_upload(self):
-        s = self._get_storage()
+    def test_upload(self, s):
         item = self._create_bogus_item()
         href, etag = s.upload(item)
         assert_item_equals(s.get(href)[0], item)
 
-    def test_update(self):
-        s = self._get_storage()
+    def test_update(self, s):
         item = self._create_bogus_item()
         href, etag = s.upload(item)
         assert_item_equals(s.get(href)[0], item)
@@ -77,16 +82,14 @@ class BaseStorageTests(object):
         assert isinstance(new_etag, (bytes, text_type))
         assert_item_equals(s.get(href)[0], new_item)
 
-    def test_update_nonexisting(self):
-        s = self._get_storage()
+    def test_update_nonexisting(self, s):
         item = self._create_bogus_item()
         with pytest.raises(exceptions.PreconditionFailed):
             s.update(s._get_href(item), item, '"123"')
         with pytest.raises(exceptions.PreconditionFailed):
             s.update('huehue', item, '"123"')
 
-    def test_wrong_etag(self):
-        s = self._get_storage()
+    def test_wrong_etag(self, s):
         item = self._create_bogus_item()
         href, etag = s.upload(item)
         with pytest.raises(exceptions.PreconditionFailed):
@@ -94,32 +97,27 @@ class BaseStorageTests(object):
         with pytest.raises(exceptions.PreconditionFailed):
             s.delete(href, '"lolnope"')
 
-    def test_delete(self):
-        s = self._get_storage()
+    def test_delete(self, s):
         href, etag = s.upload(self._create_bogus_item())
         s.delete(href, etag)
         assert not list(s.list())
 
-    def test_delete_nonexisting(self):
-        s = self._get_storage()
+    def test_delete_nonexisting(self, s):
         with pytest.raises(exceptions.PreconditionFailed):
             s.delete('1', '"123"')
 
-    def test_list(self):
-        s = self._get_storage()
+    def test_list(self, s):
         assert not list(s.list())
         s.upload(self._create_bogus_item())
         assert list(s.list())
 
-    def test_has(self):
-        s = self._get_storage()
+    def test_has(self, s):
         assert not s.has('asd')
         href, etag = s.upload(self._create_bogus_item())
         assert s.has(href)
         assert not s.has('asd')
 
-    def test_update_others_stay_the_same(self):
-        s = self._get_storage()
+    def test_update_others_stay_the_same(self, s):
         info = dict([
             s.upload(self._create_bogus_item()),
             s.upload(self._create_bogus_item()),
@@ -132,14 +130,13 @@ class BaseStorageTests(object):
             in s.get_multi(href for href, etag in iteritems(info))
         ) == info
 
-    def test_repr(self):
-        s = self._get_storage()
+    def test_repr(self, s):
         assert self.storage_class.__name__ in repr(s)
 
 
 class SupportsCollections(object):
 
-    def test_discover(self):
+    def test_discover(self, storage_args):
         collections = set()
 
         def main():
@@ -148,8 +145,7 @@ class SupportsCollections(object):
                 # Create collections on-the-fly for most storages
                 # Except ownCloud, which already has all of them, and more
                 i += 1
-                s = self.storage_class(
-                    **self.get_storage_args(collection=collection))
+                s = self.storage_class(**storage_args(collection=collection))
 
                 # radicale ignores empty collections during discovery
                 item = self._create_bogus_item()
@@ -159,7 +155,7 @@ class SupportsCollections(object):
         main()  # remove leftover variables from loop for safety
 
         d = self.storage_class.discover(
-            **self.get_storage_args(collection=None))
+            **storage_args(collection=None))
 
         def main():
             for s in d:
@@ -174,15 +170,15 @@ class SupportsCollections(object):
 
         assert not collections
 
-    def test_discover_collection_arg(self):
-        args = self.get_storage_args(collection='test2')
+    def test_discover_collection_arg(self, storage_args):
+        args = storage_args(collection='test2')
         with pytest.raises(TypeError) as excinfo:
             list(self.storage_class.discover(**args))
 
         assert 'collection argument must not be given' in str(excinfo.value)
 
-    def test_collection_arg(self):
-        s = self.storage_class(**self.get_storage_args(collection='test2'))
+    def test_collection_arg(self, storage):
+        s = storage(collection='test2')
         # Can't do stronger assertion because of radicale, which needs a
         # fileextension to guess the collection type.
         assert 'test2' in s.collection
