@@ -17,7 +17,7 @@ from vdirsyncer.utils.compat import iteritems, text_type
 from .. import SIMPLE_TEMPLATE, assert_item_equals
 
 
-class StorageTests(object):
+class BaseStorageTests(object):
     item_template = SIMPLE_TEMPLATE
 
     def _create_bogus_item(self, item_template=None):
@@ -111,6 +111,34 @@ class StorageTests(object):
         s.upload(self._create_bogus_item())
         assert list(s.list())
 
+    def test_has(self):
+        s = self._get_storage()
+        assert not s.has('asd')
+        href, etag = s.upload(self._create_bogus_item())
+        assert s.has(href)
+        assert not s.has('asd')
+
+    def test_update_others_stay_the_same(self):
+        s = self._get_storage()
+        info = dict([
+            s.upload(self._create_bogus_item()),
+            s.upload(self._create_bogus_item()),
+            s.upload(self._create_bogus_item()),
+            s.upload(self._create_bogus_item())
+        ])
+
+        assert dict(
+            (href, etag) for href, item, etag
+            in s.get_multi(href for href, etag in iteritems(info))
+        ) == info
+
+    def test_repr(self):
+        s = self._get_storage()
+        assert self.storage_class.__name__ in repr(s)
+
+
+class SupportsCollections(object):
+
     def test_discover(self):
         collections = set()
 
@@ -159,27 +187,6 @@ class StorageTests(object):
         # fileextension to guess the collection type.
         assert 'test2' in s.collection
 
-    def test_has(self):
-        s = self._get_storage()
-        assert not s.has('asd')
-        href, etag = s.upload(self._create_bogus_item())
-        assert s.has(href)
-        assert not s.has('asd')
 
-    def test_update_others_stay_the_same(self):
-        s = self._get_storage()
-        info = dict([
-            s.upload(self._create_bogus_item()),
-            s.upload(self._create_bogus_item()),
-            s.upload(self._create_bogus_item()),
-            s.upload(self._create_bogus_item())
-        ])
-
-        assert dict(
-            (href, etag) for href, item, etag
-            in s.get_multi(href for href, etag in iteritems(info))
-        ) == info
-
-    def test_repr(self):
-        s = self._get_storage()
-        assert self.storage_class.__name__ in repr(s)
+class StorageTests(BaseStorageTests, SupportsCollections):
+    pass

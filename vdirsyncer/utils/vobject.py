@@ -130,7 +130,6 @@ def split_collection(text, inline=(u'VTIMEZONE',),
     '''Emits items in the order they occur in the text.'''
     assert isinstance(text, text_type)
     collections = icalendar.cal.Component.from_ical(text, multiple=True)
-    assert collections
     collection_name = None
 
     for collection in collections:

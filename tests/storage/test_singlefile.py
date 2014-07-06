@@ -11,11 +11,11 @@ import pytest
 
 from vdirsyncer.storage.singlefile import SingleFileStorage
 
-from . import StorageTests
+from . import BaseStorageTests
 from .. import EVENT_TEMPLATE, assert_item_equals
 
 
-class TestSingleFileStorage(StorageTests):
+class TestSingleFileStorage(BaseStorageTests):
 
     storage_class = SingleFileStorage
     item_template = EVENT_TEMPLATE
@@ -26,12 +26,6 @@ class TestSingleFileStorage(StorageTests):
 
     def get_storage_args(self, **kwargs):
         return dict(path=self._path)
-
-    def test_discover(self):
-        '''This test doesn't make any sense here.'''
-
-    def test_discover_collection_arg(self):
-        '''This test doesn't make any sense here.'''
 
     def test_collection_arg(self, tmpdir):
         with pytest.raises(ValueError):
