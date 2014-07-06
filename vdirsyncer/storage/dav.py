@@ -543,7 +543,13 @@ class CaldavStorage(DavStorage):
         for caldavfilter in caldavfilters:
             xml = data.format(caldavfilter=caldavfilter)
             for href, etag in self._dav_query(xml):
-                assert href not in hrefs
+                if href in hrefs:
+                    # Can't do stronger assertion here, see
+                    # https://github.com/untitaker/vdirsyncer/issues/88
+                    dav_logger.warning('Skipping identical href: {}'
+                                       .format(href))
+                    continue
+
                 hrefs.add(href)
                 yield href, etag
 
@@ -611,6 +617,11 @@ class CarddavStorage(DavStorage):
             href = self._normalize_href(element.find('{DAV:}href').text)
             etag = prop.find('{DAV:}getetag').text
 
-            if href not in hrefs:
-                hrefs.add(href)
-                yield self._normalize_href(href), etag
+            if href in hrefs:
+                # Can't do stronger assertion here, see
+                # https://github.com/untitaker/vdirsyncer/issues/88
+                dav_logger.warning('Skipping identical href: {}'.format(href))
+                continue
+
+            hrefs.add(href)
+            yield self._normalize_href(href), etag
