@@ -6,10 +6,9 @@
     :copyright: (c) 2014 Markus Unterwaditzer & contributors
     :license: MIT, see LICENSE for more details.
 '''
+import textwrap
 
 import pytest
-
-import textwrap
 
 import vdirsyncer.utils.vobject as vobject
 
@@ -172,3 +171,23 @@ def test_multiline_uid_complex():
     assert vobject.Item(a).uid == (u'040000008200E00074C5B7101A82E008000000005'
                                    u'0AAABEEF50DCF001000000062548482FA830A46B9'
                                    u'EA62114AC9F0EF')
+
+
+def test_vcard_property_groups():
+    vcard = textwrap.dedent(u'''
+        BEGIN:VCARD
+        VERSION:3.0
+        MYLABEL123.ADR:;;This is the Address 08; Some City;;12345;Germany
+        MYLABEL123.X-ABLABEL:
+        FN:Some Name
+        N:Name;Some;;;Nickname
+        UID:67c15e43-34d2-4f55-a6c6-4adb7aa7e3b2
+        END:VCARD
+        ''').strip()
+
+    book = u'BEGIN:VADDRESSBOOK\n' + vcard + u'\nEND:VADDRESSBOOK'
+    splitted = list(vobject.split_collection(book))
+    assert len(splitted) == 1
+
+    assert vobject.Item(vcard).hash == vobject.Item(splitted[0]).hash
+    assert 'is the Address' in vobject.Item(vcard).parsed['MYLABEL123.ADR']
