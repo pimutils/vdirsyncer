@@ -8,6 +8,7 @@
 '''
 import textwrap
 
+import icalendar
 import pytest
 
 import vdirsyncer.utils.vobject as vobject
@@ -173,6 +174,9 @@ def test_multiline_uid_complex():
                                    u'EA62114AC9F0EF')
 
 
+@pytest.mark.xfail(icalendar.parser.NAME.findall('FOO.BAR') != ['FOO.BAR'],
+                   reason=('version of icalendar doesn\'t support dots in '
+                           'property names'))
 def test_vcard_property_groups():
     vcard = textwrap.dedent(u'''
         BEGIN:VCARD
