@@ -6,6 +6,9 @@
     :copyright: (c) 2014 Markus Unterwaditzer & contributors
     :license: MIT, see LICENSE for more details.
 '''
+import textwrap
+
+import icalendar
 
 import pytest
 
@@ -130,43 +133,86 @@ def test_multiline_uid():
 
 
 def test_multiline_uid_complex():
-    a = u'''
-BEGIN:VCALENDAR
-BEGIN:VTIMEZONE
-TZID:Europe/Rome
-X-LIC-LOCATION:Europe/Rome
-BEGIN:DAYLIGHT
-TZOFFSETFROM:+0100
-TZOFFSETTO:+0200
-TZNAME:CEST
-DTSTART:19700329T020000
-RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3
-END:DAYLIGHT
-BEGIN:STANDARD
-TZOFFSETFROM:+0200
-TZOFFSETTO:+0100
-TZNAME:CET
-DTSTART:19701025T030000
-RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10
-END:STANDARD
-END:VTIMEZONE
-BEGIN:VEVENT
-DTSTART:20140124T133000Z
-DTEND:20140124T143000Z
-DTSTAMP:20140612T090652Z
-UID:040000008200E00074C5B7101A82E0080000000050AAABEEF50DCF0100000000000000
- 001000000062548482FA830A46B9EA62114AC9F0EF
-CREATED:20140110T102231Z
-DESCRIPTION:Test.
-LAST-MODIFIED:20140123T095221Z
-LOCATION:25.12.01.51
-SEQUENCE:0
-STATUS:CONFIRMED
-SUMMARY:Präsentation
-TRANSP:OPAQUE
-END:VEVENT
-END:VCALENDAR
-    '''.strip()
+    a = textwrap.dedent(u'''
+        BEGIN:VCALENDAR
+        BEGIN:VTIMEZONE
+        TZID:Europe/Rome
+        X-LIC-LOCATION:Europe/Rome
+        BEGIN:DAYLIGHT
+        TZOFFSETFROM:+0100
+        TZOFFSETTO:+0200
+        TZNAME:CEST
+        DTSTART:19700329T020000
+        RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3
+        END:DAYLIGHT
+        BEGIN:STANDARD
+        TZOFFSETFROM:+0200
+        TZOFFSETTO:+0100
+        TZNAME:CET
+        DTSTART:19701025T030000
+        RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10
+        END:STANDARD
+        END:VTIMEZONE
+        BEGIN:VEVENT
+        DTSTART:20140124T133000Z
+        DTEND:20140124T143000Z
+        DTSTAMP:20140612T090652Z
+        UID:040000008200E00074C5B7101A82E0080000000050AAABEEF50DCF
+         001000000062548482FA830A46B9EA62114AC9F0EF
+        CREATED:20140110T102231Z
+        DESCRIPTION:Test.
+        LAST-MODIFIED:20140123T095221Z
+        LOCATION:25.12.01.51
+        SEQUENCE:0
+        STATUS:CONFIRMED
+        SUMMARY:Präsentation
+        TRANSP:OPAQUE
+        END:VEVENT
+        END:VCALENDAR
+        ''').strip()
     assert vobject.Item(a).uid == (u'040000008200E00074C5B7101A82E008000000005'
-                                   u'0AAABEEF50DCF0100000000000000001000000062'
-                                   u'548482FA830A46B9EA62114AC9F0EF')
+                                   u'0AAABEEF50DCF001000000062548482FA830A46B9'
+                                   u'EA62114AC9F0EF')
+
+
+@pytest.mark.xfail(icalendar.parser.NAME.findall('FOO.BAR') != ['FOO.BAR'],
+                   reason=('version of icalendar doesn\'t support dots in '
+                           'property names'))
+def test_vcard_property_groups():
+    vcard = textwrap.dedent(u'''
+        BEGIN:VCARD
+        VERSION:3.0
+        MYLABEL123.ADR:;;This is the Address 08; Some City;;12345;Germany
+        MYLABEL123.X-ABLABEL:
+        FN:Some Name
+        N:Name;Some;;;Nickname
+        UID:67c15e43-34d2-4f55-a6c6-4adb7aa7e3b2
+        END:VCARD
+        ''').strip()
+
+    book = u'BEGIN:VADDRESSBOOK\n' + vcard + u'\nEND:VADDRESSBOOK'
+    splitted = list(vobject.split_collection(book))
+    assert len(splitted) == 1
+
+    assert vobject.Item(vcard).hash == vobject.Item(splitted[0]).hash
+    assert 'is the Address' in vobject.Item(vcard).parsed['MYLABEL123.ADR']
+
+
+def test_vcard_semicolons_in_values():
+    # If this test fails because proper vCard support was added to icalendar,
+    # we can remove some ugly postprocessing code in to_unicode_lines.
+
+    vcard = textwrap.dedent(u'''
+        BEGIN:VCARD
+        VERSION:3.0
+        ADR:;;Address 08;City;;12345;Germany
+        END:VCARD
+        ''').strip()
+
+    # Assert that icalendar breaks vcard properties with semicolons in values
+    assert b'ADR:\\;\\;Address 08\\;City\\;\\;12345\\;Germany' in \
+        vobject.Item(vcard).parsed.to_ical().splitlines()
+
+    # Assert that vdirsyncer fixes these properties
+    assert u'ADR:;;Address 08;City;;12345;Germany' in \
+        list(vobject.to_unicode_lines(vobject.Item(vcard).parsed))

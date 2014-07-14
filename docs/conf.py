@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import os
 import sys
+
+import pkg_resources
+
 extensions = ['sphinx.ext.autodoc']
 
 templates_path = ['_templates']
@@ -11,7 +15,6 @@ master_doc = 'index'
 project = u'vdirsyncer'
 copyright = u'2014, Markus Unterwaditzer & contributors'
 
-import pkg_resources
 try:
     # The full version, including alpha/beta/rc tags.
     release = pkg_resources.require('vdirsyncer')[0].version
@@ -21,15 +24,12 @@ except pkg_resources.DistributionNotFound:
           'this.')
     sys.exit(1)
 
-del pkg_resources
-
 version = '.'.join(release.split('.')[:2])  # The short X.Y version.
 
 exclude_patterns = ['_build']
 
 pygments_style = 'sphinx'
 
-import os
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 if not on_rtd:
