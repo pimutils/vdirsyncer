@@ -195,3 +195,23 @@ def test_vcard_property_groups():
 
     assert vobject.Item(vcard).hash == vobject.Item(splitted[0]).hash
     assert 'is the Address' in vobject.Item(vcard).parsed['MYLABEL123.ADR']
+
+
+def test_vcard_semicolons_in_values():
+    # If this test fails because proper vCard support was added to icalendar,
+    # we can remove some ugly postprocessing code in to_unicode_lines.
+
+    vcard = textwrap.dedent(u'''
+        BEGIN:VCARD
+        VERSION:3.0
+        ADR:;;Address 08;City;;12345;Germany
+        END:VCARD
+        ''').strip()
+
+    # Assert that icalendar breaks vcard properties with semicolons in values
+    assert 'ADR:\\;\\;Address 08\\;City\\;\\;12345\\;Germany' in \
+            vobject.Item(vcard).parsed.to_ical()
+
+    # Assert that vdirsyncer fixes these properties
+    assert 'ADR:;;Address 08;City;;12345;Germany' in \
+            list(vobject.to_unicode_lines(vobject.Item(vcard).parsed))
