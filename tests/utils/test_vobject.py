@@ -9,6 +9,7 @@
 import textwrap
 
 import icalendar
+
 import pytest
 
 import vdirsyncer.utils.vobject as vobject
@@ -209,9 +210,9 @@ def test_vcard_semicolons_in_values():
         ''').strip()
 
     # Assert that icalendar breaks vcard properties with semicolons in values
-    assert 'ADR:\\;\\;Address 08\\;City\\;\\;12345\\;Germany' in \
-            vobject.Item(vcard).parsed.to_ical()
+    assert b'ADR:\\;\\;Address 08\\;City\\;\\;12345\\;Germany' in \
+        vobject.Item(vcard).parsed.to_ical().splitlines()
 
     # Assert that vdirsyncer fixes these properties
-    assert 'ADR:;;Address 08;City;;12345;Germany' in \
-            list(vobject.to_unicode_lines(vobject.Item(vcard).parsed))
+    assert u'ADR:;;Address 08;City;;12345;Germany' in \
+        list(vobject.to_unicode_lines(vobject.Item(vcard).parsed))
