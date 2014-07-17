@@ -19,7 +19,8 @@ install_build_tests() {
     _davserver $DAV_SERVER
     if [ "$TRAVIS" = "true" ]; then
         export CFLAGS=-O0  # speed up builds of packages which don't have wheels
-        $PIP_INSTALL --upgrade wheel pip setuptools
+        $PIP_INSTALL --upgrade pip
+        $PIP_INSTALL wheel
         PIP_INSTALL="pip install --use-wheel --find-links=http://travis-wheels.unterwaditzer.net/wheels/"
         $PIP_INSTALL coveralls
     fi
