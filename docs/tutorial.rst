@@ -33,11 +33,13 @@ minimal example::
 After the general section, an arbitrary amount of *pair and storage sections*
 might come.
 
-A :ref:`pair section <pair_config>` defines two storages ``a`` and ``b`` which
-should be synchronized. The definition of these storages follows in
-:ref:`storage sections <storage_config>`.  This format is copied from
-OfflineIMAP, where storages are called repositories and pairs are called
-accounts.
+In vdirsyncer, synchronization is always done between two storages. Such
+storages are defined in :ref:`storage sections <storage_config>`, and which
+pairs of storages should actually be synchronized is defined in :ref:`pair
+section <pair_config>`.
+
+This format is copied from OfflineIMAP, where storages are called
+repositories and pairs are called accounts.
 
 The following example synchronizes a single CardDAV-addressbook to
 ``~/.contacts/``::
