@@ -106,7 +106,7 @@ def save_status(path, status_name, status):
                        'user. If you think this is an error, please file '
                        'a bug at {}'.format(base_path, PROJECT_HOME))
     if not os.path.exists(base_path):
-        os.makedirs(base_path)
+        os.makedirs(base_path, 0o750)
 
     with open(full_path, 'w+') as f:
         for k, v in status.items():
