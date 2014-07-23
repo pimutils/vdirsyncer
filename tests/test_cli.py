@@ -15,9 +15,11 @@ import vdirsyncer.cli as cli
 
 def test_load_config(tmpdir, monkeypatch):
     f = tmpdir.join('test.cfg')
+    status_path = '{}/status/'.format(str(tmpdir))
+    contacts_path = '{}/contacts/'.format(str(tmpdir))
     f.write(dedent('''
         [general]
-        status_path = ~/.vdirsyncer/status/
+        status_path = {status}
         foo = 1
 
         [pair bob]
@@ -28,7 +30,7 @@ def test_load_config(tmpdir, monkeypatch):
 
         [storage bob_a]
         type = filesystem
-        path = ~/.contacts/
+        path = {contacts}
         fileext = .vcf
         yesno = off
         number = 42
@@ -38,16 +40,16 @@ def test_load_config(tmpdir, monkeypatch):
 
         [bogus]
         lol = true
-        ''').strip())
+        ''').strip().format(status=status_path, contacts=contacts_path))
 
     fname = str(tmpdir) + '/test.cfg'
     errors = []
     monkeypatch.setattr('vdirsyncer.cli.cli_logger.error', errors.append)
     general, pairs, storages = cli.load_config(fname, pair_options=('bam',))
-    assert general == {'foo': 1, 'status_path': '~/.vdirsyncer/status/'}
+    assert general == {'foo': 1, 'status_path': status_path}
     assert pairs == {'bob': ('bob_a', 'bob_b', {'bam': True}, {'foo': 'bar'})}
     assert storages == {
-        'bob_a': {'type': 'filesystem', 'path': '~/.contacts/',
+        'bob_a': {'type': 'filesystem', 'path': contacts_path,
                   'fileext': '.vcf', 'yesno': False, 'number': 42},
         'bob_b': {'type': 'carddav'}
     }
