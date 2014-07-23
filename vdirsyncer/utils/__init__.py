@@ -305,7 +305,7 @@ def checkdir(path, create=False, mode=0o750):
         if os.path.exists(path):
             raise IOError('{} is not a directory.'.format(path))
         if create:
-            os.makedirs(path, 0o750)
+            os.makedirs(path, mode)
         else:
             raise IOError('Directory {} does not exist. Use create = '
                           'True in your configuration to automatically '
