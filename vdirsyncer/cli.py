@@ -44,12 +44,8 @@ def get_status_name(pair, collection):
 
 def load_config(fname, pair_options=('collections', 'conflict_resolution')):
     c = RawConfigParser()
-    try:
-        with open(fname) as f:
-            c.readfp(f)
-    except IOError:
-        cli_logger.exception('Error while trying to read config file.')
-        sys.exit(1)
+    with open(fname) as f:
+        c.readfp(f)
 
     get_options = lambda s: dict(parse_options(c.items(s), section=s))
 
@@ -57,24 +53,31 @@ def load_config(fname, pair_options=('collections', 'conflict_resolution')):
     pairs = {}
     storages = {}
 
-    def handle_pair(section):
-        pair_name = section[len('pair '):]
-        options = get_options(section)
+    def handle_storage(storage_name, options):
+        storages.setdefault(storage_name, {}).update(options)
+
+    def handle_pair(pair_name, options):
         a, b = options.pop('a'), options.pop('b')
         p, s = split_dict(options, lambda x: x in pair_options)
         pairs[pair_name] = a, b, p, s
 
+    def bad_section(name, options):
+        cli_logger.error('Unknown section: {}'.format(name))
+
+    handlers = {'storage': handle_storage, 'pair': handle_pair}
+
     for section in c.sections():
-        if section.startswith('storage '):
-            name = section[len('storage '):]
-            storages.setdefault(name, {}).update(get_options(section))
-        elif section.startswith('pair '):
-            handle_pair(section)
-        elif section == 'general':
-            general = get_options(section)
+        if ' ' in section:
+            section_type, name = section.split(' ', 1)
         else:
-            cli_logger.error('Unknown section in {}: {}'
-                             .format(fname, section))
+            section_type = name = section
+
+        if section_type == 'general':
+            if general is not None:
+                raise CliError('More than one general section in config file.')
+            general = get_options(section_type)
+        else:
+            handlers.get(section_type, bad_section)(name, get_options(section))
 
     if general is None:
         raise CliError(
@@ -137,9 +140,6 @@ def storage_instance_from_config(config, description=None):
         missing = required - given
         invalid = given - all
 
-        cli_logger.critical('error: Failed to initialize {}'
-                            .format(description or cls.storage_name))
-
         if not missing and not invalid:
             cli_logger.exception('')
 
@@ -153,7 +153,8 @@ def storage_instance_from_config(config, description=None):
                 u'error: {} storage doesn\'t take the parameters: {}'
                 .format(cls.storage_name, u', '.join(invalid)))
 
-        sys.exit(1)
+        raise CliError('error: Failed to initialize {}'
+                       .format(description or cls.storage_name))
 
 
 def expand_collection(pair, collection, all_pairs, all_storages):
@@ -200,10 +201,9 @@ def parse_pairs_args(pairs_args, all_pairs):
             a_name, b_name, pair_options, storage_defaults = \
                 all_pairs[pair]
         except KeyError:
-            cli_logger.critical('Pair not found: {}'.format(pair))
-            cli_logger.critical('These are the pairs found: ')
-            cli_logger.critical(list(all_pairs))
-            sys.exit(1)
+            raise CliError('Pair not found: {}\n'
+                           'These are the pairs found: {}'
+                           .format(pair, list(all_pairs)))
 
         if collection is None:
             collections = [x.strip() or None for x in
@@ -216,6 +216,7 @@ def parse_pairs_args(pairs_args, all_pairs):
 
 # We create the app inside a factory and destroy that factory after first use
 # to avoid pollution of the module namespace.
+
 
 def _create_app():
     def catch_errors(f):
@@ -256,7 +257,11 @@ def _create_app():
         if 'config' not in ctx.obj:
             fname = expand_path(os.environ.get('VDIRSYNCER_CONFIG',
                                                '~/.vdirsyncer/config'))
-            ctx.obj['config'] = load_config(fname)
+            try:
+                ctx.obj['config'] = load_config(fname)
+            except Exception as e:
+                raise CliError('Error during reading config{}:\n{}'
+                               .format(fname, e))
 
     @app.command()
     @click.argument('pairs', nargs=-1)

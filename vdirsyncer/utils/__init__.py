@@ -55,36 +55,38 @@ def split_sequence(s, f):
     return a, b
 
 
+def parse_config_value(value):
+    if len(value.splitlines()) > 1:
+        # The reason we use comma-separated values instead of
+        # multiline-values for lists is simple: ConfigParser's barrier for
+        # mistaking an arbitrary line for the continuation of a value is
+        # awfully low. The following example will also contain the second
+        # line in the value:
+        #
+        # foo = bar
+        #  # my comment
+        raise ValueError('No multiline-values allowed.')
+
+    if value.lower() in ('yes', 'true', 'on'):
+        return True
+    elif value.lower() in ('no', 'false', 'off'):
+        return False
+
+    try:
+        return int(value)
+    except ValueError:
+        pass
+
+    return value
+
+
 def parse_options(items, section=None):
     for key, value in items:
-        if len(value.splitlines()) > 1:
-            # The reason we use comma-separated values instead of
-            # multiline-values for lists is simple: ConfigParser's barrier for
-            # mistaking an arbitrary line for the continuation of a value is
-            # awfully low.
-            #
-            # Take this example:
-            #
-            # foo = bar
-            #  # my comment
-            #
-            # For reasons beyond my understanding ConfigParser only requires
-            # one space to interpret the line as part of a multiline-value,
-            # therefore "bar\n # my comment" will be the value of foo.
-            raise ValueError('Section {!r}, option {!r}: '
-                             'No multiline-values allowed.'
-                             .format(section, key))
-
-        if value.lower() in ('yes', 'true', 'on'):
-            value = True
-        elif value.lower() in ('no', 'false', 'off'):
-            value = False
-        else:
-            try:
-                value = int(value)
-            except ValueError:
-                pass
-        yield key, value
+        try:
+            yield key, parse_config_value(value)
+        except ValueError as e:
+            raise ValueError('Section {!r}, option {!r}: {}'
+                             .format(section, key, e))
 
 
 def get_password(username, resource):
