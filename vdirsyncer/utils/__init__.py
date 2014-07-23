@@ -69,10 +69,8 @@ def parse_options(items, section=None):
             #  # my comment
             #
             # For reasons beyond my understanding ConfigParser only requires
-            # one space to interpret the line as part of a multiline-value.
-            # Related to that, it also parses any inline-comments as value:
-            #
-            # foo = bar  # this comment is part of the value!
+            # one space to interpret the line as part of a multiline-value,
+            # therefore "bar\n # my comment" will be the value of foo.
             raise ValueError('Section {!r}, option {!r}: '
                              'No multiline-values allowed.'
                              .format(section, key))
@@ -87,6 +85,47 @@ def parse_options(items, section=None):
             except ValueError:
                 pass
         yield key, value
+
+
+def get_password(username, resource):
+    """tries to access saved password or asks user for it
+
+    will try the following in this order:
+        1. read password from netrc (and only the password, username
+           in netrc will be ignored)
+        2. read password from keyring (keyring needs to be installed)
+        3a ask user for the password
+         b save in keyring if installed and user agrees
+
+    :param username: user's name on the server
+    :type username: str/unicode
+    :param resource: a resource to which the user has access via password,
+                     it will be shortened to just the hostname. It is assumed
+                     that each unique username/hostname combination only ever
+                     uses the same password.
+    :type resource: str/unicode
+    :return: password
+    :rtype: str/unicode
+
+
+    """
+    for func in (_password_from_netrc, _password_from_keyring):
+        password = func(username, resource)
+        if password is not None:
+            logger.debug('Got password for {} from {}'
+                         .format(username, func.__doc__))
+            return password
+
+    prompt = ('Server password for {} at the resource {}'
+              .format(username, resource))
+    password = click.prompt(prompt, hide_input=True)
+
+    if keyring is not None and \
+       click.confirm('Save this password in the keyring?', default=False):
+        keyring.set_password(password_key_prefix + resource,
+                             username, password)
+
+    return password
 
 
 def _password_from_netrc(username, resource):
@@ -137,50 +176,20 @@ def _password_from_keyring(username, resource):
         key = new_key
 
 
-def get_password(username, resource):
-    """tries to access saved password or asks user for it
-
-    will try the following in this order:
-        1. read password from netrc (and only the password, username
-           in netrc will be ignored)
-        2. read password from keyring (keyring needs to be installed)
-        3a ask user for the password
-         b save in keyring if installed and user agrees
-
-    :param username: user's name on the server
-    :type username: str/unicode
-    :param resource: a resource to which the user has access via password,
-                     it will be shortened to just the hostname. It is assumed
-                     that each unique username/hostname combination only ever
-                     uses the same password.
-    :type resource: str/unicode
-    :return: password
-    :rtype: str/unicode
-
-
-    """
-    for func in (_password_from_netrc, _password_from_keyring):
-        password = func(username, resource)
-        if password is not None:
-            logger.debug('Got password for {} from {}'
-                         .format(username, func.__doc__))
-            return password
-
-    prompt = ('Server password for {} at the resource {}'
-              .format(username, resource))
-    password = click.prompt(prompt, hide_input=True)
-
-    if keyring is not None and \
-       click.confirm('Save this password in the keyring?', default=False):
-        keyring.set_password(password_key_prefix + resource,
-                             username, password)
-
-    return password
-
-
 def request(method, url, data=None, headers=None, auth=None, verify=None,
             session=None, latin1_fallback=True):
-    '''wrapper method for requests, to ease logging and mocking'''
+    '''
+    Wrapper method for requests, to ease logging and mocking. Parameters should
+    be the same as for ``requests.request``, except:
+
+    :param session: A requests session object to use.
+    :param latin1_fallback: RFC-2616 specifies the default Content-Type of
+        text/* to be latin1, which is not always correct, but exactly what
+        requests is doing. Setting this parameter to False will use charset
+        autodetection (usually ending up with utf8) instead of plainly falling
+        back to this silly default. See
+        https://github.com/kennethreitz/requests/issues/2042
+    '''
 
     if session is None:
         func = requests.request
@@ -215,13 +224,23 @@ def request(method, url, data=None, headers=None, auth=None, verify=None,
 
 
 class safe_write(object):
+    '''A helper class for performing atomic writes.  Writes to a tempfile in
+    the same directory and then renames. The tempfile location can be
+    overridden, but must reside on the same filesystem to be atomic.
+
+    Usage::
+
+        with safe_write(fpath, 'w+') as f:
+            f.write('hohoho')
+    '''
+
     f = None
     tmppath = None
     fpath = None
     mode = None
 
-    def __init__(self, fpath, mode):
-        self.tmppath = fpath + '.tmp'
+    def __init__(self, fpath, mode, tmppath=None):
+        self.tmppath = tmppath or fpath + '.tmp'
         self.fpath = fpath
         self.mode = mode
 
@@ -271,7 +290,15 @@ def get_class_init_args(cls):
     return all | s_all, required | s_required
 
 
-def checkdir(path, create=False):
+def checkdir(path, create=False, mode=0o750):
+    '''
+    Check whether ``path`` is a directory.
+
+    :param create: Whether to create the directory (and all parent directories)
+        if it does not exist.
+    :param mode: Mode to create missing directories with.
+    '''
+
     if not os.path.isdir(path):
         if os.path.exists(path):
             raise IOError('{} is not a directory.'.format(path))
@@ -285,6 +312,12 @@ def checkdir(path, create=False):
 
 
 def checkfile(path, create=False):
+    '''
+    Check whether ``path`` is a file.
+
+    :param create: Whether to create the file's parent directories if they do
+        not exist.
+    '''
     checkdir(os.path.dirname(path), create=create)
     if not os.path.isfile(path):
         if os.path.exists(path):

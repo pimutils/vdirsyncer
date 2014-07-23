@@ -157,6 +157,20 @@ def storage_instance_from_config(config, description=None):
 
 
 def expand_collection(pair, collection, all_pairs, all_storages):
+    '''
+    Replace the placeholder collections "from a" and "from b" with actual
+    ones.
+
+    :param collection: The collection.
+    :param pair: The pair the collection belongs to.
+    :param all_pairs: dictionary: pair_name => (name of storage a,
+                                                name of storage b,
+                                                pair config,
+                                                storage defaults)
+    :returns: One or more collections that replace the given one. The original
+        collection is returned unmodified if the given collection is neither
+        "from a" nor "from b".
+    '''
     if collection in ('from a', 'from b'):
         a_name, b_name, _, storage_defaults = all_pairs[pair]
         config = dict(storage_defaults)
@@ -171,6 +185,10 @@ def expand_collection(pair, collection, all_pairs, all_storages):
 
 
 def parse_pairs_args(pairs_args, all_pairs):
+    '''
+    Expand the various CLI shortforms ("pair, pair/collection") to an iterable
+    of (pair, collection).
+    '''
     if not pairs_args:
         pairs_args = list(all_pairs)
     for pair_and_collection in pairs_args:
@@ -196,6 +214,8 @@ def parse_pairs_args(pairs_args, all_pairs):
         for c in collections:
             yield pair, c
 
+# We create the app inside a factory and destroy that factory after first use
+# to avoid pollution of the module namespace.
 
 def _create_app():
     def catch_errors(f):
