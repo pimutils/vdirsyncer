@@ -42,10 +42,8 @@ ownCloud
 
 Vdirsyncer is tested against the latest version of ownCloud.
 
-ownCloud uses SabreDAV, which had problems detecting collisions and
-race-conditions. The problems were reported and are fixed in SabreDAV's repo.
-See `Bug #16 <https://github.com/untitaker/vdirsyncer/issues/16>`_ for more
-information.
-
-However, given that this is a problem with every setup involving ownCloud, and
-that ownCloud is widely used, it apparently isn't big enough of a problem yet.
+- *Versions older than 7.0.0:* ownCloud uses SabreDAV, which had problems
+  detecting collisions and race-conditions. The problems were reported and are
+  fixed in SabreDAV's repo, and the corresponding fix is also in ownCloud since
+  7.0.0. See `Bug #16 <https://github.com/untitaker/vdirsyncer/issues/16>`_ for
+  more information.

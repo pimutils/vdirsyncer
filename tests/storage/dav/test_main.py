@@ -52,11 +52,9 @@ class DavStorageTests(ServerMixin, StorageTests):
             pass
         assert not list(s.list())
 
-    @pytest.mark.xfail(dav_server == 'owncloud', reason='See issue #16')
     def test_wrong_etag(self, s):
         super(DavStorageTests, self).test_wrong_etag(s)
 
-    @pytest.mark.xfail(dav_server == 'owncloud', reason='See issue #16')
     def test_update_nonexisting(self, s):
         super(DavStorageTests, self).test_update_nonexisting(s)
 
