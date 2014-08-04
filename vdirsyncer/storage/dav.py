@@ -61,8 +61,8 @@ class Discover(object):
         :returns: a list of the user's collections (as urls)
         :rtype: list(unicode)
         """
-        for principal in self._find_principal():
-            for home in self._find_home(principal):
+        for principal in list(self._find_principal()) or ['']:
+            for home in list(self._find_home(principal)) or ['']:
                 for collection in self._find_collections(home):
                     yield collection
 
