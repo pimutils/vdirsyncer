@@ -294,7 +294,6 @@ class DavStorage(Storage):
         if not href:
             raise ValueError(href)
         x = utils.urlparse.urljoin(self.session.url, href)
-        assert x.startswith(self.session.url)
         return utils.compat.urlunquote_plus(utils.urlparse.urlsplit(x).path)
 
     def _get_href(self, item):
