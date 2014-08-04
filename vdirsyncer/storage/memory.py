@@ -41,7 +41,7 @@ class MemoryStorage(Storage):
         return href in self.items
 
     def upload(self, item):
-        href = self._get_href(item)
+        href = item.ident
         if href in self.items:
             raise exceptions.AlreadyExistingError(item)
         etag = _get_etag()

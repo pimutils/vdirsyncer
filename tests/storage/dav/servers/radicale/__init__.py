@@ -105,4 +105,4 @@ class ServerMixin(object):
             collection += self.storage_class.fileext
 
         return {'url': url, 'username': 'bob', 'password': 'bob',
-                'collection': collection}
+                'collection': collection, 'unsafe_href_chars': ''}

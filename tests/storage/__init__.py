@@ -39,7 +39,8 @@ class BaseStorageTests(object):
         return storage()
 
     def _create_bogus_item(self, item_template=None):
-        r = random.random()
+        # assert that special chars are handled correctly.
+        r = '{}@vdirsyncer'.format(random.random())
         item_template = item_template or self.item_template
         return Item(item_template.format(r=r))
 
@@ -85,8 +86,6 @@ class BaseStorageTests(object):
     def test_update_nonexisting(self, s):
         item = self._create_bogus_item()
         with pytest.raises(exceptions.PreconditionFailed):
-            s.update(s._get_href(item), item, '"123"')
-        with pytest.raises(exceptions.PreconditionFailed):
             s.update('huehue', item, '"123"')
 
     def test_wrong_etag(self, s):
@@ -108,8 +107,8 @@ class BaseStorageTests(object):
 
     def test_list(self, s):
         assert not list(s.list())
-        s.upload(self._create_bogus_item())
-        assert list(s.list())
+        href, etag = s.upload(self._create_bogus_item())
+        assert list(s.list()) == [(href, etag)]
 
     def test_has(self, s):
         assert not s.has('asd')

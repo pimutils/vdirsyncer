@@ -22,6 +22,21 @@ dav_logger = log.get(__name__)
 CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
 
 
+def _normalize_href(base, href, decoding_rounds=1):
+    '''Normalize the href to be a path only relative to hostname and
+    schema.'''
+    if not href:
+        raise ValueError(href)
+    x = utils.urlparse.urljoin(base, href)
+    x = utils.urlparse.urlsplit(x).path
+
+    for i in range(decoding_rounds):
+        x = utils.compat.urlunquote(x)
+
+    x = utils.compat.urlquote(x, '/@')
+    return x
+
+
 class Discover(object):
 
     xml_home = None
@@ -240,6 +255,8 @@ class DavStorage(Storage):
         ``guess``. If you know yours, consider setting it explicitly for
         performance.
     :param useragent: Default ``vdirsyncer``.
+    :param unsafe_href_chars: Replace the given characters when generating
+        hrefs. Defaults to ``'@'``.
     '''
 
     # the file extension of items. Useful for testing against radicale.
@@ -259,7 +276,8 @@ class DavStorage(Storage):
     _repr_attributes = ('username', 'url')
 
     def __init__(self, url, username='', password='', collection=None,
-                 verify=True, auth=None, useragent=USERAGENT, **kwargs):
+                 verify=True, auth=None, useragent=USERAGENT,
+                 unsafe_href_chars='@', **kwargs):
         super(DavStorage, self).__init__(**kwargs)
 
         url = url.rstrip('/') + '/'
@@ -268,6 +286,7 @@ class DavStorage(Storage):
         self.session = DavSession(url, username, password, verify, auth,
                                   useragent, dav_header=self.dav_header)
         self.collection = collection
+        self.unsafe_href_chars = unsafe_href_chars
 
         # defined for _repr_attributes
         self.username = username
@@ -288,17 +307,14 @@ class DavStorage(Storage):
             s.displayname = c['displayname']
             yield s
 
-    def _normalize_href(self, href):
-        '''Normalize the href to be a path only relative to hostname and
-        schema.'''
-        if not href:
-            raise ValueError(href)
-        x = utils.urlparse.urljoin(self.session.url, href)
-        return utils.compat.urlunquote_plus(utils.urlparse.urlsplit(x).path)
+    def _normalize_href(self, *args, **kwargs):
+        return _normalize_href(self.session.url, *args, **kwargs)
 
     def _get_href(self, item):
-        href = utils.compat.urlunquote_plus(item.ident) + self.fileext
-        return self._normalize_href(href)
+        href = item.ident
+        for char in self.unsafe_href_chars:
+            href = item.ident.replace(char, '_')
+        return self._normalize_href(href + self.fileext)
 
     def get(self, href):
         ((actual_href, item, etag),) = self.get_multi([href])
@@ -613,7 +629,10 @@ class CarddavStorage(DavStorage):
             if 'vcard' not in content_type.text.lower():
                 continue
 
-            href = self._normalize_href(element.find('{DAV:}href').text)
+            # Decode twice because ownCloud encodes twice.
+            # See https://github.com/owncloud/contacts/issues/581
+            href = self._normalize_href(element.find('{DAV:}href').text,
+                                        decoding_rounds=2)
             etag = prop.find('{DAV:}getetag').text
 
             if href in hrefs:
@@ -623,4 +642,4 @@ class CarddavStorage(DavStorage):
                 continue
 
             hrefs.add(href)
-            yield self._normalize_href(href), etag
+            yield href, etag
