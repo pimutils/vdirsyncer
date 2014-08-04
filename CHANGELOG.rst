@@ -5,6 +5,23 @@ Changelog
 This changelog only contains information that might be useful to end users and
 package maintainers. For further info, see the git commit log.
 
+Version 0.2.2
+=============
+
+*released on 04 August 2014*
+
+- Remove a security check that caused problems with special characters in DAV
+  URLs and certain servers. On top of that, the security check was nonsensical.
+  See issues `#87`_ and `#91`_.
+
+- Change some errors to warnings, see issue `#88`_.
+
+- Improve collection autodiscovery for servers without full support.
+
+.. _`#87`: https://github.com/untitaker/vdirsyncer/issues/87
+.. _`#88`: https://github.com/untitaker/vdirsyncer/issues/88
+.. _`#91`: https://github.com/untitaker/vdirsyncer/issues/91
+
 Version 0.2.1
 =============
 
