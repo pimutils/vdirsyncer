@@ -15,15 +15,15 @@ PY2 = sys.version_info[0] == 2
 if PY2:  # pragma: no cover
     import urlparse
     from urllib import \
-         quote_plus as urlquote_plus, \
-         unquote_plus as urlunquote_plus
+         quote as urlquote, \
+         unquote as urlunquote
     text_type = unicode  # flake8: noqa
     iteritems = lambda x: x.iteritems()
     itervalues = lambda x: x.itervalues()
 else:  # pragma: no cover
     import urllib.parse as urlparse
-    urlquote_plus = urlparse.quote_plus
-    urlunquote_plus = urlparse.unquote_plus
+    urlquote = urlparse.quote
+    urlunquote = urlparse.unquote
     text_type = str
     iteritems = lambda x: x.items()
     itervalues = lambda x: x.values()

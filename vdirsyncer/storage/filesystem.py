@@ -61,6 +61,9 @@ class FilesystemStorage(Storage):
     def _get_filepath(self, href):
         return os.path.join(self.path, href)
 
+    def _get_href(self, item):
+        return item.ident + self.fileext
+
     def list(self):
         for fname in os.listdir(self.path):
             fpath = os.path.join(self.path, fname)

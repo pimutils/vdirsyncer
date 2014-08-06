@@ -65,9 +65,6 @@ class Storage(object):
         '''
         raise NotImplementedError()
 
-    def _get_href(self, item):
-        return item.ident + self.fileext
-
     def __repr__(self):
         return '<{}(**{})>'.format(
             self.__class__.__name__,

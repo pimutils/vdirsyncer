@@ -23,7 +23,7 @@ def empty_storage(x):
 def test_irrelevant_status():
     a = MemoryStorage()
     b = MemoryStorage()
-    status = {'1': ('1.txt', 1234, '1.ics', 2345)}
+    status = {'1': ('1', 1234, '1.ics', 2345)}
     sync(a, b, status)
     assert not status
     assert empty_storage(a)
@@ -55,8 +55,8 @@ def test_missing_status_and_different_items():
         sync(a, b, status)
     assert not status
     sync(a, b, status, conflict_resolution='a wins')
-    assert_item_equals(item1, b.get('1.txt')[0])
-    assert_item_equals(item1, a.get('1.txt')[0])
+    assert_item_equals(item1, b.get('1')[0])
+    assert_item_equals(item1, a.get('1')[0])
 
 
 def test_upload_and_update():
@@ -67,22 +67,22 @@ def test_upload_and_update():
     item = Item(u'UID:1')  # new item 1 in a
     a.upload(item)
     sync(a, b, status)
-    assert_item_equals(b.get('1.txt')[0], item)
+    assert_item_equals(b.get('1')[0], item)
 
     item = Item(u'UID:1\nASDF:YES')  # update of item 1 in b
-    b.update('1.txt', item, b.get('1.txt')[1])
+    b.update('1', item, b.get('1')[1])
     sync(a, b, status)
-    assert_item_equals(a.get('1.txt')[0], item)
+    assert_item_equals(a.get('1')[0], item)
 
     item2 = Item(u'UID:2')  # new item 2 in b
     b.upload(item2)
     sync(a, b, status)
-    assert_item_equals(a.get('2.txt')[0], item2)
+    assert_item_equals(a.get('2')[0], item2)
 
     item2 = Item(u'UID:2\nASDF:YES')  # update of item 2 in a
-    a.update('2.txt', item2, a.get('2.txt')[1])
+    a.update('2', item2, a.get('2')[1])
     sync(a, b, status)
-    assert_item_equals(b.get('2.txt')[0], item2)
+    assert_item_equals(b.get('2')[0], item2)
 
 
 def test_deletion():
@@ -94,16 +94,16 @@ def test_deletion():
     a.upload(item)
     a.upload(Item(u'UID:2'))
     sync(a, b, status)
-    b.delete('1.txt', b.get('1.txt')[1])
+    b.delete('1', b.get('1')[1])
     sync(a, b, status)
-    assert not a.has('1.txt') and not b.has('1.txt')
+    assert not a.has('1') and not b.has('1')
 
     a.upload(item)
     sync(a, b, status)
-    assert a.has('1.txt') and b.has('1.txt')
-    a.delete('1.txt', a.get('1.txt')[1])
+    assert a.has('1') and b.has('1')
+    a.delete('1', a.get('1')[1])
     sync(a, b, status)
-    assert not a.has('1.txt') and not b.has('1.txt')
+    assert not a.has('1') and not b.has('1')
 
 
 def test_already_synced():
@@ -113,7 +113,7 @@ def test_already_synced():
     a.upload(item)
     b.upload(item)
     status = {
-        '1': ('1.txt', a.get('1.txt')[1], '1.txt', b.get('1.txt')[1])
+        '1': ('1', a.get('1')[1], '1', b.get('1')[1])
     }
     old_status = dict(status)
     a.update = b.update = a.upload = b.upload = \
@@ -122,7 +122,7 @@ def test_already_synced():
     for i in (1, 2):
         sync(a, b, status)
         assert status == old_status
-        assert a.has('1.txt') and b.has('1.txt')
+        assert a.has('1') and b.has('1')
 
 
 @pytest.mark.parametrize('winning_storage', 'ab')

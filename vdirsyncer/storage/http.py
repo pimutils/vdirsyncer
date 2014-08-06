@@ -110,9 +110,8 @@ class HttpStorage(Storage):
 
         for item in split_collection(r.text):
             item = Item(item)
-            href = self._get_href(item)
             etag = item.hash
-            self._items[href] = item, etag
+            self._items[item.ident] = item, etag
 
         return ((href, etag) for href, (item, etag) in iteritems(self._items))
 
