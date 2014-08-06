@@ -14,7 +14,7 @@ import sys
 
 import click
 
-from . import log
+from . import __version__, log
 from .storage import storage_names
 from .sync import StorageEmpty, SyncConflict, sync
 from .utils import expand_path, get_class_init_args, parse_options, split_dict
@@ -242,6 +242,7 @@ def _create_app():
     @click.option('--verbosity', '-v', default='INFO',
                   callback=validate_verbosity,
                   help='Either CRITICAL, ERROR, WARNING, INFO or DEBUG')
+    @click.version_option(version=__version__)
     @click.pass_context
     @catch_errors
     def app(ctx, verbosity):
