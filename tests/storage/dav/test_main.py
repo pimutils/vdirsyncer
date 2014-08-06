@@ -53,12 +53,6 @@ class DavStorageTests(ServerMixin, StorageTests):
             pass
         assert not list(s.list())
 
-    def test_wrong_etag(self, s):
-        super(DavStorageTests, self).test_wrong_etag(s)
-
-    def test_update_nonexisting(self, s):
-        super(DavStorageTests, self).test_update_nonexisting(s)
-
     def test_dav_empty_get_multi_performance(self, s, monkeypatch):
         def breakdown(*a, **kw):
             raise AssertionError('Expected not to be called.')
@@ -73,9 +67,9 @@ class TestCaldavStorage(DavStorageTests):
 
     item_template = TASK_TEMPLATE
 
-    def test_both_vtodo_and_vevent(self, s):
-        task = self._create_bogus_item(item_template=TASK_TEMPLATE)
-        event = self._create_bogus_item(item_template=EVENT_TEMPLATE)
+    def test_both_vtodo_and_vevent(self, s, get_item):
+        task = get_item(item_template=TASK_TEMPLATE)
+        event = get_item(item_template=EVENT_TEMPLATE)
         href_etag_task = s.upload(task)
         href_etag_event = s.upload(event)
         assert set(s.list()) == set([
@@ -84,18 +78,16 @@ class TestCaldavStorage(DavStorageTests):
         ])
 
     @pytest.mark.parametrize('item_type', ['VTODO', 'VEVENT'])
-    def test_item_types_correctness(self, item_type, storage_args):
+    def test_item_types_correctness(self, item_type, storage_args, get_item):
         other_item_type = 'VTODO' if item_type == 'VEVENT' else 'VEVENT'
         s = self.storage_class(item_types=(item_type,), **storage_args())
         try:
-            s.upload(self._create_bogus_item(
-                item_template=templates[other_item_type]))
-            s.upload(self._create_bogus_item(
-                item_template=templates[other_item_type]))
+            s.upload(get_item(item_template=templates[other_item_type]))
+            s.upload(get_item(item_template=templates[other_item_type]))
         except (exceptions.Error, requests.exceptions.HTTPError):
             pass
         href, etag = \
-            s.upload(self._create_bogus_item(
+            s.upload(get_item(
                 item_template=templates[item_type]))
         ((href2, etag2),) = s.list()
         assert href2 == href
@@ -109,9 +101,9 @@ class TestCaldavStorage(DavStorageTests):
         ()
     ])
     def test_item_types_performance(self, storage_args, item_types,
-                                    monkeypatch):
+                                    monkeypatch, get_item):
         s = self.storage_class(item_types=item_types, **storage_args())
-        item = self._create_bogus_item()
+        item = get_item()
         href, etag = s.upload(item)
 
         old_dav_query = s._dav_query
@@ -131,13 +123,13 @@ class TestCaldavStorage(DavStorageTests):
 
     @pytest.mark.xfail(dav_server == 'radicale',
                        reason='Radicale doesn\'t support timeranges.')
-    def test_timerange_correctness(self, storage_args):
+    def test_timerange_correctness(self, storage_args, get_item):
         start_date = datetime.datetime(2013, 9, 10)
         end_date = datetime.datetime(2013, 9, 13)
         s = self.storage_class(start_date=start_date, end_date=end_date,
                                **storage_args())
 
-        too_old_item = self._create_bogus_item(item_template=dedent(u'''
+        too_old_item = get_item(item_template=dedent(u'''
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN
@@ -151,7 +143,7 @@ class TestCaldavStorage(DavStorageTests):
             END:VCALENDAR
             ''').strip())
 
-        too_new_item = self._create_bogus_item(item_template=dedent(u'''
+        too_new_item = get_item(item_template=dedent(u'''
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN
@@ -165,7 +157,7 @@ class TestCaldavStorage(DavStorageTests):
             END:VCALENDAR
             ''').strip())
 
-        good_item = self._create_bogus_item(item_template=dedent(u'''
+        good_item = get_item(item_template=dedent(u'''
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN

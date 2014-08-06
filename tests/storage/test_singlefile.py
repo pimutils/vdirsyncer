@@ -42,16 +42,16 @@ class TestSingleFileStorage(BaseStorageTests):
         with pytest.raises(IOError):
             s = self.storage_class(str(tmpdir) + '/foo.ics', create=False)
 
-    def test_update(self, s):
+    def test_update(self, s, get_item):
         '''The original testcase tries to fetch with the old href. But this
         storage doesn't have real hrefs, so the href might change if the
         underlying UID changes. '''
 
-        item = self._create_bogus_item()
+        item = get_item()
         href, etag = s.upload(item)
         assert_item_equals(s.get(href)[0], item)
 
-        new_item = self._create_bogus_item()
+        new_item = get_item()
         s.update(href, new_item, etag)
         ((new_href, new_etag),) = s.list()
         assert_item_equals(s.get(new_href)[0], new_item)
