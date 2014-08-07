@@ -20,9 +20,6 @@
 
   * But not because you wrote too few tests.
 
-  * Write descriptive commit messages, mostly because i need to write a
-    changelog at some point. Use ``git rebase -i`` and ``git commit --ammend``
-    if needed.
-  
-  * Add yourself to ``CONTRIBUTORS.rst`` and also add an entry to
-    ``CHANGELOG.rst`` if you think your change is relevant to end users.
+  * Add yourself to ``CONTRIBUTORS.rst``. Don't add anything to
+    ``CHANGELOG.rst``, I do that myself shortly before the release. You can
+    help by writing meaningful commit messages.
