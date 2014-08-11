@@ -5,6 +5,18 @@ Changelog
 This changelog only contains information that might be useful to end users and
 package maintainers. For further info, see the git commit log.
 
+Version 0.2.3
+=============
+
+*released on 11 August 2014*
+
+- Vdirsyncer now has a ``--version`` flag, see issue `#92`_.
+
+- Fix a lot of bugs related to special characters in URLs, see issue `#49`_.
+
+.. _`#92`: https://github.com/untitaker/vdirsyncer/issues/92
+.. _`#49`: https://github.com/untitaker/vdirsyncer/issues/49
+
 Version 0.2.2
 =============
 
