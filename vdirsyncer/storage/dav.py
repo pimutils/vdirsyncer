@@ -38,11 +38,17 @@ def _normalize_href(base, href, decoding_rounds=1):
 
 
 class Discover(object):
-
-    xml_home = None
-    xml_collection = None
-
-    str_homeset = None
+    _resourcetype = None
+    _homeset_xml = None
+    _homeset_tag = None
+    _collection_xml = """
+    <d:propfind xmlns:d="DAV:">
+        <d:prop>
+            <d:resourcetype />
+            <d:displayname />
+        </d:prop>
+    </d:propfind>
+    """
 
     def __init__(self, session):
         self.session = session
@@ -85,38 +91,14 @@ class Discover(object):
         headers = self.session.get_default_headers()
         headers['Depth'] = 0
         response = self.session.request('PROPFIND', principal, headers=headers,
-                                        data=self.xml_home,
+                                        data=self._homeset_xml,
                                         is_subpath=False)
 
         root = etree.fromstring(response.content)
-        for element in root.iter(self.str_homeset):
+        for element in root.iter(self._homeset_tag):
             for homeset in element.iter():
                 if homeset.tag.endswith('href'):
                     yield homeset.text
-
-    def _find_collections(self, home):
-        raise NotImplementedError()
-
-
-class CalDiscover(Discover):
-
-    xml_home = """
-    <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
-        <d:prop>
-            <c:calendar-home-set />
-        </d:prop>
-    </d:propfind>
-    """
-    xml_collection = """
-    <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
-        <d:prop>
-            <d:resourcetype />
-            <d:displayname />
-            <c:supported-calendar-component-set />
-        </d:prop>
-    </d:propfind>
-    """
-    str_homeset = '{*}calendar-home-set'
 
     def _find_collections(self, home):
         """find all CalDAV collections under `home`"""
@@ -124,12 +106,12 @@ class CalDiscover(Discover):
         headers = self.session.get_default_headers()
         headers['Depth'] = 1
         response = self.session.request('PROPFIND', home, headers=headers,
-                                        data=self.xml_collection,
+                                        data=self._collection_xml,
                                         is_subpath=False)
         root = etree.XML(response.content)
         for response in root.iter('{*}response'):
             prop = response.find('{*}propstat/{*}prop')
-            if prop.find('{*}resourcetype/{*}calendar') is None:
+            if prop.find('{*}resourcetype/{*}' + self._resourcetype) is None:
                 continue
 
             displayname = prop.find('{*}displayname')
@@ -138,51 +120,31 @@ class CalDiscover(Discover):
                 'displayname': '' if displayname is None else displayname.text
             }
 
-            component_set = prop.find('{*}supported-calendar-component-set')
-            if component_set is not None:
-                for one in component_set:
-                    collection[one.get('name')] = True
-
             yield collection
 
 
+class CalDiscover(Discover):
+    _resourcetype = 'calendar'
+    _homeset_xml = """
+    <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
+        <d:prop>
+            <c:calendar-home-set />
+        </d:prop>
+    </d:propfind>
+    """
+    _homeset_tag = '{*}calendar-home-set'
+
+
 class CardDiscover(Discover):
-    xml_home = """
+    _resourcetype = 'addressbook'
+    _homeset_xml = """
     <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:carddav">
         <d:prop>
             <c:addressbook-home-set />
         </d:prop>
     </d:propfind>
     """
-    xml_collection = """
-    <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:cardav">
-        <d:prop>
-            <d:resourcetype />
-            <c:addressbook />
-        </d:prop>
-    </d:propfind>
-    """
-    str_homeset = '{*}addressbook-home-set'
-
-    def _find_collections(self, home):
-        """find all CardDAV collections under `home`"""
-        headers = self.session.get_default_headers()
-        headers['Depth'] = 1
-        response = self.session.request('PROPFIND', home, headers=headers,
-                                        data=self.xml_collection,
-                                        is_subpath=False)
-
-        root = etree.XML(response.content)
-        for response in root.iter('{*}response'):
-            prop = response.find('{*}propstat/{*}prop')
-            if prop.find('{*}resourcetype/{*}addressbook') is None:
-                continue
-
-            displayname = prop.find('{*}displayname')
-            yield {
-                'href': response.find('{*}href').text,
-                'displayname': '' if displayname is None else displayname.text
-            }
+    _homeset_tag = '{*}addressbook-home-set'
 
 
 class DavSession(object):
