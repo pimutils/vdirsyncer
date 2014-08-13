@@ -7,6 +7,7 @@
     :license: MIT, see LICENSE for more details.
 '''
 import datetime
+import itertools
 
 from lxml import etree
 
@@ -82,8 +83,11 @@ class Discover(object):
         :returns: a list of the user's collections (as urls)
         :rtype: list(unicode)
         """
-        for principal in list(self._find_principal()) or ['']:
-            for home in list(self._find_home(principal)) or ['']:
+        # Another one of Radicale's specialties: Discovery is broken (returning
+        # completely wrong URLs at every stage) as of version 0.9.
+        # https://github.com/Kozea/Radicale/issues/196
+        for principal in itertools.chain(self._find_principal(), ['']):
+            for home in itertools.chain(self._find_home(principal), ['']):
                 for collection in self._find_collections(home):
                     yield collection
 
