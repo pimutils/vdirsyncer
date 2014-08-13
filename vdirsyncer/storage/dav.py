@@ -86,10 +86,15 @@ class Discover(object):
         # Another one of Radicale's specialties: Discovery is broken (returning
         # completely wrong URLs at every stage) as of version 0.9.
         # https://github.com/Kozea/Radicale/issues/196
+        done = set()
         for principal in itertools.chain(self._find_principal(), ['']):
             for home in itertools.chain(self._find_home(principal), ['']):
                 for collection in self._find_collections(home):
-                    yield collection
+                    href = utils.urlparse.urljoin(self.session.url,
+                                                  collection['href'])
+                    if href not in done:
+                        done.add(href)
+                        yield collection
 
     def _find_home(self, principal):
         headers = self.session.get_default_headers()
