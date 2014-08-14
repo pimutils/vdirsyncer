@@ -2,7 +2,7 @@
 Credits and License
 ===================
 
-.. include:: ../CONTRIBUTORS.rst
+.. include:: ../AUTHORS.rst
 
 License
 =======
