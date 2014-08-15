@@ -13,7 +13,7 @@ from requests import Response
 
 from tests import normalize_item
 
-from vdirsyncer.storage.http import HttpStorage
+from vdirsyncer.storage.http import HttpStorage, prepare_auth
 
 
 def test_list(monkeypatch):
@@ -84,3 +84,38 @@ def test_readonly_param():
     a = HttpStorage(url=url, read_only=True).read_only
     b = HttpStorage(url=url, read_only=None).read_only
     assert a is b is True
+
+
+def test_prepare_auth():
+    assert prepare_auth(None, '', '') is None
+
+    assert prepare_auth('basic', 'user', 'pwd') == ('user', 'pwd')
+    with pytest.raises(ValueError) as excinfo:
+        assert prepare_auth('basic', '', 'pwd')
+    assert 'you need to specify username and password' in \
+        str(excinfo.value).lower()
+
+    from requests.auth import HTTPDigestAuth
+    assert isinstance(prepare_auth('digest', 'user', 'pwd'),
+                      HTTPDigestAuth)
+
+    with pytest.raises(ValueError) as excinfo:
+        prepare_auth('ladida', 'user', 'pwd')
+
+    assert 'unknown authentication method' in str(excinfo.value).lower()
+
+
+@pytest.mark.parametrize('auth', (None, 'guess'))
+def test_prepare_auth_guess(monkeypatch, auth):
+    import requests_toolbelt
+
+    assert isinstance(prepare_auth(auth, 'user', 'pwd'),
+                      requests_toolbelt.GuessAuth)
+
+    if hasattr(requests_toolbelt, 'GuessAuth'):
+        monkeypatch.delattr(requests_toolbelt, 'GuessAuth')
+
+    with pytest.raises(RuntimeError) as excinfo:
+        prepare_auth(auth, 'user', 'pwd')
+
+    assert 'requests_toolbelt is too old' in str(excinfo.value).lower()
