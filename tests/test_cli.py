@@ -159,6 +159,8 @@ def test_simple_run(tmpdir):
 
     tmpdir.join('path_a/haha.txt').write('UID:haha')
     result = runner.invoke(cli.app, ['sync'])
+    assert result.output == ('Syncing my_pair\n'
+                             'Copying (uploading) item haha to my_b\n')
     assert tmpdir.join('path_b/haha.txt').read() == 'UID:haha'
 
 
