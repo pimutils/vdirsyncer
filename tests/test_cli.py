@@ -49,9 +49,10 @@ def test_load_config(tmpdir, monkeypatch):
     assert general == {'foo': 1, 'status_path': status_path}
     assert pairs == {'bob': ('bob_a', 'bob_b', {'bam': True}, {'foo': 'bar'})}
     assert storages == {
-        'bob_a': {'type': 'filesystem', 'path': contacts_path,
-                  'fileext': '.vcf', 'yesno': False, 'number': 42},
-        'bob_b': {'type': 'carddav'}
+        'bob_a': {'type': 'filesystem', 'path': contacts_path, 'fileext':
+                  '.vcf', 'yesno': False, 'number': 42,
+                  'instance_name': 'bob_a'},
+        'bob_b': {'type': 'carddav', 'instance_name': 'bob_b'}
     }
 
     assert len(errors) == 1

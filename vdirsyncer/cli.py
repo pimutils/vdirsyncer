@@ -55,6 +55,7 @@ def load_config(fname, pair_options=('collections', 'conflict_resolution')):
 
     def handle_storage(storage_name, options):
         storages.setdefault(storage_name, {}).update(options)
+        storages[storage_name]['instance_name'] = storage_name
 
     def handle_pair(pair_name, options):
         a, b = options.pop('a'), options.pop('b')
