@@ -20,6 +20,6 @@
 
   * But not because you wrote too few tests.
 
-  * Add yourself to ``CONTRIBUTORS.rst``. Don't add anything to
+  * Add yourself to ``AUTHORS.rst``. Don't add anything to
     ``CHANGELOG.rst``, I do that myself shortly before the release. You can
     help by writing meaningful commit messages.
