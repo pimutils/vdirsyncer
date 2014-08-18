@@ -270,7 +270,8 @@ class DavStorage(Storage):
         if kwargs.pop('collection', None) is not None:
             raise TypeError('collection argument must not be given.')
         discover_args, _ = utils.split_dict(kwargs, lambda key: key in (
-            'username', 'password', 'verify', 'auth', 'useragent'
+            'username', 'password', 'verify', 'auth', 'useragent',
+            'tls_fingerprint',
         ))
         d = cls.discovery_class(DavSession(
             url=url, dav_header=None, **discover_args))
