@@ -5,6 +5,19 @@ Changelog
 This changelog only contains information that might be useful to end users and
 package maintainers. For further info, see the git commit log.
 
+Version 0.2.4
+=============
+
+*released on 18 August 2014*
+
+- Include workaround for collection discovery with latest version of Radicale.
+
+- Include metadata files such as the changelog or license in source
+  distribution, see issues `#97`_ and `#98`_.
+
+.. _`#97`: https://github.com/untitaker/vdirsyncer/issues/97
+.. _`#98`: https://github.com/untitaker/vdirsyncer/issues/98
+
 Version 0.2.3
 =============
 
