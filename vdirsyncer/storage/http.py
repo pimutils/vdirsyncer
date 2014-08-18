@@ -81,7 +81,8 @@ class HttpStorage(Storage):
     _items = None
 
     def __init__(self, url, username='', password='', collection=None,
-                 verify=True, auth=None, useragent=USERAGENT, **kwargs):
+                 verify=True, auth=None, useragent=USERAGENT,
+                 tls_fingerprint=None, **kwargs):
         super(HttpStorage, self).__init__(**kwargs)
 
         if username and not password:
@@ -89,6 +90,7 @@ class HttpStorage(Storage):
 
         self._settings = {
             'verify': prepare_verify(verify),
+            'tls_fingerprint': tls_fingerprint,
             'auth': prepare_auth(auth, username, password),
             'latin1_fallback': False
         }
