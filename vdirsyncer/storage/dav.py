@@ -206,7 +206,7 @@ class DavSession(object):
         return {
             'User-Agent': self.useragent,
             'Content-Type': 'application/xml; charset=UTF-8'
-        }
+        }.copy()
 
 
 class DavStorage(Storage):
