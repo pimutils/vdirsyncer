@@ -120,11 +120,11 @@ def storage_class_from_config(config):
     storage_name = config.pop('type')
     cls = storage_names.get(storage_name, None)
     if cls is None:
-        raise KeyError('Unknown storage: {}'.format(storage_name))
+        raise CliError('Unknown storage type: {}'.format(storage_name))
     return cls, config
 
 
-def storage_instance_from_config(config, description=None):
+def storage_instance_from_config(config):
     '''
     :param config: A configuration dictionary to pass as kwargs to the class
         corresponding to config['type']
@@ -136,26 +136,33 @@ def storage_instance_from_config(config, description=None):
     try:
         return cls(**config)
     except Exception:
-        all, required = get_class_init_args(cls)
-        given = set(config)
-        missing = required - given
-        invalid = given - all
+        handle_storage_init_error(cls, config)
 
-        if not missing and not invalid:
+
+def handle_storage_init_error(cls, config):
+    all, required = get_class_init_args(cls)
+    given = set(config)
+    missing = required - given
+    invalid = given - all
+
+    if missing:
+        cli_logger.critical(
+            u'{} storage requires the parameters: {}'
+            .format(cls.storage_name, u', '.join(missing)))
+
+    if invalid:
+        cli_logger.critical(
+            u'{} storage doesn\'t take the parameters: {}'
+            .format(cls.storage_name, u', '.join(invalid)))
+
+    if not missing and not invalid:
+        e = sys.exc_info()[1]
+        if isinstance(e, CliError):
+            raise
+        else:
             cli_logger.exception('')
 
-        if missing:
-            cli_logger.critical(
-                u'error: {} storage requires the parameters: {}'
-                .format(cls.storage_name, u', '.join(missing)))
-
-        if invalid:
-            cli_logger.critical(
-                u'error: {} storage doesn\'t take the parameters: {}'
-                .format(cls.storage_name, u', '.join(invalid)))
-
-        raise CliError('error: Failed to initialize {}'
-                       .format(description or cls.storage_name))
+    raise CliError('Failed to initialize {}.'.format(config['instance_name']))
 
 
 def expand_collection(pair, collection, all_pairs, all_storages):
@@ -181,9 +188,13 @@ def expand_collection(pair, collection, all_pairs, all_storages):
         else:
             config.update(all_storages[b_name])
         cls, config = storage_class_from_config(config)
-        return (s.collection for s in cls.discover(**config))
+        try:
+            for s in cls.discover(**config):
+                yield s.collection
+        except Exception:
+            handle_storage_init_error(cls, config)
     else:
-        return [collection]
+        yield collection
 
 
 def parse_pairs_args(pairs_args, all_pairs):
@@ -347,8 +358,8 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
     collection_description = pair_name if collection is None \
         else '{} from {}'.format(collection, pair_name)
 
-    a = storage_instance_from_config(config_a, collection_description)
-    b = storage_instance_from_config(config_b, collection_description)
+    a = storage_instance_from_config(config_a)
+    b = storage_instance_from_config(config_b)
 
     cli_logger.info('Syncing {}'.format(collection_description))
     status = load_status(general['status_path'], status_name)
