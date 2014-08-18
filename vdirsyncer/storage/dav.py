@@ -271,7 +271,7 @@ class DavStorage(Storage):
             'username', 'password', 'verify', 'auth', 'useragent'
         ))
         d = cls.discovery_class(DavSession(
-            url=url, dav_header=None, **discover_args))
+            url=url, dav_header=cls.dav_header, **discover_args))
         for c in d.discover():
             base, collection = c['href'].rstrip('/').rsplit('/', 1)
             s = cls(url=base, collection=collection, **kwargs)
