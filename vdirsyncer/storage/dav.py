@@ -162,13 +162,14 @@ class DavSession(object):
     '''
 
     def __init__(self, url, username='', password='', verify=True, auth=None,
-                 useragent=USERAGENT, dav_header=None):
+                 useragent=USERAGENT, tls_fingerprint=None, dav_header=None):
         if username and not password:
             password = utils.get_password(username, url)
 
         self._settings = {
             'verify': prepare_verify(verify),
-            'auth': prepare_auth(auth, username, password)
+            'auth': prepare_auth(auth, username, password),
+            'tls_fingerprint': tls_fingerprint,
         }
         self.useragent = useragent
         self.url = url.rstrip('/') + '/'
@@ -248,14 +249,15 @@ class DavStorage(Storage):
 
     def __init__(self, url, username='', password='', collection=None,
                  verify=True, auth=None, useragent=USERAGENT,
-                 unsafe_href_chars='@', **kwargs):
+                 unsafe_href_chars='@', tls_fingerprint=None, **kwargs):
         super(DavStorage, self).__init__(**kwargs)
 
         url = url.rstrip('/') + '/'
         if collection is not None:
             url = utils.urlparse.urljoin(url, collection)
         self.session = DavSession(url, username, password, verify, auth,
-                                  useragent, dav_header=self.dav_header)
+                                  useragent, tls_fingerprint,
+                                  dav_header=self.dav_header)
         self.collection = collection
         self.unsafe_href_chars = unsafe_href_chars
 
