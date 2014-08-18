@@ -160,6 +160,10 @@ def storage_instance_from_config(config):
 
 
 def handle_storage_init_error(cls, config):
+    e = sys.exc_info()[1]
+    if isinstance(e, (click.Abort, CliError, KeyboardInterrupt)):
+        raise
+
     all, required = get_class_init_args(cls)
     given = set(config)
     missing = required - given
@@ -176,11 +180,7 @@ def handle_storage_init_error(cls, config):
             .format(cls.storage_name, u', '.join(invalid)))
 
     if not missing and not invalid:
-        e = sys.exc_info()[1]
-        if isinstance(e, CliError):
-            raise
-        else:
-            cli_logger.exception('')
+        cli_logger.exception('')
 
     raise CliError('Failed to initialize {}.'.format(config['instance_name']))
 
