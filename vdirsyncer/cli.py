@@ -31,6 +31,9 @@ cli_logger = log.get(__name__)
 PROJECT_HOME = 'https://github.com/untitaker/vdirsyncer'
 DOCS_HOME = 'https://vdirsyncer.readthedocs.org/en/latest'
 
+GENERAL_ALL = set(['processes', 'status_path'])
+GENERAL_REQUIRED = set(['status_path'])
+
 
 class CliError(RuntimeError):
     pass
@@ -40,6 +43,28 @@ def get_status_name(pair, collection):
     if collection is None:
         return pair
     return pair + '/' + collection
+
+
+def validate_general_section(general_config):
+    if general_config is None:
+        raise CliError(
+            'Unable to find general section. You should copy the example '
+            'config from the repository and edit it.\n{}'.format(PROJECT_HOME)
+        )
+
+    invalid = set(general_config) - GENERAL_ALL
+    missing = GENERAL_REQUIRED - set(general_config)
+
+    if invalid:
+        cli_logger.critical(u'general section doesn\'t take the parameters: {}'
+                            .format(u', '.join(invalid)))
+
+    if missing:
+        cli_logger.critical(u'general section is missing the parameters: {}'
+                            .format(u', '.join(missing)))
+
+    if invalid or missing:
+        raise CliError('Invalid general section.')
 
 
 def load_config(fname, pair_options=('collections', 'conflict_resolution')):
@@ -80,12 +105,7 @@ def load_config(fname, pair_options=('collections', 'conflict_resolution')):
         else:
             handlers.get(section_type, bad_section)(name, get_options(section))
 
-    if general is None:
-        raise CliError(
-            'Unable to find general section. You should copy the example '
-            'config from the repository and edit it.\n{}'.format(PROJECT_HOME)
-        )
-
+    validate_general_section(general)
     return general, pairs, storages
 
 
@@ -273,7 +293,7 @@ def _create_app():
             try:
                 ctx.obj['config'] = load_config(fname)
             except Exception as e:
-                raise CliError('Error during reading config{}:\n{}'
+                raise CliError('Error during reading config{}: {}'
                                .format(fname, e))
 
     @app.command()

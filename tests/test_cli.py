@@ -20,7 +20,6 @@ def test_load_config(tmpdir, monkeypatch):
     f.write(dedent('''
         [general]
         status_path = {status}
-        foo = 1
 
         [pair bob]
         a = bob_a
@@ -46,7 +45,7 @@ def test_load_config(tmpdir, monkeypatch):
     errors = []
     monkeypatch.setattr('vdirsyncer.cli.cli_logger.error', errors.append)
     general, pairs, storages = cli.load_config(fname, pair_options=('bam',))
-    assert general == {'foo': 1, 'status_path': status_path}
+    assert general == {'status_path': status_path}
     assert pairs == {'bob': ('bob_a', 'bob_b', {'bam': True}, {'foo': 'bar'})}
     assert storages == {
         'bob_a': {'type': 'filesystem', 'path': contacts_path, 'fileext':
@@ -188,7 +187,31 @@ def test_missing_general_section(tmpdir):
         env={'VDIRSYNCER_CONFIG': str(config_file)}
     )
     assert result.exception
-    assert 'critical: unable to find general section' in result.output.lower()
+    assert result.output.startswith('critical:')
+    assert 'unable to find general section' in result.output.lower()
+
+
+def test_wrong_general_section(tmpdir):
+    config_file = tmpdir.join('config')
+    config_file.write(dedent('''
+    [general]
+    wrong = yes
+    '''))
+
+    runner = CliRunner()
+    result = runner.invoke(
+        cli.app, ['sync'],
+        env={'VDIRSYNCER_CONFIG': str(config_file)}
+    )
+
+    assert result.exception
+    lines = result.output.splitlines()
+    assert lines[:-1] == [
+        'critical: general section doesn\'t take the parameters: wrong',
+        'critical: general section is missing the parameters: status_path'
+    ]
+    assert lines[-1].startswith('critical:')
+    assert lines[-1].endswith('Invalid general section.')
 
 
 def test_verbosity(tmpdir):
