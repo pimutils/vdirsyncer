@@ -12,7 +12,7 @@ env:
     - BUILD=style
 
 install:
-    - "./build.sh install"
+    - "./build.sh install_$BUILD"
     - '[ -z "$PKGS" ] || pip install $PKGS'
 script:
-    - "./build.sh run"
+    - "./build.sh $BUILD"
