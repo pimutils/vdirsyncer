@@ -5,7 +5,7 @@ set -e
 [ -n "$DAV_SERVER" ] || DAV_SERVER=radicale
 [ -n "$REQUIREMENTS" ] || REQUIREMENTS=release
 [ -n "$PIP_INSTALL" ] || PIP_INSTALL="pip install"
-[ -n "$TESTSERVER_BASE"] || TESTSERVER_BASE=./tests/storage/dav/servers/
+[ -n "$TESTSERVER_BASE" ] || TESTSERVER_BASE=./tests/storage/dav/servers/
 
 
 _optimize_pip() {
