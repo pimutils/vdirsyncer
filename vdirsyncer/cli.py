@@ -12,9 +12,8 @@ import json
 import os
 import sys
 
-import click
-
 from . import __version__, log
+from .doubleclick import click
 from .storage import storage_names
 from .sync import StorageEmpty, SyncConflict, sync
 from .utils import expand_path, get_class_init_args, parse_options, split_dict

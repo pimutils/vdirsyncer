@@ -9,7 +9,7 @@
 import logging
 import sys
 
-import click
+from .doubleclick import click
 
 
 class ColorFormatter(logging.Formatter):

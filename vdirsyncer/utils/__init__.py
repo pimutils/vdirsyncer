@@ -9,12 +9,11 @@
 
 import os
 
-import click
-
 import requests
 from requests.packages.urllib3.poolmanager import PoolManager
 
 from .. import exceptions, log
+from ..doubleclick import click
 from .compat import iteritems, urlparse
 
 
