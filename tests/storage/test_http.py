@@ -41,7 +41,7 @@ def test_list(monkeypatch):
         u'\n'.join([u'BEGIN:VCALENDAR'] + items + [u'END:VCALENDAR'])
     ] * 2
 
-    def get(self, method, url, *a, **kw):
+    def get(method, url, *a, **kw):
         assert method == 'GET'
         assert url == collection_url
         r = Response()
@@ -52,7 +52,7 @@ def test_list(monkeypatch):
         r.encoding = 'ISO-8859-1'
         return r
 
-    monkeypatch.setattr('requests.sessions.Session.request', get)
+    monkeypatch.setattr('requests.request', get)
 
     s = HttpStorage(url=collection_url)
 

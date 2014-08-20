@@ -10,7 +10,6 @@
 import os
 
 import requests
-from requests.packages.urllib3.poolmanager import PoolManager
 
 from .. import exceptions, log
 from ..doubleclick import click
@@ -178,23 +177,8 @@ def _password_from_keyring(username, resource):
         key = new_key
 
 
-class _FingerprintAdapter(requests.adapters.HTTPAdapter):
-    def __init__(self, fingerprint=None, **kwargs):
-        self.fingerprint = str(fingerprint)
-        super(_FingerprintAdapter, self).__init__(**kwargs)
-
-    def send(self, *args, **kwargs):
-        return super(_FingerprintAdapter, self).send(*args, **kwargs)
-
-    def init_poolmanager(self, connections, maxsize, block=False):
-        self.poolmanager = PoolManager(num_pools=connections,
-                                       maxsize=maxsize,
-                                       block=block,
-                                       assert_fingerprint=self.fingerprint)
-
-
 def request(method, url, data=None, headers=None, auth=None, verify=None,
-            session=None, latin1_fallback=True, tls_fingerprint=None):
+            session=None, latin1_fallback=True):
     '''
     Wrapper method for requests, to ease logging and mocking. Parameters should
     be the same as for ``requests.request``, except:
@@ -209,16 +193,9 @@ def request(method, url, data=None, headers=None, auth=None, verify=None,
     '''
 
     if session is None:
-        session = requests.Session()
-
-    if tls_fingerprint is not None:
-        https_prefix = 'https://'
-
-        if not isinstance(session.adapters[https_prefix], _FingerprintAdapter):
-            fingerprint_adapter = _FingerprintAdapter(tls_fingerprint)
-            session.mount(https_prefix, fingerprint_adapter)
-
-    func = session.request
+        func = requests.request
+    else:
+        func = session.request
 
     logger.debug(u'{} {}'.format(method, url))
     logger.debug(headers)
