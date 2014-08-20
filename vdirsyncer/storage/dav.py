@@ -162,7 +162,8 @@ class DavSession(object):
     '''
 
     def __init__(self, url, username='', password='', verify=True, auth=None,
-                 useragent=USERAGENT, verify_fingerprint=None, dav_header=None):
+                 useragent=USERAGENT, verify_fingerprint=None,
+                 dav_header=None):
         if username and not password:
             password = utils.get_password(username, url)
 
