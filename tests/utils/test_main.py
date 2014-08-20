@@ -170,5 +170,5 @@ def test_request_verify_fingerprint(httpsserver):
     assert 'certificate verify failed' in str(excinfo.value)
     utils.request('GET', httpsserver.url, verify=False)
     with pytest.raises(requests.exceptions.SSLError) as excinfo:
-        utils.request('GET', httpsserver.url, verify=False,
+        utils.request('GET', httpsserver.url, verify=None,
                       verify_fingerprint='ABCD')
