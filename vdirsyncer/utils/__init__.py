@@ -183,9 +183,6 @@ class _FingerprintAdapter(requests.adapters.HTTPAdapter):
         self.fingerprint = str(fingerprint)
         super(_FingerprintAdapter, self).__init__(**kwargs)
 
-    def send(self, *args, **kwargs):
-        return super(_FingerprintAdapter, self).send(*args, **kwargs)
-
     def init_poolmanager(self, connections, maxsize, block=False):
         self.poolmanager = PoolManager(num_pools=connections,
                                        maxsize=maxsize,
