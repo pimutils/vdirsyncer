@@ -194,12 +194,14 @@ class _FingerprintAdapter(requests.adapters.HTTPAdapter):
 
 
 def request(method, url, data=None, headers=None, auth=None, verify=None,
-            session=None, latin1_fallback=True, tls_fingerprint=None):
+            session=None, latin1_fallback=True, verify_fingerprint=None):
     '''
     Wrapper method for requests, to ease logging and mocking. Parameters should
     be the same as for ``requests.request``, except:
 
     :param session: A requests session object to use.
+    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
+        expected server certificate.
     :param latin1_fallback: RFC-2616 specifies the default Content-Type of
         text/* to be latin1, which is not always correct, but exactly what
         requests is doing. Setting this parameter to False will use charset
@@ -211,11 +213,11 @@ def request(method, url, data=None, headers=None, auth=None, verify=None,
     if session is None:
         session = requests.Session()
 
-    if tls_fingerprint is not None:
+    if verify_fingerprint is not None:
         https_prefix = 'https://'
 
         if not isinstance(session.adapters[https_prefix], _FingerprintAdapter):
-            fingerprint_adapter = _FingerprintAdapter(tls_fingerprint)
+            fingerprint_adapter = _FingerprintAdapter(verify_fingerprint)
             session.mount(https_prefix, fingerprint_adapter)
 
     func = session.request
