@@ -10,6 +10,8 @@
 import click
 from click.testing import CliRunner
 import pytest
+import requests
+
 import vdirsyncer.utils as utils
 from vdirsyncer.utils.vobject import split_collection
 
@@ -159,3 +161,14 @@ def test_get_class_init_args_on_storage():
     all, required = utils.get_class_init_args(MemoryStorage)
     assert all == set(['collection', 'read_only', 'instance_name'])
     assert not required
+
+
+def test_request_verify_fingerprint(httpsserver):
+    httpsserver.serve_content(content='hello', code=200, headers=None)
+    with pytest.raises(requests.exceptions.SSLError) as excinfo:
+        utils.request('GET', httpsserver.url)
+    assert 'certificate verify failed' in str(excinfo.value)
+    utils.request('GET', httpsserver.url, verify=False)
+    with pytest.raises(requests.exceptions.SSLError) as excinfo:
+        utils.request('GET', httpsserver.url, verify=False,
+                      verify_fingerprint='ABCD')
