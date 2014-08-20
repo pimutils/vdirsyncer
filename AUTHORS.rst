@@ -7,4 +7,3 @@ In alphabetical order:
 - Clément Mondon
 - Julian Mehne
 - Markus Unterwaditzer
-- Thomas Weißschuh

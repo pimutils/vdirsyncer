@@ -54,8 +54,6 @@ class HttpStorage(Storage):
     :param password: Password for authentication.
     :param verify: Verify SSL certificate, default True. This can also be a
         local path to a self-signed SSL certificate.
-    :param tls_fingerprint: Optional. SHA1 or MD5 fingerprint of the
-        expected server certificate.
     :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. Default
         ``guess``. If you know yours, consider setting it explicitly for
         performance.
@@ -83,8 +81,7 @@ class HttpStorage(Storage):
     _items = None
 
     def __init__(self, url, username='', password='', collection=None,
-                 verify=True, auth=None, useragent=USERAGENT,
-                 tls_fingerprint=None, **kwargs):
+                 verify=True, auth=None, useragent=USERAGENT, **kwargs):
         super(HttpStorage, self).__init__(**kwargs)
 
         if username and not password:
@@ -92,7 +89,6 @@ class HttpStorage(Storage):
 
         self._settings = {
             'verify': prepare_verify(verify),
-            'tls_fingerprint': tls_fingerprint,
             'auth': prepare_auth(auth, username, password),
             'latin1_fallback': False
         }
