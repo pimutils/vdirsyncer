@@ -8,11 +8,12 @@
 '''
 
 import os
+import threading
 
 import requests
 
 from .. import exceptions, log
-from ..doubleclick import click
+from ..doubleclick import click, ctx
 from .compat import iteritems, urlparse
 
 
@@ -88,7 +89,7 @@ def parse_options(items, section=None):
                              .format(section, key, e))
 
 
-def get_password(username, resource):
+def get_password(username, resource, _lock=threading.Lock()):
     """tries to access saved password or asks user for it
 
     will try the following in this order:
@@ -110,71 +111,58 @@ def get_password(username, resource):
 
 
     """
-    for func in (_password_from_netrc, _password_from_keyring):
-        password = func(username, resource)
-        if password is not None:
-            logger.debug('Got password for {} from {}'
-                         .format(username, func.__doc__))
-            return password
+    if ctx:
+        password_cache = ctx.obj.setdefault('passwords', {})
 
-    prompt = ('Server password for {} at the resource {}'
-              .format(username, resource))
-    password = click.prompt(prompt, hide_input=True)
+    with _lock:
+        host = urlparse.urlsplit(resource).hostname
+        for func in (_password_from_cache, _password_from_netrc,
+                     _password_from_keyring):
+            password = func(username, host)
+            if password is not None:
+                logger.debug('Got password for {} from {}'
+                             .format(username, func.__doc__))
+                return password
 
-    if keyring is not None and \
-       click.confirm('Save this password in the keyring?', default=False):
-        keyring.set_password(password_key_prefix + resource,
-                             username, password)
+        prompt = ('Server password for {} at host {}'.format(username, host))
+        password = click.prompt(prompt, hide_input=True)
 
-    return password
+        if ctx and func is not _password_from_cache:
+            password_cache[(username, host)] = password
+            if keyring is not None and \
+               click.confirm('Save this password in the keyring?',
+                             default=False):
+                keyring.set_password(password_key_prefix + resource,
+                                     username, password)
+
+        return password
 
 
-def _password_from_netrc(username, resource):
+def _password_from_cache(username, host):
+    '''internal cache'''
+    if ctx:
+        return ctx.obj['passwords'].get((username, host), None)
+
+
+def _password_from_netrc(username, host):
     '''.netrc'''
     from netrc import netrc
 
-    hostname = urlparse.urlsplit(resource).hostname
     try:
         netrc_user, account, password = \
-            netrc().authenticators(hostname) or (None, None, None)
+            netrc().authenticators(host) or (None, None, None)
         if netrc_user == username:
             return password
     except IOError:
         pass
 
 
-def _password_from_keyring(username, resource):
+def _password_from_keyring(username, host):
     '''system keyring'''
     if keyring is None:
         return None
 
-    key = resource
-    password = None
-
-    while True:
-        password = keyring.get_password(password_key_prefix + key, username)
-        if password is not None:
-            return password
-
-        parsed = urlparse.urlsplit(key)
-        path = parsed.path
-        if not path:
-            return None
-        elif path.endswith('/'):
-            path = path.rstrip('/')
-        else:
-            path = path.rsplit('/', 1)[0] + '/'
-
-        new_key = urlparse.urlunsplit((
-            parsed.scheme,
-            parsed.netloc,
-            path,
-            parsed.query,
-            parsed.fragment
-        ))
-        if new_key == key:
-            return None
-        key = new_key
+    return keyring.get_password(password_key_prefix + host, username)
 
 
 def request(method, url, data=None, headers=None, auth=None, verify=None,
