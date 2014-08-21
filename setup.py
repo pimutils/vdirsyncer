@@ -38,7 +38,7 @@ setup(
         'console_scripts': ['vdirsyncer = vdirsyncer.cli:main']
     },
     install_requires=[
-        'click>=2.0',
+        'click>=3.1',
         'requests',
         'lxml',
         'icalendar>=3.6',
