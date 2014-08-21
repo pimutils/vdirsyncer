@@ -3,12 +3,11 @@
     vdirsyncer.utils.doubleclick
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Utilities for writing multiprocessing applications with click.
+    Utilities for writing threaded applications with click.
 
     Two objects are useful:
 
-    - There is a global ``ctx`` object to be used. Since multiprocessing's
-      serialization is too primitive, it is only available across threads.
+    - There is a global ``ctx`` object to be used.
 
     - The ``click`` object's attributes are supposed to be used instead of the
       click package's content.
@@ -25,7 +24,7 @@
 '''
 
 import functools
-import multiprocessing
+import threading
 
 
 class _ClickProxy(object):
@@ -45,17 +44,15 @@ class _ClickProxy(object):
         return self._cache[name]
 
 
-_ui_lock = multiprocessing.Lock()
+_ui_lock = threading.Lock()
 
 
 def _ui_function(f):
     @functools.wraps(f)
     def inner(*a, **kw):
-        _ui_lock.acquire()
-        try:
-            return f(*a, **kw)
-        finally:
-            _ui_lock.release()
+        with _ui_lock:
+            rv = f(*a, **kw)
+        return rv
     return inner
 
 

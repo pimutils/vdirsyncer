@@ -350,12 +350,15 @@ def _create_app():
         cli_logger.debug('Using {} processes.'.format(processes))
 
         if processes == 1:
-            cli_logger.debug('Not using multiprocessing.')
+            cli_logger.debug('Not using threads.')
             rv = (_sync_collection(x) for x in actions)
         else:
-            cli_logger.debug('Using multiprocessing.')
-            from multiprocessing import Pool
+            cli_logger.debug('Using threads.')
+            from multiprocessing.dummy import Pool
             p = Pool(processes=general.get('processes', 0) or len(actions))
+
+            # We have to use map_async.get(large_value) instead of map or
+            # map_async.get() because otherwise ^C wouldn't work properly.
             rv = p.map_async(_sync_collection, actions).get(10**9)
 
         if not all(rv):
@@ -377,13 +380,15 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
     collection_description = pair_name if collection is None \
         else '{} from {}'.format(collection, pair_name)
 
-    a = storage_instance_from_config(config_a)
-    b = storage_instance_from_config(config_b)
-
-    cli_logger.info('Syncing {}'.format(collection_description))
-    status = load_status(general['status_path'], status_name)
     rv = True
     try:
+        cli_logger.info('Syncing {}'.format(collection_description))
+
+        a = storage_instance_from_config(config_a)
+        b = storage_instance_from_config(config_b)
+
+        status = load_status(general['status_path'], status_name)
+        cli_logger.debug('Loaded status for {}'.format(collection_description))
         sync(
             a, b, status,
             conflict_resolution=pair_options.get('conflict_resolution', None),
@@ -414,10 +419,13 @@ def sync_collection(config_a, config_b, pair_name, collection, pair_options,
             'Item href on side B: {e.href_b}\n'
             .format(collection=collection_description, e=e, docs=DOCS_HOME)
         )
-    except Exception:
+    except (click.Abort, KeyboardInterrupt):
+        rv = False
+    except Exception as e:
         rv = False
         cli_logger.exception('Unhandled exception occured while syncing {}.'
                              .format(collection_description))
 
-    save_status(general['status_path'], status_name, status)
+    if rv:
+        save_status(general['status_path'], status_name, status)
     return rv
