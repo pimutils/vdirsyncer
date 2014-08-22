@@ -118,6 +118,7 @@ WRAPPERS = {
     'echo': _ui_function,
     'echo_via_pager': _ui_function,
     'prompt': _ui_function,
+    'confirm': _ui_function,
     'clear': _ui_function,
     'edit': _ui_function,
     'launch': _ui_function,
