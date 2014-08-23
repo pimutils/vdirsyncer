@@ -357,9 +357,7 @@ def _create_app():
             from multiprocessing.dummy import Pool
             p = Pool(processes=general.get('processes', 0) or len(actions))
 
-            # We have to use map_async.get(large_value) instead of map or
-            # map_async.get() because otherwise ^C wouldn't work properly.
-            rv = p.map_async(_sync_collection, actions).get(10**9)
+            rv = p.imap_unordered(_sync_collection, actions)
 
         if not all(rv):
             sys.exit(1)
