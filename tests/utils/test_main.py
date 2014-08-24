@@ -8,12 +8,29 @@
 '''
 
 import click
+
 from click.testing import CliRunner
 import pytest
 import vdirsyncer.utils as utils
+import vdirsyncer.doubleclick as doubleclick
 from vdirsyncer.utils.vobject import split_collection
 
 from .. import blow_up, normalize_item, SIMPLE_TEMPLATE, BARE_EVENT_TEMPLATE
+
+
+class EmptyNetrc(object):
+    def authenticators(self, hostname):
+        return None
+
+class EmptyKeyring(object):
+    def get_password(self, *a, **kw):
+        return None
+
+
+@pytest.fixture(autouse=True)
+def empty_password_storages(monkeypatch):
+    monkeypatch.setattr('netrc.netrc', EmptyNetrc)
+    monkeypatch.setattr(utils, 'keyring', EmptyKeyring())
 
 
 def test_parse_options():
@@ -67,31 +84,17 @@ def test_get_password_from_netrc(monkeypatch):
     assert calls == [hostname]
 
 
-@pytest.mark.parametrize('resources_to_test', range(1, 8))
-def test_get_password_from_system_keyring(monkeypatch, resources_to_test):
+def test_get_password_from_system_keyring(monkeypatch):
     username = 'foouser'
     password = 'foopass'
     resource = 'http://example.com/path/to/whatever/'
     hostname = 'example.com'
 
     class KeyringMock(object):
-        def __init__(self):
-            p = utils.password_key_prefix
-            self.resources = [
-                p + 'http://example.com/path/to/whatever/',
-                p + 'http://example.com/path/to/whatever',
-                p + 'http://example.com/path/to/',
-                p + 'http://example.com/path/to',
-                p + 'http://example.com/path/',
-                p + 'http://example.com/path',
-                p + 'http://example.com/',
-            ][:resources_to_test]
-
         def get_password(self, resource, _username):
             assert _username == username
-            assert resource == self.resources.pop(0)
-            if not self.resources:
-                return password
+            assert resource == utils.password_key_prefix + hostname
+            return password
 
     monkeypatch.setattr(utils, 'keyring', KeyringMock())
 
@@ -110,19 +113,8 @@ def test_get_password_from_system_keyring(monkeypatch, resources_to_test):
     assert netrc_calls == [hostname]
 
 
-def test_get_password_from_prompt(monkeypatch):
+def test_get_password_from_prompt():
     getpass_calls = []
-
-    class Netrc(object):
-        def authenticators(self, hostname):
-            return None
-
-    class Keyring(object):
-        def get_password(self, *a, **kw):
-            return None
-
-    monkeypatch.setattr('netrc.netrc', Netrc)
-    monkeypatch.setattr(utils, 'keyring', Keyring())
 
     user = 'my_user'
     resource = 'http://example.com'
@@ -136,8 +128,35 @@ def test_get_password_from_prompt(monkeypatch):
     result = runner.invoke(fake_app, input='my_password\n\n')
     assert not result.exception
     assert result.output.splitlines() == [
-        'Server password for {} at the resource {}: '.format(user, resource),
+        'Server password for {} at host {}: '.format(user, 'example.com'),
+        'Password is my_password'
+    ]
+
+
+def test_get_password_from_cache(monkeypatch):
+    user = 'my_user'
+    resource = 'http://example.com'
+
+    @doubleclick.click.command()
+    @doubleclick.click.pass_context
+    def fake_app(ctx):
+        ctx.obj = {}
+        x = utils.get_password(user, resource)
+        click.echo('Password is {}'.format(x))
+        monkeypatch.setattr(doubleclick.click, 'prompt', blow_up)
+
+        assert (user, 'example.com') in ctx.obj['passwords']
+        x = utils.get_password(user, resource)
+        click.echo('Password is {}'.format(x))
+
+    runner = CliRunner()
+    result = runner.invoke(fake_app, input='my_password\n')
+    assert not result.exception
+    assert result.output.splitlines() == [
+        'Server password for {} at host {}: '.format(user, 'example.com'),
         'Save this password in the keyring? [y/N]: ',
+        'Password is my_password',
+        'debug: Got password for my_user from internal cache',
         'Password is my_password'
     ]
 
