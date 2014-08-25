@@ -100,7 +100,15 @@ def _ctx_pushing_class(cls):
             try:
                 cls.invoke(self, ctx)
             finally:
-                _ctx_stack.pop()
+                new_ctx = _ctx_stack.pop()
+                if new_ctx is not ctx:
+                    raise RuntimeError(
+                        'While doubleclick is supposed to make writing '
+                        'threaded applications easier, it removes thread '
+                        'safety from click. It is therefore not recommended '
+                        'to launch more than one doubleclick application per '
+                        'process.'
+                    )
 
     return ContextPusher
 
