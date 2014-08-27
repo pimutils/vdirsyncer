@@ -5,6 +5,18 @@ Changelog
 This changelog only contains information that might be useful to end users and
 package maintainers. For further info, see the git commit log.
 
+Version 0.2.5
+=============
+
+*released on 27 August 2014*
+
+- Don't ask for the password of one server more than once and fix multiple
+  concurrency issues, see issue `#101`_.
+
+- Better validation of DAV endpoints.
+
+.. _`#101`: https://github.com/untitaker/vdirsyncer/issues/101
+
 Version 0.2.4
 =============
 
