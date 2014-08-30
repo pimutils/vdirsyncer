@@ -16,8 +16,13 @@ def test_simple():
     @click.pass_context
     def cli(ctx):
         assert global_ctx
+        assert ctx.obj is global_ctx.obj
         assert _ctx_stack.top is ctx
+        click.echo('hello')
 
     assert not global_ctx
     runner = CliRunner()
-    runner.invoke(cli)
+    result = runner.invoke(cli, catch_exceptions=False)
+    assert not global_ctx
+    assert not result.exception
+    assert result.output == 'hello\n'
