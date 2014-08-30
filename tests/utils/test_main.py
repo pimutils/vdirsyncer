@@ -11,6 +11,8 @@ import click
 
 from click.testing import CliRunner
 import pytest
+import requests
+
 import vdirsyncer.utils as utils
 import vdirsyncer.doubleclick as doubleclick
 from vdirsyncer.utils.vobject import split_collection
@@ -178,3 +180,18 @@ def test_get_class_init_args_on_storage():
     all, required = utils.get_class_init_args(MemoryStorage)
     assert all == set(['collection', 'read_only', 'instance_name'])
     assert not required
+
+
+def test_request_ssl(httpsserver):
+    sha1 = '94:FD:7A:CB:50:75:A4:69:82:0A:F8:23:DF:07:FC:69:3E:CD:90:CA'
+    md5 = '19:90:F7:23:94:F2:EF:AB:2B:64:2D:57:3D:25:95:2D'
+
+    httpsserver.serve_content('')  # we need to serve something
+
+    with pytest.raises(requests.exceptions.SSLError) as excinfo:
+        utils.request('GET', httpsserver.url)
+    assert 'certificate verify failed' in str(excinfo.value)
+    utils.request('GET', httpsserver.url, verify=False)
+    utils.request('GET', httpsserver.url, verify=False,
+                  verify_fingerprint=sha1)
+    utils.request('GET', httpsserver.url, verify=False, verify_fingerprint=md5)

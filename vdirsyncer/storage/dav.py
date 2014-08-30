@@ -162,13 +162,15 @@ class DavSession(object):
     '''
 
     def __init__(self, url, username='', password='', verify=True, auth=None,
-                 useragent=USERAGENT, dav_header=None):
+                 useragent=USERAGENT, verify_fingerprint=None,
+                 dav_header=None):
         if username and not password:
             password = utils.get_password(username, url)
 
         self._settings = {
             'verify': prepare_verify(verify),
-            'auth': prepare_auth(auth, username, password)
+            'auth': prepare_auth(auth, username, password),
+            'verify_fingerprint': verify_fingerprint,
         }
         self.useragent = useragent
         self.url = url.rstrip('/') + '/'
@@ -222,6 +224,8 @@ class DavStorage(Storage):
     :param password: Password for authentication.
     :param verify: Verify SSL certificate, default True. This can also be a
         local path to a self-signed SSL certificate.
+    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
+        expected server certificate.
     :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. Default
         ``guess``. If you know yours, consider setting it explicitly for
         performance.
@@ -248,14 +252,15 @@ class DavStorage(Storage):
 
     def __init__(self, url, username='', password='', collection=None,
                  verify=True, auth=None, useragent=USERAGENT,
-                 unsafe_href_chars='@', **kwargs):
+                 unsafe_href_chars='@', verify_fingerprint=None, **kwargs):
         super(DavStorage, self).__init__(**kwargs)
 
         url = url.rstrip('/') + '/'
         if collection is not None:
             url = utils.urlparse.urljoin(url, collection)
         self.session = DavSession(url, username, password, verify, auth,
-                                  useragent, dav_header=self.dav_header)
+                                  useragent, verify_fingerprint,
+                                  dav_header=self.dav_header)
         self.collection = collection
         self.unsafe_href_chars = unsafe_href_chars
 
@@ -268,7 +273,8 @@ class DavStorage(Storage):
         if kwargs.pop('collection', None) is not None:
             raise TypeError('collection argument must not be given.')
         discover_args, _ = utils.split_dict(kwargs, lambda key: key in (
-            'username', 'password', 'verify', 'auth', 'useragent'
+            'username', 'password', 'verify', 'auth', 'useragent',
+            'verify_fingerprint',
         ))
         d = cls.discovery_class(DavSession(
             url=url, dav_header=cls.dav_header, **discover_args))

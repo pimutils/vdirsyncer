@@ -8,8 +8,6 @@ import pytest
 import wsgi_intercept
 import wsgi_intercept.requests_intercept
 
-wsgi_intercept.requests_intercept.install()
-
 
 RADICALE_SCHEMA = '''
 create table collection (
@@ -93,10 +91,12 @@ class ServerMixin(object):
         do_the_radicale_dance(str(tmpdir))
         from radicale import Application
 
+        wsgi_intercept.requests_intercept.install()
         wsgi_intercept.add_wsgi_intercept('127.0.0.1', 80, Application)
 
         def teardown():
             wsgi_intercept.remove_wsgi_intercept('127.0.0.1', 80)
+            wsgi_intercept.requests_intercept.uninstall()
         request.addfinalizer(teardown)
 
     def get_storage_args(self, collection='test'):

@@ -11,6 +11,7 @@ import os
 import threading
 
 import requests
+from requests.packages.urllib3.poolmanager import PoolManager
 
 from .. import exceptions, log
 from ..doubleclick import click, ctx
@@ -165,13 +166,27 @@ def _password_from_keyring(username, host):
     return keyring.get_password(password_key_prefix + host, username)
 
 
+class _FingerprintAdapter(requests.adapters.HTTPAdapter):
+    def __init__(self, fingerprint=None, **kwargs):
+        self.fingerprint = str(fingerprint)
+        super(_FingerprintAdapter, self).__init__(**kwargs)
+
+    def init_poolmanager(self, connections, maxsize, block=False):
+        self.poolmanager = PoolManager(num_pools=connections,
+                                       maxsize=maxsize,
+                                       block=block,
+                                       assert_fingerprint=self.fingerprint)
+
+
 def request(method, url, data=None, headers=None, auth=None, verify=None,
-            session=None, latin1_fallback=True):
+            session=None, latin1_fallback=True, verify_fingerprint=None):
     '''
     Wrapper method for requests, to ease logging and mocking. Parameters should
     be the same as for ``requests.request``, except:
 
     :param session: A requests session object to use.
+    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
+        expected server certificate.
     :param latin1_fallback: RFC-2616 specifies the default Content-Type of
         text/* to be latin1, which is not always correct, but exactly what
         requests is doing. Setting this parameter to False will use charset
@@ -181,9 +196,16 @@ def request(method, url, data=None, headers=None, auth=None, verify=None,
     '''
 
     if session is None:
-        func = requests.request
-    else:
-        func = session.request
+        session = requests.Session()
+
+    if verify_fingerprint is not None:
+        https_prefix = 'https://'
+
+        if not isinstance(session.adapters[https_prefix], _FingerprintAdapter):
+            fingerprint_adapter = _FingerprintAdapter(verify_fingerprint)
+            session.mount(https_prefix, fingerprint_adapter)
+
+    func = session.request
 
     logger.debug(u'{} {}'.format(method, url))
     logger.debug(headers)
