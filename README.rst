@@ -34,5 +34,5 @@ How to run the tests
 
 ::
 
-    sh build.sh install
-    sh build.sh run
+    sh build.sh install_tests
+    sh build.sh tests
