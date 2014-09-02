@@ -410,10 +410,20 @@ class DavStorage(Storage):
         )
         root = etree.XML(response.content)
         for element in root.iter('{DAV:}response'):
-            etag = element.find('{DAV:}propstat').find(
-                '{DAV:}prop').find('{DAV:}getetag').text
+            propstat = element.find('{DAV:}propstat')
+            prop = propstat.find('{DAV:}prop')
+
+            contenttype = prop.find('{DAV:}getcontenttype').text
+
+            etag = prop.find('{DAV:}getetag').text
             href = self._normalize_href(element.find('{DAV:}href').text)
-            yield href, etag
+            if self.item_mimetype not in contenttype:
+                dav_logger.debug(
+                    'Skipping item with href {!r} '
+                    'because content type {!r} != {!r}.'
+                    .format(href, contenttype, self.item_mimetype))
+            else:
+                yield href, etag
 
 
 class CaldavStorage(DavStorage):
@@ -520,6 +530,7 @@ class CaldavStorage(DavStorage):
             <C:calendar-query xmlns:D="DAV:"
                 xmlns:C="urn:ietf:params:xml:ns:caldav">
                 <D:prop>
+                    <D:getcontenttype/>
                     <D:getetag/>
                 </D:prop>
                 <C:filter>
