@@ -21,6 +21,8 @@ from .. import blow_up, normalize_item, SIMPLE_TEMPLATE, BARE_EVENT_TEMPLATE
 
 
 class EmptyNetrc(object):
+    def __init__(self, file=None):
+        self._file = file
     def authenticators(self, hostname):
         return None
 
