@@ -12,6 +12,7 @@ import os
 
 import pytest
 
+from vdirsyncer.utils.vobject import Item
 from vdirsyncer.storage.filesystem import FilesystemStorage
 
 from . import StorageTests
@@ -55,3 +56,9 @@ class TestFilesystemStorage(StorageTests):
         with pytest.raises(TypeError):
             s.upload(BrokenItem)
         assert not tmpdir.listdir()
+
+    def test_ident_with_slash(self, tmpdir):
+        s = self.storage_class(str(tmpdir), '.txt')
+        s.upload(Item(u'UID:a/b/c'))
+        item_file, = tmpdir.listdir()
+        assert str(item_file).endswith('a_b_c.txt')

@@ -20,7 +20,7 @@ An item is:
 An item *should* contain a ``UID`` property as described by the vCard and
 iCalendar standards.
 
-The filename *must* consist of the ``ident``, followed by the file extension.
+The filename *should* consist of the ``ident``, followed by the file extension.
 The ``ident`` is either the ``UID``, if the item has one, else a string with
 similar properties as the ``UID``:
 
@@ -31,6 +31,9 @@ similar properties as the ``UID``:
    with the vCard.
 
    -- The vCard_ RFC
+
+Character limitations imposed by the filesystem *should* be circumvented by
+replacing the offending characters with underscores ``_``.
 
 One reason this format was chosen is due to its compatibility with the CardDAV_
 and CalDAV_ standards.

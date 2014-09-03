@@ -62,7 +62,9 @@ class FilesystemStorage(Storage):
         return os.path.join(self.path, href)
 
     def _get_href(self, item):
-        return item.ident + self.fileext
+        # XXX: POSIX only defines / and \0 as invalid chars, but we should make
+        # this work crossplatform.
+        return item.ident.replace('/', '_') + self.fileext
 
     def list(self):
         for fname in os.listdir(self.path):
