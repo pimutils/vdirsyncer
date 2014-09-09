@@ -102,19 +102,10 @@ def test_get_password_from_system_keyring(monkeypatch):
 
     monkeypatch.setattr(utils, 'keyring', KeyringMock())
 
-    netrc_calls = []
-
-    class Netrc(object):
-        def authenticators(self, hostname):
-            netrc_calls.append(hostname)
-            return None
-
-    monkeypatch.setattr('netrc.netrc', Netrc)
     monkeypatch.setattr('getpass.getpass', blow_up)
 
     _password = utils.get_password(username, resource)
     assert _password == password
-    assert netrc_calls == [hostname]
 
 
 def test_get_password_from_prompt():
@@ -135,6 +126,37 @@ def test_get_password_from_prompt():
         'Server password for {} at host {}: '.format(user, 'example.com'),
         'Password is my_password'
     ]
+
+
+def test_set_keyring_password(monkeypatch):
+    class KeyringMock(object):
+        def get_password(self, resource, username):
+            assert resource == utils.password_key_prefix + 'example.com'
+            assert username == 'foouser'
+            return None
+
+        def set_password(self, resource, username, password):
+            assert resource == utils.password_key_prefix + 'example.com'
+            assert username == 'foouser'
+            assert password == 'hunter2'
+
+    monkeypatch.setattr(utils, 'keyring', KeyringMock())
+
+    @doubleclick.click.command()
+    @doubleclick.click.pass_context
+    def fake_app(ctx):
+        ctx.obj = {}
+        x = utils.get_password('foouser', 'http://example.com/a/b')
+        click.echo('password is ' + x)
+
+    runner = CliRunner()
+    result = runner.invoke(fake_app, input='hunter2\ny\n')
+    assert not result.exception
+    assert result.output == (
+        'Server password for foouser at host example.com: \n'
+        'Save this password in the keyring? [y/N]: y\n'
+        'password is hunter2'
+    )
 
 
 def test_get_password_from_cache(monkeypatch):
