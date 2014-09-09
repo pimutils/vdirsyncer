@@ -133,7 +133,7 @@ def get_password(username, resource, _lock=threading.Lock()):
             if keyring is not None and \
                click.confirm('Save this password in the keyring?',
                              default=False):
-                keyring.set_password(password_key_prefix + resource,
+                keyring.set_password(password_key_prefix + host,
                                      username, password)
 
         return password
