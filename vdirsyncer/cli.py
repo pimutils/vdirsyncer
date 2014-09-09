@@ -17,6 +17,7 @@ from .doubleclick import click
 from .storage import storage_names
 from .sync import StorageEmpty, SyncConflict, sync
 from .utils import expand_path, get_class_init_args, parse_options, split_dict
+from xdg import BaseDirectory
 
 
 try:
@@ -289,6 +290,9 @@ def _create_app():
         if 'config' not in ctx.obj:
             fname = expand_path(os.environ.get('VDIRSYNCER_CONFIG',
                                                '~/.vdirsyncer/config'))
+            if not os.path.exists(fname):
+                fname = os.path.join(BaseDirectory.xdg_config_home,
+                                     'vdirsyncer/config')
             try:
                 ctx.obj['config'] = load_config(fname)
             except Exception as e:
