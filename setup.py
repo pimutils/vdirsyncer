@@ -42,7 +42,8 @@ setup(
         'requests',
         'lxml',
         'icalendar>=3.6',
-        'requests_toolbelt>=0.3.0'
+        'requests_toolbelt>=0.3.0',
+        'pyxdg'
     ],
     extras_require={'keyring': ['keyring']}
 )
