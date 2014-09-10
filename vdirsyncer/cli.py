@@ -30,7 +30,7 @@ cli_logger = log.get(__name__)
 PROJECT_HOME = 'https://github.com/untitaker/vdirsyncer'
 DOCS_HOME = 'https://vdirsyncer.readthedocs.org/en/latest'
 
-GENERAL_ALL = set(['processes', 'status_path'])
+GENERAL_ALL = set(['processes', 'status_path', 'passwordeval'])
 GENERAL_REQUIRED = set(['status_path'])
 
 

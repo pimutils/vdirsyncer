@@ -10,6 +10,9 @@
 import click
 
 from click.testing import CliRunner
+from tempfile import mkstemp
+import os
+import stat
 import pytest
 import requests
 
@@ -108,6 +111,35 @@ def test_get_password_from_system_keyring(monkeypatch):
     assert _password == password
 
 
+def test_get_password_from_evalcmd():
+    username = 'my_username'
+    resource = 'http://example.com'
+    password = 'testpassword'
+
+    fd, temp_path = mkstemp()
+    os.close(fd)
+    fp = open(temp_path, 'w')
+    fp.write('#!/bin/sh\n'
+        '[ "$1" != "my_username" ] && exit 1\n'
+        '[ "$2" != "example.com" ] && exit 1\n'
+        'echo "{}"'.format(password))
+    fp.close()
+    st = os.stat(temp_path)
+    os.chmod(temp_path, st.st_mode | stat.S_IEXEC)
+
+    @doubleclick.click.command()
+    @doubleclick.click.pass_context
+    def fake_app(ctx):
+        ctx.obj = {'config' : ({'passwordeval' : temp_path},{},{})}
+        _password = utils.get_password(username, resource)
+        assert _password == password
+
+    runner = CliRunner()
+    result = runner.invoke(fake_app)
+    assert not result.exception
+    os.remove(temp_path)
+
+
 def test_get_password_from_prompt():
     getpass_calls = []
 
@@ -185,7 +217,6 @@ def test_get_password_from_cache(monkeypatch):
         'debug: Got password for my_user from internal cache',
         'Password is my_password'
     ]
-
 
 
 def test_get_class_init_args():
