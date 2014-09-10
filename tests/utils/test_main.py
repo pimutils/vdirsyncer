@@ -155,7 +155,7 @@ def test_set_keyring_password(monkeypatch):
     assert result.output == (
         'Server password for foouser at host example.com: \n'
         'Save this password in the keyring? [y/N]: y\n'
-        'password is hunter2'
+        'password is hunter2\n'
     )
 
 
