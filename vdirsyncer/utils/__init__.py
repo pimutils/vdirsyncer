@@ -188,7 +188,7 @@ def _password_from_command(username, host):
         password = proc.stdout.read().decode('utf-8').strip()
     except OSError as e:
         logger.debug('Failed to execute command: {}\n{}'.
-            format(" ".join(command), str(e)))
+                     format(" ".join(command), str(e)))
         return None
 
     return password
