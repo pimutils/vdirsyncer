@@ -119,8 +119,8 @@ def get_password(username, resource, _lock=threading.Lock()):
 
     with _lock:
         host = urlparse.urlsplit(resource).hostname
-        for func in (_password_from_cache, _password_from_netrc,
-                     _password_from_keyring, _password_from_evalcmd):
+        for func in (_password_from_command, _password_from_cache,
+                     _password_from_netrc, _password_from_keyring):
             password = func(username, host)
             if password is not None:
                 logger.debug('Got password for {} from {}'
@@ -168,28 +168,27 @@ def _password_from_keyring(username, host):
     return keyring.get_password(password_key_prefix + host, username)
 
 
-def _password_from_evalcmd(username, host):
-    '''evalcmd'''
+def _password_from_command(username, host):
+    '''command'''
     import subprocess
 
     try:
         general, _, _ = ctx.obj['config']
-        _evalcmd = general.get('passwordeval', '')
-    except (KeyError, IndexError):
+        _command = general['passwordeval'].split()
+    except (IndexError, KeyError):
         return None
 
-    if _evalcmd == '':
-        return None
-
-    evalcmd = expand_path(_evalcmd)
+    command = [expand_path(_command[0])]
+    if len(_command) > 1:
+        command += _command[1:]
 
     try:
-        proc = subprocess.Popen([evalcmd, username, host],
+        proc = subprocess.Popen(command + [username, host],
                                 stdout=subprocess.PIPE)
-        password = proc.stdout.read().strip()
-    except OSError, e:
-        logger.debug('Failed to execute evalcmd: {}\n{}'.
-            format(evalcmd, str(e)))
+        password = proc.stdout.read().decode('utf-8').strip()
+    except OSError as e:
+        logger.debug('Failed to execute command: {}\n{}'.
+            format(" ".join(command), str(e)))
         return None
 
     return password
