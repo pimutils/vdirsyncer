@@ -5,11 +5,29 @@ Tutorial
 Installation
 ============
 
-- Make sure you have Python 2.7+ or Python 3.3+ installed.
+Vdirsyncer requires Python 2.7+ or 3.3+.
 
-- ``pip install --user vdirsyncer``
+Unless you want to contribute to vdirsyncer, you should use the packages from
+your distribution:
 
-- Check if the ``vdirsyncer`` command is available.
+- `AUR package for ArchLinux <https://aur.archlinux.org/packages/vdirsyncer>`_.
+- `pkgsrc <http://pkgsrc.se/time/py-vdirsyncer>`_.
+
+If your distribution doesn't provide a package for vdirsyncer, you still can
+use Python's package manager PIP. You'll have to check that a compatible
+version of Python is installed (see above), and then run::
+
+    pip install --user vdirsyncer
+
+This will install vdirsyncer and its dependencies into your home directory,
+presumably into ``~/local/lib/pythonX.X/``, and an executable under
+``~/.local/bin/``. You then can uninstall vdirsyncer with ``pip uninstall
+vdirsyncer``, but this will leave vdirsyncer's dependencies on your system,
+whose files you'll have to remove manually from the mentioned directories. You
+could check out pipsi_, but that one is a quite new tool. You should always
+prefer the packages of your distribution over this method.
+
+.. _pipsi:: https://github.com/mitsuhiko/pipsi
 
 Configuration
 =============

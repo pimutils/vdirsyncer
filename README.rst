@@ -15,19 +15,15 @@ It aims to be for CalDAV and CardDAV what `OfflineIMAP
 .. image:: https://coveralls.io/repos/untitaker/vdirsyncer/badge.png?branch=master
     :target: https://coveralls.io/r/untitaker/vdirsyncer?branch=master
 
-How to use
-==========
+Installation and usage
+======================
 
-vdirsyncer requires Python >= 2.7 or Python >= 3.3.
+If you already have it installed and want to quickly configure it, copy the
+``example.cfg`` to ``~/.vdirsyncer/config`` and edit it.
 
-As all Python packages, vdirsyncer can be installed with ``pip``::
-
-    pip install --user vdirsyncer
-
-Then copy ``example.cfg`` to ``~/.vdirsyncer/config`` and edit it.
-
-Run ``vdirsyncer --help`` and check out `the documentation
-<https://vdirsyncer.readthedocs.org/>`_.
+If that method doesn't work for you or you want a deeper understanding of what
+you just did, check out `the tutorial
+<https://vdirsyncer.readthedocs.org/en/latest/tutorial.html>`_.
 
 How to run the tests
 ====================
