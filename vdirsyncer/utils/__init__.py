@@ -97,7 +97,9 @@ def get_password(username, resource, _lock=threading.Lock()):
         1. read password from netrc (and only the password, username
            in netrc will be ignored)
         2. read password from keyring (keyring needs to be installed)
-        3a ask user for the password
+        3. read password from the command passed as passwordeval in the
+           general config section with username and host as parameters
+        4a ask user for the password
          b save in keyring if installed and user agrees
 
     :param username: user's name on the server
@@ -117,8 +119,8 @@ def get_password(username, resource, _lock=threading.Lock()):
 
     with _lock:
         host = urlparse.urlsplit(resource).hostname
-        for func in (_password_from_cache, _password_from_netrc,
-                     _password_from_keyring):
+        for func in (_password_from_command, _password_from_cache,
+                     _password_from_netrc, _password_from_keyring):
             password = func(username, host)
             if password is not None:
                 logger.debug('Got password for {} from {}'
@@ -164,6 +166,32 @@ def _password_from_keyring(username, host):
         return None
 
     return keyring.get_password(password_key_prefix + host, username)
+
+
+def _password_from_command(username, host):
+    '''command'''
+    import subprocess
+
+    try:
+        general, _, _ = ctx.obj['config']
+        _command = general['passwordeval'].split()
+    except (IndexError, KeyError):
+        return None
+
+    command = [expand_path(_command[0])]
+    if len(_command) > 1:
+        command += _command[1:]
+
+    try:
+        proc = subprocess.Popen(command + [username, host],
+                                stdout=subprocess.PIPE)
+        password = proc.stdout.read().decode('utf-8').strip()
+    except OSError as e:
+        logger.debug('Failed to execute command: {}\n{}'.
+                     format(" ".join(command), str(e)))
+        return None
+
+    return password
 
 
 class _FingerprintAdapter(requests.adapters.HTTPAdapter):

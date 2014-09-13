@@ -10,6 +10,8 @@
 import click
 
 from click.testing import CliRunner
+import os
+import stat
 import pytest
 import requests
 
@@ -108,6 +110,35 @@ def test_get_password_from_system_keyring(monkeypatch):
     assert _password == password
 
 
+def test_get_password_from_command(tmpdir):
+    username = 'my_username'
+    resource = 'http://example.com'
+    password = 'testpassword'
+    filename = 'command.sh'
+
+    filepath = str(tmpdir) + '/' + filename
+    f = open(filepath, 'w')
+    f.write('#!/bin/sh\n'
+        '[ "$1" != "my_username" ] && exit 1\n'
+        '[ "$2" != "example.com" ] && exit 1\n'
+        'echo "{}"'.format(password))
+    f.close()
+
+    st = os.stat(filepath)
+    os.chmod(filepath, st.st_mode | stat.S_IEXEC)
+
+    @doubleclick.click.command()
+    @doubleclick.click.pass_context
+    def fake_app(ctx):
+        ctx.obj = {'config' : ({'passwordeval' : filepath},{},{})}
+        _password = utils.get_password(username, resource)
+        assert _password == password
+
+    runner = CliRunner()
+    result = runner.invoke(fake_app)
+    assert not result.exception
+
+
 def test_get_password_from_prompt():
     getpass_calls = []
 
@@ -185,7 +216,6 @@ def test_get_password_from_cache(monkeypatch):
         'debug: Got password for my_user from internal cache',
         'Password is my_password'
     ]
-
 
 
 def test_get_class_init_args():
