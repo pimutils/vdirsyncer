@@ -172,23 +172,27 @@ def _password_from_command(username, host):
     '''command'''
     import subprocess
 
-    try:
-        general, _, _ = ctx.obj['config']
-        _command = general['passwordeval'].split()
-    except (IndexError, KeyError):
+    if not ctx:
         return None
 
-    command = [expand_path(_command[0])]
-    if len(_command) > 1:
-        command += _command[1:]
+    try:
+        general, _, _ = ctx.obj['config']
+        command = general['passwordeval'].split()
+    except KeyError:
+        return None
+
+    if not command:
+        return None
+
+    command[0] = expand_path(command[0])
 
     try:
         proc = subprocess.Popen(command + [username, host],
                                 stdout=subprocess.PIPE)
         password = proc.stdout.read().decode('utf-8').strip()
     except OSError as e:
-        logger.debug('Failed to execute command: {}\n{}'.
-                     format(" ".join(command), str(e)))
+        logger.warning('Failed to execute command: {}\n{}'.
+                       format(' '.join(command), str(e)))
         return None
 
     return password
