@@ -187,15 +187,12 @@ def _password_from_command(username, host):
     command[0] = expand_path(command[0])
 
     try:
-        proc = subprocess.Popen(command + [username, host],
-                                stdout=subprocess.PIPE)
-        password = proc.stdout.read().decode('utf-8').strip()
+        stdout = subprocess.check_output(command + [username, host],
+                                         universal_newlines=True)
+        return stdout.strip()
     except OSError as e:
         logger.warning('Failed to execute command: {}\n{}'.
                        format(' '.join(command), str(e)))
-        return None
-
-    return password
 
 
 class _FingerprintAdapter(requests.adapters.HTTPAdapter):
