@@ -15,6 +15,7 @@ General Section
     [general]
     status_path = ...
     #processes = 0
+    #passwordeval =
 
 
 - ``status_path``: A directory where vdirsyncer will store metadata for the
@@ -37,6 +38,10 @@ General Section
       Due to restrictions in Python's threading module, setting ``processes``
       to anything else than ``1`` will mean that you can't properly abort the
       program with ``^C`` anymore.
+
+- ``passwordeval`` specifies a command to query for server passwords. The
+  command will be called with the username as the first argument, and the
+  hostname as the second.
 
 .. _pair_config:
 
