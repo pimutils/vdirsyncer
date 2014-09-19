@@ -23,8 +23,8 @@ class MemoryStorage(Storage):
     Saves data in RAM, only useful for testing.
     '''
 
-    def __init__(self, collection=None, **kwargs):
-        if collection is not None:
+    def __init__(self, **kwargs):
+        if kwargs.get('collection') is not None:
             raise ValueError('MemoryStorage does not support collections.')
         self.items = {}  # href => (etag, item)
         super(MemoryStorage, self).__init__(**kwargs)

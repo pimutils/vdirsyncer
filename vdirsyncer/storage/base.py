@@ -33,6 +33,8 @@ class Storage(object):
         referring to a collection. Otherwise it will be treated as a basepath
         to many collections (e.g. a vdir) and the given collection name will be
         looked for.
+    :param read_only: Whether the synchronization algorithm should avoid writes
+        to this storage. Some storages accept no value other than ``True``.
     '''
 
     fileext = '.txt'
@@ -47,19 +49,22 @@ class Storage(object):
 
     # A value of True means the storage does not support write-methods such as
     # upload, update and delete.  A value of False means the storage does
-    # support those methods, but it may also be used in read-only mode.
+    # support those methods.
     read_only = False
 
     # The attribute values to show in the representation of the storage.
     _repr_attributes = ()
 
-    def __init__(self, instance_name=None, read_only=None):
+    def __init__(self, instance_name=None, read_only=None, collection=None):
         if read_only is None:
             read_only = self.read_only
         if self.read_only and not read_only:
             raise ValueError('This storage is read-only.')
         self.read_only = bool(read_only)
+        if collection and instance_name:
+            instance_name = '{} from {}'.format(collection, instance_name)
         self.instance_name = instance_name
+        self.collection = collection
 
     @classmethod
     def discover(cls, **kwargs):

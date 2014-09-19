@@ -250,18 +250,18 @@ class DavStorage(Storage):
     _session = None
     _repr_attributes = ('username', 'url')
 
-    def __init__(self, url, username='', password='', collection=None,
-                 verify=True, auth=None, useragent=USERAGENT,
-                 unsafe_href_chars='@', verify_fingerprint=None, **kwargs):
+    def __init__(self, url, username='', password='', verify=True, auth=None,
+                 useragent=USERAGENT, unsafe_href_chars='@',
+                 verify_fingerprint=None, **kwargs):
         super(DavStorage, self).__init__(**kwargs)
 
         url = url.rstrip('/') + '/'
+        collection = kwargs.get('collection')
         if collection is not None:
             url = utils.urlparse.urljoin(url, collection)
         self.session = DavSession(url, username, password, verify, auth,
                                   useragent, verify_fingerprint,
                                   dav_header=self.dav_header)
-        self.collection = collection
         self.unsafe_href_chars = unsafe_href_chars
 
         # defined for _repr_attributes

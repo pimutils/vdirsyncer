@@ -37,14 +37,13 @@ class FilesystemStorage(Storage):
     storage_name = 'filesystem'
     _repr_attributes = ('path',)
 
-    def __init__(self, path, fileext, collection=None, encoding='utf-8',
-                 create=True, **kwargs):
+    def __init__(self, path, fileext, encoding='utf-8', create=True, **kwargs):
         super(FilesystemStorage, self).__init__(**kwargs)
         path = expand_path(path)
+        collection = kwargs.get('collection')
         if collection is not None:
             path = os.path.join(path, collection)
         checkdir(path, create=create)
-        self.collection = collection
         self.path = path
         self.encoding = encoding
         self.fileext = fileext

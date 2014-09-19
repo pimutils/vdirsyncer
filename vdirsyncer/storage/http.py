@@ -82,9 +82,8 @@ class HttpStorage(Storage):
     _repr_attributes = ('username', 'url')
     _items = None
 
-    def __init__(self, url, username='', password='', collection=None,
-                 verify=True, auth=None, useragent=USERAGENT,
-                 verify_fingerprint=None, **kwargs):
+    def __init__(self, url, username='', password='', verify=True, auth=None,
+                 useragent=USERAGENT, verify_fingerprint=None, **kwargs):
         super(HttpStorage, self).__init__(**kwargs)
 
         if username and not password:
@@ -99,11 +98,11 @@ class HttpStorage(Storage):
         self.username, self.password = username, password
         self.useragent = useragent
 
+        collection = kwargs.get('collection')
         if collection is not None:
             url = urlparse.urljoin(url, collection)
         self.url = url
         self.parsed_url = urlparse.urlparse(self.url)
-        self.collection = collection
 
     def _default_headers(self):
         return {'User-Agent': self.useragent}

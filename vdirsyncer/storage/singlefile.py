@@ -60,11 +60,11 @@ class SingleFileStorage(Storage):
 
     _items = None
 
-    def __init__(self, path, encoding='utf-8', create=True,
-                 collection=None, **kwargs):
+    def __init__(self, path, encoding='utf-8', create=True, **kwargs):
         super(SingleFileStorage, self).__init__(**kwargs)
         path = expand_path(path)
 
+        collection = kwargs.get('collection')
         if collection is not None:
             raise ValueError('collection is not a valid argument for {}'
                              .format(type(self).__name__))
