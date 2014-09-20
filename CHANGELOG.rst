@@ -5,6 +5,30 @@ Changelog
 This changelog only contains information that might be useful to end users and
 package maintainers. For further info, see the git commit log.
 
+Version 0.3.0
+=============
+
+*released on 20 September 2014*
+
+- Add ``verify_fingerprint`` parameter to
+  :py:class:`vdirsyncer.storage.HttpStorage`,
+  :py:class:`vdirsyncer.storage.CaldavStorage` and
+  :py:class:`vdirsyncer.storage.CarddavStorage`,
+  see issue `#99`_ and pull request `#106`_.
+
+- Add ``passwordeval`` parameter to :ref:`general_config`, see issue `#108`_
+  and pull request `#117`_.
+
+- Emit warnings (instead of exceptions) about certain invalid responses from
+  the server, see issue `#113`_.  This is apparently required for compatibility
+  with Davmail.
+
+.. _`#99`: https://github.com/untitaker/vdirsyncer/issues/99
+.. _`#106`: https://github.com/untitaker/vdirsyncer/pull/106
+.. _`#108`: https://github.com/untitaker/vdirsyncer/issues/108
+.. _`#113`: https://github.com/untitaker/vdirsyncer/issues/113
+.. _`#117`: https://github.com/untitaker/vdirsyncer/pull/117
+
 Version 0.2.5
 =============
 
