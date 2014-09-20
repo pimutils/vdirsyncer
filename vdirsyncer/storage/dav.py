@@ -335,8 +335,12 @@ class DavStorage(Storage):
             try:
                 hrefs_left.remove(href)
             except KeyError:
-                raise KeyError('{} doesn\'t exist in {}'
-                               .format(href, hrefs_left))
+                if href in hrefs:
+                    dav_logger.warning('Server sent item twice: {}'
+                                       .format(href))
+                else:
+                    dav_logger.warning('Server sent unsolicited item: {}'
+                                       .format(href))
         for href in hrefs_left:
             raise exceptions.NotFoundError(href)
         return rv
