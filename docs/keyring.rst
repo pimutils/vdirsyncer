@@ -2,9 +2,17 @@
 Keyring Support
 ===============
 
-*vdirsyncer* will try the following storages if no password (but a username) is
-set in your config. If that fails too, it will prompt for the password and
-store the password in the system keyring (if possible and wished).
+*vdirsyncer* will try the following storages in that order if no password (but
+a username) is set in your config. If that fails too, it will prompt for the
+password and store the password in the system keyring (if possible and wished).
+
+Custom command
+==============
+
+.. versionadded:: 0.3.0
+
+A custom command/binary can be specified to retrieve the password for a
+username/hostname combination. See :ref:`general_config`.
 
 netrc
 =====

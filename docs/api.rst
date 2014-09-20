@@ -43,6 +43,9 @@ General Section
   command will be called with the username as the first argument, and the
   hostname as the second.
 
+.. versionadded:: 0.3.0
+   The ``passwordeval`` parameter.
+
 .. _pair_config:
 
 Pair Section
