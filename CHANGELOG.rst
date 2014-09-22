@@ -5,6 +5,10 @@ Changelog
 This changelog only contains information that might be useful to end users and
 package maintainers. For further info, see the git commit log.
 
+Package maintainers and users who have to manually update their installation
+may want to subscribe to `GitHub's tag feed
+<https://github.com/untitaker/vdirsyncer/tags.atom>`_.
+
 Version 0.3.0
 =============
 
