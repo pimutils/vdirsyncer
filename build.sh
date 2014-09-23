@@ -55,7 +55,7 @@ command__install_style() {
 
 command__style() {
     flake8 vdirsyncer tests
-    ! git grep -il syncroniz $(ls | grep -v 'build.sh')
+    ! git grep -i syncroniz $(ls | grep -v 'build.sh')
 }
 
 command__install_docs() {
