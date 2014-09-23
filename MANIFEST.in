@@ -2,6 +2,8 @@ include AUTHORS.rst
 include CHANGELOG.rst
 include LICENSE
 include example.cfg
+include build.sh
 
 recursive-include docs *
+recursive-include tests *
 prune docs/_build
