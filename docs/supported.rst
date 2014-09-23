@@ -1,10 +1,25 @@
-==============
-Server Support
-==============
+==================
+Supported software
+==================
+
+Clients supporting vdir
+=======================
+
+- `khal <http://lostpackets.de/khal/>`_, a calendar application.
+
+- `vdirsyncer <http://vdirsyncer.readthedocs.org/>`_, a syncronization
+  framework and program.
+
+- `The ppl addressbook <http://ppladdressbook.org/>`_ uses a similar enough
+  storage format. There are some pitfalls though, `see the notes on the related
+  issue <https://github.com/hnrysmth/ppl/issues/47>`_.
+
+Supported servers
+=================
 
 vdirsyncer is currently regularly and automatically tested against the latest
 versions of Radicale and ownCloud. In principle, vdirsyncer is supposed to run
-correctly with any remotely popular CalDAV or CardDAV server. 
+correctly with any remotely popular CalDAV or CardDAV server.
 
 vdirsyncer's synchronization works best if the items have ``UID`` properties.
 Items which don't have this property still should be synchronized fine as of
@@ -13,7 +28,7 @@ exception than the rule. For a possible way to automatically fix such items,
 take a look at `vfix <https://github.com/geier/vfix>`_.
 
 Radicale
-========
+--------
 
 Vdirsyncer is tested against the git version and the latest PyPI release of
 Radicale.
@@ -38,7 +53,7 @@ Radicale.
   support.
 
 ownCloud
-========
+--------
 
 Vdirsyncer is tested against the latest version of ownCloud.
 

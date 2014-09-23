@@ -215,9 +215,9 @@ class DavStorage(Storage):
     '''
     .. note::
 
-        Please also see :doc:`server_support` for very important information,
-        as changing some of the default options might be very dangerous with
-        some servers.
+        Please also see :doc:`supported` for very important information, as
+        changing some of the default options might be very dangerous with some
+        servers.
 
     :param url: Base URL or an URL to a collection.
     :param username: Username for authentication.

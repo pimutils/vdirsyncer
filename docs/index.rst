@@ -18,7 +18,7 @@ Table of Contents
    tutorial
    api
    keyring
-   server_support
+   supported
    troubleshooting
    changelog
    vdir
