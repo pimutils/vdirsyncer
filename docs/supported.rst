@@ -7,7 +7,7 @@ Clients supporting vdir
 
 - `khal <http://lostpackets.de/khal/>`_, a calendar application.
 
-- `vdirsyncer <http://vdirsyncer.readthedocs.org/>`_, a syncronization
+- `vdirsyncer <http://vdirsyncer.readthedocs.org/>`_, a synchronization
   framework and program.
 
 - `The ppl addressbook <http://ppladdressbook.org/>`_ uses a similar enough
