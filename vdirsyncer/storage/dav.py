@@ -288,13 +288,14 @@ class DavStorage(Storage):
 
     def __init__(self, url, username='', password='', verify=True, auth=None,
                  useragent=USERAGENT, unsafe_href_chars='@',
-                 verify_fingerprint=None, **kwargs):
+                 verify_fingerprint=None, case_sensitive=True, **kwargs):
         super(DavStorage, self).__init__(**kwargs)
 
         url = url.rstrip('/') + '/'
         self.session = DavSession(url, username, password, verify, auth,
                                   useragent, verify_fingerprint)
         self.unsafe_href_chars = unsafe_href_chars
+        self.case_sensitive = case_sensitive
 
         # defined for _repr_attributes
         self.username = username
@@ -347,8 +348,10 @@ class DavStorage(Storage):
             rv['url'] = response.url
             return rv
 
-    def _normalize_href(self, *args, **kwargs):
-        return _normalize_href(self.session.url, *args, **kwargs)
+    def _normalize_href(self, href, *args, **kwargs):
+        if not self.case_sensitive:
+            href = href.lower()
+        return _normalize_href(self.session.url, href, *args, **kwargs)
 
     def _get_href(self, item):
         href = item.ident
