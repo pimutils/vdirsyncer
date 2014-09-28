@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
-    vdirsyncer.utils.doubleclick
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    vdirsyncer.doubleclick
+    ~~~~~~~~~~~~~~~~~~~~~~
 
     Utilities for writing threaded applications with click.
 
