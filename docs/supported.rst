@@ -7,6 +7,8 @@ Clients supporting vdir
 
 - `khal <http://lostpackets.de/khal/>`_, a calendar application.
 
+- `khard <http://github.com/scheibler/khard/>`_, a commandline addressbook
+
 - `vdirsyncer <http://vdirsyncer.readthedocs.org/>`_, a synchronization
   framework and program.
 
