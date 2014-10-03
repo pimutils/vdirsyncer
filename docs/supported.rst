@@ -2,17 +2,24 @@
 Supported software
 ==================
 
-Clients supporting vdir
-=======================
+Client applications
+===================
 
-- `khal <http://lostpackets.de/khal/>`_, a calendar application.
+- `khal <http://lostpackets.de/khal/>`_, a calendar application supporting
+  :doc:`vdir`. You can use :py:class:`vdirsyncer.storage.FilesystemStorage`
+  with it.
 
-- `vdirsyncer <http://vdirsyncer.readthedocs.org/>`_, a synchronization
-  framework and program.
+- `khard <http://github.com/scheibler/khard/>`_, a commandline addressbook
+  supporting :doc:`vdir`. You can use
+  :py:class:`vdirsyncer.storage.FilesystemStorage` with it.
 
-- `The ppl addressbook <http://ppladdressbook.org/>`_ uses a similar enough
-  storage format. There are some pitfalls though, `see the notes on the related
-  issue <https://github.com/hnrysmth/ppl/issues/47>`_.
+- `The ppl addressbook <http://ppladdressbook.org/>`_ uses a storage format
+  similar to :doc:`vdir`. There are some pitfalls though, `see the notes on the
+  related issue <https://github.com/hnrysmth/ppl/issues/47>`_.
+
+- `The graphical calendar app Orage <http://www.kolumbus.fi/~w408237/orage/>`_
+  saves a calendar in a single ``.ics`` file. You can use
+  :py:class:`vdirsyncer.storage.SingleFileStorage` with it.
 
 Supported servers
 =================

@@ -19,8 +19,10 @@ logger = log.get(__name__)
 
 
 class SingleFileStorage(Storage):
-    '''Save data in single VCALENDAR file, like Orage -- a calendar app for
-    XFCE -- and Radicale do. Usable as ``singlefile`` in the config file.
+    '''Save data in single ``.vcf`` or ``.ics`` file. Usable as ``singlefile``
+    in the config file.
+
+    The storage basically guesses how items should be joined in the file.
 
     .. versionadded:: 0.1.6
 
