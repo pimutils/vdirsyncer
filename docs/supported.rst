@@ -21,6 +21,9 @@ Client applications
   saves a calendar in a single ``.ics`` file. You can use
   :py:class:`vdirsyncer.storage.SingleFileStorage` with it.
 
+- `contactquery.c <https://github.com/t-8ch/snippets/blob/master/contactquery.c>`_,
+  a small program explicitly written for querying vdirs from mutt
+
 Supported servers
 =================
 
