@@ -27,7 +27,7 @@ whose files you'll have to remove manually from the mentioned directories. You
 could check out pipsi_, but that one is a quite new tool. You should always
 prefer the packages of your distribution over this method.
 
-.. _pipsi:: https://github.com/mitsuhiko/pipsi
+.. _pipsi: https://github.com/mitsuhiko/pipsi
 
 Configuration
 =============
