@@ -16,7 +16,7 @@ Table of Contents
    :maxdepth: 1
 
    tutorial
-   api
+   config
    keyring
    supported
    troubleshooting

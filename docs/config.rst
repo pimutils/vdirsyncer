@@ -1,14 +1,12 @@
-===
-API
-===
+=============
+Configuration
+=============
 
-Config Parameters
-=================
 
 .. _general_config:
 
 General Section
----------------
+===============
 
 ::
 
@@ -49,7 +47,7 @@ General Section
 .. _pair_config:
 
 Pair Section
-------------
+============
 
 ::
 
@@ -79,7 +77,7 @@ Pair Section
 .. _storage_config:
 
 Storage Section
----------------
+===============
 
 ::
 
@@ -98,12 +96,12 @@ Storage Section
 .. _storages:
 
 Supported Storages
-==================
+------------------
 
 .. module:: vdirsyncer.storage
 
 Read-write storages
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 These storages generally support reading and changing of their items. Their
 default value for ``read_only`` is ``False``, but can be set to ``True`` if
@@ -118,7 +116,7 @@ wished.
 .. autoclass:: SingleFileStorage
 
 Read-only storages
-------------------
+~~~~~~~~~~~~~~~~~~
 
 These storages don't support writing of their items, consequently ``read_only``
 is set to ``True`` by default. Changing ``read_only`` to ``False`` on them
