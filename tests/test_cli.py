@@ -228,3 +228,62 @@ def test_verbosity(tmpdir):
     )
     assert result.exception
     assert 'invalid verbosity value' in result.output.lower()
+
+
+def test_fail_fast(tmpdir):
+    runner = CliRunner()
+    config_file = tmpdir.join('config')
+    config_file.write(dedent('''
+    [general]
+    status_path = {status}
+    processes = 1
+
+    [storage a1]
+    type = filesystem
+    fileext = .txt
+    path = {a1}
+
+    [storage a2]
+    type = filesystem
+    fileext = .txt
+    path = {a2}
+    create = False
+
+    [storage b1]
+    type = filesystem
+    fileext = .txt
+    path = {b1}
+
+    [storage b2]
+    type = filesystem
+    fileext = .txt
+    path = {b2}
+
+    [pair a]
+    a = a1
+    b = a2
+
+    [pair b]
+    a = b1
+    b = b2
+    ''').format(
+        status=str(tmpdir.mkdir('status')),
+        a1=str(tmpdir.mkdir('a1')),
+        a2=str(tmpdir.join('a2')),
+        b1=str(tmpdir.mkdir('b1')),
+        b2=str(tmpdir.mkdir('b2'))
+    ))
+
+    result = runner.invoke(cli.app, ['sync', 'a', 'b'],
+                           env={'VDIRSYNCER_CONFIG': str(config_file)})
+    lines = result.output.splitlines()
+    assert 'Syncing a' in lines
+    assert 'Syncing b' in lines
+    assert result.exception
+
+    result = runner.invoke(cli.app, ['sync', '--fail-fast', 'a', 'b'],
+                           env={'VDIRSYNCER_CONFIG': str(config_file)})
+    lines = result.output.splitlines()
+    assert 'Syncing a' in lines
+    assert 'Syncing b' not in lines
+    assert result.exception

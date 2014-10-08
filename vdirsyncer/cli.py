@@ -300,9 +300,11 @@ def _create_app():
     @click.option('--force-delete', multiple=True,
                   help=('Disable data-loss protection for the given pairs. '
                         'Can be passed multiple times'))
+    @click.option('--fail-fast', is_flag=True,
+                  help='Exit immediately on first error.')
     @click.pass_context
     @catch_errors
-    def sync(ctx, pairs, force_delete):
+    def sync(ctx, pairs, force_delete, fail_fast):
         '''
         Synchronize the given pairs. If no pairs are given, all will be
         synchronized.
@@ -358,6 +360,12 @@ def _create_app():
             p = Pool(processes=general.get('processes', 0) or len(actions))
 
             rv = p.imap_unordered(_sync_collection, actions)
+
+        if not fail_fast:
+            # exhaust iterator before calling all(...), which would return
+            # after it encounters a False item.
+            # In other words, all(rv) fails fast.
+            rv = list(rv)
 
         if not all(rv):
             sys.exit(1)
