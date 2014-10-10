@@ -60,21 +60,21 @@ class BothReadOnly(SyncError):
     '''
 
 
-def _prepare_idents(storage, href_to_status):
-    rv = {}
+def _prepare_idents(storage, other_storage, href_to_status):
+    hrefs = {}
     download = []
     for href, etag in storage.list():
-        props = rv[href] = {'etag': etag, 'href': href}
+        props = hrefs[href] = {'etag': etag, 'href': href}
         if href in href_to_status:
             ident, old_etag = href_to_status[href]
             props['ident'] = ident
-            if etag != old_etag:
+            if etag != old_etag and not other_storage.read_only:
                 download.append(href)
         else:
             download.append(href)
 
-    _prefetch(storage, rv, download)
-    return dict((x['ident'], x) for href, x in iteritems(rv))
+    _prefetch(storage, hrefs, download)
+    return dict((x['ident'], x) for href, x in iteritems(hrefs))
 
 
 def _prefetch(storage, rv, hrefs):
@@ -125,8 +125,8 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
         for ident, (href_a, etag_a, href_b, etag_b) in iteritems(status)
     )
     # ident => {'etag': etag, 'item': optional item, 'href': href}
-    a_idents = _prepare_idents(storage_a, a_href_to_status)
-    b_idents = _prepare_idents(storage_b, b_href_to_status)
+    a_idents = _prepare_idents(storage_a, storage_b, a_href_to_status)
+    b_idents = _prepare_idents(storage_b, storage_a, b_href_to_status)
 
     if bool(a_idents) != bool(b_idents) and status and not force_delete:
         raise StorageEmpty(
