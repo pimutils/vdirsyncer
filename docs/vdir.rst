@@ -18,7 +18,13 @@ An item is:
 - An iCalendar_ file, in which case the file extension *must* be `.ics`.
 
 An item *should* contain a ``UID`` property as described by the vCard and
-iCalendar standards.
+iCalendar standards. If it contains more than one ``UID`` property, the values
+of those *must* not differ.
+
+In the case of iCalendar files, the file *must* contain exactly one event or
+task. In most cases this also implies only one ``VEVENT`` or ``VTODO``
+component per file, but e.g. recurrence exceptions would require multiple
+``VEVENT`` components per event.
 
 The filename *should* consist of the ``ident``, followed by the file extension.
 The ``ident`` is either the ``UID``, if the item has one, else a string with
