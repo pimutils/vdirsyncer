@@ -70,48 +70,6 @@ def test_storage_instance_from_config(monkeypatch):
     assert cli.storage_instance_from_config(config) == 'OK'
 
 
-def test_expand_collection(monkeypatch):
-    x = lambda *a: list(cli.expand_collection(*a))
-    assert x(None, 'foo', None, None) == ['foo']
-    assert x(None, 'from lol', None, None) == ['from lol']
-
-    all_pairs = {'mypair': ('my_a', 'my_b', None, {'lol': True})}
-    all_storages = {'my_a': {'type': 'mytype_a', 'is_a': True},
-                    'my_b': {'type': 'mytype_b', 'is_b': True}}
-
-    class TypeA(object):
-        @classmethod
-        def discover(cls, **config):
-            assert config == {
-                'is_a': True,
-                'lol': True
-            }
-            for i in range(1, 4):
-                s = cls()
-                s.collection = 'a{}'.format(i)
-                yield s
-
-    class TypeB(object):
-        @classmethod
-        def discover(cls, **config):
-            assert config == {
-                'is_b': True,
-                'lol': True
-            }
-            for i in range(1, 4):
-                s = cls()
-                s.collection = 'b{}'.format(i)
-                yield s
-
-    import vdirsyncer.storage
-    monkeypatch.setitem(vdirsyncer.storage.storage_names, 'mytype_a', TypeA)
-    monkeypatch.setitem(vdirsyncer.storage.storage_names, 'mytype_b', TypeB)
-
-    assert x('mypair', 'mycoll', all_pairs, all_storages) == ['mycoll']
-    assert x('mypair', 'from a', all_pairs, all_storages) == ['a1', 'a2', 'a3']
-    assert x('mypair', 'from b', all_pairs, all_storages) == ['b1', 'b2', 'b3']
-
-
 def test_parse_pairs_args():
     pairs = {
         'foo': ('bar', 'baz', {'conflict_resolution': 'a wins'},
@@ -162,6 +120,11 @@ def test_simple_run(tmpdir):
                              'Copying (uploading) item haha to my_b\n')
     assert tmpdir.join('path_b/haha.txt').read() == 'UID:haha'
 
+    result = runner.invoke(cli.app, ['sync', 'my_pair', 'my_pair'])
+    assert set(result.output.splitlines()) == set([
+        'Syncing my_pair',
+        'warning: Already prepared my_pair, skipping'
+    ])
 
 def test_missing_general_section(tmpdir):
     config_file = tmpdir.join('config')
@@ -228,62 +191,3 @@ def test_verbosity(tmpdir):
     )
     assert result.exception
     assert 'invalid verbosity value' in result.output.lower()
-
-
-def test_fail_fast(tmpdir):
-    runner = CliRunner()
-    config_file = tmpdir.join('config')
-    config_file.write(dedent('''
-    [general]
-    status_path = {status}
-    processes = 1
-
-    [storage a1]
-    type = filesystem
-    fileext = .txt
-    path = {a1}
-
-    [storage a2]
-    type = filesystem
-    fileext = .txt
-    path = {a2}
-    create = False
-
-    [storage b1]
-    type = filesystem
-    fileext = .txt
-    path = {b1}
-
-    [storage b2]
-    type = filesystem
-    fileext = .txt
-    path = {b2}
-
-    [pair a]
-    a = a1
-    b = a2
-
-    [pair b]
-    a = b1
-    b = b2
-    ''').format(
-        status=str(tmpdir.mkdir('status')),
-        a1=str(tmpdir.mkdir('a1')),
-        a2=str(tmpdir.join('a2')),
-        b1=str(tmpdir.mkdir('b1')),
-        b2=str(tmpdir.mkdir('b2'))
-    ))
-
-    result = runner.invoke(cli.app, ['sync', 'a', 'b'],
-                           env={'VDIRSYNCER_CONFIG': str(config_file)})
-    lines = result.output.splitlines()
-    assert 'Syncing a' in lines
-    assert 'Syncing b' in lines
-    assert result.exception
-
-    result = runner.invoke(cli.app, ['sync', '--fail-fast', 'a', 'b'],
-                           env={'VDIRSYNCER_CONFIG': str(config_file)})
-    lines = result.output.splitlines()
-    assert 'Syncing a' in lines
-    assert 'Syncing b' not in lines
-    assert result.exception
