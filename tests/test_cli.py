@@ -125,6 +125,49 @@ def test_simple_run(tmpdir):
         'Syncing my_pair',
         'warning: Already prepared my_pair, skipping'
     ])
+    assert not result.exception
+
+
+def test_empty_storage(tmpdir):
+    config_file = tmpdir.join('config')
+    config_file.write(dedent('''
+    [general]
+    status_path = {0}/status/
+
+    [pair my_pair]
+    a = my_a
+    b = my_b
+
+    [storage my_a]
+    type = filesystem
+    path = {0}/path_a/
+    fileext = .txt
+
+    [storage my_b]
+    type = filesystem
+    path = {0}/path_b/
+    fileext = .txt
+    ''').format(str(tmpdir)))
+
+    runner = CliRunner(env={'VDIRSYNCER_CONFIG': str(config_file)})
+    result = runner.invoke(cli.app, ['sync'])
+    assert not result.exception
+    assert result.output.lower().strip() == 'syncing my_pair'
+
+    tmpdir.join('path_a/haha.txt').write('UID:haha')
+    result = runner.invoke(cli.app, ['sync'])
+    tmpdir.join('path_b/haha.txt').remove()
+    result = runner.invoke(cli.app, ['sync'])
+    assert result.output.splitlines() == [
+        'Syncing my_pair',
+        'error: {status_name}: Storage "{name}" was completely emptied. Use '
+        '"--force-delete {status_name}" to synchronize that emptyness to '
+        'the other side, or delete the status by yourself to restore the '
+        'items from the non-empty side.'.format(status_name='my_pair',
+                                                name='my_b')
+    ]
+    assert result.exception
+
 
 def test_missing_general_section(tmpdir):
     config_file = tmpdir.join('config')
