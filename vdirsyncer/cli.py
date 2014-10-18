@@ -7,7 +7,6 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-import contextlib
 import functools
 import json
 import os
@@ -234,9 +233,9 @@ def _create_app():
         def inner(*a, **kw):
             try:
                 f(*a, **kw)
-            except CliError as e:
-                cli_logger.critical(str(e))
-                sys.exit(1)
+            except:
+                if not handle_cli_error():
+                    sys.exit(1)
 
         return inner
 
@@ -310,11 +309,9 @@ def _create_app():
             try:
                 func(queue=queue, spawn_worker=spawn_worker,
                      handled_collections=handled_collections)
-            except JobFailed as e:
-                exceptions.append(e)
-            except CliError as e:
-                cli_logger.critical(str(e))
-                exceptions.append(e)
+            except:
+                if not handle_cli_error():
+                    exceptions.append(sys.exc_info()[1])
             finally:
                 queue.task_done()
 
@@ -421,10 +418,11 @@ def prepare_sync(queue, spawn_worker, handled_collections, pair_name,
                                     force_delete=force_delete))
 
 
-@contextlib.contextmanager
-def catch_sync_errors(status_name):
+def handle_cli_error(status_name='sync'):
     try:
-        yield
+        raise
+    except CliError as e:
+        cli_logger.critical(str(e))
     except StorageEmpty as e:
         cli_logger.error(
             '{status_name}: Storage "{name}" was completely emptied. Use '
@@ -435,7 +433,6 @@ def catch_sync_errors(status_name):
                 status_name=status_name
             )
         )
-        raise JobFailed()
     except SyncConflict as e:
         cli_logger.error(
             '{status_name}: One item changed on both sides. Resolve this '
@@ -447,13 +444,13 @@ def catch_sync_errors(status_name):
             'Item href on side B: {e.href_b}\n'
             .format(status_name=status_name, e=e, docs=DOCS_HOME)
         )
-        raise JobFailed()
-    except (click.Abort, KeyboardInterrupt):
-        raise JobFailed()
+    except (click.Abort, KeyboardInterrupt, JobFailed):
+        pass
     except Exception as e:
         cli_logger.exception('Unhandled exception occured while syncing {}.'
                              .format(status_name))
-        raise JobFailed()
+    else:
+        return True
 
 
 def sync_collection(queue, spawn_worker, handled_collections, pair_name,
@@ -466,7 +463,7 @@ def sync_collection(queue, spawn_worker, handled_collections, pair_name,
         return
     handled_collections.add(key)
 
-    with catch_sync_errors(status_name):
+    try:
         cli_logger.info('Syncing {}'.format(status_name))
 
         status = load_status(general['status_path'], status_name)
@@ -476,5 +473,8 @@ def sync_collection(queue, spawn_worker, handled_collections, pair_name,
             conflict_resolution=pair_options.get('conflict_resolution', None),
             force_delete=status_name in force_delete
         )
+    except:
+        if not handle_cli_error(status_name):
+            raise JobFailed()
 
     save_status(general['status_path'], status_name, status)
