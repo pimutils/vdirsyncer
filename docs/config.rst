@@ -20,17 +20,6 @@ General Section
   next sync. The data is needed to determine whether a new item means it has
   been added on one side or deleted on the other.
 
-- ``processes``: Optional, defines the maximal amount of threads to use for
-  syncing.  By default there is no limit, which means vdirsyncer will try to
-  open a connection for each collection to be synced. The value ``0`` is
-  ignored. Setting this to ``1`` will only synchronize one collection at a
-  time.
-
-  While this often greatly increases performance, you might have valid reasons
-  to set this to a smaller number. For example, your DAV server running on a
-  Raspberry Pi is so slow that multiple connections don't help much, since the
-  CPU and not the network is the bottleneck.
-
   .. note::
 
       Due to restrictions in Python's threading module, setting ``processes``
