@@ -10,8 +10,8 @@ Vdirsyncer requires Python 2.7+ or 3.3+.
 Unless you want to contribute to vdirsyncer, you should use the packages from
 your distribution:
 
-- `AUR package for ArchLinux <https://aur.archlinux.org/packages/vdirsyncer>`_.
-- `pkgsrc <http://pkgsrc.se/time/py-vdirsyncer>`_.
+- `AUR package for ArchLinux <https://aur.archlinux.org/packages/vdirsyncer>`_
+- `pkgsrc <http://pkgsrc.se/time/py-vdirsyncer>`_
 
 If your distribution doesn't provide a package for vdirsyncer, you still can
 use Python's package manager PIP. You'll have to check that a compatible
