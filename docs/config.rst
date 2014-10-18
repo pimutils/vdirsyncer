@@ -70,9 +70,14 @@ Pair Section
       collections = from b,from a  # all in storage a + all in storage b
 
 - ``conflict_resolution``: Optional, define how conflicts should be handled.  A
-  conflict occurs when one item changed on both sides since the last sync.
-  Valid values are ``a wins`` and ``b wins``. By default, vdirsyncer will show
-  an error and abort the synchronization.
+  conflict occurs when one item (event, task) changed on both sides since the
+  last sync.
+
+  Valid values are:
+
+  - ``a wins`` and ``b wins``, where the whole item is taken from one side.
+    Vdirsyncer will not attempt to merge the two items.
+  - ``None``, the default, where an error is shown and no changes are done.
 
 .. _storage_config:
 
