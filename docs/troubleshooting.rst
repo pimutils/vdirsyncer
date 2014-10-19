@@ -9,8 +9,3 @@ Troubleshooting
   supply it as a parameter to ``verify`` in your config file, e.g.::
 
       verify = /usr/share/ca-certificates/cacert.org/cacert.org_root.crt
-
-- **During sync an error occurs: TypeError: request() got an unexpected keyword
-  argument 'verify'**
-
-  You need to update your version of requests.
