@@ -14,7 +14,7 @@ your distribution:
 - `pkgsrc <http://pkgsrc.se/time/py-vdirsyncer>`_
 
 If your distribution doesn't provide a package for vdirsyncer, you still can
-use Python's package manager PIP. You'll have to check that a compatible
+use Python's package manager "pip". You'll have to check that a compatible
 version of Python is installed (see above), and then run::
 
     pip install --user vdirsyncer
