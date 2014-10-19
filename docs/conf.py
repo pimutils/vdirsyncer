@@ -54,5 +54,5 @@ man_pages = [
 texinfo_documents = [
     ('index', 'vdirsyncer', u'vdirsyncer Documentation',
      u'Markus Unterwaditzer', 'vdirsyncer',
-     'One line description of project.', 'Miscellaneous'),
+     'Synchronize calendars and contacts.', 'Miscellaneous'),
 ]
