@@ -159,7 +159,7 @@ class SingleFileStorage(Storage):
         if self._last_mtime is not None and \
            self._last_mtime != os.path.getmtime(self.path):
             raise exceptions.PreconditionFailed(
-                'Some other program modified the file {r!}'.format(path))
+                'Some other program modified the file {r!}'.format(self.path))
         text = join_collection(
             (item.raw for item, etag in itervalues(self._items)),
         )
