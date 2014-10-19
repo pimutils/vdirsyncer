@@ -59,6 +59,7 @@ class TestHttpStorage(BaseStorageTests):
         def _request(method, url, *args, **kwargs):
             assert method == 'GET'
             assert url == 'http://localhost:123/collection.txt'
+            assert 'vdirsyncer' in kwargs['headers']['User-Agent']
             r = Response()
             r.status_code = 200
             try:

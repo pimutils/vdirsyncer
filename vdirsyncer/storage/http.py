@@ -108,8 +108,8 @@ class HttpStorage(Storage):
         return {'User-Agent': self.useragent}
 
     def list(self):
-        r = request('GET', self.url, **self._settings,
-                    headers=self._default_headers())
+        r = request('GET', self.url, headers=self._default_headers(),
+                    **self._settings)
         self._items = {}
 
         for item in split_collection(r.text):
