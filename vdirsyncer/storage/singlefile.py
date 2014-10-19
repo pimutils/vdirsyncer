@@ -8,6 +8,7 @@
 '''
 
 import collections
+import os
 
 from .. import exceptions, log
 from .base import Item, Storage
@@ -27,9 +28,14 @@ class SingleFileStorage(Storage):
     .. versionadded:: 0.1.6
 
     .. note::
-        This storage has many raceconditions and is very slow. What this
-        basically means is that you shouldn't use this storage unless you have
-        to (e.g. you use a calendar client which requires it)
+        This storage has many raceconditions, which basically means that you
+        should avoid changing the file with another program (or even running
+        any programs which might modify the file) while vdirsyncer is running.
+
+        Also it is currently very slow, so you should consider limiting the
+        amount of items you synchronize. In combination with
+        :py:class:`vdirsyncer.storage.CaldavStorage` this can be achieved via
+        the ``start_date`` and ``end_date`` parameters.
 
     :param path: The filepath to the file to be written to.
     :param encoding: Which encoding the file should use. Defaults to UTF-8.
@@ -61,6 +67,7 @@ class SingleFileStorage(Storage):
     _read_mode = 'rb'
 
     _items = None
+    _last_mtime = None
 
     def __init__(self, path, encoding='utf-8', create=True, **kwargs):
         super(SingleFileStorage, self).__init__(**kwargs)
@@ -85,12 +92,13 @@ class SingleFileStorage(Storage):
         self._items = collections.OrderedDict()
 
         try:
+            self._last_mtime = os.path.getmtime(self.path)
             with open(self.path, self._read_mode) as f:
                 text = f.read().decode(self.encoding)
-        except IOError as e:
+        except OSError as e:
             import errno
             if e.errno != errno.ENOENT or not self.create:  # file not found
-                raise
+                raise IOError(e)
             text = None
 
         if not text:
@@ -148,6 +156,10 @@ class SingleFileStorage(Storage):
         self._write()
 
     def _write(self):
+        if self._last_mtime is not None and \
+           self._last_mtime != os.path.getmtime(self.path):
+            raise exceptions.PreconditionFailed(
+                'Some other program modified the file {r!}'.format(path))
         text = join_collection(
             (item.raw for item, etag in itervalues(self._items)),
         )
@@ -156,3 +168,4 @@ class SingleFileStorage(Storage):
                 f.write(text.encode(self.encoding))
         finally:
             self._items = None
+            self._last_mtime = None
