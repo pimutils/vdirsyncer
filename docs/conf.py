@@ -56,3 +56,32 @@ texinfo_documents = [
      u'Markus Unterwaditzer', 'vdirsyncer',
      'Synchronize calendars and contacts.', 'Miscellaneous'),
 ]
+
+
+def github_issue_role(name, rawtext, text, lineno, inliner, options={},
+                      content=()):
+    try:
+        issue_num = int(text)
+        if issue_num <= 0:
+            raise ValueError()
+    except ValueError:
+        msg = inliner.reporter.error('Invalid GitHub issue: {}'.format(text),
+                                     line=lineno)
+        prb = inliner.problematic(rawtext, rawtext, msg)
+        return [prb], [msg]
+
+    import vdirsyncer
+    from docutils import nodes
+    link = '{}/{}/{}'.format(vdirsyncer.PROJECT_HOME,
+                             'issues' if name == 'gh' else 'pull',
+                             issue_num)
+    linktext = ('issue #{}' if name == 'gh'
+                else 'pull request #{}').format(issue_num)
+    node = nodes.reference(rawtext, linktext, refuri=link,
+                           **options)
+    return [node], []
+
+
+def setup(app):
+    app.add_role('gh', github_issue_role)
+    app.add_role('ghpr', github_issue_role)

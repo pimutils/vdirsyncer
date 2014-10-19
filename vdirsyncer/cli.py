@@ -13,7 +13,7 @@ import os
 import sys
 import threading
 
-from . import __version__, log
+from . import __version__, PROJECT_HOME, DOCS_HOME, log
 from .doubleclick import click
 from .storage import storage_names
 from .sync import StorageEmpty, SyncConflict, sync
@@ -32,9 +32,6 @@ except ImportError:
 
 
 cli_logger = log.get(__name__)
-
-PROJECT_HOME = 'https://github.com/untitaker/vdirsyncer'
-DOCS_HOME = 'https://vdirsyncer.readthedocs.org/en/latest'
 
 GENERAL_ALL = set(['status_path', 'passwordeval'])
 GENERAL_REQUIRED = set(['status_path'])

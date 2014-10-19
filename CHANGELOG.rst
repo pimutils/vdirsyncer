@@ -18,20 +18,14 @@ Version 0.3.0
   :py:class:`vdirsyncer.storage.HttpStorage`,
   :py:class:`vdirsyncer.storage.CaldavStorage` and
   :py:class:`vdirsyncer.storage.CarddavStorage`,
-  see issue `#99`_ and pull request `#106`_.
+  see :gh:`99` and :ghpr:`106`.
 
-- Add ``passwordeval`` parameter to :ref:`general_config`, see issue `#108`_
-  and pull request `#117`_.
+- Add ``passwordeval`` parameter to :ref:`general_config`, see :gh:`108` and
+  :ghpr:`117`.
 
 - Emit warnings (instead of exceptions) about certain invalid responses from
-  the server, see issue `#113`_.  This is apparently required for compatibility
+  the server, see :gh:`113`.  This is apparently required for compatibility
   with Davmail.
-
-.. _`#99`: https://github.com/untitaker/vdirsyncer/issues/99
-.. _`#106`: https://github.com/untitaker/vdirsyncer/pull/106
-.. _`#108`: https://github.com/untitaker/vdirsyncer/issues/108
-.. _`#113`: https://github.com/untitaker/vdirsyncer/issues/113
-.. _`#117`: https://github.com/untitaker/vdirsyncer/pull/117
 
 Version 0.2.5
 =============
@@ -39,11 +33,9 @@ Version 0.2.5
 *released on 27 August 2014*
 
 - Don't ask for the password of one server more than once and fix multiple
-  concurrency issues, see issue `#101`_.
+  concurrency issues, see :gh:`101`.
 
 - Better validation of DAV endpoints.
-
-.. _`#101`: https://github.com/untitaker/vdirsyncer/issues/101
 
 Version 0.2.4
 =============
@@ -53,22 +45,16 @@ Version 0.2.4
 - Include workaround for collection discovery with latest version of Radicale.
 
 - Include metadata files such as the changelog or license in source
-  distribution, see issues `#97`_ and `#98`_.
-
-.. _`#97`: https://github.com/untitaker/vdirsyncer/issues/97
-.. _`#98`: https://github.com/untitaker/vdirsyncer/issues/98
+  distribution, see :gh:`97` and :gh:`98`.
 
 Version 0.2.3
 =============
 
 *released on 11 August 2014*
 
-- Vdirsyncer now has a ``--version`` flag, see issue `#92`_.
+- Vdirsyncer now has a ``--version`` flag, see :gh:`92`.
 
-- Fix a lot of bugs related to special characters in URLs, see issue `#49`_.
-
-.. _`#92`: https://github.com/untitaker/vdirsyncer/issues/92
-.. _`#49`: https://github.com/untitaker/vdirsyncer/issues/49
+- Fix a lot of bugs related to special characters in URLs, see :gh:`49`.
 
 Version 0.2.2
 =============
@@ -77,15 +63,11 @@ Version 0.2.2
 
 - Remove a security check that caused problems with special characters in DAV
   URLs and certain servers. On top of that, the security check was nonsensical.
-  See issues `#87`_ and `#91`_.
+  See :gh:`87` and :gh:`91`.
 
-- Change some errors to warnings, see issue `#88`_.
+- Change some errors to warnings, see :gh:`88`.
 
 - Improve collection autodiscovery for servers without full support.
-
-.. _`#87`: https://github.com/untitaker/vdirsyncer/issues/87
-.. _`#88`: https://github.com/untitaker/vdirsyncer/issues/88
-.. _`#91`: https://github.com/untitaker/vdirsyncer/issues/91
 
 Version 0.2.1
 =============
@@ -116,8 +98,8 @@ Version 0.2.0
   instead of the proper etag would have been returned from the upload method.
   vdirsyncer might do unnecessary copying when upgrading to this version.
 
-- Add the storage :py:class:`vdirsyncer.storage.SingleFileStorage`. See issue
-  `#48`_.
+- Add the storage :py:class:`vdirsyncer.storage.SingleFileStorage`. See
+  :gh:`48`.
 
 - The ``collections`` parameter for pair sections now accepts the special
   values ``from a`` and ``from b`` for automatically discovering collections.
@@ -125,8 +107,6 @@ Version 0.2.0
 
 - The ``read_only`` parameter was added to storage sections. See
   :ref:`storage_config`.
-
-.. _`#48`: https://github.com/untitaker/vdirsyncer/issues/48
 
 Version 0.1.5
 =============
@@ -142,6 +122,4 @@ Version 0.1.5
 - vdirsyncer now doesn't necessarily need UIDs anymore for synchronization.
 
 - vdirsyncer now aborts if one collection got completely emptied between
-  synchronizations. See `#42`_.
-
-.. _`#42`: https://github.com/untitaker/vdirsyncer/issues/42
+  synchronizations. See :gh:`42`.

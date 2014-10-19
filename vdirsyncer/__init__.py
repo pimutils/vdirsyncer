@@ -10,3 +10,6 @@
     :license: MIT, see LICENSE for more details.
 '''
 __version__ = '0.3.0'
+
+PROJECT_HOME = 'https://github.com/untitaker/vdirsyncer'
+DOCS_HOME = 'https://vdirsyncer.readthedocs.org/en/latest'
