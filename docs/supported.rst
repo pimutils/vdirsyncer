@@ -5,6 +5,9 @@ Supported software
 Client applications
 ===================
 
+The following software has been reported to work well with vdirsyncer, however,
+none of it is regularly tested.
+
 Calendars
 ---------
 
