@@ -5,9 +5,23 @@ Supported software
 Client applications
 ===================
 
-- `khal <http://lostpackets.de/khal/>`_, a calendar application supporting
+Calendars
+---------
+
+- `khal <http://lostpackets.de/khal/>`_, a CLI calendar application supporting
   :doc:`vdir <vdir>`. You can use
   :py:class:`vdirsyncer.storage.FilesystemStorage` with it.
+
+- The graphical calendar app `Orage <http://www.kolumbus.fi/~w408237/orage/>`_
+  saves a calendar in a single ``.ics`` file. You can use
+  :py:class:`vdirsyncer.storage.SingleFileStorage` with it.
+
+- The graphical calendar app `dayplanner <http://www.day-planner.org/>`_ seems
+  to store its data in a single ``.ics`` file. Therefore you should be able to
+  use :py:class:`vdirsyncer.storage.SingleFileStorage` with it.
+
+Contacts
+--------
 
 - `khard <http://github.com/scheibler/khard/>`_, a commandline addressbook
   supporting :doc:`vdir <vdir>`. You can use
@@ -17,12 +31,8 @@ Client applications
   similar to :doc:`vdir <vdir>`. There are some pitfalls though, `see the notes
   on the related issue <https://github.com/hnrysmth/ppl/issues/47>`_.
 
-- `The graphical calendar app Orage <http://www.kolumbus.fi/~w408237/orage/>`_
-  saves a calendar in a single ``.ics`` file. You can use
-  :py:class:`vdirsyncer.storage.SingleFileStorage` with it.
-
 - `contactquery.c <https://github.com/t-8ch/snippets/blob/master/contactquery.c>`_,
-  a small program explicitly written for querying vdirs from mutt
+  a small program explicitly written for querying vdirs from mutt.
 
 Supported servers
 =================
