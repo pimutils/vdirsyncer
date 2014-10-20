@@ -148,6 +148,21 @@ def test_conflict_resolution_both_etags_new(winning_storage):
     assert u'item {}'.format(winning_storage) in n
 
 
+def test_updated_and_deleted():
+    a = MemoryStorage()
+    b = MemoryStorage()
+    href_a, etag_a = a.upload(Item(u'UID:1'))
+    status = {}
+    sync(a, b, status, force_delete=True)
+
+    (href_b, etag_b), = b.list()
+    b.delete(href_b, etag_b)
+    a.update(href_a, Item(u'UID:1\nupdated'), etag_a)
+    sync(a, b, status, force_delete=True)
+
+    assert len(list(a.list())) == len(list(b.list())) == 1
+
+
 def test_conflict_resolution_invalid_mode():
     a = MemoryStorage()
     b = MemoryStorage()

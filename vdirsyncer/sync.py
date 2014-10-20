@@ -273,25 +273,41 @@ def _get_actions(storages, status):
 
         a = a_idents.get(ident, None)
         b = b_idents.get(ident, None)
-        if ident not in status:
-            if a and b:  # missing status
-                yield _action_conflict_resolve(ident)
-            elif a and not b:  # new item was created in a
-                yield _action_upload(ident, 'b')
-            elif not a and b:  # new item was created in b
-                yield _action_upload(ident, 'a')
-        else:
+        assert not a or a['etag'] is not None
+        assert not b or b['etag'] is not None
+
+        try:
             _, status_etag_a, _, status_etag_b = status[ident]
-            if a and b:
-                if a['etag'] != status_etag_a and b['etag'] != status_etag_b:
-                    yield _action_conflict_resolve(ident)
-                elif a['etag'] != status_etag_a:  # item was updated in a
-                    yield _action_update(ident, 'b')
-                elif b['etag'] != status_etag_b:  # item was updated in b
-                    yield _action_update(ident, 'a')
-            elif a and not b:  # was deleted from b
+        except KeyError:
+            status_etag_a = status_etag_b = None
+
+        if a and b:
+            if a['etag'] != status_etag_a and b['etag'] != status_etag_b:
+                # item was modified on both sides
+                # OR: missing status
+                yield _action_conflict_resolve(ident)
+            elif a['etag'] != status_etag_a:
+                # item was only modified in a
+                yield _action_update(ident, 'b')
+            elif b['etag'] != status_etag_b:
+                # item was only modified in b
+                yield _action_update(ident, 'a')
+        elif a and not b:
+            if a['etag'] != status_etag_a:
+                # was deleted from b but modified on a
+                # OR: new item was created in a
+                yield _action_upload(ident, 'b')
+            else:
+                # was deleted from b and not modified on a
                 yield _action_delete(ident, 'a')
-            elif not a and b:  # was deleted from a
+        elif not a and b:
+            if b['etag'] != status_etag_b:
+                # was deleted from a but modified on b
+                # OR: new item was created in b
+                yield _action_upload(ident, 'a')
+            else:
+                # was deleted from a and not changed on b
                 yield _action_delete(ident, 'b')
-            elif not a and not b:  # was deleted from a and b
-                yield _action_delete(ident, None)
+        elif not a and not b:
+            # was deleted from a and b, clean up status
+            yield _action_delete(ident, None)
