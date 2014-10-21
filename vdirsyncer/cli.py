@@ -267,7 +267,7 @@ def _create_app():
             try:
                 ctx.obj['config'] = load_config(fname)
             except Exception as e:
-                raise CliError('Error during reading config{}: {}'
+                raise CliError('Error during reading config {}: {}'
                                .format(fname, e))
 
     @app.command()
