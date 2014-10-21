@@ -183,19 +183,21 @@ def to_unicode_lines(item):
 
 _default_join_wrappers = {
     u'VCALENDAR': (u'VCALENDAR', (u'VTIMEZONE',)),
+    u'VEVENT': (u'VCALENDAR', (u'VTIMEZONE',)),
+    u'VTODO': (u'VCALENDAR', (u'VTIMEZONE',)),
     u'VCARD': (u'VADDRESSBOOK', ())
 }
 
 
-def join_collection(items, wrappers=None):
+def join_collection(items, wrappers=_default_join_wrappers):
     '''
     :param wrappers: {
-        item_type: wrapper_type, items_to_inline
+        item_type: wrapper_type, common_components
     }
-    '''
-    if wrappers is None:
-        wrappers = _default_join_wrappers
 
+    Common components are those who can be moved from the item into the
+    wrapper, with duplicates removed.
+    '''
     inline = {}
     components = []
     wrapper_type = None
@@ -204,7 +206,7 @@ def join_collection(items, wrappers=None):
 
     def handle_item(item):
         if item.name in inline_types:
-            inline[item.name] = item
+            inline[tuple(to_unicode_lines(item))] = item
         else:
             components.append(item)
 
@@ -234,4 +236,4 @@ def join_collection(items, wrappers=None):
         lines.extend(to_unicode_lines(component))
     lines.append(end)
 
-    return u''.join(line + u'\r\n' for line in lines if line)
+    return u''.join(line + u'\r\n' for line in lines)

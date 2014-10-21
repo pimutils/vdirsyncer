@@ -6,7 +6,7 @@
     :copyright: (c) 2014 Markus Unterwaditzer & contributors
     :license: MIT, see LICENSE for more details.
 '''
-import textwrap
+from textwrap import dedent
 
 import icalendar
 
@@ -80,6 +80,39 @@ def test_join_collection_simple():
         assert given.splitlines() == _simple_joined.splitlines()
 
 
+def test_join_collection_vevents():
+    actual = vobject.join_collection([
+        dedent("""
+            BEGIN:VCALENDAR
+            BEGIN:VTIMEZONE
+            VALUE:The Timezone
+            END:VTIMEZONE
+            BEGIN:VEVENT
+            VALUE:Event {}
+            END:VEVENT
+            END:VCALENDAR
+         """).format(i) for i in range(3)
+    ])
+    expected = dedent("""
+        BEGIN:VCALENDAR
+        BEGIN:VTIMEZONE
+        VALUE:The Timezone
+        END:VTIMEZONE
+        BEGIN:VEVENT
+        VALUE:Event 0
+        END:VEVENT
+        BEGIN:VEVENT
+        VALUE:Event 1
+        END:VEVENT
+        BEGIN:VEVENT
+        VALUE:Event 2
+        END:VEVENT
+        END:VCALENDAR
+    """).lstrip()
+
+    assert actual.splitlines() == expected.splitlines()
+
+
 def test_split_collection_timezones():
     items = [
         BARE_EVENT_TEMPLATE.format(r=123),
@@ -133,7 +166,7 @@ def test_multiline_uid():
 
 
 def test_multiline_uid_complex():
-    a = textwrap.dedent(u'''
+    a = dedent(u'''
         BEGIN:VCALENDAR
         BEGIN:VTIMEZONE
         TZID:Europe/Rome
@@ -179,7 +212,7 @@ def test_multiline_uid_complex():
                    reason=('version of icalendar doesn\'t support dots in '
                            'property names'))
 def test_vcard_property_groups():
-    vcard = textwrap.dedent(u'''
+    vcard = dedent(u'''
         BEGIN:VCARD
         VERSION:3.0
         MYLABEL123.ADR:;;This is the Address 08; Some City;;12345;Germany
@@ -202,7 +235,7 @@ def test_vcard_semicolons_in_values():
     # If this test fails because proper vCard support was added to icalendar,
     # we can remove some ugly postprocessing code in to_unicode_lines.
 
-    vcard = textwrap.dedent(u'''
+    vcard = dedent(u'''
         BEGIN:VCARD
         VERSION:3.0
         ADR:;;Address 08;City;;12345;Germany
