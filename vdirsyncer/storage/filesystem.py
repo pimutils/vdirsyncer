@@ -8,6 +8,7 @@
 '''
 
 import os
+import subprocess
 
 from .base import Item, Storage
 from .. import exceptions, log
@@ -37,7 +38,8 @@ class FilesystemStorage(Storage):
     storage_name = 'filesystem'
     _repr_attributes = ('path',)
 
-    def __init__(self, path, fileext, encoding='utf-8', create=True, **kwargs):
+    def __init__(self, path, fileext, encoding='utf-8', create=True,
+                 post_hook=None, **kwargs):
         super(FilesystemStorage, self).__init__(**kwargs)
         path = expand_path(path)
         collection = kwargs.get('collection')
@@ -47,6 +49,7 @@ class FilesystemStorage(Storage):
         self.path = path
         self.encoding = encoding
         self.fileext = fileext
+        self.post_hook = post_hook
 
     @classmethod
     def discover(cls, path, **kwargs):
@@ -95,7 +98,11 @@ class FilesystemStorage(Storage):
 
         with safe_write(fpath, 'wb+') as f:
             f.write(item.raw.encode(self.encoding))
-            return href, f.get_etag()
+            etag = f.get_etag()
+
+        if self.post_hook:
+            self._run_post_hook(fpath)
+        return href, etag
 
     def update(self, href, item, etag):
         fpath = self._get_filepath(href)
@@ -113,7 +120,11 @@ class FilesystemStorage(Storage):
 
         with safe_write(fpath, 'wb') as f:
             f.write(item.raw.encode(self.encoding))
-            return f.get_etag()
+            etag = f.get_etag()
+
+        if self.post_hook:
+            self._run_post_hook(fpath)
+        return etag
 
     def delete(self, href, etag):
         fpath = self._get_filepath(href)
@@ -123,3 +134,11 @@ class FilesystemStorage(Storage):
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
         os.remove(fpath)
+
+    def _run_post_hook(self, fpath):
+        logger.info('Calling post_hook={} with argument={}'.format(
+            self.post_hook, fpath))
+        try:
+            subprocess.call([self.post_hook, fpath])
+        except OSError:
+            logger.exception('Error executing external hook.')
