@@ -10,9 +10,9 @@
 
 * If you're suggesting a feature, keep in mind that vdirsyncer tries not to be
   a full calendar or contacts client, but rather just the piece of software
-  that synchronizes all the data. If you're looking for a viewer for the
-  calendar data you've synced, `khal <https://github.com/geier/khal>`_ is what
-  you're looking for.
+  that synchronizes all the data. `Take a look at the documentation for
+  software working with vdirsyncer
+  <http://vdirsyncer.readthedocs.org/en/latest/supported.html>`_.
 
 * If you're submitting pull requests:
 
