@@ -19,7 +19,7 @@ Table of Contents
    config
    keyring
    supported
-   troubleshooting
+   support
    changelog
    vdir
    license

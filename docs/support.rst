@@ -1,4 +1,11 @@
-===============
+=======
+Support
+=======
+
+For any questions left unanswered by the documentation, `open an issue on
+GitHub <https://github.com/untitaker/vdirsyncer/issues/new>`_ or `contact me
+directly <https://unterwaditzer.net>`_.
+
 Troubleshooting
 ===============
 
