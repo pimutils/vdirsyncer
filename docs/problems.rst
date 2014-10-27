@@ -25,7 +25,7 @@ Error messages
   - Upgrade your installation of the Debian requests package to at least
     version ``2.4.3-1``.
 
-  - Install vdirsyncer in a virtualenv, see :ref:`manual_installation`.
+  - Install vdirsyncer in a virtualenv, see :ref:`manual-installation`.
 
 
 .. _manual-installation:
