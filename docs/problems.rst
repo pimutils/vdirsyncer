@@ -43,7 +43,7 @@ The easiest way to install vdirsyncer at this point would be to run::
 
     pip install --user vdirsyncer
 
-This method has a major flaw though: Pip doesn't keep track of which files it
+This method has a major flaw though: Pip doesn't keep track of the files it
 installs.  Vdirsyncer's files would be located somewhere in
 ``~/.local/lib/python*``, but you can't possibly know which packages were
 installed as dependencies of vdirsyncer and which ones were not, should you
