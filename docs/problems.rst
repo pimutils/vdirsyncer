@@ -52,7 +52,7 @@ home directory.
 
 But there is a way to install Python software without scattering stuff across
 your filesystem: virtualenv_. There are a lot of resources on how to use it,
-the simplest possible way would something like::
+the simplest possible way would look something like::
 
     virtualenv ~/vdirsyncer_env
     ~/vdirsyncer_env/bin/pip install vdirsyncer
