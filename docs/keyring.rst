@@ -2,9 +2,10 @@
 Keyring Support
 ===============
 
-*vdirsyncer* will try the following storages in that order if no password (but
-a username) is set in your config. If that fails too, it will prompt for the
-password and store the password in the system keyring (if possible and wished).
+Vdirsyncer will try the following storages in that order if no password (but a
+username) is set in your config. If all of those methods fail, it will prompt
+for the password and store the password in the system keyring (if possible and
+wished).
 
 Custom command
 ==============
@@ -17,7 +18,7 @@ username/hostname combination. See :ref:`general_config`.
 netrc
 =====
 
-*vdirsyncer* can use ``~/.netrc`` for retrieving a password. An example
+Vdirsyncer can use ``~/.netrc`` for retrieving a password. An example
 ``.netrc`` looks like this::
 
     machine owncloud.example.com
@@ -27,31 +28,23 @@ netrc
 System Keyring
 ==============
 
-*vdirsyncer* can also use your system's password storage for saving password in
-a (more) secure way.
+Vdirsyncer can use your system's password storage, utilizing the keyring_
+library. Supported services include **OS X Keychain, Gnome Keyring, KDE Kwallet
+or the Windows Credential Vault**. For a full list see the library's
+documentation.
 
-To use it, you must install keyring_.
+To use it, you must install the ``keyring`` Python package.
 
 .. _keyring: https://bitbucket.org/kang/python-keyring-lib
 
-*vdirsyncer* will use the hostname as key prefixed with ``vdirsyncer:`` when
-saving and fetching, e.g. ``vdirsyncer:owncloud.example.com``.
+Storing the password
+--------------------
 
-*keyring* support these keyrings:
-
- - **OSXKeychain:** The Keychain service in Mac OS X.
- - **KDEKWallet:** The KDE's Kwallet service.
- - **GnomeKeyring** For Gnome 2 environment.
- - **SecretServiceKeyring:** For newer GNOME and KDE environments.
- - **WinVaultKeyring:** The Windows Credential Vault
- - **Win32CryptoKeyring:** for Windows 2k+.
- - **CryptedFileKeyring:** A command line interface keyring base on PyCrypto.
- - **UncryptedFileKeyring:** A keyring which leaves passwords directly in file.
+Vdirsyncer will use the hostname as key prefixed with ``vdirsyncer:``, e.g.
+``vdirsyncer:owncloud.example.com``.
 
 Changing the Password
 ---------------------
 
-If your password on the server changed or you misspelled it you need to use
-your system's password manager (e.g. seahorse for most Linux distrubutions) to
-either delete or directly change it, *vdirsyncer* currently has no means to do
-it for you.
+If your password on the server changed or you misspelled it, you need to
+manually edit or delete the entry in your system keyring.

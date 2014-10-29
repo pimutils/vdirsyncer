@@ -1,5 +1,5 @@
 ==================
-Supported software
+Supported Software
 ==================
 
 Client applications

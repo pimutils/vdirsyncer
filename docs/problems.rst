@@ -1,5 +1,5 @@
 ==========================
-Support and known Problems
+Support and Known Problems
 ==========================
 
 For any unanswered questions or problems, `open an issue on GitHub

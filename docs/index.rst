@@ -2,7 +2,7 @@
 vdirsyncer
 ==========
 
-vdirsyncer synchronizes your calendars and addressbooks between two storages.
+Vdirsyncer synchronizes your calendars and addressbooks between two storages.
 The supported storages are CalDAV, CardDAV, arbitrary HTTP resources,
 :doc:`vdir <vdir>` and :ref:`some more <storages>`.
 

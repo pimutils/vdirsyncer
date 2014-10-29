@@ -1,5 +1,5 @@
 =======================
-The vdir Storage Format
+The Vdir Storage Format
 =======================
 
 This document describes a standard for storing calendars and contacts on a
