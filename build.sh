@@ -50,7 +50,7 @@ command__tests() {
 }
 
 command__install_style() {
-    $PIP_INSTALL flake8
+    $PIP_INSTALL flake8 flake8-import-order
 }
 
 command__style() {

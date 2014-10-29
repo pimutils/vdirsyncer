@@ -13,7 +13,7 @@ import os
 import sys
 import threading
 
-from . import __version__, PROJECT_HOME, DOCS_HOME, log
+from . import DOCS_HOME, PROJECT_HOME, __version__, log
 from .doubleclick import click
 from .storage import storage_names
 from .sync import StorageEmpty, SyncConflict, sync

@@ -10,8 +10,8 @@
 import collections
 import os
 
-from .. import exceptions, log
 from .base import Item, Storage
+from .. import exceptions, log
 from ..utils import checkfile, expand_path, safe_write
 from ..utils.compat import iteritems, itervalues
 from ..utils.vobject import join_collection, split_collection

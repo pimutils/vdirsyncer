@@ -12,8 +12,8 @@ import os
 
 import pytest
 
-from vdirsyncer.utils.vobject import Item
 from vdirsyncer.storage.filesystem import FilesystemStorage
+from vdirsyncer.utils.vobject import Item
 
 from . import StorageTests
 

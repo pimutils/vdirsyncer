@@ -13,9 +13,9 @@ import threading
 import requests
 from requests.packages.urllib3.poolmanager import PoolManager
 
+from .compat import iteritems, urlparse
 from .. import exceptions, log
 from ..doubleclick import click, ctx
-from .compat import iteritems, urlparse
 
 
 logger = log.get(__name__)

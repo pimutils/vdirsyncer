@@ -9,8 +9,8 @@
 
 import os
 
-from .. import exceptions, log
 from .base import Item, Storage
+from .. import exceptions, log
 from ..utils import checkdir, expand_path, get_etag_from_file, safe_write
 from ..utils.compat import text_type
 
