@@ -17,7 +17,8 @@ from . import DOCS_HOME, PROJECT_HOME, __version__, log
 from .doubleclick import click
 from .storage import storage_names
 from .sync import StorageEmpty, SyncConflict, sync
-from .utils import expand_path, get_class_init_args, parse_options, split_dict
+from .utils import expand_path, get_class_init_args, parse_options, \
+     safe_write, split_dict
 
 
 try:
@@ -135,7 +136,7 @@ def save_status(path, status_name, status):
     if not os.path.exists(base_path):
         os.makedirs(base_path, 0o750)
 
-    with open(full_path, 'w+') as f:
+    with safe_write(full_path, 'w+') as f:
         for k, v in status.items():
             json.dump((k, v), f)
             f.write('\n')
