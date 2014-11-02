@@ -25,10 +25,19 @@ If that method doesn't work for you or you want a deeper understanding of what
 you just did, check out `the tutorial
 <https://vdirsyncer.readthedocs.org/en/latest/tutorial.html>`_.
 
-How to run the tests
-====================
+Running the tests
+=================
 
 ::
 
     sh build.sh install_tests
     sh build.sh tests
+
+Donations
+=========
+
+.. image:: https://img.shields.io/gratipay/untitaker.svg
+   :target: https://gratipay.com/untitaker/
+
+.. image:: https://api.flattr.com/button/flattr-badge-large.png
+    :target: https://flattr.com/submit/auto?user_id=untitaker&url=https%3A%2F%2Fgithub.com%2Funtitaker%2Fvdirsyncer
