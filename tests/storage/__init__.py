@@ -14,12 +14,17 @@ import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
 from vdirsyncer.utils.compat import iteritems, text_type
 
-from .. import SIMPLE_TEMPLATE, assert_item_equals
+from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
+    assert_item_equals
+
+
+def format_item(item_template):
+    # assert that special chars are handled correctly.
+    r = '{}@vdirsyncer'.format(random.random())
+    return Item(item_template.format(r=r))
 
 
 class BaseStorageTests(object):
-    item_template = SIMPLE_TEMPLATE
-
     @pytest.fixture
     def storage_args(self):
         return self.get_storage_args
@@ -38,15 +43,13 @@ class BaseStorageTests(object):
     def s(self, get_storage):
         return get_storage()
 
-    @pytest.fixture
-    def get_item(self):
-        def inner(item_template=None):
-            # assert that special chars are handled correctly.
-            r = '{}@vdirsyncer'.format(random.random())
-            item_template = item_template or self.item_template
-            return Item(item_template.format(r=r))
+    @pytest.fixture(params=[EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE])
+    def item_template(self, request):
+        return request.param
 
-        return inner
+    @pytest.fixture
+    def get_item(self, item_template):
+        return lambda: format_item(item_template)
 
     def test_generic(self, s, get_item):
         items = [get_item() for i in range(1, 10)]

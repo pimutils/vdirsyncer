@@ -12,13 +12,12 @@ import pytest
 from vdirsyncer.storage.singlefile import SingleFileStorage
 
 from . import BaseStorageTests
-from .. import EVENT_TEMPLATE, assert_item_equals
+from .. import assert_item_equals
 
 
 class TestSingleFileStorage(BaseStorageTests):
 
     storage_class = SingleFileStorage
-    item_template = EVENT_TEMPLATE
 
     @pytest.fixture(autouse=True)
     def setup(self, tmpdir):

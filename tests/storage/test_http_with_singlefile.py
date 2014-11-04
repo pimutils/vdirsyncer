@@ -16,7 +16,7 @@ import vdirsyncer.storage.http
 from vdirsyncer.storage.singlefile import SingleFileStorage
 
 from . import BaseStorageTests
-from .. import EVENT_TEMPLATE, assert_item_equals
+from .. import assert_item_equals
 
 
 class CombinedStorage(Storage):
@@ -50,7 +50,6 @@ class CombinedStorage(Storage):
 
 class TestHttpStorage(BaseStorageTests):
     storage_class = CombinedStorage
-    item_template = EVENT_TEMPLATE
 
     @pytest.fixture(autouse=True)
     def setup_tmpdir(self, tmpdir, monkeypatch):
@@ -69,7 +68,7 @@ class TestHttpStorage(BaseStorageTests):
                 r._content = b''
 
             r.headers['Content-Type'] = 'text/icalendar'
-            r.encoding = 'ISO-8859-1'
+            r.encoding = 'utf-8'
             return r
 
         monkeypatch.setattr(vdirsyncer.storage.http, 'request', _request)

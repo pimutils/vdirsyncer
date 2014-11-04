@@ -23,7 +23,7 @@ from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.dav import CaldavStorage, CarddavStorage, \
     _normalize_href
 
-from .. import StorageTests
+from .. import StorageTests, format_item
 
 
 dav_server = os.environ.get('DAV_SERVER', '').strip() or 'radicale'
@@ -35,13 +35,6 @@ def _get_server_mixin(server_name):
     return x.ServerMixin
 
 ServerMixin = _get_server_mixin(dav_server)
-
-
-templates = {
-    'VCARD': VCARD_TEMPLATE,
-    'VEVENT': EVENT_TEMPLATE,
-    'VTODO': TASK_TEMPLATE
-}
 
 
 class DavStorageTests(ServerMixin, StorageTests):
@@ -65,47 +58,30 @@ class DavStorageTests(ServerMixin, StorageTests):
 class TestCaldavStorage(DavStorageTests):
     storage_class = CaldavStorage
 
-    item_template = TASK_TEMPLATE
-
-    def test_both_vtodo_and_vevent(self, s, get_item):
-        task = get_item(item_template=TASK_TEMPLATE)
-        event = get_item(item_template=EVENT_TEMPLATE)
-        href_etag_task = s.upload(task)
-        href_etag_event = s.upload(event)
-        assert set(s.list()) == set([
-            href_etag_task,
-            href_etag_event
-        ])
+    @pytest.fixture(params=[EVENT_TEMPLATE, TASK_TEMPLATE])
+    def item_template(self, request):
+        return request.param
 
     @pytest.mark.parametrize('item_type', ['VTODO', 'VEVENT'])
-    def test_item_types_correctness(self, item_type, storage_args, get_item):
-        other_item_type = 'VTODO' if item_type == 'VEVENT' else 'VEVENT'
+    def test_doesnt_accept_vcard(self, item_type, storage_args):
         s = self.storage_class(item_types=(item_type,), **storage_args())
+
         try:
-            s.upload(get_item(item_template=templates[other_item_type]))
-            s.upload(get_item(item_template=templates[other_item_type]))
+            s.upload(format_item(VCARD_TEMPLATE))
         except (exceptions.Error, requests.exceptions.HTTPError):
             pass
-        href, etag = \
-            s.upload(get_item(
-                item_template=templates[item_type]))
-        ((href2, etag2),) = s.list()
-        assert href2 == href
-        assert etag2 == etag
+        assert not list(s.list())
 
-    @pytest.mark.parametrize('item_types', [
-        ('VTODO',),
-        ('VEVENT',),
-        ('VTODO', 'VEVENT'),
-        ('VTODO', 'VEVENT', 'VJOURNAL'),
-        ()
+    @pytest.mark.parametrize('item_types,calls_num', [
+        (('VTODO',), 1),
+        (('VEVENT',), 1),
+        (('VTODO', 'VEVENT'), 2),
+        (('VTODO', 'VEVENT', 'VJOURNAL'), 3),
+        ((), 1)
     ])
-    def test_item_types_performance(self, storage_args, item_types,
+    def test_item_types_performance(self, storage_args, item_types, calls_num,
                                     monkeypatch, get_item):
         s = self.storage_class(item_types=item_types, **storage_args())
-        item = get_item()
-        href, etag = s.upload(item)
-
         old_dav_query = s._dav_query
         calls = []
 
@@ -114,22 +90,18 @@ class TestCaldavStorage(DavStorageTests):
             return old_dav_query(*a, **kw)
 
         monkeypatch.setattr(s, '_dav_query', _dav_query)
-
-        rv = list(s.list())
-        if (dav_server != 'radicale' and not s.item_types) \
-           or item.parsed.name in s.item_types:
-            assert rv == [(href, etag)]
-        assert len(calls) == (len(item_types) or 1)
+        list(s.list())
+        assert len(calls) == calls_num
 
     @pytest.mark.xfail(dav_server == 'radicale',
                        reason='Radicale doesn\'t support timeranges.')
-    def test_timerange_correctness(self, storage_args, get_item):
+    def test_timerange_correctness(self, storage_args):
         start_date = datetime.datetime(2013, 9, 10)
         end_date = datetime.datetime(2013, 9, 13)
         s = self.storage_class(start_date=start_date, end_date=end_date,
                                **storage_args())
 
-        too_old_item = get_item(item_template=dedent(u'''
+        too_old_item = format_item(dedent(u'''
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN
@@ -143,7 +115,7 @@ class TestCaldavStorage(DavStorageTests):
             END:VCALENDAR
             ''').strip())
 
-        too_new_item = get_item(item_template=dedent(u'''
+        too_new_item = format_item(dedent(u'''
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN
@@ -157,7 +129,7 @@ class TestCaldavStorage(DavStorageTests):
             END:VCALENDAR
             ''').strip())
 
-        good_item = get_item(item_template=dedent(u'''
+        good_item = format_item(dedent(u'''
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN
@@ -207,7 +179,10 @@ class TestCaldavStorage(DavStorageTests):
 
 class TestCarddavStorage(DavStorageTests):
     storage_class = CarddavStorage
-    item_template = VCARD_TEMPLATE
+
+    @pytest.fixture
+    def item_template(self, request):
+        return VCARD_TEMPLATE
 
 
 @pytest.mark.parametrize('base,path', [
