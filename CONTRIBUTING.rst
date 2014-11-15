@@ -16,6 +16,10 @@
 
 * If you're submitting pull requests:
 
+  * If you thought of a new feature for vdirsyncer, don't just go on and
+    implement it, but **first discuss it in the issue tracker**, otherwise you
+    might have wasted your time if your idea gets rejected.
+
   * Make sure your tests pass on Travis.
 
   * But not because you wrote too few tests.
