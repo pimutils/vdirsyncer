@@ -41,9 +41,6 @@ similar properties as the ``UID``:
 Character limitations imposed by the filesystem *should* be circumvented by
 replacing the offending characters with underscores ``_``.
 
-One reason this format was chosen is due to its compatibility with the CardDAV_
-and CalDAV_ standards.
-
 .. _vCard: https://tools.ietf.org/html/rfc6350
 .. _iCalendar: https://tools.ietf.org/html/rfc5545
 .. _CardDAV: http://tools.ietf.org/html/rfc6352
@@ -71,8 +68,11 @@ Reading from vdirs
 - The ``ident`` part of the filename *should not* be parsed to improve the
   speed of item lookup.
 
-Problems and considerations
-===========================
+Considerations
+==============
+
+The primary reason this format was chosen is due to its compatibility with the
+CardDAV_ and CalDAV_ standards.
 
 Performance
 -----------
