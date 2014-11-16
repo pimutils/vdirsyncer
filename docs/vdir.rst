@@ -71,8 +71,8 @@ Reading from vdirs
 - The ``ident`` part of the filename *should not* be parsed to improve the
   speed of item lookup.
 
-Rationale
-=========
+Problems and considerations
+===========================
 
 Performance
 -----------
