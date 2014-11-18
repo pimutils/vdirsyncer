@@ -19,8 +19,8 @@ try:
     # The full version, including alpha/beta/rc tags.
     release = pkg_resources.require('vdirsyncer')[0].version
 except pkg_resources.DistributionNotFound:
-    print('To build the documentation, the distribution information of'
-          'vdirsyncer has to be available. Run "setup.py develop" to do'
+    print('To build the documentation, the distribution information of '
+          'vdirsyncer has to be available. Run "setup.py develop" to do '
           'this.')
     sys.exit(1)
 
