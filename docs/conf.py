@@ -32,10 +32,17 @@ pygments_style = 'sphinx'
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
-if not on_rtd:
+try:
     import sphinx_rtd_theme
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+except ImportError:
+    html_theme = 'default'
+    if not on_rtd:
+        print('-' * 74)
+        print('Warning: sphinx-rtd-theme not installed, building with default '
+              'theme.')
+        print('-' * 74)
 
 html_static_path = ['_static']
 htmlhelp_basename = 'vdirsyncerdoc'
