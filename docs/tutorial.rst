@@ -19,9 +19,17 @@ Configuration
 =============
 
 .. note::
-    The `example.cfg from the repository
-    <https://github.com/untitaker/vdirsyncer/blob/master/example.cfg>`_
-    contains a very terse version of this.
+
+    - The `example.cfg from the repository
+      <https://github.com/untitaker/vdirsyncer/blob/master/example.cfg>`_
+      contains a very terse version of this.
+
+    - In this example we set up contacts synchronization, but calendar sync
+      works almost the same. Just swap ``type = carddav`` for ``type = caldav``
+      and ``fileext = .vcf`` for ``fileext = .ics``.
+
+    - Take a look at the :doc:`problems` page if anything doesn't work like
+      planned.
 
 By default, *vdirsyncer* looks for its configuration file at
 ``~/.vdirsyncer/config``. You can use the ``VDIRSYNCER_CONFIG`` environment
@@ -65,11 +73,16 @@ The following example synchronizes a single CardDAV-addressbook to
 
 After running ``vdirsyncer sync``, ``~/.contacts/`` will contain a bunch of
 ``.vcf`` files which all contain a contact in ``VCARD`` format each. You can
-modify their content, add new ones and delete some, and your changes will be
+modify their content, add new ones and delete some [1]_, and your changes will be
 synchronized to the CalDAV server after you run ``vdirsyncer sync`` again. For
 further reference, it uses the storages
 :py:class:`vdirsyncer.storage.FilesystemStorage` and
 :py:class:`vdirsyncer.storage.CarddavStorage`.
+
+.. [1] You'll want to :doc:`use a helper program for this <supported>`.
+
+More Configuration
+==================
 
 But what if we want to synchronize multiple addressbooks from the same server?
 Of course we could create new pairs and storages for each addressbook, but that
@@ -105,6 +118,3 @@ Earlier we wrote that ``b = my_contacts_remote``, so when vdirsyncer encounters
 the situation where an item changed on both sides, it will simply overwrite the
 local item with the one from the server. Of course ``a wins`` is also a valid
 value.
-
-Calendar sync works almost the same. Just swap ``type = carddav`` for ``type =
-caldav`` and ``fileext = .vcf`` for ``fileext = .ics``.
