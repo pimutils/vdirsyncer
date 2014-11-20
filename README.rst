@@ -2,9 +2,11 @@
 vdirsyncer
 ==========
 
-vdirsyncer synchronizes your calendars and addressbooks between two storages.
-The supported storages are CalDAV, CardDAV, arbitrary HTTP resources and `some
-more <https://vdirsyncer.readthedocs.org/en/latest/config.html#storages>`_.
+Vdirsyncer synchronizes your calendars and addressbooks between two storages.
+The most popular purpose is to synchronize CalDAV and CardDAV with a local
+folder or file. The local data can then be `accessed via a variety of programs
+<https://vdirsyncer.readthedocs.org/en/latest/supported.html>`_, none of which
+have to know or worry about syncing to a server.
 
 It aims to be for CalDAV and CardDAV what `OfflineIMAP
 <http://offlineimap.org/>`_ is for IMAP.
