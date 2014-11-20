@@ -95,6 +95,13 @@ class Item(object):
         '''Used for generating hrefs and matching up items during
         synchronization. This is either the UID or the hash of the item's
         content.'''
+
+        # We hash the item instead of directly using its raw content, because
+        #
+        # 1. The raw content might be really large, e.g. when its a contact
+        #    with a picture, which bloats the status file.
+        #
+        # 2. The status file would contain really sensitive information.
         return self.uid or self.hash
 
     @cached_property
