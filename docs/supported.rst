@@ -15,13 +15,13 @@ Calendars
   :doc:`vdir <vdir>`. You can use
   :py:class:`vdirsyncer.storage.FilesystemStorage` with it.
 
-- The graphical calendar app `Orage <http://www.kolumbus.fi/~w408237/orage/>`_
-  saves a calendar in a single ``.ics`` file. You can use
-  :py:class:`vdirsyncer.storage.SingleFileStorage` with it.
+- Many graphical calendar apps such as dayplanner_, Orage_ or rainlendar_ save
+  a calendar in a single ``.ics`` file. You can use
+  :py:class:`vdirsyncer.storage.SingleFileStorage` with those.
 
-- The graphical calendar app `dayplanner <http://www.day-planner.org/>`_ seems
-  to store its data in a single ``.ics`` file. Therefore you should be able to
-  use :py:class:`vdirsyncer.storage.SingleFileStorage` with it.
+.. _dayplanner: http://www.day-planner.org/
+.. _Orage: http://www.kolumbus.fi/~w408237/orage/
+.. _rainlendar: http://www.rainlendar.net/
 
 Contacts
 --------
