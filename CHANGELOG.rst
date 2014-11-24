@@ -9,6 +9,24 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/untitaker/vdirsyncer/tags.atom>`_.
 
+Version 0.3.1
+=============
+
+*released on 24 November 2014*
+
+- Fixed a bug where vdirsyncer would delete items if they're deleted on side A
+  but modified on side B. Instead vdirsyncer will now upload the new items to
+  side A. See :gh:`128`.
+
+- Synchronization continues with the remaining pairs if one pair crashes, see
+  :gh:`121`.
+
+- The ``processes`` config key is gone. There is now a ``--max-workers`` option
+  on the CLI which has a similar purpose. See :ghpr:`126`.
+
+- The Read The Docs-theme is no longer required for building the docs. If it is
+  not installed, the default theme will be used. See :gh:`134`.
+
 Version 0.3.0
 =============
 
