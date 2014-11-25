@@ -137,6 +137,15 @@ class Storage(object):
         '''
         raise NotImplementedError()
 
+    def upload_multi(self, items):
+        '''Upload multiple items.
+
+        :param items: An iterable of items objects.
+        :returns: [(href, etag)]
+        '''
+        for item in items:
+            yield self.upload(item)
+
     def update(self, href, item, etag):
         '''Update an item.
 
@@ -148,6 +157,15 @@ class Storage(object):
         '''
         raise NotImplementedError()
 
+    def update_multi(self, iterable):
+        '''Update multiple items.
+
+        :param iterable: An iterable of tuples of (href, item, etag)
+        :returns: A list of etags
+        '''
+        for href, item, etag in iterable:
+            yield self.update(href, item, etag)
+
     def delete(self, href, etag):
         '''Delete an item by href.
 
@@ -155,3 +173,11 @@ class Storage(object):
             a different etag or doesn't exist.
         '''
         raise NotImplementedError()
+
+    def delete_multi(self, iterable):
+        '''Delete multiple items by hrefs.
+
+        :param iterable: An iterable of (href, etag) tuples.
+        '''
+        for href, etag in iterable:
+            self.delete(href, etag)

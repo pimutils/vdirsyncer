@@ -16,9 +16,10 @@
     :license: MIT, see LICENSE for more details.
 '''
 import itertools
+from collections import defaultdict
 
 from . import exceptions, log
-from .utils.compat import iteritems, text_type
+from .utils.compat import iteritems
 sync_logger = log.get(__name__)
 
 
@@ -139,126 +140,168 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
         'b': (storage_b, b_idents)
     }
 
-    actions = list(_get_actions(storages, status))
-
-    for action in actions:
-        action(storages, status, conflict_resolution)
+    _dispatch_actions(_get_actions(storages, status), storages, status,
+                      conflict_resolution)
 
 
-def _action_upload(ident, dest):
+def _dispatch_actions(actions, storages, status, conflict_resolution):
+    action_lists = defaultdict(list)
+    for action_type, ident, dest in actions:
+        action_lists[(action_type, dest)].append(ident)
+
+    for source, dest in ('ab', 'ba'):
+        idents = action_lists.pop(('upload', dest), ())
+        if idents:
+            _upload(idents, dest, storages, status, conflict_resolution)
+
+        idents = action_lists.pop(('update', dest), ())
+        if idents:
+            _update(idents, dest, storages, status, conflict_resolution)
+
+        idents = action_lists.pop(('delete', dest), ())
+        if idents:
+            _delete(idents, dest, storages, status, conflict_resolution)
+
+    idents = action_lists.pop(('delete', None), ())
+    if idents:
+        _delete(idents, None, storages, status, conflict_resolution)
+
+    for ident in action_lists.pop(('conflict', None), ()):
+        _conflict_resolve(ident, storages, status, conflict_resolution)
+
+    assert not action_lists
+
+
+def _upload(idents, dest, storages, status, conflict_resolution):
     source = 'a' if dest == 'b' else 'b'
+    source_storage, source_idents = storages[source]
+    dest_storage, dest_idents = storages[dest]
 
-    def inner(storages, status, conflict_resolution):
-        source_storage, source_idents = storages[source]
-        dest_storage, dest_idents = storages[dest]
-        sync_logger.info('Copying (uploading) item {} to {}'
-                         .format(ident, dest_storage))
+    items = []
+    source_statuses = []
+    dest_statuses = []
 
+    sync_logger.info('Copying (uploading) items to {}:'.format(dest_storage))
+
+    for ident in idents:
+        sync_logger.info('    {}'.format(ident))
         source_meta = source_idents[ident]
-        source_href = source_meta['href']
-        source_etag = source_meta['etag']
-        source_status = (source_href, source_etag)
+        source_statuses.append((source_meta['href'], source_meta['etag']))
+        items.append(source_meta['item'])
 
-        dest_status = (None, None)
+    if dest_storage.read_only:
+        sync_logger.warning('{dest} is read-only. Skipping update...'
+                            .format(dest=dest_storage))
+        for ident in idents:
+            dest_statuses.append((None, None))
+    else:
+        for ident, (dest_href, dest_etag) in zip(
+            idents,
+            dest_storage.upload_multi(items)
+        ):
+            dest_statuses.append((dest_href, dest_etag))
+
+    for ident, source_status, dest_status in zip(
+        idents, source_statuses, dest_statuses
+    ):
+        status[ident] = source_status + dest_status if source == 'a' else \
+            dest_status + source_status
+
+
+def _update(idents, dest, storages, status, conflict_resolution):
+    source = 'a' if dest == 'b' else 'b'
+    source_storage, source_idents = storages[source]
+    dest_storage, dest_idents = storages[dest]
+
+    items = []
+    hrefs = []
+    source_statuses = []
+    dest_statuses = []
+
+    sync_logger.info('Copying (updating) items to {}:'.format(dest_storage))
+
+    for ident in idents:
+        sync_logger.info('    {}'.format(ident))
+        source_meta = source_idents[ident]
+        href = source_meta['href']
+        item = source_meta['item']
+        etag = source_meta['etag']
+        dest_etag = dest_idents[ident]['etag']
+        source_statuses.append((href, etag))
+        hrefs.append(href)
+        items.append((href, item, dest_etag))
+
+    if dest_storage.read_only:
+        sync_logger.warning('{dest} is read-only. Skipping update...'
+                            .format(dest=dest_storage))
+        for ident in idents:
+            dest_statuses.append((None, None))
+    else:
+        for ident, href, new_etag in zip(
+            idents, hrefs,
+            dest_storage.update_multi(items)
+        ):
+            dest_statuses.append((href, new_etag))
+
+    for ident, source_status, dest_status in zip(
+        idents, source_statuses, dest_statuses
+    ):
+        status[ident] = source_status + dest_status if source == 'a' else \
+            dest_status + source_status
+
+
+def _delete(idents, dest, storages, status, conflict_resolution):
+    to_delete = []
+
+    if dest is None:
+        sync_logger.info('Deleting status info for nonexistent items:')
+
+        for ident in idents:
+            sync_logger.info('    {}'.format(ident))
+    else:
+        dest_storage, dest_idents = storages[dest]
+        sync_logger.info('Deleting items from {}:'.format(dest_storage))
+
+        for ident in idents:
+            sync_logger.info('    {}'.format(ident))
+            dest_meta = dest_idents[ident]
+            dest_etag = dest_meta['etag']
+            dest_href = dest_meta['href']
+            to_delete.append((dest_href, dest_etag))
 
         if dest_storage.read_only:
-            sync_logger.warning('{dest} is read-only. Skipping update...'
+            sync_logger.warning('{dest} is read-only, skipping deletion...'
                                 .format(dest=dest_storage))
         else:
-            item = source_meta['item']
-            dest_href, dest_etag = dest_storage.upload(item)
-            dest_status = (dest_href, dest_etag)
+            dest_storage.delete_multi(to_delete)
 
-        status[ident] = source_status + dest_status if source == 'a' else \
-            dest_status + source_status
-
-    return inner
-
-
-def _action_update(ident, dest):
-    source = 'a' if dest == 'b' else 'b'
-
-    def inner(storages, status, conflict_resolution):
-        source_storage, source_idents = storages[source]
-        dest_storage, dest_idents = storages[dest]
-        sync_logger.info('Copying (updating) item {} to {}'
-                         .format(ident, dest_storage))
-
-        source_meta = source_idents[ident]
-        source_href = source_meta['href']
-        source_etag = source_meta['etag']
-        source_status = (source_href, source_etag)
-
-        dest_meta = dest_idents[ident]
-        dest_href = dest_meta['href']
-        dest_etag = dest_meta['etag']
-        dest_status = (dest_href, dest_etag)
-
-        if dest_storage.read_only:
-            sync_logger.info('{dest} is read-only. Skipping update...'
-                             .format(dest=dest_storage))
-        else:
-            item = source_meta['item']
-            dest_etag = dest_storage.update(dest_href, item, dest_etag)
-            assert isinstance(dest_etag, (bytes, text_type))
-
-            dest_status = (dest_href, dest_etag)
-
-        status[ident] = source_status + dest_status if source == 'a' else \
-            dest_status + source_status
-
-    return inner
-
-
-def _action_delete(ident, dest):
-    def inner(storages, status, conflict_resolution):
-        if dest is not None:
-            dest_storage, dest_idents = storages[dest]
-            sync_logger.info('Deleting item {} from {}'
-                             .format(ident, dest_storage))
-            if dest_storage.read_only:
-                sync_logger.warning('{dest} is read-only, skipping deletion...'
-                                    .format(dest=dest_storage))
-            else:
-                dest_meta = dest_idents[ident]
-                dest_etag = dest_meta['etag']
-                dest_href = dest_meta['href']
-                dest_storage.delete(dest_href, dest_etag)
-        else:
-            sync_logger.info('Deleting status info for nonexisting item {}'
-                             .format(ident))
-
+    for ident in idents:
         del status[ident]
 
-    return inner
 
-
-def _action_conflict_resolve(ident):
-    def inner(storages, status, conflict_resolution):
-        sync_logger.info('Doing conflict resolution for item {}...'
-                         .format(ident))
-        a_storage, a_idents = storages['a']
-        b_storage, b_idents = storages['b']
-        meta_a = a_idents[ident]
-        meta_b = b_idents[ident]
-        href_a = meta_a['href']
-        href_b = meta_b['href']
-        if meta_a['item'].raw == meta_b['item'].raw:
-            sync_logger.info('...same content on both sides.')
-            status[ident] = href_a, meta_a['etag'], href_b, meta_b['etag']
-        elif conflict_resolution is None:
-            raise SyncConflict(ident=ident, href_a=href_a, href_b=href_b)
-        elif conflict_resolution == 'a wins':
-            sync_logger.info('...{} wins.'.format(a_storage))
-            _action_update(ident, 'b')(storages, status, conflict_resolution)
-        elif conflict_resolution == 'b wins':
-            sync_logger.info('...{} wins.'.format(b_storage))
-            _action_update(ident, 'a')(storages, status, conflict_resolution)
-        else:
-            raise ValueError('Invalid conflict resolution mode: {}'
-                             .format(conflict_resolution))
-
-    return inner
+def _conflict_resolve(ident, storages, status, conflict_resolution):
+    sync_logger.info('Doing conflict resolution for item {}...'
+                     .format(ident))
+    a_storage, a_idents = storages['a']
+    b_storage, b_idents = storages['b']
+    meta_a = a_idents[ident]
+    meta_b = b_idents[ident]
+    href_a = meta_a['href']
+    href_b = meta_b['href']
+    if meta_a['item'].raw == meta_b['item'].raw:
+        sync_logger.info('...same content on both sides.')
+        status[ident] = href_a, meta_a['etag'], href_b, meta_b['etag']
+    elif conflict_resolution is None:
+        raise SyncConflict(ident=ident, href_a=href_a, href_b=href_b)
+    elif conflict_resolution == 'a wins':
+        sync_logger.info('...{} wins.'.format(a_storage))
+        _update([ident], 'b', storages, status, conflict_resolution)
+    elif conflict_resolution == 'b wins':
+        sync_logger.info('...{} wins.'.format(b_storage))
+        _update([ident], 'a', storages, status, conflict_resolution)
+    else:
+        raise ValueError('Invalid conflict resolution mode: {}'
+                         .format(conflict_resolution))
 
 
 def _get_actions(storages, status):
@@ -285,29 +328,29 @@ def _get_actions(storages, status):
             if a['etag'] != status_etag_a and b['etag'] != status_etag_b:
                 # item was modified on both sides
                 # OR: missing status
-                yield _action_conflict_resolve(ident)
+                yield 'conflict', ident, None
             elif a['etag'] != status_etag_a:
                 # item was only modified in a
-                yield _action_update(ident, 'b')
+                yield 'update', ident, 'b'
             elif b['etag'] != status_etag_b:
                 # item was only modified in b
-                yield _action_update(ident, 'a')
+                yield 'update', ident, 'a'
         elif a and not b:
             if a['etag'] != status_etag_a:
                 # was deleted from b but modified on a
                 # OR: new item was created in a
-                yield _action_upload(ident, 'b')
+                yield 'upload', ident, 'b'
             else:
                 # was deleted from b and not modified on a
-                yield _action_delete(ident, 'a')
+                yield 'delete', ident, 'a'
         elif not a and b:
             if b['etag'] != status_etag_b:
                 # was deleted from a but modified on b
                 # OR: new item was created in b
-                yield _action_upload(ident, 'a')
+                yield 'upload', ident, 'a'
             else:
                 # was deleted from a and not changed on b
-                yield _action_delete(ident, 'b')
+                yield 'delete', ident, 'b'
         elif not a and not b:
             # was deleted from a and b, clean up status
-            yield _action_delete(ident, None)
+            yield 'delete', ident, None

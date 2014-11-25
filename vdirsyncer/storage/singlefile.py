@@ -121,27 +121,53 @@ class SingleFileStorage(Storage):
             raise exceptions.NotFoundError(href)
 
     def upload(self, item):
-        href = item.ident
-        self.list()
-        if href in self._items:
-            raise exceptions.AlreadyExistingError(href)
+        ((href, etag),) = self.upload_multi([item])
+        return href, etag
 
-        self._items[href] = item, item.hash
-        self._write()
-        return href, item.hash
+    def upload_multi(self, items):
+        self.list()
+        rv = []
+        try:
+            for item in items:
+                href = item.ident
+                if href in self._items:
+                    raise exceptions.AlreadyExistingError(href)
+
+                self._items[href] = item, item.hash
+                rv.append((href, item.hash))
+        except:
+            self._items = None
+            raise
+        else:
+            self._write()
+
+        return rv
 
     def update(self, href, item, etag):
+        (etag,) = self.update_multi([(href, item, etag)])
+        return etag
+
+    def update_multi(self, iterable):
         self.list()
-        if href not in self._items:
-            raise exceptions.NotFoundError(href)
+        rv = []
+        try:
+            for href, item, etag in iterable:
+                if href not in self._items:
+                    raise exceptions.NotFoundError(href)
 
-        _, actual_etag = self._items[href]
-        if etag != actual_etag:
-            raise exceptions.WrongEtagError(etag, actual_etag)
+                _, actual_etag = self._items[href]
+                if etag != actual_etag:
+                    raise exceptions.WrongEtagError(etag, actual_etag)
 
-        self._items[href] = item, item.hash
-        self._write()
-        return item.hash
+                self._items[href] = item, item.hash
+                rv.append(item.hash)
+        except:
+            self._items = None
+            raise
+        else:
+            self._write()
+
+        return rv
 
     def delete(self, href, etag):
         self.list()
