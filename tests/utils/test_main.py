@@ -232,7 +232,7 @@ def test_get_class_init_args_on_storage():
     from vdirsyncer.storage.memory import MemoryStorage
 
     all, required = utils.get_class_init_args(MemoryStorage)
-    assert all == set(['collection', 'read_only', 'instance_name'])
+    assert all == set(['fileext', 'collection', 'read_only', 'instance_name'])
     assert not required
 
 

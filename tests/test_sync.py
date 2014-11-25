@@ -60,60 +60,60 @@ def test_missing_status_and_different_items():
 
 
 def test_upload_and_update():
-    a = MemoryStorage()
-    b = MemoryStorage()
+    a = MemoryStorage(fileext='.a')
+    b = MemoryStorage(fileext='.b')
     status = {}
 
     item = Item(u'UID:1')  # new item 1 in a
     a.upload(item)
     sync(a, b, status)
-    assert_item_equals(b.get('1')[0], item)
+    assert_item_equals(b.get('1.b')[0], item)
 
     item = Item(u'UID:1\nASDF:YES')  # update of item 1 in b
-    b.update('1', item, b.get('1')[1])
+    b.update('1.b', item, b.get('1.b')[1])
     sync(a, b, status)
-    assert_item_equals(a.get('1')[0], item)
+    assert_item_equals(a.get('1.a')[0], item)
 
     item2 = Item(u'UID:2')  # new item 2 in b
     b.upload(item2)
     sync(a, b, status)
-    assert_item_equals(a.get('2')[0], item2)
+    assert_item_equals(a.get('2.a')[0], item2)
 
     item2 = Item(u'UID:2\nASDF:YES')  # update of item 2 in a
-    a.update('2', item2, a.get('2')[1])
+    a.update('2.a', item2, a.get('2.a')[1])
     sync(a, b, status)
-    assert_item_equals(b.get('2')[0], item2)
+    assert_item_equals(b.get('2.b')[0], item2)
 
 
 def test_deletion():
-    a = MemoryStorage()
-    b = MemoryStorage()
+    a = MemoryStorage(fileext='.a')
+    b = MemoryStorage(fileext='.b')
     status = {}
 
     item = Item(u'UID:1')
     a.upload(item)
     a.upload(Item(u'UID:2'))
     sync(a, b, status)
-    b.delete('1', b.get('1')[1])
+    b.delete('1.b', b.get('1.b')[1])
     sync(a, b, status)
-    assert not a.has('1') and not b.has('1')
+    assert not a.has('1.a') and not b.has('1.b')
 
     a.upload(item)
     sync(a, b, status)
-    assert a.has('1') and b.has('1')
-    a.delete('1', a.get('1')[1])
+    assert a.has('1.a') and b.has('1.b')
+    a.delete('1.a', a.get('1.a')[1])
     sync(a, b, status)
-    assert not a.has('1') and not b.has('1')
+    assert not a.has('1.a') and not b.has('1.b')
 
 
 def test_already_synced():
-    a = MemoryStorage()
-    b = MemoryStorage()
+    a = MemoryStorage(fileext='.a')
+    b = MemoryStorage(fileext='.b')
     item = Item(u'UID:1')
     a.upload(item)
     b.upload(item)
     status = {
-        '1': ('1', a.get('1')[1], '1', b.get('1')[1])
+        '1': ('1.a', a.get('1.a')[1], '1.b', b.get('1.b')[1])
     }
     old_status = dict(status)
     a.update = b.update = a.upload = b.upload = \
@@ -122,7 +122,7 @@ def test_already_synced():
     for i in (1, 2):
         sync(a, b, status)
         assert status == old_status
-        assert a.has('1') and b.has('1')
+        assert a.has('1.a') and b.has('1.b')
 
 
 @pytest.mark.parametrize('winning_storage', 'ab')

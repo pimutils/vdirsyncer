@@ -13,7 +13,7 @@ import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Storage
 
 
-def _get_etag():
+def _random_string():
     return '{:.9f}'.format(random.random())
 
 
@@ -23,11 +23,15 @@ class MemoryStorage(Storage):
     Saves data in RAM, only useful for testing.
     '''
 
-    def __init__(self, **kwargs):
+    def __init__(self, fileext='', **kwargs):
         if kwargs.get('collection') is not None:
             raise ValueError('MemoryStorage does not support collections.')
         self.items = {}  # href => (etag, item)
+        self.fileext = fileext
         super(MemoryStorage, self).__init__(**kwargs)
+
+    def _get_href(self, item):
+        return item.ident + self.fileext
 
     def list(self):
         for href, (etag, item) in self.items.items():
@@ -41,10 +45,10 @@ class MemoryStorage(Storage):
         return href in self.items
 
     def upload(self, item):
-        href = item.ident
+        href = self._get_href(item)
         if href in self.items:
             raise exceptions.AlreadyExistingError(item)
-        etag = _get_etag()
+        etag = _random_string()
         self.items[href] = (etag, item)
         return href, etag
 
@@ -55,7 +59,7 @@ class MemoryStorage(Storage):
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
 
-        new_etag = _get_etag()
+        new_etag = _random_string()
         self.items[href] = (new_etag, item)
         return new_etag
 
