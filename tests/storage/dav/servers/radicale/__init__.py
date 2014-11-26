@@ -59,14 +59,19 @@ def do_the_radicale_dance(tmpdir):
     import radicale.config
 
     # Now we can set some basic configuration.
-    radicale.config.set('rights', 'type', 'owner_only')
-    radicale.config.set('auth', 'type', 'http')
+    # Radicale <=0.7 doesn't work with this, therefore we just catch the
+    # exception and assume Radicale is open for everyone.
+    try:
+        radicale.config.set('rights', 'type', 'owner_only')
+        radicale.config.set('auth', 'type', 'http')
 
-    import radicale.auth.http
+        import radicale.auth.http
 
-    def is_authenticated(user, password):
-        return user == 'bob' and password == 'bob'
-    radicale.auth.http.is_authenticated = is_authenticated
+        def is_authenticated(user, password):
+            return user == 'bob' and password == 'bob'
+        radicale.auth.http.is_authenticated = is_authenticated
+    except Exception as e:
+        print(e)
 
     if storage_backend == 'filesystem':
         radicale.config.set('storage', 'type', 'filesystem')

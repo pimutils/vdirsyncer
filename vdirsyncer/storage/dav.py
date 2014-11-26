@@ -419,9 +419,14 @@ class DavStorage(Storage):
 
             contenttype = prop.find('{DAV:}getcontenttype').text
 
-            etag = prop.find('{DAV:}getetag').text
             href = self._normalize_href(element.find('{DAV:}href').text)
-            if self.item_mimetype not in contenttype:
+            etag = prop.find('{DAV:}getetag').text
+            if not etag:
+                raise ValueError('Server did not return an etag for item {}. '
+                                 'Vdirsyncer is unable to function without '
+                                 'one.'.format(href))
+
+            if not contenttype or self.item_mimetype not in contenttype:
                 dav_logger.debug(
                     'Skipping item with href {!r} '
                     'because content type {!r} != {!r}.'
