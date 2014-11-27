@@ -426,13 +426,13 @@ class DavStorage(Storage):
                                  'Vdirsyncer is unable to function without '
                                  'one.'.format(href))
 
-            if not contenttype or self.item_mimetype not in contenttype:
+            if not contenttype or self.item_mimetype in contenttype:
+                yield href, etag
+            else:
                 dav_logger.debug(
                     'Skipping item with href {!r} '
                     'because content type {!r} != {!r}.'
                     .format(href, contenttype, self.item_mimetype))
-            else:
-                yield href, etag
 
 
 class CaldavStorage(DavStorage):
