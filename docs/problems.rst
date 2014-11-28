@@ -7,18 +7,6 @@ For any unanswered questions or problems, `open an issue on GitHub
 <https://unterwaditzer.net>`_.
 
 
-Error messages
---------------
-
-- **[Errno 185090050] _ssl.c:343: error:0B084002:x509 certificate
-  routines:X509_load_cert_crl_file:system lib**
-
-  vdirsyncer cannot find the path to your certificate bundle, you need to
-  supply it as a parameter to ``verify`` in storage configuration, e.g.::
-
-      verify = /usr/share/ca-certificates/cacert.org/cacert.org_root.crt
-
-
 .. _debian-urllib3:
 
 Requests-related ImportErrors on Debian-based distributions
