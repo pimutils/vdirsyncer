@@ -10,6 +10,8 @@ your distribution:
 
 - `AUR package for ArchLinux <https://aur.archlinux.org/packages/vdirsyncer>`_
 - `pkgsrc <http://pkgsrc.se/time/py-vdirsyncer>`_
+- Debian and Ubuntu don't have packages, but make a manual installation
+  especially hard. See :ref:`debian-urllib3`.
 
 If there is no package for your distribution, you'll need to :ref:`install
 vdirsyncer manually <manual-installation>`. There is an easy command to

@@ -6,6 +6,7 @@ For any unanswered questions or problems, `open an issue on GitHub
 <https://github.com/untitaker/vdirsyncer/issues/new>`_ or `contact me directly
 <https://unterwaditzer.net>`_.
 
+
 Error messages
 --------------
 
@@ -17,15 +18,24 @@ Error messages
 
       verify = /usr/share/ca-certificates/cacert.org/cacert.org_root.crt
 
-- **ImportError: No module named packages.urllib3.poolmanager**
 
-  This happens if the requests package was installed via Debian's package
-  manager, see :gh:`82`. You have two options for solving this problem:
+.. _debian-urllib3:
 
-  - Upgrade your installation of the Debian requests package to at least
-    version ``2.4.3-1``.
+Requests-related ImportErrors on Debian-based distributions
+-----------------------------------------------------------
 
-  - Install vdirsyncer in a virtualenv, see :ref:`manual-installation`.
+    ImportError: No module named packages.urllib3.poolmanager
+
+    ImportError: cannot import name iter_field_objects
+
+Debian has had its problems in the past with the Python requests package, see
+:gh:`82` and :gh:`140`. You have two options for solving this problem:
+
+- Upgrade your installation of the Debian requests package to at least version
+  ``2.4.3-1``.
+
+- If this doesn't help, install vdirsyncer in a virtualenv, see
+  :ref:`manual-installation`.
 
 
 .. _manual-installation:
