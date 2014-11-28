@@ -60,8 +60,6 @@ the simplest possible way would look something like::
 
 You'll have to put the last line into your ``.bashrc`` or ``.bash_profile``.
 The main advantage is that you can delete the ``~/vdirsyncer_env`` folder to
-uninstall vdirsyncer. Also, pipsi_ is a relatively new tool which tries to
-automate this process in a end-user friendly way.
+uninstall vdirsyncer.
 
 .. _virtualenv: https://virtualenv.readthedocs.org/
-.. _pipsi: https://github.com/mitsuhiko/pipsi
