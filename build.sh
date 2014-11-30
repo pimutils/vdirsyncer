@@ -1,7 +1,6 @@
 #!/bin/sh
 set -e
 
-[ -n "$BUILD" ] || BUILD=tests
 [ -n "$DAV_SERVER" ] || DAV_SERVER=radicale
 [ -n "$REQUIREMENTS" ] || REQUIREMENTS=release
 [ -n "$PIP_INSTALL" ] || PIP_INSTALL="pip install"
