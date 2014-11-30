@@ -26,23 +26,17 @@ def format_item(item_template):
 
 class BaseStorageTests(object):
     @pytest.fixture
-    def storage_args(self):
-        return self.get_storage_args
+    def get_storage_args(self):
+        '''
+        Return a function with the following properties:
 
-    def get_storage_args(self, collection=None):
+        :param collection: The collection name to use.
+        '''
         raise NotImplementedError()
 
     @pytest.fixture
-    def get_storage(self, storage_args):
-        def inner(collection=None, **kw):
-            kw.update(storage_args(collection=collection))
-            return self.storage_class(**kw)
-
-        return inner
-
-    @pytest.fixture
-    def s(self, get_storage):
-        return get_storage()
+    def s(self, get_storage_args):
+        return self.storage_class(**get_storage_args())
 
     @pytest.fixture(params=[EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE])
     def item_template(self, request):
@@ -137,14 +131,14 @@ class BaseStorageTests(object):
             in s.get_multi(href for href, etag in iteritems(info))
         ) == info
 
-    def test_repr(self, s, get_storage):
+    def test_repr(self, s, get_storage_args):
         assert self.storage_class.__name__ in repr(s)
         assert s.instance_name is None
 
 
 class SupportsCollections(object):
 
-    def test_discover(self, storage_args, get_item):
+    def test_discover(self, get_storage_args, get_item):
         collections = set()
 
         def main():
@@ -153,7 +147,8 @@ class SupportsCollections(object):
                 # Create collections on-the-fly for most storages
                 # Except ownCloud, which already has all of them, and more
                 i += 1
-                s = self.storage_class(**storage_args(collection=collection))
+                s = self.storage_class(
+                    **get_storage_args(collection=collection))
 
                 # radicale ignores empty collections during discovery
                 item = get_item()
@@ -163,7 +158,7 @@ class SupportsCollections(object):
         main()  # remove leftover variables from loop for safety
 
         d = self.storage_class.discover(
-            **storage_args(collection=None))
+            **get_storage_args(collection=None))
 
         def main():
             for s in d:
@@ -178,15 +173,15 @@ class SupportsCollections(object):
 
         assert not collections
 
-    def test_discover_collection_arg(self, storage_args):
-        args = storage_args(collection='test2')
+    def test_discover_collection_arg(self, get_storage_args):
+        args = get_storage_args(collection='test2')
         with pytest.raises(TypeError) as excinfo:
             list(self.storage_class.discover(**args))
 
         assert 'collection argument must not be given' in str(excinfo.value)
 
-    def test_collection_arg(self, get_storage):
-        s = get_storage(collection='test2')
+    def test_collection_arg(self, get_storage_args):
+        s = self.storage_class(**get_storage_args(collection='test2'))
         # Can't do stronger assertion because of radicale, which needs a
         # fileextension to guess the collection type.
         assert 'test2' in s.collection

@@ -25,11 +25,14 @@ class TestFilesystemStorage(StorageTests):
     def setup(self, tmpdir):
         self.tmpdir = str(tmpdir)
 
-    def get_storage_args(self, collection=None):
-        path = self.tmpdir
-        if collection is not None:
-            os.makedirs(os.path.join(path, collection))
-        return {'path': path, 'fileext': '.txt', 'collection': collection}
+    @pytest.fixture
+    def get_storage_args(self):
+        def inner(collection=None):
+            path = self.tmpdir
+            if collection is not None:
+                os.makedirs(os.path.join(path, collection))
+            return {'path': path, 'fileext': '.txt', 'collection': collection}
+        return inner
 
     def test_create_is_false(self, tmpdir):
         with pytest.raises(IOError):

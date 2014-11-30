@@ -23,8 +23,12 @@ class TestSingleFileStorage(BaseStorageTests):
     def setup(self, tmpdir):
         self._path = str(tmpdir.join('test.txt'))
 
-    def get_storage_args(self, **kwargs):
-        return dict(path=self._path)
+    @pytest.fixture
+    def get_storage_args(self):
+        def inner(**kwargs):
+            kwargs.update(path=self._path)
+            return kwargs
+        return inner
 
     def test_collection_arg(self, tmpdir):
         with pytest.raises(ValueError):

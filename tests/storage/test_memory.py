@@ -8,6 +8,8 @@
     :license: MIT, see LICENSE for more details.
 '''
 
+import pytest
+
 from vdirsyncer.storage.memory import MemoryStorage
 
 from . import BaseStorageTests
@@ -17,5 +19,6 @@ class TestMemoryStorage(BaseStorageTests):
 
     storage_class = MemoryStorage
 
-    def get_storage_args(self, **kwargs):
-        return kwargs
+    @pytest.fixture
+    def get_storage_args(self):
+        return lambda **kw: kw

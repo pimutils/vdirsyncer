@@ -104,10 +104,13 @@ class ServerMixin(object):
             wsgi_intercept.requests_intercept.uninstall()
         request.addfinalizer(teardown)
 
-    def get_storage_args(self, collection='test'):
-        url = 'http://127.0.0.1/bob/'
-        if collection is not None:
-            collection += self.storage_class.fileext
+    @pytest.fixture
+    def get_storage_args(self):
+        def inner(collection='test'):
+            url = 'http://127.0.0.1/bob/'
+            if collection is not None:
+                collection += self.storage_class.fileext
 
-        return {'url': url, 'username': 'bob', 'password': 'bob',
-                'collection': collection, 'unsafe_href_chars': ''}
+            return {'url': url, 'username': 'bob', 'password': 'bob',
+                    'collection': collection, 'unsafe_href_chars': ''}
+        return inner

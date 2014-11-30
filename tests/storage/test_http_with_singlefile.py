@@ -73,10 +73,13 @@ class TestHttpStorage(BaseStorageTests):
 
         monkeypatch.setattr(vdirsyncer.storage.http, 'request', _request)
 
-    def get_storage_args(self, collection=None):
-        assert collection is None
-        return {'url': 'http://localhost:123/collection.txt',
-                'path': self.tmpfile}
+    @pytest.fixture
+    def get_storage_args(self):
+        def inner(collection=None):
+            assert collection is None
+            return {'url': 'http://localhost:123/collection.txt',
+                    'path': self.tmpfile}
+        return inner
 
     def test_update(self, s, get_item):
         '''The original testcase tries to fetch with the old href. But this
