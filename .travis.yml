@@ -7,6 +7,7 @@ env:
     - BUILD=tests DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=release
     - BUILD=tests DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=release PKGS='icalendar==3.6'
     - BUILD=tests DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=devel
+    - BUILD=tests DAV_SERVER=radicale RADICALE_BACKEND=multifilesystem REQUIREMENTS=devel
     - BUILD=tests DAV_SERVER=radicale RADICALE_BACKEND=database REQUIREMENTS=devel
     - BUILD=tests DAV_SERVER=owncloud REQUIREMENTS=release
    #- BUILD=tests DAV_SERVER=baikal REQUIREMENTS=release

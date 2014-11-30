@@ -73,8 +73,8 @@ def do_the_radicale_dance(tmpdir):
     except Exception as e:
         print(e)
 
-    if storage_backend == 'filesystem':
-        radicale.config.set('storage', 'type', 'filesystem')
+    if storage_backend in ('filesystem', 'multifilesystem'):
+        radicale.config.set('storage', 'type', storage_backend)
         radicale.config.set('storage', 'filesystem_folder', tmpdir)
     elif storage_backend == 'database':
         radicale.config.set('storage', 'type', 'database')
@@ -86,7 +86,7 @@ def do_the_radicale_dance(tmpdir):
             s.execute(line)
         s.commit()
     else:
-        raise RuntimeError()
+        raise RuntimeError(storage_backend)
 
 
 class ServerMixin(object):
