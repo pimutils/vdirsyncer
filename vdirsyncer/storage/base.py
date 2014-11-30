@@ -62,7 +62,7 @@ class Storage(object):
             raise ValueError('This storage is read-only.')
         self.read_only = bool(read_only)
         if collection and instance_name:
-            instance_name = '{} from {}'.format(collection, instance_name)
+            instance_name = '{}/{}'.format(instance_name, collection)
         self.instance_name = instance_name
         self.collection = collection
 

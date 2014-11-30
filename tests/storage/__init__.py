@@ -34,8 +34,9 @@ class BaseStorageTests(object):
 
     @pytest.fixture
     def get_storage(self, storage_args):
-        def inner(**kw):
-            return self.storage_class(**storage_args(**kw))
+        def inner(collection=None, **kw):
+            kw.update(storage_args(collection=collection))
+            return self.storage_class(**kw)
 
         return inner
 
@@ -136,8 +137,9 @@ class BaseStorageTests(object):
             in s.get_multi(href for href, etag in iteritems(info))
         ) == info
 
-    def test_repr(self, s):
+    def test_repr(self, s, get_storage):
         assert self.storage_class.__name__ in repr(s)
+        assert s.instance_name is None
 
 
 class SupportsCollections(object):
