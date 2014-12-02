@@ -213,8 +213,16 @@ def parse_pairs_args(pairs_args, all_pairs):
                            .format(pair, list(all_pairs)))
 
         if collection is None:
-            collections = [x.strip() or None for x in
-                           pair_options.get('collections', '').split(',')]
+            collections = pair_options.get('collections', [None])
+            if isinstance(collections, str):
+                # XXX: Deprecation
+                orig_collections = collections
+                collections = [x.strip() or None
+                               for x in collections.split(',')]
+                cli_logger.warning(
+                    '{!r} is deprecated, please use:\ncollections = {}\n'
+                    'The old form will be removed in 0.4.0.'
+                    .format(orig_collections, json.dumps(collections)))
         else:
             collections = [collection]
 

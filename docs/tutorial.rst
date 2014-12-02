@@ -97,7 +97,7 @@ is very tedious to do. Instead we will use a shortcut:
 
       [pair my_contacts]
       ...
-      collections = default,work
+      collections = ["default", "work"]
 
 This will synchronize
 ``https://owncloud.example.com/remote.php/carddav/addressbooks/bob/default/``

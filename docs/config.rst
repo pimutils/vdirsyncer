@@ -2,6 +2,18 @@
 Configuration
 =============
 
+Vdirsyncer uses an ini-like format for storing its configuration. All values
+are JSON, invalid JSON will get interpreted as string::
+
+    "foo"
+    foo              # Same as "foo"
+    42
+    ["a", "b", "c"]
+    [a, b, c]        # This doesn't work though!
+    true
+    false
+    null             # Also known as None
+
 
 .. _general_config:
 
@@ -46,11 +58,11 @@ Pair Section
   already directly pointing to one collection each. Specifying a collection
   multiple times won't make vdirsyncer sync that collection more than once.
 
-  Furthermore, there are the special values ``from a`` and ``from b``, which
-  tell vdirsyncer to try autodiscovery on a specific storage::
+  Furthermore, there are the special values ``"from a"`` and ``"from b"``,
+  which tell vdirsyncer to try autodiscovery on a specific storage::
 
-      collections = from b,foo,bar  # all in storage b + "foo" + "bar"
-      collections = from b,from a  # all in storage a + all in storage b
+      collections = ["from b", "foo", "bar"]  # all in storage b + "foo" + "bar"
+      collections = ["from b", from a"]  # all in storage a + all in storage b
 
 - ``conflict_resolution``: Optional, define how conflicts should be handled.  A
   conflict occurs when one item (event, task) changed on both sides since the
@@ -58,9 +70,9 @@ Pair Section
 
   Valid values are:
 
-  - ``a wins`` and ``b wins``, where the whole item is taken from one side.
+  - ``"a wins"`` and ``"b wins"``, where the whole item is taken from one side.
     Vdirsyncer will not attempt to merge the two items.
-  - ``None``, the default, where an error is shown and no changes are done.
+  - ``null``, the default, where an error is shown and no changes are done.
 
 .. _storage_config:
 
@@ -75,8 +87,8 @@ Storage Section
 - ``type`` defines which kind of storage is defined. See :ref:`storages`.
 
 - ``read_only`` defines whether the storage should be regarded as a read-only
-  storage. The value ``True`` means synchronization will discard any changes
-  made to the other side. The value ``False`` implies normal 2-way
+  storage. The value ``true`` means synchronization will discard any changes
+  made to the other side. The value ``false`` implies normal 2-way
   synchronization.
 
 - Any further parameters are passed on to the storage class.
@@ -92,7 +104,7 @@ Read-write storages
 ~~~~~~~~~~~~~~~~~~~
 
 These storages generally support reading and changing of their items. Their
-default value for ``read_only`` is ``False``, but can be set to ``True`` if
+default value for ``read_only`` is ``false``, but can be set to ``true`` if
 wished.
 
 .. autoclass:: CaldavStorage
@@ -107,7 +119,7 @@ Read-only storages
 ~~~~~~~~~~~~~~~~~~
 
 These storages don't support writing of their items, consequently ``read_only``
-is set to ``True`` by default. Changing ``read_only`` to ``False`` on them
+is set to ``true`` by default. Changing ``read_only`` to ``false`` on them
 leads to an error.
 
 .. autoclass:: HttpStorage

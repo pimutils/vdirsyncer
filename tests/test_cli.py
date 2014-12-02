@@ -201,7 +201,7 @@ def test_wrong_general_section(tmpdir):
     config_file = tmpdir.join('config')
     config_file.write(dedent('''
     [general]
-    wrong = yes
+    wrong = true
     '''))
 
     runner = CliRunner()
