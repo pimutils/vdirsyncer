@@ -7,13 +7,14 @@
     :license: MIT, see LICENSE for more details.
 '''
 
+import json
 import os
 import threading
 
 import requests
 from requests.packages.urllib3.poolmanager import PoolManager
 
-from .compat import iteritems, urlparse
+from .compat import iteritems, text_type, urlparse
 from .. import exceptions, log
 from ..doubleclick import click, ctx
 
@@ -57,28 +58,36 @@ def split_sequence(s, f):
 
 
 def parse_config_value(value):
-    if len(value.splitlines()) > 1:
-        # The reason we use comma-separated values instead of
-        # multiline-values for lists is simple: ConfigParser's barrier for
-        # mistaking an arbitrary line for the continuation of a value is
-        # awfully low. The following example will also contain the second
-        # line in the value:
+    if value in ('on', 'yes'):
+        logger.warning('{} is deprecated for the config, please use true.\n'
+                       'The old form will be removed in 0.4.0.'
+                       .format(value))
+        return True
+    if value in ('off', 'no'):
+        logger.warning('{} is deprecated for the config, please use false.\n'
+                       'The old form will be removed in 0.4.0.'
+                       .format(value))
+        return False
+    if value == 'None':
+        logger.warning('None is deprecated for the config, please use null.\n'
+                       'The old form will be removed in 0.4.0.')
+        return None
+
+    try:
+        rv = json.loads(value)
+    except ValueError:
+        rv = value
+
+    if isinstance(rv, (bytes, text_type)) and len(value.splitlines()) > 1:
+        # ConfigParser's barrier for mistaking an arbitrary line for the
+        # continuation of a value is awfully low. The following example will
+        # also contain the second line in the value:
         #
         # foo = bar
         #  # my comment
-        raise ValueError('No multiline-values allowed.')
+        raise ValueError('No multiline-values allowed:\n{!r}'.format(value))
 
-    if value.lower() in ('yes', 'true', 'on'):
-        return True
-    elif value.lower() in ('no', 'false', 'off'):
-        return False
-
-    try:
-        return int(value)
-    except ValueError:
-        pass
-
-    return value
+    return rv
 
 
 def parse_options(items, section=None):

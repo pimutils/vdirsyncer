@@ -484,11 +484,19 @@ class CaldavStorage(DavStorage):
     get_multi_data_query = '{urn:ietf:params:xml:ns:caldav}calendar-data'
 
     def __init__(self, start_date=None, end_date=None,
-                 item_types='VTODO, VEVENT', **kwargs):
+                 item_types=('VTODO', 'VEVENT'), **kwargs):
         super(CaldavStorage, self).__init__(**kwargs)
         if isinstance(item_types, str):
-            item_types = filter(bool,
-                                (x.strip() for x in item_types.split(',')))
+            orig_item_types = item_types
+            item_types = [x.strip() for x in item_types.split(',')]
+
+            # XXX: Deprecation
+            import json
+            dav_logger.warning(
+                '{!r} is deprecated, please use:\nitem_types = {}'
+                'The old form will be removed in 0.4.0.'
+                .format(orig_item_types, json.dumps(item_types)))
+
         self.item_types = tuple(item_types)
         if (start_date is None) != (end_date is None):
             raise ValueError('If start_date is given, '
