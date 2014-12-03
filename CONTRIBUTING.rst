@@ -1,29 +1,53 @@
-* If you're reporting an issue with vdirsyncer:
+Contributing
+============
 
-  * Make sure you have the latest version by executing ``pip install --user
-    --upgrade vdirsyncer``.
+Reporting issues
+================
 
-  * Include the Python version, your configuration, the commands you're
-    executing, and their output.
+* Make sure you have the latest version by executing ``pip install --user
+  --upgrade vdirsyncer``.
 
-  * Use ``--verbosity=DEBUG`` when including output from vdirsyncer.
+* Include the Python version, your configuration, the commands you're
+  executing, and their output.
 
-* If you're suggesting a feature, keep in mind that vdirsyncer tries not to be
-  a full calendar or contacts client, but rather just the piece of software
-  that synchronizes all the data. `Take a look at the documentation for
-  software working with vdirsyncer
-  <http://vdirsyncer.readthedocs.org/en/latest/supported.html>`_.
+* Use ``--verbosity=DEBUG`` when including output from vdirsyncer.
 
-* If you're submitting pull requests:
+Suggesting features
 
-  * If you thought of a new feature for vdirsyncer, don't just go on and
-    implement it, but **first discuss it in the issue tracker**, otherwise you
-    might have wasted your time if your idea gets rejected.
+If you're suggesting a feature, keep in mind that vdirsyncer tries not to be a
+full calendar or contacts client, but rather just the piece of software that
+synchronizes all the data. `Take a look at the documentation for software
+working with vdirsyncer
+<http://vdirsyncer.readthedocs.org/en/latest/supported.html>`_.
 
-  * Make sure your tests pass on Travis.
+Submitting patches, pull requests
+=================================
 
-  * But not because you wrote too few tests.
+* **Discuss everything in the issue tracker first** (or contact me somehow
+  else) before implementing it.
 
-  * Add yourself to ``AUTHORS.rst``. Don't add anything to
-    ``CHANGELOG.rst``, I do that myself shortly before the release. You can
-    help by writing meaningful commit messages.
+* Make sure the tests pass. See below for runnign them.
+
+* But not because you wrote too few tests.
+
+* Add yourself to ``AUTHORS.rst``. Don't add anything to ``CHANGELOG.rst``, I
+  do that myself shortly before the release. You can help by writing meaningful
+  commit messages.
+
+Running tests, how to set up your development environment
+=========================================================
+
+For many patches, it might suffice to just let Travis run the tests. However,
+Travis is slow, so you might want to run them locally too. For this, set up a
+virtualenv_ and run this inside of it::
+
+    sh build.sh install_tests
+
+This will install all dependencies required for the integration tests against
+the latest release of Radicale (a CalDAV server). Then you can run::
+
+    sh build.sh tests
+
+If you have any questions, feel free to open issues about it.
+
+.. _virtualenv: http://virtualenv.readthedocs.org/
