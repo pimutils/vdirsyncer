@@ -22,6 +22,7 @@ Table of Contents
    keyring
    supported
    problems
-   changelog
    vdir
+   contributing
+   changelog
    license

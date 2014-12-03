@@ -27,14 +27,6 @@ If that method doesn't work for you or you want a deeper understanding of what
 you just did, check out `the tutorial
 <https://vdirsyncer.readthedocs.org/en/latest/tutorial.html>`_.
 
-Running the tests
-=================
-
-::
-
-    sh build.sh install_tests
-    sh build.sh tests
-
 Donations
 =========
 

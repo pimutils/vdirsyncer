@@ -1,6 +1,3 @@
-Contributing
-============
-
 Reporting issues
 ================
 
@@ -26,7 +23,7 @@ Submitting patches, pull requests
 * **Discuss everything in the issue tracker first** (or contact me somehow
   else) before implementing it.
 
-* Make sure the tests pass. See below for runnign them.
+* Make sure the tests pass. See below for running them.
 
 * But not because you wrote too few tests.
 
