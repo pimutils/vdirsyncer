@@ -9,6 +9,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/untitaker/vdirsyncer/tags.atom>`_.
 
+Version 0.3.2
+=============
+
+- The current config format has been deprecated, and support for it will be
+  removed in version 0.4.0. Vdirsyncer warns about this now.
+
 Version 0.3.1
 =============
 
