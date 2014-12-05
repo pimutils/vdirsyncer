@@ -1,5 +1,5 @@
-Reporting issues
-================
+Reporting bugs
+==============
 
 * Make sure you have the latest version by executing ``pip install --user
   --upgrade vdirsyncer``.
@@ -10,6 +10,7 @@ Reporting issues
 * Use ``--verbosity=DEBUG`` when including output from vdirsyncer.
 
 Suggesting features
+===================
 
 If you're suggesting a feature, keep in mind that vdirsyncer tries not to be a
 full calendar or contacts client, but rather just the piece of software that
