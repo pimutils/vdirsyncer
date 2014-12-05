@@ -90,8 +90,9 @@ class Discover(object):
         for principal in itertools.chain(self._find_principal(), ['']):
             for home in itertools.chain(self._find_home(principal), ['']):
                 for collection in self._find_collections(home):
-                    href = utils.urlparse.urljoin(self.session.url,
-                                                  collection['href'])
+                    collection['href'] = href = \
+                        utils.urlparse.urljoin(self.session.url,
+                                               collection['href'])
                     if href not in done:
                         done.add(href)
                         yield collection
