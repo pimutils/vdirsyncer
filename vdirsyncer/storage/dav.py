@@ -489,7 +489,9 @@ class CaldavStorage(DavStorage):
         super(CaldavStorage, self).__init__(**kwargs)
         if isinstance(item_types, str):
             orig_item_types = item_types
-            item_types = [x.strip() for x in item_types.split(',')]
+            item_types = list(filter(
+                bool, (x.strip() for x in item_types.split(','))
+            ))
 
             # XXX: Deprecation
             import json
