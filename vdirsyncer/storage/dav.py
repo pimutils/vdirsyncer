@@ -494,7 +494,7 @@ class CaldavStorage(DavStorage):
             # XXX: Deprecation
             import json
             dav_logger.warning(
-                '{!r} is deprecated, please use:\nitem_types = {}'
+                '{!r} is deprecated, please use:\nitem_types = {}\n'
                 'The old form will be removed in 0.4.0.'
                 .format(orig_item_types, json.dumps(item_types)))
 
