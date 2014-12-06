@@ -57,6 +57,14 @@ def split_sequence(s, f):
     return a, b
 
 
+def uniq(s):
+    d = set()
+    for x in s:
+        if x not in d:
+            d.add(x)
+            yield x
+
+
 def parse_config_value(value):
     if value in ('on', 'yes'):
         logger.warning('{} is deprecated for the config, please use true.\n'

@@ -63,6 +63,12 @@ class BaseStorageTests(object):
     def test_empty_get_multi(self, s):
         assert list(s.get_multi([])) == []
 
+    def test_get_multi_duplicates(self, s, get_item):
+        href, etag = s.upload(get_item())
+        (href2, item, etag2), = s.get_multi([href] * 2)
+        assert href2 == href
+        assert etag2 == etag
+
     def test_upload_already_existing(self, s, get_item):
         item = get_item()
         s.upload(item)

@@ -16,6 +16,7 @@ from requests import session as requests_session
 from .base import Item, Storage
 from .http import USERAGENT, prepare_auth, prepare_verify
 from .. import exceptions, log, utils
+from ..utils import uniq
 
 
 dav_logger = log.get(__name__)
@@ -300,13 +301,12 @@ class DavStorage(Storage):
         return item, etag
 
     def get_multi(self, hrefs):
-        if not hrefs:
-            return ()
-        hrefs = [self._normalize_href(href) for href in hrefs]
-
         href_xml = []
-        for href in hrefs:
+        for href in uniq(hrefs):
             href_xml.append('<D:href>{}</D:href>'.format(href))
+        if not href_xml:
+            return ()
+
         data = self.get_multi_template.format(hrefs='\n'.join(href_xml))
         response = self.session.request(
             'REPORT',

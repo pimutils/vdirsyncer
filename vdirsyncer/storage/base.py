@@ -9,7 +9,8 @@
 
 
 from .. import exceptions
-from vdirsyncer.utils.vobject import Item  # noqa
+from ..utils import uniq
+from ..utils.vobject import Item  # noqa
 
 
 class Storage(object):
@@ -101,7 +102,7 @@ class Storage(object):
         raise NotImplementedError()
 
     def get_multi(self, hrefs):
-        '''Fetch multiple items.
+        '''Fetch multiple items. Duplicate hrefs must be ignored.
 
         Functionally similar to :py:meth:`get`, but might bring performance
         benefits on some storages when used cleverly.
@@ -111,7 +112,7 @@ class Storage(object):
             items couldn't be found.
         :returns: iterable of (href, item, etag)
         '''
-        for href in hrefs:
+        for href in uniq(hrefs):
             item, etag = self.get(href)
             yield href, item, etag
 
