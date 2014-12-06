@@ -303,6 +303,8 @@ class DavStorage(Storage):
     def get_multi(self, hrefs):
         href_xml = []
         for href in uniq(hrefs):
+            if href != self._normalize_href(href):
+                raise exceptions.NotFoundError(href)
             href_xml.append('<D:href>{}</D:href>'.format(href))
         if not href_xml:
             return ()
