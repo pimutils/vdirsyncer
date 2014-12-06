@@ -291,7 +291,7 @@ class DavStorage(Storage):
     def _get_href(self, item):
         href = item.ident
         for char in self.unsafe_href_chars:
-            href = item.ident.replace(char, '_')
+            href = href.replace(char, '_')
         return self._normalize_href(href + self.fileext)
 
     def get(self, href):
