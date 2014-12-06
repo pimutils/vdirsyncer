@@ -123,6 +123,8 @@ class BaseStorageTests(object):
         href, etag = s.upload(get_item())
         assert s.has(href)
         assert not s.has('asd')
+        s.delete(href, etag)
+        assert not s.has(href)
 
     def test_update_others_stay_the_same(self, s, get_item):
         info = dict([
