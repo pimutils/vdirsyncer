@@ -301,8 +301,9 @@ class DavStorage(Storage):
         return item, etag
 
     def get_multi(self, hrefs):
+        hrefs = set(hrefs)
         href_xml = []
-        for href in uniq(hrefs):
+        for href in hrefs:
             if href != self._normalize_href(href):
                 raise exceptions.NotFoundError(href)
             href_xml.append('<D:href>{}</D:href>'.format(href))
@@ -334,7 +335,6 @@ class DavStorage(Storage):
                 raw = raw.decode(response.encoding)
             if isinstance(etag, bytes):
                 etag = etag.decode(response.encoding)
-            rv.append((href, Item(raw), etag))
             try:
                 hrefs_left.remove(href)
             except KeyError:
@@ -344,6 +344,8 @@ class DavStorage(Storage):
                 else:
                     dav_logger.warning('Server sent unsolicited item: {}'
                                        .format(href))
+            else:
+                rv.append((href, Item(raw), etag))
         for href in hrefs_left:
             raise exceptions.NotFoundError(href)
         return rv
