@@ -23,19 +23,22 @@ dav_logger = log.get(__name__)
 CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
 
 
-def _normalize_href(base, href, decoding_rounds=1):
+def _normalize_href(base, href):
     '''Normalize the href to be a path only relative to hostname and
     schema.'''
     if not href:
         raise ValueError(href)
     x = utils.urlparse.urljoin(base, href)
     x = utils.urlparse.urlsplit(x).path
-
-    for i in range(decoding_rounds):
-        x = utils.compat.urlunquote(x)
-
-    x = utils.compat.urlquote(x, '/@')
     return x
+
+
+def _encode_href(x):
+    return utils.compat.urlquote(x, '/@')
+
+
+def _decode_href(x):
+    return utils.compat.urlunquote(x)
 
 
 class Discover(object):
@@ -305,7 +308,7 @@ class DavStorage(Storage):
         for href in hrefs:
             if href != self._normalize_href(href):
                 raise exceptions.NotFoundError(href)
-            href_xml.append('<D:href>{}</D:href>'.format(href))
+            href_xml.append('<D:href>{}</D:href>'.format(_encode_href(href)))
         if not href_xml:
             return ()
 
@@ -320,8 +323,8 @@ class DavStorage(Storage):
         rv = []
         hrefs_left = set(hrefs)
         for element in root.iter('{DAV:}response'):
-            href = self._normalize_href(
-                element.find('{DAV:}href').text)
+            href = self._normalize_href(_decode_href(
+                element.find('{DAV:}href').text))
             raw = element \
                 .find('{DAV:}propstat') \
                 .find('{DAV:}prop') \
@@ -359,7 +362,7 @@ class DavStorage(Storage):
 
         response = self.session.request(
             'PUT',
-            href,
+            _encode_href(href),
             data=item.raw.encode('utf-8'),
             headers=headers
         )
@@ -389,7 +392,7 @@ class DavStorage(Storage):
 
         self.session.request(
             'DELETE',
-            href,
+            _encode_href(href),
             headers=headers
         )
 
@@ -421,7 +424,8 @@ class DavStorage(Storage):
 
             contenttype = prop.find('{DAV:}getcontenttype').text
 
-            href = self._normalize_href(element.find('{DAV:}href').text)
+            href = _decode_href(self._normalize_href(
+                element.find('{DAV:}href').text))
             etag = prop.find('{DAV:}getetag').text
             if not etag:
                 raise ValueError('Server did not return an etag for item {}. '
@@ -640,8 +644,8 @@ class CarddavStorage(DavStorage):
 
             # Decode twice because ownCloud encodes twice.
             # See https://github.com/owncloud/contacts/issues/581
-            href = self._normalize_href(element.find('{DAV:}href').text,
-                                        decoding_rounds=2)
+            href = self._normalize_href(
+                _decode_href(_decode_href(element.find('{DAV:}href').text)))
             etag = prop.find('{DAV:}getetag').text
 
             if href in hrefs:
