@@ -16,7 +16,6 @@ from requests import session as requests_session
 from .base import Item, Storage
 from .http import USERAGENT, prepare_auth, prepare_verify
 from .. import exceptions, log, utils
-from ..utils import uniq
 
 
 dav_logger = log.get(__name__)
