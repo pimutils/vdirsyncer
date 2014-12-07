@@ -147,39 +147,22 @@ class BaseStorageTests(object):
 class SupportsCollections(object):
 
     def test_discover(self, get_storage_args, get_item):
-        collections = set()
+        expected = set()
 
-        def main():
-            for i in range(1, 5):
-                collection = 'test{}'.format(i)
-                # Create collections on-the-fly for most storages
-                # Except ownCloud, which already has all of them, and more
-                i += 1
-                s = self.storage_class(
-                    **get_storage_args(collection=collection))
-
-                # radicale ignores empty collections during discovery
-                item = get_item()
-                s.upload(item)
-
-                collections.add(s.collection)
-        main()  # remove leftover variables from loop for safety
+        for i in range(1, 5):
+            # Create collections, but use the "collection" attribute because
+            # Radicale requires file extensions in their names.
+            expected.add(
+                self.storage_class(
+                    **get_storage_args(collection='test{}'.format(i))
+                ).collection
+            )
 
         d = self.storage_class.discover(
             **get_storage_args(collection=None))
 
-        def main():
-            for s in d:
-                if s.collection not in collections:
-                    # ownCloud has many more collections, as on-the-fly
-                    # creation doesn't really work there. Skip those
-                    # collections, as they are not relevant to us.
-                    print('Skipping {}'.format(s.collection))
-                    continue
-                collections.remove(s.collection)
-        main()
-
-        assert not collections
+        actual = set(s.collection for s in d)
+        assert not expected - actual
 
     def test_discover_collection_arg(self, get_storage_args):
         args = get_storage_args(collection='test2')

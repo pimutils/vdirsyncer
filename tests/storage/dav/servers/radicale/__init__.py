@@ -105,12 +105,18 @@ class ServerMixin(object):
         request.addfinalizer(teardown)
 
     @pytest.fixture
-    def get_storage_args(self):
+    def get_storage_args(self, get_item):
         def inner(collection='test'):
             url = 'http://127.0.0.1/bob/'
             if collection is not None:
                 collection += self.storage_class.fileext
 
-            return {'url': url, 'username': 'bob', 'password': 'bob',
-                    'collection': collection, 'unsafe_href_chars': ''}
+            rv = {'url': url, 'username': 'bob', 'password': 'bob',
+                  'collection': collection, 'unsafe_href_chars': ''}
+
+            if collection is not None:
+                s = self.storage_class(**rv)
+                s.delete(*s.upload(get_item()))  # create collection
+
+            return rv
         return inner
