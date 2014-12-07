@@ -310,14 +310,18 @@ class DavStorage(Storage):
         for element in root.iter('{DAV:}response'):
             href = self._normalize_href(
                 element.find('{DAV:}href').text)
-            raw = element \
-                .find('{DAV:}propstat') \
-                .find('{DAV:}prop') \
-                .find(self.get_multi_data_query).text
-            etag = element \
-                .find('{DAV:}propstat') \
-                .find('{DAV:}prop') \
-                .find('{DAV:}getetag').text
+
+            try:
+                prop = element.find('{DAV:}propstat').find('{DAV:}prop')
+                raw = prop.find(self.get_multi_data_query).text
+                etag = prop.find('{DAV:}getetag').text
+                if not raw or not etag:
+                    raise AttributeError()
+            except AttributeError:
+                dav_logger.warning('Skipping {}, properties are missing.'
+                                   .format(href))
+                continue
+
             if isinstance(raw, bytes):
                 raw = raw.decode(response.encoding)
             if isinstance(etag, bytes):
