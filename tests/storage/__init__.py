@@ -162,7 +162,7 @@ class SupportsCollections(object):
             **get_storage_args(collection=None))
 
         actual = set(s.collection for s in d)
-        assert not expected - actual
+        assert actual >= expected
 
     def test_discover_collection_arg(self, get_storage_args):
         args = get_storage_args(collection='test2')
