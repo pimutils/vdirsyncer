@@ -38,6 +38,14 @@ def _normalize_href(base, href, decoding_rounds=1):
     return x
 
 
+def _parse_xml(content):
+    try:
+        return etree.XML(content)
+    except etree.Error as e:
+        raise ValueError('Invalid XML encountered: {}\n'
+                         'Double-check the URLs in your config.'.format(e))
+
+
 class Discover(object):
     _resourcetype = None
     _homeset_xml = None
@@ -71,7 +79,7 @@ class Discover(object):
         """
         response = self.session.request('PROPFIND', '', headers=headers,
                                         data=body)
-        root = etree.XML(response.content)
+        root = _parse_xml(response.content)
 
         for element in root.iter('{*}current-user-principal'):
             for principal in element.iter():  # should be only one
@@ -118,7 +126,7 @@ class Discover(object):
         response = self.session.request('PROPFIND', home, headers=headers,
                                         data=self._collection_xml,
                                         is_subpath=False)
-        root = etree.XML(response.content)
+        root = _parse_xml(response.content)
         for response in root.iter('{*}response'):
             prop = response.find('{*}propstat/{*}prop')
             if prop.find('{*}resourcetype/{*}' + self._resourcetype) is None:
@@ -163,8 +171,7 @@ class DavSession(object):
     '''
 
     def __init__(self, url, username='', password='', verify=True, auth=None,
-                 useragent=USERAGENT, verify_fingerprint=None,
-                 dav_header=None):
+                 useragent=USERAGENT, verify_fingerprint=None):
         if username and not password:
             password = utils.get_password(username, url)
 
@@ -176,7 +183,6 @@ class DavSession(object):
         self.useragent = useragent
         self.url = url.rstrip('/') + '/'
         self.parsed_url = utils.urlparse.urlparse(self.url)
-        self.dav_header = dav_header
         self._session = None
 
     def request(self, method, path, data=None, headers=None,
@@ -187,22 +193,8 @@ class DavSession(object):
         assert url.startswith(self.url) or not is_subpath
         if self._session is None:
             self._session = requests_session()
-            self._check_dav_header()
         return utils.request(method, url, data=data, headers=headers,
                              session=self._session, **self._settings)
-
-    def _check_dav_header(self):
-        if self.dav_header is None:
-            return
-        headers = self.get_default_headers()
-        headers['Depth'] = 1
-        response = self.request(
-            'OPTIONS',
-            '',
-            headers=headers
-        )
-        if self.dav_header not in response.headers.get('DAV', ''):
-            raise ValueError('URL is not a collection')
 
     def get_default_headers(self):
         return {
@@ -239,8 +231,6 @@ class DavStorage(Storage):
     fileext = None
     # mimetype of items
     item_mimetype = None
-    # The expected header for resource validation.
-    dav_header = None
     # XML to use when fetching multiple hrefs.
     get_multi_template = None
     # The LXML query for extracting results in get_multi
@@ -261,8 +251,7 @@ class DavStorage(Storage):
         if collection is not None:
             url = utils.urlparse.urljoin(url, collection)
         self.session = DavSession(url, username, password, verify, auth,
-                                  useragent, verify_fingerprint,
-                                  dav_header=self.dav_header)
+                                  useragent, verify_fingerprint)
         self.unsafe_href_chars = unsafe_href_chars
 
         # defined for _repr_attributes
@@ -277,8 +266,7 @@ class DavStorage(Storage):
             'username', 'password', 'verify', 'auth', 'useragent',
             'verify_fingerprint',
         ))
-        d = cls.discovery_class(DavSession(
-            url=url, dav_header=cls.dav_header, **discover_args))
+        d = cls.discovery_class(DavSession(url=url, **discover_args))
         for c in d.discover():
             base, collection = c['href'].rstrip('/').rsplit('/', 1)
             s = cls(url=base, collection=collection, **kwargs)
@@ -316,7 +304,7 @@ class DavStorage(Storage):
             data=data,
             headers=self.session.get_default_headers()
         )
-        root = etree.XML(response.content)  # etree only can handle bytes
+        root = _parse_xml(response.content)  # etree only can handle bytes
         rv = []
         hrefs_left = set(hrefs)
         for element in root.iter('{DAV:}response'):
@@ -414,7 +402,7 @@ class DavStorage(Storage):
             data=xml,
             headers=headers
         )
-        root = etree.XML(response.content)
+        root = _parse_xml(response.content)
         for element in root.iter('{DAV:}response'):
             propstat = element.find('{DAV:}propstat')
             prop = propstat.find('{DAV:}prop')
@@ -467,7 +455,6 @@ class CaldavStorage(DavStorage):
     storage_name = 'caldav'
     fileext = '.ics'
     item_mimetype = 'text/calendar'
-    dav_header = 'calendar-access'
     discovery_class = CalDiscover
 
     start_date = None
@@ -587,7 +574,6 @@ class CarddavStorage(DavStorage):
     storage_name = 'carddav'
     fileext = '.vcf'
     item_mimetype = 'text/vcard'
-    dav_header = 'addressbook'
     discovery_class = CardDiscover
 
     get_multi_template = '''<?xml version="1.0" encoding="utf-8" ?>
@@ -621,7 +607,7 @@ class CarddavStorage(DavStorage):
         response = self.session.request('PROPFIND', '', data=data,
                                         headers=headers)
 
-        root = etree.XML(response.content)
+        root = _parse_xml(response.content)
         hrefs = set()
         for element in root.iter('{DAV:}response'):
             prop = element.find('{DAV:}propstat').find('{DAV:}prop')
