@@ -307,18 +307,11 @@ class DavStorage(Storage):
         root = _parse_xml(response.content)  # etree only can handle bytes
         rv = []
         hrefs_left = set(hrefs)
-        for element in root.iter('{DAV:}response'):
-            href = self._normalize_href(
-                element.find('{DAV:}href').text)
-
+        for href, etag, prop in self._parse_prop_responses(root):
             try:
-                prop = element.find('{DAV:}propstat').find('{DAV:}prop')
                 raw = prop.find(self.get_multi_data_query).text
-                etag = prop.find('{DAV:}getetag').text
-                if not raw or not etag:
-                    raise AttributeError()
             except AttributeError:
-                dav_logger.warning('Skipping {}, properties are missing.'
+                dav_logger.warning('Skipping {}, the item content is missing.'
                                    .format(href))
                 continue
 
@@ -326,6 +319,7 @@ class DavStorage(Storage):
                 raw = raw.decode(response.encoding)
             if isinstance(etag, bytes):
                 etag = etag.decode(response.encoding)
+
             try:
                 hrefs_left.remove(href)
             except KeyError:
@@ -385,48 +379,55 @@ class DavStorage(Storage):
             headers=headers
         )
 
-    def _dav_query(self, xml):
-        headers = self.session.get_default_headers()
+    def _parse_prop_responses(self, root, decoding_rounds=1):
+        hrefs = set()
+        for response in root.iter('{DAV:}response'):
+            try:
+                href = response.find('{DAV:}href').text
+            except AttributeError:
+                dav_logger.error('Skipping response, href is missing.')
+                continue
 
-        # CardDAV: The request MUST include a Depth header. The scope of the
-        # query is determined by the value of the Depth header. For example,
-        # to query all address object resources in an address book collection,
-        # the REPORT would use the address book collection as the Request- URI
-        # and specify a Depth of 1 or infinity.
-        # http://tools.ietf.org/html/rfc6352#section-8.6
-        #
-        # CalDAV:
-        # The request MAY include a Depth header.  If no Depth header is
-        # included, Depth:0 is assumed.
-        # http://tools.ietf.org/search/rfc4791#section-7.8
-        headers['Depth'] = 'infinity'
-        response = self.session.request(
-            'REPORT',
-            '',
-            data=xml,
-            headers=headers
-        )
-        root = _parse_xml(response.content)
-        for element in root.iter('{DAV:}response'):
-            propstat = element.find('{DAV:}propstat')
-            prop = propstat.find('{DAV:}prop')
-
-            contenttype = prop.find('{DAV:}getcontenttype').text
-
-            href = self._normalize_href(element.find('{DAV:}href').text)
-            etag = prop.find('{DAV:}getetag').text
-            if not etag:
-                raise ValueError('Server did not return an etag for item {}. '
-                                 'Vdirsyncer is unable to function without '
-                                 'one.'.format(href))
-
-            if not contenttype or self.item_mimetype in contenttype:
-                yield href, etag
+            href = self._normalize_href(href, decoding_rounds=decoding_rounds)
+            if href in hrefs:
+                # Servers that send duplicate hrefs:
+                # - Zimbra
+                #   https://github.com/untitaker/vdirsyncer/issues/88
+                # - Davmail
+                #   https://github.com/untitaker/vdirsyncer/issues/144
+                dav_logger.warning('Skipping identical href: {!r}'
+                                   .format(href))
+                continue
             else:
-                dav_logger.debug(
-                    'Skipping item with href {!r} '
-                    'because content type {!r} != {!r}.'
-                    .format(href, contenttype, self.item_mimetype))
+                hrefs.add(href)
+
+            try:
+                prop = response.find('{DAV:}propstat/{DAV:}prop')
+                contenttype = prop.find('{DAV:}getcontenttype')
+                etag = prop.find('{DAV:}getetag').text
+            except AttributeError:
+                dav_logger.warning('Skipping {!r}, properties are missing.'
+                                   .format(href))
+                continue
+
+            is_collection = prop.find('{DAV:}resourcetype/{DAV:}collection')
+            if is_collection is not None:
+                dav_logger.debug('Skipping {!r}, is collection.'.format(href))
+                continue
+
+            # different servers give different getcontenttypes:
+            # "text/vcard", "text/x-vcard", "text/x-vcard; charset=utf-8",
+            # "text/directory;profile=vCard", "text/directory",
+            # "text/vcard; charset=utf-8"
+            if self.item_mimetype is not None:
+                mediatype, subtype = self.item_mimetype.split('/')
+                if contenttype is not None and subtype not in contenttype.text:
+                    dav_logger.debug('Skipping {!r}, {!r} != {!r}.'
+                                     .format(href, contenttype,
+                                             self.item_mimetype))
+                    continue
+
+            yield href, etag, prop
 
 
 class CaldavStorage(DavStorage):
@@ -550,22 +551,29 @@ class CaldavStorage(DavStorage):
                 </C:filter>
             </C:calendar-query>'''
 
-        hrefs = set()
+        # CardDAV: The request MUST include a Depth header. The scope of the
+        # query is determined by the value of the Depth header. For example,
+        # to query all address object resources in an address book collection,
+        # the REPORT would use the address book collection as the Request- URI
+        # and specify a Depth of 1 or infinity.
+        # http://tools.ietf.org/html/rfc6352#section-8.6
+        #
+        # CalDAV: The request MAY include a Depth header.  If no Depth header
+        # is included, Depth:0 is assumed.
+        # http://tools.ietf.org/search/rfc4791#section-7.8
+        headers = self.session.get_default_headers()
+        headers['Depth'] = 'infinity'
 
         caldavfilters = self._get_list_filters(self.item_types,
                                                self.start_date, self.end_date)
 
         for caldavfilter in caldavfilters:
             xml = data.format(caldavfilter=caldavfilter)
-            for href, etag in self._dav_query(xml):
-                if href in hrefs:
-                    # Can't do stronger assertion here, see
-                    # https://github.com/untitaker/vdirsyncer/issues/88
-                    dav_logger.warning('Skipping identical href: {}'
-                                       .format(href))
-                    continue
-
-                hrefs.add(href)
+            response = self.session.request('REPORT', '', data=xml,
+                                            headers=headers)
+            root = _parse_xml(response.content)
+            rv = self._parse_prop_responses(root)
+            for href, etag, prop in rv:
                 yield href, etag
 
 
@@ -612,33 +620,9 @@ class CarddavStorage(DavStorage):
                                         headers=headers)
 
         root = _parse_xml(response.content)
-        hrefs = set()
-        for element in root.iter('{DAV:}response'):
-            prop = element.find('{DAV:}propstat').find('{DAV:}prop')
 
-            resource_type = prop.find('{DAV:}resourcetype')
-            if resource_type.find('{DAV:}collection') is not None:
-                continue
-
-            content_type = prop.find('{DAV:}getcontenttype')
-            # different servers give different getcontenttypes:
-            # "text/vcard", "text/x-vcard", "text/x-vcard; charset=utf-8",
-            # "text/directory;profile=vCard", "text/directory",
-            # "text/vcard; charset=utf-8"
-            if 'vcard' not in content_type.text.lower():
-                continue
-
-            # Decode twice because ownCloud encodes twice.
-            # See https://github.com/owncloud/contacts/issues/581
-            href = self._normalize_href(element.find('{DAV:}href').text,
-                                        decoding_rounds=2)
-            etag = prop.find('{DAV:}getetag').text
-
-            if href in hrefs:
-                # Can't do stronger assertion here, see
-                # https://github.com/untitaker/vdirsyncer/issues/88
-                dav_logger.warning('Skipping identical href: {}'.format(href))
-                continue
-
-            hrefs.add(href)
+        # Decode twice because ownCloud encodes twice.
+        # See https://github.com/owncloud/contacts/issues/581
+        rv = self._parse_prop_responses(root, decoding_rounds=2)
+        for href, etag, prop in rv:
             yield href, etag

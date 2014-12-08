@@ -82,14 +82,14 @@ class TestCaldavStorage(DavStorageTests):
     def test_item_types_performance(self, get_storage_args, item_types,
                                     calls_num, monkeypatch, get_item):
         s = self.storage_class(item_types=item_types, **get_storage_args())
-        old_dav_query = s._dav_query
+        old_parse = s._parse_prop_responses
         calls = []
 
-        def _dav_query(*a, **kw):
+        def new_parse(*a, **kw):
             calls.append(None)
-            return old_dav_query(*a, **kw)
+            return old_parse(*a, **kw)
 
-        monkeypatch.setattr(s, '_dav_query', _dav_query)
+        monkeypatch.setattr(s, '_parse_prop_responses', new_parse)
         list(s.list())
         assert len(calls) == calls_num
 
