@@ -23,19 +23,22 @@ dav_logger = log.get(__name__)
 CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
 
 
-def _normalize_href(base, href, decoding_rounds=1):
+def _normalize_href(base, href):
     '''Normalize the href to be a path only relative to hostname and
     schema.'''
     if not href:
         raise ValueError(href)
     x = utils.urlparse.urljoin(base, href)
     x = utils.urlparse.urlsplit(x).path
-
-    for i in range(decoding_rounds):
-        x = utils.compat.urlunquote(x)
-
-    x = utils.compat.urlquote(x, '/@')
     return x
+
+
+def _encode_href(x):
+    return utils.compat.urlquote(x, '/@')
+
+
+def _decode_href(x):
+    return utils.compat.urlunquote(x)
 
 
 def _parse_xml(content):
@@ -293,7 +296,7 @@ class DavStorage(Storage):
         for href in hrefs:
             if href != self._normalize_href(href):
                 raise exceptions.NotFoundError(href)
-            href_xml.append('<D:href>{}</D:href>'.format(href))
+            href_xml.append('<D:href>{}</D:href>'.format(_encode_href(href)))
         if not href_xml:
             return ()
 
@@ -345,7 +348,7 @@ class DavStorage(Storage):
 
         response = self.session.request(
             'PUT',
-            href,
+            _encode_href(href),
             data=item.raw.encode('utf-8'),
             headers=headers
         )
@@ -375,7 +378,7 @@ class DavStorage(Storage):
 
         self.session.request(
             'DELETE',
-            href,
+            _encode_href(href),
             headers=headers
         )
 
@@ -388,7 +391,10 @@ class DavStorage(Storage):
                 dav_logger.error('Skipping response, href is missing.')
                 continue
 
-            href = self._normalize_href(href, decoding_rounds=decoding_rounds)
+            href = self._normalize_href(href)
+            for i in range(decoding_rounds):
+                href = _decode_href(href)
+
             if href in hrefs:
                 # Servers that send duplicate hrefs:
                 # - Zimbra
@@ -618,7 +624,6 @@ class CarddavStorage(DavStorage):
         # with Zimbra. See https://github.com/untitaker/vdirsyncer/issues/83
         response = self.session.request('PROPFIND', '', data=data,
                                         headers=headers)
-
         root = _parse_xml(response.content)
 
         # Decode twice because ownCloud encodes twice.

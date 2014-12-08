@@ -20,8 +20,7 @@ from tests import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE
 
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
-from vdirsyncer.storage.dav import CaldavStorage, CarddavStorage, \
-    _normalize_href
+from vdirsyncer.storage.dav import CaldavStorage, CarddavStorage
 
 from .. import StorageTests, format_item
 
@@ -183,26 +182,3 @@ class TestCarddavStorage(DavStorageTests):
     @pytest.fixture
     def item_template(self, request):
         return VCARD_TEMPLATE
-
-
-@pytest.mark.parametrize('base,path', [
-    ('http://example.com/', ''),
-    ('http://example.com/L%C3%98/', '/L%C3%98'),
-    ('http://example.com/LØ/', '/L%C3%98'),
-])
-def test_normalize_href(base, path):
-    assert _normalize_href(base, 'asdf') == path + '/asdf'
-
-    assert _normalize_href(base, 'hahah') == path + '/hahah'
-
-    assert _normalize_href(base, 'whoops@vdirsyncer.vcf') == \
-        path + '/whoops@vdirsyncer.vcf'
-
-    assert _normalize_href(base, 'whoops%40vdirsyncer.vcf') == \
-        path + '/whoops@vdirsyncer.vcf'
-
-    assert _normalize_href(base, 'wh%C3%98ops@vdirsyncer.vcf') == \
-        path + '/wh%C3%98ops@vdirsyncer.vcf'
-
-    assert _normalize_href(base, 'whØops@vdirsyncer.vcf') == \
-        path + '/wh%C3%98ops@vdirsyncer.vcf'
