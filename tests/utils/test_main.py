@@ -8,6 +8,7 @@
 '''
 
 import click
+import pytest
 
 from click.testing import CliRunner
 import os
@@ -67,6 +68,19 @@ def test_parse_options():
         # to differentiate between bool and int, and in Python 2, bool is a
         # subclass of int.
         assert type(a[key]) is type(expected[key])  # flake8: noqa
+
+
+def test_parse_config_value():
+    with pytest.raises(ValueError):
+        utils.parse_config_value('123  # comment!')
+
+    assert utils.parse_config_value('"123  # comment!"') == '123  # comment!'
+    assert utils.parse_config_value('True') is True
+    assert utils.parse_config_value('False') is False
+    assert utils.parse_config_value('Yes') is True
+    assert utils.parse_config_value('3.14') == 3.14
+    assert utils.parse_config_value('') == ''
+    assert utils.parse_config_velue('""') == ''
 
 
 def test_get_password_from_netrc(monkeypatch):

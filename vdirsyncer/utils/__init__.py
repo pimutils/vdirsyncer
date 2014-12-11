@@ -66,27 +66,32 @@ def uniq(s):
 
 
 def parse_config_value(value):
-    if value in ('on', 'yes'):
+    try:
+        return json.loads(value)
+    except ValueError:
+        rv = value
+
+    if value.lower() in ('on', 'true', 'yes'):
         logger.warning('{} is deprecated for the config, please use true.\n'
                        'The old form will be removed in 0.4.0.'
                        .format(value))
         return True
-    if value in ('off', 'no'):
+    if value.lower() in ('off', 'false', 'no'):
         logger.warning('{} is deprecated for the config, please use false.\n'
                        'The old form will be removed in 0.4.0.'
                        .format(value))
         return False
-    if value == 'None':
+    if value.lower() == 'none':
         logger.warning('None is deprecated for the config, please use null.\n'
                        'The old form will be removed in 0.4.0.')
         return None
 
-    try:
-        rv = json.loads(value)
-    except ValueError:
-        rv = value
+    if '#' in value:
+        raise ValueError('Invalid value:{}\n'
+                         'Use double quotes (") if you want to use hashes in '
+                         'your value.')
 
-    if isinstance(rv, (bytes, text_type)) and len(value.splitlines()) > 1:
+    if len(value.splitlines()) > 1:
         # ConfigParser's barrier for mistaking an arbitrary line for the
         # continuation of a value is awfully low. The following example will
         # also contain the second line in the value:
