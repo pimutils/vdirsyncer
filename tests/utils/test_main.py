@@ -80,7 +80,7 @@ def test_parse_config_value():
     assert utils.parse_config_value('Yes') is True
     assert utils.parse_config_value('3.14') == 3.14
     assert utils.parse_config_value('') == ''
-    assert utils.parse_config_velue('""') == ''
+    assert utils.parse_config_value('""') == ''
 
 
 def test_get_password_from_netrc(monkeypatch):
