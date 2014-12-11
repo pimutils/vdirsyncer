@@ -9,8 +9,28 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/untitaker/vdirsyncer/tags.atom>`_.
 
+Version 0.3.3
+=============
+
+*released on 8 December 2014*
+
+- Vdirsyncer now also works with iCloud. Particularly collection discovery and
+  etag handling were fixed.
+- Vdirsyncer now encodes Cal- and CardDAV requests differently. This hasn't
+  been well-tested with servers like Zimbra or SoGo, but isn't expected to
+  cause any problems.
+- Vdirsyncer is now more robust regarding invalid responses from CalDAV
+  servers. This should help with future compatibility with Davmail/Outlook.
+- Fix a bug when specifying ``item_types`` of
+  :py:class:`vdirsyncer.storage.CaldavStorage` in the deprecated config format.
+- Fix a bug where vdirsyncer would ignore all but one character specified in
+  ``unsafe_href_chars`` of :py:class:`vdirsyncer.storage.CaldavStorage` and
+  :py:class:`vdirsyncer.storage.CarddavStorage`.
+
 Version 0.3.2
 =============
+
+*released on 3 December 2014*
 
 - The current config format has been deprecated, and support for it will be
   removed in version 0.4.0. Vdirsyncer warns about this now.
