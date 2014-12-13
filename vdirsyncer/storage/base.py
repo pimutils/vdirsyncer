@@ -30,10 +30,6 @@ class Storage(object):
     Strings can be either unicode strings or bytestrings. If bytestrings, an
     ASCII encoding is assumed.
 
-    :param collection: If None, the given URL or path is already directly
-        referring to a collection. Otherwise it will be treated as a basepath
-        to many collections (e.g. a vdir) and the given collection name will be
-        looked for.
     :param read_only: Whether the synchronization algorithm should avoid writes
         to this storage. Some storages accept no value other than ``True``.
     '''
@@ -44,9 +40,15 @@ class Storage(object):
     # overridden by subclasses.
     storage_name = None
 
-    # The string used in the config to denote a particular instance. Should be
+    # The string used in the config to denote a particular instance. Will be
     # overridden during instantiation.
     instance_name = None
+
+    # The machine-readable name of this collection.
+    collection = None
+
+    # The human-readable name of this collection.
+    collection_human = None
 
     # A value of True means the storage does not support write-methods such as
     # upload, update and delete.  A value of False means the storage does
@@ -56,7 +58,8 @@ class Storage(object):
     # The attribute values to show in the representation of the storage.
     _repr_attributes = ()
 
-    def __init__(self, instance_name=None, read_only=None, collection=None):
+    def __init__(self, instance_name=None, read_only=None, collection=None,
+                 collection_human=None):
         if read_only is None:
             read_only = self.read_only
         if self.read_only and not read_only:
@@ -66,6 +69,7 @@ class Storage(object):
             instance_name = '{}/{}'.format(instance_name, collection)
         self.instance_name = instance_name
         self.collection = collection
+        self.collection_human = collection_human
 
     @classmethod
     def discover(cls, **kwargs):
@@ -74,8 +78,21 @@ class Storage(object):
         :param **kwargs: Keyword arguments to additionally pass to the storage
             instances returned. You shouldn't pass `collection` here, otherwise
             TypeError will be raised.
-        :returns: Iterable of storages which represent the discovered
-            collections, all of which are passed kwargs during initialization.
+        :returns: iterable of ``storage_args``.
+            ``storage_args`` is a dictionary of ``**kwargs`` to pass to this
+            class to obtain a storage instance pointing to this collection. It
+            also must contain a ``"collection"`` key.  That key's value is used
+            to match two collections together for synchronization. IOW it is a
+            machine-readable identifier for the collection, usually obtained
+            from the last segment of a URL or filesystem path.
+
+        '''
+        raise NotImplementedError()
+
+    @classmethod
+    def join_collection(cls, collection, **kwargs):
+        '''Append the collection to the URL or path specified in ``**kwargs``
+        and return the new arguments.
         '''
         raise NotImplementedError()
 

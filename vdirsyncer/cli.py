@@ -9,6 +9,7 @@
 
 import errno
 import functools
+import hashlib
 import json
 import os
 import string
@@ -78,6 +79,115 @@ def get_status_name(pair, collection):
     return pair + '/' + collection
 
 
+def get_collections_cache_key(pair_options, config_a, config_b):
+    m = hashlib.sha256()
+    j = json.dumps([pair_options, config_a, config_b], sort_keys=True)
+    m.update(j.encode('utf-8'))
+    return m.hexdigest()
+
+
+def collections_for_pair(status_path, name_a, name_b, pair_name, config_a,
+                         config_b, pair_options, skip_cache=False):
+    '''Determine all configured collections for a given pair. Takes care of
+    shortcut expansion and result caching.
+
+    :param status_path: The path to the status directory.
+    :param name_a: The config name of storage A.
+    :param name_b: The config name of storage B.
+    :param pair_name: The config name of the pair.
+    :param config_a: The configuration for storage A, with pair-defined
+        defaults.
+    :param config_b: The configuration for storage B, with pair-defined
+        defaults.
+    :param pair_options: Pair-specific options.
+    :param skip_cache: Whether to skip the cached data and always do discovery.
+        Even with this option enabled, the new cache is written.
+
+    :returns: iterable of (collection, a_args, b_args)
+    '''
+    rv = load_status(status_path, pair_name, data_type='collections')
+    cache_key = get_collections_cache_key(pair_options, config_a, config_b)
+    if rv and not skip_cache:
+        if rv.get('cache_key', None) == cache_key:
+            return rv.get('collections', rv)
+        elif rv:
+            cli_logger.info('Detected change in config file, discovering '
+                            'collections for {}'.format(pair_name))
+
+    cli_logger.info('Discovering collections for pair {}'
+                    .format(pair_name))
+
+    # We have to use a list here because the special None/null value would get
+    # mangled to string (because JSON objects always have string keys).
+    rv = list(_collections_for_pair_impl(status_path, name_a, name_b,
+                                         pair_name, config_a, config_b,
+                                         pair_options))
+    save_status(status_path, pair_name, data_type='collections',
+                data={'collections': rv, 'cache_key': cache_key})
+    return rv
+
+
+def _collections_for_pair_impl(status_path, name_a, name_b, pair_name,
+                               config_a, config_b, pair_options):
+
+    def _discover_from_config(config):
+        storage_type = config['type']
+        cls, config = storage_class_from_config(config)
+
+        try:
+            discovered = list(cls.discover(**config))
+        except Exception:
+            return handle_storage_init_error(cls, config)
+        else:
+            rv = {}
+            for args in discovered:
+                args['type'] = storage_type
+                rv[args['collection']] = args
+            return rv
+
+    def _get_coll(discovered, collection, storage_name, config):
+        try:
+            return discovered[collection]
+        except KeyError:
+            storage_type = config['type']
+            cls, config = storage_class_from_config(config)
+            try:
+                rv = cls.join_collection(collection=collection, **config)
+                rv['type'] = storage_type
+                return rv
+            except NotImplementedError:
+                raise CliError(
+                    'Unable to find collection {collection!r} for storage '
+                    '{storage_name!r}.\n For pair {pair_name!r}, you wanted '
+                    'to use the collections {shortcut!r}, which yielded '
+                    '{collection!r} (amongst others). Vdirsyncer was unable '
+                    'to find an equivalent collection for the other '
+                    'storage.'.format(
+                        collection=collection, shortcut=shortcut,
+                        storage_name=storage_name, pair_name=pair_name
+                    )
+                )
+
+    shortcuts = set(_parse_old_config_list_value(pair_options, 'collections'))
+    if not shortcuts:
+        yield None, (config_a, config_b)
+    else:
+        a_discovered = _discover_from_config(config_a)
+        b_discovered = _discover_from_config(config_b)
+
+    for shortcut in shortcuts:
+        if shortcut in ('from a', 'from b'):
+            collections = (a_discovered if shortcut == 'from a'
+                           else b_discovered)
+        else:
+            collections = [shortcut]
+
+        for collection in collections:
+            a_args = _get_coll(a_discovered, collection, name_a, config_a)
+            b_args = _get_coll(b_discovered, collection, name_b, config_b)
+            yield collection, (a_args, b_args)
+
+
 def validate_general_section(general_config):
     if general_config is None:
         raise CliError(
@@ -143,19 +253,43 @@ def load_config(f, pair_options=('collections', 'conflict_resolution')):
     return general, pairs, storages
 
 
-def load_status(path, status_name):
-    full_path = expand_path(os.path.join(path, status_name))
-    if not os.path.exists(full_path):
-        return {}
-    with open(full_path) as f:
-        return dict(json.loads(line) for line in f)
+def load_status(base_path, pair, collection=None, data_type=None):
+    assert data_type is not None
+    status_name = get_status_name(pair, collection)
+    path = expand_path(os.path.join(base_path, status_name))
+    if os.path.isfile(path) and data_type == 'items':
+        new_path = path + '.items'
+        cli_logger.warning('Migrating statuses: Renaming {} to {}'
+                           .format(path, new_path))
+        os.rename(path, new_path)
+
+    path += '.' + data_type
+    if not os.path.exists(path):
+        return None
+
+    with open(path) as f:
+        try:
+            return dict(json.load(f))
+        except ValueError:
+            pass
+
+        f.seek(0)
+        try:
+            return dict(json.loads(line) for line in f)
+        except ValueError:
+            pass
+
+    return {}
 
 
-def save_status(path, status_name, status):
-    full_path = expand_path(os.path.join(path, status_name))
-    base_path = os.path.dirname(full_path)
+def save_status(base_path, pair, collection=None, data_type=None, data=None):
+    assert data_type is not None
+    assert data is not None
+    status_name = get_status_name(pair, collection)
+    path = expand_path(os.path.join(base_path, status_name)) + '.' + data_type
+    base_path = os.path.dirname(path)
 
-    if os.path.isfile(base_path):
+    if collection is not None and os.path.isfile(base_path):
         raise CliError('{} is probably a legacy file and could be removed '
                        'automatically, but this choice is left to the '
                        'user. If you think this is an error, please file '
@@ -167,10 +301,8 @@ def save_status(path, status_name, status):
         if e.errno != errno.EEXIST:
             raise
 
-    with safe_write(full_path, 'w+') as f:
-        for k, v in status.items():
-            json.dump((k, v), f)
-            f.write('\n')
+    with safe_write(path, 'w+') as f:
+        json.dump(data, f)
 
 
 def storage_class_from_config(config):
@@ -226,33 +358,24 @@ def handle_storage_init_error(cls, config):
 def parse_pairs_args(pairs_args, all_pairs):
     '''
     Expand the various CLI shortforms ("pair, pair/collection") to an iterable
-    of (pair, collection).
+    of (pair, collections).
     '''
-    if not pairs_args:
-        pairs_args = list(all_pairs)
-    for pair_and_collection in pairs_args:
+    rv = {}
+    for pair_and_collection in (pairs_args or all_pairs):
         pair, collection = pair_and_collection, None
         if '/' in pair:
             pair, collection = pair.split('/')
 
-        try:
-            a_name, b_name, pair_options, storage_defaults = \
-                all_pairs[pair]
-        except KeyError:
+        if pair not in all_pairs:
             raise CliError('Pair not found: {}\n'
                            'These are the pairs found: {}'
                            .format(pair, list(all_pairs)))
 
-        if collection is None:
-            collections = set(
-                _parse_old_config_list_value(pair_options, 'collections')
-                or [None]
-            )
-        else:
-            collections = [collection]
+        collections = rv.setdefault(pair, set())
+        if collection:
+            collections.add(collection)
 
-        for c in collections:
-            yield pair, c
+    return rv.items()
 
 # We create the app inside a factory and destroy that factory after first use
 # to avoid pollution of the module namespace.
@@ -337,12 +460,12 @@ def _create_app():
         wq = WorkerQueue(max_workers)
         wq.handled_jobs = set()
 
-        for pair_name, collection in parse_pairs_args(pairs, all_pairs):
+        for pair_name, collections in parse_pairs_args(pairs, all_pairs):
             wq.spawn_worker()
             wq.put(
-                functools.partial(prepare_sync, pair_name=pair_name,
-                                  collection=collection, general=general,
-                                  all_pairs=all_pairs,
+                functools.partial(sync_pair, pair_name=pair_name,
+                                  collections_to_sync=collections,
+                                  general=general, all_pairs=all_pairs,
                                   all_storages=all_storages,
                                   force_delete=force_delete))
 
@@ -354,75 +477,39 @@ app = main = _create_app()
 del _create_app
 
 
-def expand_collection(pair_name, collection, general, all_pairs, all_storages):
-    a_name, b_name, pair_options, storage_defaults = all_pairs[pair_name]
-    if collection in ('from a', 'from b'):
-        # from_name: name of the storage which should be used for discovery
-        # other_name: the other storage's name
-        if collection == 'from a':
-            from_name, other_name = a_name, b_name
-        else:
-            from_name, other_name = b_name, a_name
-
-        cli_logger.info('Syncing {}: Discovering collections from {}'
-                        .format(pair_name, from_name))
-
-        config = dict(storage_defaults)
-        config.update(all_storages[from_name])
-        cls, config = storage_class_from_config(config)
-        try:
-            storages = list(cls.discover(**config))
-        except Exception:
-            handle_storage_init_error(cls, config)
-
-        for storage in storages:
-            config = dict(storage_defaults)
-            config.update(all_storages[other_name])
-            config['collection'] = actual_collection = storage.collection
-            other_storage = storage_instance_from_config(config)
-
-            if collection == 'from a':
-                a, b = storage, other_storage
-            else:
-                b, a = storage, other_storage
-
-            yield actual_collection, a, b
-    else:
-        config = dict(storage_defaults)
-        config.update(all_storages[a_name])
-        config['collection'] = collection
-        a = storage_instance_from_config(config)
-
-        config = dict(storage_defaults)
-        config.update(all_storages[b_name])
-        config['collection'] = collection
-        b = storage_instance_from_config(config)
-
-        yield collection, a, b
-
-
-def prepare_sync(wq, pair_name, collection, general, all_pairs, all_storages,
-                 force_delete):
-    key = ('prepare', pair_name, collection)
+def sync_pair(wq, pair_name, collections_to_sync, general, all_pairs,
+              all_storages, force_delete):
+    key = ('prepare', pair_name)
     if key in wq.handled_jobs:
-        status_name = get_status_name(pair_name, collection)
-        cli_logger.warning('Already prepared {}, skipping'.format(status_name))
+        cli_logger.warning('Already prepared {}, skipping'.format(pair_name))
         return
     wq.handled_jobs.add(key)
 
     a_name, b_name, pair_options, storage_defaults = all_pairs[pair_name]
-    jobs = list(expand_collection(pair_name, collection, general, all_pairs,
-                                  all_storages))
 
-    for i in range(len(jobs) - 1):
-        # spawn one worker less because we can reuse the current one
+    all_collections = dict(collections_for_pair(
+        general['status_path'], a_name, b_name, pair_name,
+        all_storages[a_name], all_storages[b_name], pair_options
+    ))
+
+    # spawn one worker less because we can reuse the current one
+    new_workers = -1
+    for collection in (collections_to_sync or all_collections):
+        try:
+            config_a, config_b = all_collections[collection]
+        except KeyError:
+            raise CliError('Pair {}: Collection {} not found. These are the '
+                           'configured collections:\n{}'.format(
+                               pair_name, collection, list(all_collections)))
+        new_workers += 1
+        wq.put(functools.partial(
+            sync_collection, pair_name=pair_name, collection=collection,
+            config_a=config_a, config_b=config_b, pair_options=pair_options,
+            general=general, force_delete=force_delete
+        ))
+
+    for i in range(new_workers):
         wq.spawn_worker()
-
-    for collection, a, b in jobs:
-        wq.put(functools.partial(sync_collection, pair_name=pair_name,
-                                 collection=collection, a=a, b=b,
-                                 pair_options=pair_options, general=general,
-                                 force_delete=force_delete))
 
 
 def handle_cli_error(status_name='sync'):
@@ -460,8 +547,8 @@ def handle_cli_error(status_name='sync'):
         return True
 
 
-def sync_collection(wq, pair_name, collection, a, b, pair_options, general,
-                    force_delete):
+def sync_collection(wq, pair_name, collection, config_a, config_b,
+                    pair_options, general, force_delete):
     status_name = get_status_name(pair_name, collection)
 
     key = ('sync', pair_name, collection)
@@ -473,8 +560,12 @@ def sync_collection(wq, pair_name, collection, a, b, pair_options, general,
     try:
         cli_logger.info('Syncing {}'.format(status_name))
 
-        status = load_status(general['status_path'], status_name)
+        status = load_status(general['status_path'], pair_name,
+                             collection, data_type='items') or {}
         cli_logger.debug('Loaded status for {}'.format(status_name))
+
+        a = storage_instance_from_config(config_a)
+        b = storage_instance_from_config(config_b)
         sync(
             a, b, status,
             conflict_resolution=pair_options.get('conflict_resolution', None),
@@ -484,7 +575,8 @@ def sync_collection(wq, pair_name, collection, a, b, pair_options, general,
         if not handle_cli_error(status_name):
             raise JobFailed()
 
-    save_status(general['status_path'], status_name, status)
+    save_status(general['status_path'], pair_name, collection,
+                data_type='items', data=status)
 
 
 class WorkerQueue(object):

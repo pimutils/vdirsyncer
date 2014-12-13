@@ -148,21 +148,29 @@ class SupportsCollections(object):
 
     def test_discover(self, get_storage_args, get_item):
         expected = set()
+        items = {}
 
         for i in range(1, 5):
             # Create collections, but use the "collection" attribute because
             # Radicale requires file extensions in their names.
-            expected.add(
-                self.storage_class(
-                    **get_storage_args(collection='test{}'.format(i))
-                ).collection
-            )
+            collection = 'test{}'.format(i)
+            s = self.storage_class(**get_storage_args(collection=collection))
+            items[s.collection] = [s.upload(get_item())]
+            expected.add(s.collection)
 
         d = self.storage_class.discover(
             **get_storage_args(collection=None))
 
-        actual = set(s.collection for s in d)
+        actual = set(args['collection'] for args in d)
         assert actual >= expected
+
+        for storage_args in d:
+            collection = storage_args['collection']
+            if collection not in expected:
+                continue
+            s = self.storage_class(**storage_args)
+            rv = list(s.list())
+            assert rv == items[collection]
 
     def test_discover_collection_arg(self, get_storage_args):
         args = get_storage_args(collection='test2')
