@@ -290,7 +290,7 @@ def _create_app():
 
     @app.command()
     @click.argument('pairs', nargs=-1)
-    @click.option('--force-delete', multiple=True,
+    @click.option('--force-delete/--no-force-delete',
                   help=('Disable data-loss protection for the given pairs. '
                         'Can be passed multiple times'))
     @click.option('--max-workers',
@@ -311,7 +311,6 @@ def _create_app():
         from the pair "bob".
         '''
         general, all_pairs, all_storages = ctx.obj['config']
-        force_delete = set(force_delete)
 
         cli_logger.debug('Using {} maximal workers.'.format(max_workers))
         wq = WorkerQueue(max_workers)
@@ -413,9 +412,9 @@ def handle_cli_error(status_name='sync'):
     except StorageEmpty as e:
         cli_logger.error(
             '{status_name}: Storage "{name}" was completely emptied. Use '
-            '"--force-delete {status_name}" to synchronize that emptyness to '
-            'the other side, or delete the status by yourself to restore the '
-            'items from the non-empty side.'.format(
+            '`vdirsyncer sync --force-delete {status_name}` to synchronize '
+            'that emptyness to the other side, or delete the status by '
+            'yourself to restore the items from the non-empty side.'.format(
                 name=e.empty_storage.instance_name,
                 status_name=status_name
             )
@@ -458,7 +457,7 @@ def sync_collection(wq, pair_name, collection, a, b, pair_options, general,
         sync(
             a, b, status,
             conflict_resolution=pair_options.get('conflict_resolution', None),
-            force_delete=status_name in force_delete
+            force_delete=force_delete
         )
     except:
         if not handle_cli_error(status_name):

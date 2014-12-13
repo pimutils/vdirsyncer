@@ -155,14 +155,11 @@ def test_empty_storage(tmpdir):
     result = runner.invoke(cli.app, ['sync'])
     tmpdir.join('path_b/haha.txt').remove()
     result = runner.invoke(cli.app, ['sync'])
-    assert result.output.splitlines() == [
-        'Syncing my_pair',
-        'error: {status_name}: Storage "{name}" was completely emptied. Use '
-        '"--force-delete {status_name}" to synchronize that emptyness to '
-        'the other side, or delete the status by yourself to restore the '
-        'items from the non-empty side.'.format(status_name='my_pair',
-                                                name='my_b')
-    ]
+    lines = result.output.splitlines()
+    assert len(lines) == 2
+    assert lines[0] == 'Syncing my_pair'
+    assert lines[1].startswith('error: my_pair: '
+                               'Storage "my_b" was completely emptied.')
     assert result.exception
 
 
