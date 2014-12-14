@@ -21,7 +21,9 @@ Installation and usage
 ======================
 
 If you already have it installed and want to quickly configure it, copy the
-``example.cfg`` to ``~/.vdirsyncer/config`` and edit it.
+``example.cfg`` to ``$XDG_CONFIG_HOME/vdirsyncer/config`` (normally
+``~/.config/vdirsyncer/config``)
+and edit it.
 
 If that method doesn't work for you or you want a deeper understanding of what
 you just did, check out `the tutorial
