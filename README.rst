@@ -21,13 +21,13 @@ Installation and usage
 ======================
 
 If you already have it installed and want to quickly configure it, copy the
-``example.cfg`` to ``$XDG_CONFIG_HOME/vdirsyncer/config`` (normally
-``~/.config/vdirsyncer/config``)
-and edit it.
+``example.cfg`` to ``~/.vdirsyncer/config`` [1]_ and edit it.
 
 If that method doesn't work for you or you want a deeper understanding of what
 you just did, check out `the tutorial
 <https://vdirsyncer.readthedocs.org/en/latest/tutorial.html>`_.
+
+.. [1] The configuration file can also be placed in ``$XDG_CONFIG_HOME/vdirsyncer/config`` (normally ``~/.config/vdirsyncer/config``) for XDG-Basedir spec compliance.
 
 Donations
 =========
