@@ -30,7 +30,7 @@ class BaseStorageTests(object):
         '''
         Return a function with the following properties:
 
-        :param collection: The collection name to use.
+        :param collection: The name of the collection to create and use.
         '''
         raise NotImplementedError()
 
