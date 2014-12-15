@@ -75,10 +75,9 @@ def validate_general_section(general_config):
         raise CliError('Invalid general section.')
 
 
-def load_config(fname, pair_options=('collections', 'conflict_resolution')):
+def load_config(f, pair_options=('collections', 'conflict_resolution')):
     c = RawConfigParser()
-    with open(fname) as f:
-        c.readfp(f)
+    c.readfp(f)
 
     get_options = lambda s: dict(parse_options(c.items(s), section=s))
 
@@ -283,7 +282,8 @@ def _create_app():
                                                 expand_path('~/.config/'))
                 fname = os.path.join(xdg_config_dir, 'vdirsyncer/config')
             try:
-                ctx.obj['config'] = load_config(fname)
+                with open(fname) as f:
+                    ctx.obj['config'] = load_config(f)
             except Exception as e:
                 raise CliError('Error during reading config {}: {}'
                                .format(fname, e))

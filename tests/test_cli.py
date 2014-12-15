@@ -6,6 +6,7 @@
     :copyright: (c) 2014 Markus Unterwaditzer & contributors
     :license: MIT, see LICENSE for more details.
 '''
+import io
 from textwrap import dedent
 
 from click.testing import CliRunner
@@ -13,13 +14,10 @@ from click.testing import CliRunner
 import vdirsyncer.cli as cli
 
 
-def test_load_config(tmpdir, monkeypatch):
-    f = tmpdir.join('test.cfg')
-    status_path = '{}/status/'.format(str(tmpdir))
-    contacts_path = '{}/contacts/'.format(str(tmpdir))
-    f.write(dedent('''
+def test_load_config(monkeypatch):
+    f = io.StringIO(dedent(u'''
         [general]
-        status_path = {status}
+        status_path = /tmp/status/
 
         [pair bob]
         a = bob_a
@@ -29,7 +27,7 @@ def test_load_config(tmpdir, monkeypatch):
 
         [storage bob_a]
         type = filesystem
-        path = {contacts}
+        path = /tmp/contacts/
         fileext = .vcf
         yesno = off
         number = 42
@@ -39,16 +37,15 @@ def test_load_config(tmpdir, monkeypatch):
 
         [bogus]
         lol = true
-        ''').strip().format(status=status_path, contacts=contacts_path))
+        '''))
 
-    fname = str(tmpdir) + '/test.cfg'
     errors = []
     monkeypatch.setattr('vdirsyncer.cli.cli_logger.error', errors.append)
-    general, pairs, storages = cli.load_config(fname, pair_options=('bam',))
-    assert general == {'status_path': status_path}
+    general, pairs, storages = cli.load_config(f, pair_options=('bam',))
+    assert general == {'status_path': '/tmp/status/'}
     assert pairs == {'bob': ('bob_a', 'bob_b', {'bam': True}, {'foo': 'bar'})}
     assert storages == {
-        'bob_a': {'type': 'filesystem', 'path': contacts_path, 'fileext':
+        'bob_a': {'type': 'filesystem', 'path': '/tmp/contacts/', 'fileext':
                   '.vcf', 'yesno': False, 'number': 42,
                   'instance_name': 'bob_a'},
         'bob_b': {'type': 'carddav', 'instance_name': 'bob_b'}
