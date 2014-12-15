@@ -33,9 +33,14 @@ Configuration
     - Take a look at the :doc:`problems` page if anything doesn't work like
       planned.
 
-By default, *vdirsyncer* looks for its configuration file at
-``~/.vdirsyncer/config``. You can use the ``VDIRSYNCER_CONFIG`` environment
-variable to change this path.
+By default, *vdirsyncer* looks for its configuration file in the following
+locations:
+
+- The file pointed to by the ``VDIRSYNCER_CONFIG`` environment variable.
+- ``~/.vdirsyncer/config``.
+- ``$XDG_CONFIG_HOME/vdirsyncer/config``, which is normally
+  ``~/.config/vdirsyncer/config``. This is XDG-Basedir compliant, and should
+  help keep your ``$HOME`` clean.
 
 The config file should start with a :ref:`general section <general_config>`,
 where the only required parameter is ``status_path``. The following is a
