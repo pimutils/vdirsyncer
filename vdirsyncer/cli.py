@@ -7,6 +7,7 @@
     :license: MIT, see LICENSE for more details.
 '''
 
+import errno
 import functools
 import json
 import os
@@ -133,8 +134,12 @@ def save_status(path, status_name, status):
                        'automatically, but this choice is left to the '
                        'user. If you think this is an error, please file '
                        'a bug at {}'.format(base_path, PROJECT_HOME))
-    if not os.path.exists(base_path):
+
+    try:
         os.makedirs(base_path, 0o750)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
 
     with safe_write(full_path, 'w+') as f:
         for k, v in status.items():
