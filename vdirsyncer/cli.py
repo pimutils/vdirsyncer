@@ -35,8 +35,8 @@ except ImportError:
 
 cli_logger = log.get(__name__)
 
-GENERAL_ALL = set(['status_path', 'passwordeval'])
-GENERAL_REQUIRED = set(['status_path'])
+GENERAL_ALL = frozenset(['status_path', 'passwordeval'])
+GENERAL_REQUIRED = frozenset(['status_path'])
 
 
 class CliError(RuntimeError):
