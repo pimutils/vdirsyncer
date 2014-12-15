@@ -59,6 +59,19 @@ def validate_section_name(name, section_type):
                                                 SECTION_NAME_CHARS))
 
 
+def _parse_old_config_list_value(d, key):
+    value = d.get(key, [])
+    if isinstance(value, str):
+        # XXX: Deprecation
+        old_form = value
+        value = list(filter(bool, (x.strip() for x in value.split(','))))
+        cli_logger.warning(
+            '{!r} is deprecated, please use:\n{} = {}\n'
+            'The old form will be removed in 0.4.0.'
+            .format(old_form, key, json.dumps(value)))
+    return value
+
+
 def get_status_name(pair, collection):
     if collection is None:
         return pair
@@ -231,16 +244,10 @@ def parse_pairs_args(pairs_args, all_pairs):
                            .format(pair, list(all_pairs)))
 
         if collection is None:
-            collections = pair_options.get('collections', [None])
-            if isinstance(collections, str):
-                # XXX: Deprecation
-                orig_collections = collections
-                collections = [x.strip() or None
-                               for x in collections.split(',')]
-                cli_logger.warning(
-                    '{!r} is deprecated, please use:\ncollections = {}\n'
-                    'The old form will be removed in 0.4.0.'
-                    .format(orig_collections, json.dumps(collections)))
+            collections = set(
+                _parse_old_config_list_value(pair_options, 'collections')
+                or [None]
+            )
         else:
             collections = [collection]
 

@@ -76,14 +76,14 @@ def test_parse_pairs_args():
         'one': ('two', 'three', {'collections': 'a,b,c'}, {}),
         'eins': ('zwei', 'drei', {'ha': True}, {})
     }
-    assert list(
+    assert sorted(
         cli.parse_pairs_args(['foo/foocoll', 'one', 'eins'], pairs)
     ) == [
+        ('eins', None),
         ('foo', 'foocoll'),
         ('one', 'a'),
         ('one', 'b'),
-        ('one', 'c'),
-        ('eins', None)
+        ('one', 'c')
     ]
 
 
