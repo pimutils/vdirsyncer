@@ -11,6 +11,8 @@ from textwrap import dedent
 
 from click.testing import CliRunner
 
+import pytest
+
 import vdirsyncer.cli as cli
 
 
@@ -228,3 +230,17 @@ def test_verbosity(tmpdir):
     )
     assert result.exception
     assert 'invalid verbosity value' in result.output.lower()
+
+
+def test_invalid_storage_name():
+    f = io.StringIO(dedent(u'''
+        [general]
+        status_path = /tmp/status/
+
+        [storage foo.bar]
+        '''))
+
+    with pytest.raises(cli.CliError) as excinfo:
+        cli.load_config(f)
+
+    assert 'invalid characters' in str(excinfo.value).lower()

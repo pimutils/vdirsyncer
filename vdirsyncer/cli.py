@@ -11,8 +11,10 @@ import errno
 import functools
 import json
 import os
+import string
 import sys
 import threading
+from itertools import chain
 
 from . import DOCS_HOME, PROJECT_HOME, __version__, log
 from .doubleclick import click
@@ -37,6 +39,7 @@ cli_logger = log.get(__name__)
 
 GENERAL_ALL = frozenset(['status_path', 'passwordeval'])
 GENERAL_REQUIRED = frozenset(['status_path'])
+SECTION_NAME_CHARS = frozenset(chain(string.ascii_letters, string.digits, '_'))
 
 
 class CliError(RuntimeError):
@@ -45,6 +48,15 @@ class CliError(RuntimeError):
 
 class JobFailed(RuntimeError):
     pass
+
+
+def validate_section_name(name, section_type):
+    invalid = set(name) - SECTION_NAME_CHARS
+    if invalid:
+        raise CliError('The {}-section {!r} contains invalid characters. Only '
+                       'the following characters are allowed for storage and '
+                       'pair names:\n{}'.format(section_type, name,
+                                                SECTION_NAME_CHARS))
 
 
 def get_status_name(pair, collection):
@@ -86,10 +98,12 @@ def load_config(f, pair_options=('collections', 'conflict_resolution')):
     storages = {}
 
     def handle_storage(storage_name, options):
+        validate_section_name(storage_name, 'storage')
         storages.setdefault(storage_name, {}).update(options)
         storages[storage_name]['instance_name'] = storage_name
 
     def handle_pair(pair_name, options):
+        validate_section_name(pair_name, 'pair')
         a, b = options.pop('a'), options.pop('b')
         p, s = split_dict(options, lambda x: x in pair_options)
         pairs[pair_name] = a, b, p, s
