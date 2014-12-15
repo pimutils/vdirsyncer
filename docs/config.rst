@@ -51,6 +51,8 @@ Pair Section
     b = ...
     #conflict_resolution = ...
 
+- Pair names can consist of any alphanumeric characters and the underscore.
+
 - ``a`` and ``b`` reference the storages to sync by their names.
 
 - ``collections``: Optional, a comma-separated list of collections to
@@ -83,6 +85,8 @@ Storage Section
 
     [storage storage_name]
     type = ...
+
+- Storage names can consist of any alphanumeric characters and the underscore.
 
 - ``type`` defines which kind of storage is defined. See :ref:`storages`.
 
