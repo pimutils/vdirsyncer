@@ -432,21 +432,23 @@ def _create_app():
                 raise CliError('Error during reading config {}: {}'
                                .format(fname, e))
 
+    max_workers_option = click.option(
+        '--max-workers', default=0, type=click.IntRange(min=0, max=None),
+        help=('Use at most this many connections, 0 means unlimited.')
+    )
+
     @app.command()
     @click.argument('pairs', nargs=-1)
     @click.option('--force-delete/--no-force-delete',
                   help=('Disable data-loss protection for the given pairs. '
                         'Can be passed multiple times'))
-    @click.option('--max-workers',
-                  default=0, type=click.IntRange(min=0, max=None),
-                  help=('Use at most this many connections, 0 means '
-                        'unlimited.'))
+    @max_workers_option
     @click.pass_context
     @catch_errors
     def sync(ctx, pairs, force_delete, max_workers):
         '''
-        Synchronize the given pairs. If no pairs are given, all will be
-        synchronized.
+        Synchronize the given collections or pairs. If no arguments are given,
+        all will be synchronized.
 
         Examples:
         `vdirsyncer sync` will sync everything configured.
@@ -468,6 +470,38 @@ def _create_app():
                                   general=general, all_pairs=all_pairs,
                                   all_storages=all_storages,
                                   force_delete=force_delete))
+
+        wq.join()
+
+    @app.command()
+    @click.argument('pairs', nargs=-1)
+    @max_workers_option
+    @click.pass_context
+    @catch_errors
+    def discover(ctx, pairs, max_workers):
+        '''
+        Refresh collection cache for the given pairs.
+        '''
+        general, all_pairs, all_storages = ctx.obj['config']
+        cli_logger.debug('Using {} maximal workers.'.format(max_workers))
+        wq = WorkerQueue(max_workers)
+
+        for pair in (pairs or all_pairs):
+            try:
+                name_a, name_b, pair_options, storage_defaults = \
+                    all_pairs[pair]
+            except KeyError:
+                raise CliError('Pair not found: {}\n'
+                               'These are the pairs found: {}'
+                               .format(pair, list(all_pairs)))
+
+            wq.spawn_worker()
+            wq.put(functools.partial(
+                (lambda wq, **kwargs: collections_for_pair(**kwargs)),
+                status_path=general['status_path'], name_a=name_a,
+                name_b=name_b, pair_name=pair, config_a=all_storages[name_a],
+                config_b=all_storages[name_b], pair_options=pair_options,
+                skip_cache=True))
 
         wq.join()
 
