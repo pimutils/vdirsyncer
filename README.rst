@@ -5,7 +5,7 @@ vdirsyncer
 Vdirsyncer synchronizes your calendars and addressbooks between two storages.
 The most popular purpose is to synchronize CalDAV and CardDAV with a local
 folder or file. The local data can then be `accessed via a variety of programs
-<https://vdirsyncer.readthedocs.org/en/latest/supported.html>`_, none of which
+<https://vdirsyncer.readthedocs.org/en/stable/supported.html>`_, none of which
 have to know or worry about syncing to a server.
 
 It aims to be for CalDAV and CardDAV what `OfflineIMAP
@@ -25,7 +25,7 @@ If you already have it installed and want to quickly configure it, copy the
 
 If that method doesn't work for you or you want a deeper understanding of what
 you just did, check out `the tutorial
-<https://vdirsyncer.readthedocs.org/en/latest/tutorial.html>`_.
+<https://vdirsyncer.readthedocs.org/en/stable/tutorial.html>`_.
 
 .. [1] The configuration file can also be placed in ``$XDG_CONFIG_HOME/vdirsyncer/config`` (normally ``~/.config/vdirsyncer/config``) for XDG-Basedir spec compliance.
 
