@@ -43,9 +43,9 @@ def test_load_config(monkeypatch):
 
     errors = []
     monkeypatch.setattr('vdirsyncer.cli.cli_logger.error', errors.append)
-    general, pairs, storages = cli.load_config(f, pair_options=('bam',))
+    general, pairs, storages = cli.load_config(f)
     assert general == {'status_path': '/tmp/status/'}
-    assert pairs == {'bob': ('bob_a', 'bob_b', {'bam': True}, {'foo': 'bar'})}
+    assert pairs == {'bob': ('bob_a', 'bob_b', {'bam': True, 'foo': 'bar'})}
     assert storages == {
         'bob_a': {'type': 'filesystem', 'path': '/tmp/contacts/', 'fileext':
                   '.vcf', 'yesno': False, 'number': 42,

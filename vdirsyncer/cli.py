@@ -22,7 +22,7 @@ from .doubleclick import click
 from .storage import storage_names
 from .sync import StorageEmpty, SyncConflict, sync
 from .utils import expand_path, get_class_init_args, parse_options, \
-    safe_write, split_dict
+    safe_write
 
 
 try:
@@ -95,10 +95,8 @@ def collections_for_pair(status_path, name_a, name_b, pair_name, config_a,
     :param name_a: The config name of storage A.
     :param name_b: The config name of storage B.
     :param pair_name: The config name of the pair.
-    :param config_a: The configuration for storage A, with pair-defined
-        defaults.
-    :param config_b: The configuration for storage B, with pair-defined
-        defaults.
+    :param config_a: The configuration for storage A.
+    :param config_b: The configuration for storage B.
     :param pair_options: Pair-specific options.
     :param skip_cache: Whether to skip the cached data and always do discovery.
         Even with this option enabled, the new cache is written.
@@ -210,7 +208,7 @@ def validate_general_section(general_config):
         raise CliError('Invalid general section.')
 
 
-def load_config(f, pair_options=('collections', 'conflict_resolution')):
+def load_config(f):
     c = RawConfigParser()
     c.readfp(f)
 
@@ -228,8 +226,7 @@ def load_config(f, pair_options=('collections', 'conflict_resolution')):
     def handle_pair(pair_name, options):
         validate_section_name(pair_name, 'pair')
         a, b = options.pop('a'), options.pop('b')
-        p, s = split_dict(options, lambda x: x in pair_options)
-        pairs[pair_name] = a, b, p, s
+        pairs[pair_name] = a, b, options
 
     def bad_section(name, options):
         cli_logger.error('Unknown section: {}'.format(name))
@@ -488,8 +485,7 @@ def _create_app():
 
         for pair in (pairs or all_pairs):
             try:
-                name_a, name_b, pair_options, storage_defaults = \
-                    all_pairs[pair]
+                name_a, name_b, pair_options = all_pairs[pair]
             except KeyError:
                 raise CliError('Pair not found: {}\n'
                                'These are the pairs found: {}'
@@ -519,7 +515,7 @@ def sync_pair(wq, pair_name, collections_to_sync, general, all_pairs,
         return
     wq.handled_jobs.add(key)
 
-    a_name, b_name, pair_options, storage_defaults = all_pairs[pair_name]
+    a_name, b_name, pair_options = all_pairs[pair_name]
 
     all_collections = dict(collections_for_pair(
         general['status_path'], a_name, b_name, pair_name,
