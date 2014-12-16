@@ -250,9 +250,6 @@ class DavStorage(Storage):
         super(DavStorage, self).__init__(**kwargs)
 
         url = url.rstrip('/') + '/'
-        collection = kwargs.get('collection')
-        if collection is not None:
-            url = utils.urlparse.urljoin(url, collection)
         self.session = DavSession(url, username, password, verify, auth,
                                   useragent, verify_fingerprint)
         self.unsafe_href_chars = unsafe_href_chars
@@ -271,10 +268,12 @@ class DavStorage(Storage):
         ))
         d = cls.discovery_class(DavSession(url=url, **discover_args))
         for c in d.discover():
-            base, collection = c['href'].rstrip('/').rsplit('/', 1)
-            s = cls(url=base, collection=collection, **kwargs)
-            s.displayname = c['displayname']
-            yield s
+            url = c['href']
+            _, collection = url.rstrip('/').rsplit('/', 1)
+            storage_args = {'url': url, 'collection': collection,
+                            'collection_human': c['displayname']}
+            storage_args.update(kwargs)
+            yield storage_args
 
     def _normalize_href(self, *args, **kwargs):
         return _normalize_href(self.session.url, *args, **kwargs)

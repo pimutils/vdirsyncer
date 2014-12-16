@@ -110,6 +110,7 @@ class ServerMixin(object):
             url = 'http://127.0.0.1/bob/'
             if collection is not None:
                 collection += self.storage_class.fileext
+                url = url.rstrip('/') + '/' + collection
 
             rv = {'url': url, 'username': 'bob', 'password': 'bob',
                   'collection': collection, 'unsafe_href_chars': ''}

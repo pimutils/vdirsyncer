@@ -40,9 +40,6 @@ class FilesystemStorage(Storage):
     def __init__(self, path, fileext, encoding='utf-8', create=True, **kwargs):
         super(FilesystemStorage, self).__init__(**kwargs)
         path = expand_path(path)
-        collection = kwargs.get('collection')
-        if collection is not None:
-            path = os.path.join(path, collection)
         checkdir(path, create=create)
         self.path = path
         self.encoding = encoding
@@ -54,9 +51,16 @@ class FilesystemStorage(Storage):
             raise TypeError('collection argument must not be given.')
         path = expand_path(path)
         for collection in os.listdir(path):
-            if os.path.isdir(os.path.join(path, collection)):
-                s = cls(path=path, collection=collection, **kwargs)
-                yield s
+            collection_path = os.path.join(path, collection)
+            if os.path.isdir(collection_path):
+                args = dict(collection=collection, path=collection_path,
+                            **kwargs)
+                yield args
+
+    @classmethod
+    def join_collection(cls, collection, **kwargs):
+        kwargs['path'] = os.path.join(kwargs['path'], collection)
+        return kwargs
 
     def _get_filepath(self, href):
         return os.path.join(self.path, href)
