@@ -91,26 +91,8 @@ further reference, it uses the storages
 More Configuration
 ==================
 
-But what if we want to synchronize multiple addressbooks from the same server?
-Of course we could create new pairs and storages for each addressbook, but that
-is very tedious to do. Instead we will use a shortcut:
-
-- Remove the last segment from the URL, so that it ends with ``.../bob/``
-  instead of ``.../bob/default/``.
-
-- Add the following line to the *pair* section::
-
-      [pair my_contacts]
-      ...
-      collections = ["default", "work"]
-
-This will synchronize
-``https://owncloud.example.com/remote.php/carddav/addressbooks/bob/default/``
-with ``~/.contacts/default/`` and
-``https://owncloud.example.com/remote.php/carddav/addressbooks/bob/work/`` with
-``~/.contacts/work/``. Under the hood, vdirsyncer also just copies the pairs
-and storages for each collection and appends the collection name to the path or
-URL.
+Conflict resolution
+-------------------
 
 It almost seems like it could work. But what if the same item is changed on
 both sides? What should vdirsyncer do? By default, it will show an ugly error
@@ -125,3 +107,39 @@ Earlier we wrote that ``b = my_contacts_remote``, so when vdirsyncer encounters
 the situation where an item changed on both sides, it will simply overwrite the
 local item with the one from the server. Of course ``a wins`` is also a valid
 value.
+
+Collection discovery
+--------------------
+
+Configuring each collection (=addressbook/calendar) becomes extremely
+repetitive if they are all on the same server. Vdirsyncer can do this for you
+by automatically downloading a list of the configured user's collections::
+
+    [pair my_contacts]
+    a = my_contacts_local
+    b = my_contacts_remote
+    collections = from b
+
+    [storage my_contacts_local]
+    type = filesystem
+    path = ~/.contacts/
+    fileext = .vcf
+
+    [storage my_contacts_remote]
+    type = carddav
+    url = https://owncloud.example.com/remote.php/carddav/addressbooks/bob/
+    username = bob
+    password = asdf
+
+With the above configuration, vdirsyncer will fetch all available collections
+from the server, and create subdirectories for each of them in
+``~/.contacts/``. For example, ownCloud's default addressbook ``"default"``
+would be synchronized to the location ``~/.contacts/default/``.
+
+Vdirsyncer fetches this list on first sync, and will re-fetch it if you change
+your configuration file. However, if new collections are created on the server,
+it will not automatically start synchronizing those [1]_. You should run
+``vdirsyncer discover`` to re-fetch this list instead.
+
+.. [1] Because collections are added rarely, and checking for this case before
+   every synchronization isn't worth the overhead.
