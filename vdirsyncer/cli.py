@@ -54,10 +54,11 @@ class JobFailed(RuntimeError):
 def validate_section_name(name, section_type):
     invalid = set(name) - SECTION_NAME_CHARS
     if invalid:
+        chars_display = ''.join(sorted(SECTION_NAME_CHARS))
         raise CliError('The {}-section {!r} contains invalid characters. Only '
                        'the following characters are allowed for storage and '
                        'pair names:\n{}'.format(section_type, name,
-                                                SECTION_NAME_CHARS))
+                                                chars_display))
 
 
 def _parse_old_config_list_value(d, key):
