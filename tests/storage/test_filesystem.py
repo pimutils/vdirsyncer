@@ -9,6 +9,7 @@
 '''
 
 import os
+import subprocess
 
 import pytest
 
@@ -65,3 +66,36 @@ class TestFilesystemStorage(StorageTests):
         s.upload(Item(u'UID:a/b/c'))
         item_file, = tmpdir.listdir()
         assert str(item_file).endswith('a_b_c.txt')
+
+    def test_post_hook_inactive(self, tmpdir, monkeypatch):
+
+        def check_call_mock(*args, **kwargs):
+            assert False
+
+        monkeypatch.setattr(subprocess, 'call', check_call_mock)
+
+        s = self.storage_class(str(tmpdir), '.txt', post_hook=None)
+        s.upload(Item(u'UID:a/b/c'))
+
+    def test_post_hook_active(self, tmpdir, monkeypatch):
+
+        class Boolean(object):
+            def __init__(self):
+                self.called = False
+
+            def set_called(self):
+                self.called = True
+
+        mock_called = Boolean()
+        exe = 'foo'
+
+        def check_call_mock(l, *args, **kwargs):
+            mock_called.called = True
+            assert len(l) == 2
+            assert l[0] == exe
+
+        monkeypatch.setattr(subprocess, 'call', check_call_mock)
+
+        s = self.storage_class(str(tmpdir), '.txt', post_hook=exe)
+        s.upload(Item(u'UID:a/b/c'))
+        assert mock_called.called
