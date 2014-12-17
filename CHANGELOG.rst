@@ -22,6 +22,10 @@ Version 0.4.0
 - Pair and storage names are now restricted to certain characters. Vdirsyncer
   will issue a clear error message if your configuration file is invalid in
   that regard.
+- Vdirsyncer now supports the XDG-Basedir specification. If the
+  ``VDIRSYNCER_CONFIG`` environment variable isn't set and the
+  ``~/.vdirsyncer/config`` file doesn't exist, it will look for the
+  configuration file at ``$XDG_CONFIG_HOME/vdirsyncer/config``.
 
 Version 0.3.4
 =============
