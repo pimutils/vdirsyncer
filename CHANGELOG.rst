@@ -9,6 +9,19 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/untitaker/vdirsyncer/tags.atom>`_.
 
+Version 0.4.0
+=============
+
+*yet to be released*
+
+- Collection discovery has been rewritten. Old configuration files should be
+  compatible with it, but vdirsyncer now caches the results of the collection
+  discovery. You have to run ``vdirsyncer discover`` if collections were added
+  or removed on one side.
+- Pair and storage names are now restricted to certain characters. Vdirsyncer
+  will issue a clear error message if your configuration file is invalid in
+  that regard.
+
 Version 0.3.4
 =============
 

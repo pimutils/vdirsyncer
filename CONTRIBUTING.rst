@@ -28,9 +28,7 @@ Submitting patches, pull requests
 
 * But not because you wrote too few tests.
 
-* Add yourself to ``AUTHORS.rst``. Don't add anything to ``CHANGELOG.rst``, I
-  do that myself shortly before the release. You can help by writing meaningful
-  commit messages.
+* Add yourself to ``AUTHORS.rst``, and add a note to ``CHANGELOG.rst`` too.
 
 Running tests, how to set up your development environment
 =========================================================
