@@ -116,8 +116,10 @@ class ServerMixin(object):
                   'collection': collection, 'unsafe_href_chars': ''}
 
             if collection is not None:
+                # Create collection, works around
+                # https://github.com/Kozea/Radicale/pull/236
                 s = self.storage_class(**rv)
-                s.delete(*s.upload(get_item()))  # create collection
+                s.delete(*s.upload(get_item()))
 
             return rv
         return inner
