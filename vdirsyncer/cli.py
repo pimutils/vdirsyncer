@@ -38,7 +38,7 @@ except ImportError:
 
 cli_logger = log.get(__name__)
 
-GENERAL_ALL = frozenset(['status_path', 'passwordeval'])
+GENERAL_ALL = frozenset(['status_path', 'password_command'])
 GENERAL_REQUIRED = frozenset(['status_path'])
 SECTION_NAME_CHARS = frozenset(chain(string.ascii_letters, string.digits, '_'))
 
@@ -193,6 +193,11 @@ def validate_general_section(general_config):
             'Unable to find general section. You should copy the example '
             'config from the repository and edit it.\n{}'.format(PROJECT_HOME)
         )
+
+    if 'passwordeval' in general_config:
+        # XXX: Deprecation
+        cli_logger.warning('The `passwordeval` parameter has been renamed to '
+                           '`password_command`.')
 
     invalid = set(general_config) - GENERAL_ALL
     missing = GENERAL_REQUIRED - set(general_config)

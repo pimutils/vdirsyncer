@@ -144,7 +144,7 @@ def test_get_password_from_command(tmpdir):
     @doubleclick.click.command()
     @doubleclick.click.pass_context
     def fake_app(ctx):
-        ctx.obj = {'config' : ({'passwordeval' : filepath},{},{})}
+        ctx.obj = {'config' : ({'password_command' : filepath},{},{})}
         _password = utils.get_password(username, resource)
         assert _password == password
 

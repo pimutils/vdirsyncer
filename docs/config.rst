@@ -25,19 +25,22 @@ General Section
     [general]
     status_path = ...
     #processes = 0
-    #passwordeval =
+    #password_config =
 
 
 - ``status_path``: A directory where vdirsyncer will store metadata for the
   next sync. The data is needed to determine whether a new item means it has
   been added on one side or deleted on the other.
 
-- ``passwordeval`` specifies a command to query for server passwords. The
+- ``password_config`` specifies a command to query for server passwords. The
   command will be called with the username as the first argument, and the
   hostname as the second.
 
 .. versionadded:: 0.3.0
    The ``passwordeval`` parameter.
+
+.. versionchanged:: 0.4.0
+   The ``passwordeval`` parameter has been renamed to ``password_config``.
 
 .. _pair_config:
 

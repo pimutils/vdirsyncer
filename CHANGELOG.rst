@@ -14,6 +14,7 @@ Version 0.4.0
 
 *yet to be released*
 
+- The ``passwordeval`` parameter has been renamed to ``passwordconfig``.
 - Collection discovery has been rewritten. Old configuration files should be
   compatible with it, but vdirsyncer now caches the results of the collection
   discovery. You have to run ``vdirsyncer discover`` if collections were added

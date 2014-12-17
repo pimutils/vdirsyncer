@@ -119,7 +119,7 @@ def get_password(username, resource, _lock=threading.Lock()):
         1. read password from netrc (and only the password, username
            in netrc will be ignored)
         2. read password from keyring (keyring needs to be installed)
-        3. read password from the command passed as passwordeval in the
+        3. read password from the command passed as password_config in the
            general config section with username and host as parameters
         4a ask user for the password
          b save in keyring if installed and user agrees
@@ -199,7 +199,7 @@ def _password_from_command(username, host):
 
     try:
         general, _, _ = ctx.obj['config']
-        command = general['passwordeval'].split()
+        command = general['password_command'].split()
     except KeyError:
         return None
 
