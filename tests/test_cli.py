@@ -66,7 +66,7 @@ def test_storage_instance_from_config(monkeypatch):
     import vdirsyncer.storage
     monkeypatch.setitem(vdirsyncer.storage.storage_names, 'lol', lol)
     config = {'type': 'lol', 'foo': 'bar', 'baz': 1}
-    assert cli.storage_instance_from_config(config) == 'OK'
+    assert cli.utils.storage_instance_from_config(config) == 'OK'
 
 
 def test_parse_pairs_args():
@@ -246,10 +246,13 @@ def test_deprecated_item_status(tmpdir):
         'ident_two': ['href_a', 'etag_a', 'href_b', 'etag_b']
     }
 
-    assert cli.load_status(str(tmpdir), 'mypair', data_type='items') == data
+    assert cli.utils.load_status(
+        str(tmpdir), 'mypair', data_type='items') == data
 
-    cli.save_status(str(tmpdir), 'mypair', data_type='items', data=data)
-    assert cli.load_status(str(tmpdir), 'mypair', data_type='items') == data
+    cli.utils.save_status(
+        str(tmpdir), 'mypair', data_type='items', data=data)
+    assert cli.utils.load_status(
+        str(tmpdir), 'mypair', data_type='items') == data
 
 
 def test_collections_cache_invalidation(tmpdir):
