@@ -58,6 +58,9 @@ def split_sequence(s, f):
 
 
 def uniq(s):
+    '''Filter duplicates while preserving order. ``set`` can almost always be
+    used instead of this, but preserving order might prove useful for
+    debugging.'''
     d = set()
     for x in s:
         if x not in d:
