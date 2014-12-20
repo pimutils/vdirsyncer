@@ -18,6 +18,7 @@
 import itertools
 
 from . import exceptions, log
+from .utils import uniq
 from .utils.compat import iteritems, text_type
 sync_logger = log.get(__name__)
 
@@ -265,12 +266,7 @@ def _get_actions(storages, status):
     storage_a, a_idents = storages['a']
     storage_b, b_idents = storages['b']
 
-    handled = set()
-    for ident in itertools.chain(a_idents, b_idents, status):
-        if ident in handled:
-            continue
-        handled.add(ident)
-
+    for ident in uniq(itertools.chain(a_idents, b_idents, status)):
         a = a_idents.get(ident, None)
         b = b_idents.get(ident, None)
         assert not a or a['etag'] is not None
