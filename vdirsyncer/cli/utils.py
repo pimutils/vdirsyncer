@@ -51,6 +51,41 @@ class JobFailed(RuntimeError):
     pass
 
 
+def handle_cli_error(status_name='sync'):
+    try:
+        raise
+    except CliError as e:
+        cli_logger.critical(str(e))
+    except StorageEmpty as e:
+        cli_logger.error(
+            '{status_name}: Storage "{name}" was completely emptied. Use '
+            '`vdirsyncer sync --force-delete {status_name}` to synchronize '
+            'that emptyness to the other side, or delete the status by '
+            'yourself to restore the items from the non-empty side.'.format(
+                name=e.empty_storage.instance_name,
+                status_name=status_name
+            )
+        )
+    except SyncConflict as e:
+        cli_logger.error(
+            '{status_name}: One item changed on both sides. Resolve this '
+            'conflict manually, or by setting the `conflict_resolution` '
+            'parameter in your config file.\n'
+            'See also {docs}/api.html#pair-section\n'
+            'Item ID: {e.ident}\n'
+            'Item href on side A: {e.href_a}\n'
+            'Item href on side B: {e.href_b}\n'
+            .format(status_name=status_name, e=e, docs=DOCS_HOME)
+        )
+    except (click.Abort, KeyboardInterrupt, JobFailed):
+        pass
+    except Exception as e:
+        cli_logger.exception('Unhandled exception occured while syncing {}.'
+                             .format(status_name))
+    else:
+        return True
+
+
 def validate_section_name(name, section_type):
     invalid = set(name) - SECTION_NAME_CHARS
     if invalid:
@@ -74,13 +109,13 @@ def _parse_old_config_list_value(d, key):
     return value
 
 
-def get_status_name(pair, collection):
+def _get_status_name(pair, collection):
     if collection is None:
         return pair
     return pair + '/' + collection
 
 
-def get_collections_cache_key(pair_options, config_a, config_b):
+def _get_collections_cache_key(pair_options, config_a, config_b):
     m = hashlib.sha256()
     j = json.dumps([pair_options, config_a, config_b], sort_keys=True)
     m.update(j.encode('utf-8'))
@@ -105,7 +140,7 @@ def collections_for_pair(status_path, name_a, name_b, pair_name, config_a,
     :returns: iterable of (collection, a_args, b_args)
     '''
     rv = load_status(status_path, pair_name, data_type='collections')
-    cache_key = get_collections_cache_key(pair_options, config_a, config_b)
+    cache_key = _get_collections_cache_key(pair_options, config_a, config_b)
     if rv and not skip_cache:
         if rv.get('cache_key', None) == cache_key:
             return rv.get('collections', rv)
@@ -126,46 +161,43 @@ def collections_for_pair(status_path, name_a, name_b, pair_name, config_a,
     return rv
 
 
+def _discover_from_config(config):
+    storage_type = config['type']
+    cls, config = _storage_class_from_config(config)
+
+    try:
+        discovered = list(cls.discover(**config))
+    except Exception:
+        return handle_storage_init_error(cls, config)
+    else:
+        rv = {}
+        for args in discovered:
+            args['type'] = storage_type
+            rv[args['collection']] = args
+        return rv
+
+
+def _get_coll(pair_name, storage_name, collection, discovered, config):
+    try:
+        return discovered[collection]
+    except KeyError:
+        storage_type = config['type']
+        cls, config = _storage_class_from_config(config)
+        try:
+            args = cls.join_collection(collection=collection, **config)
+            args['type'] = storage_type
+            return args
+        except NotImplementedError:
+            raise CliError(
+                '{pair}: Unable to find collection {collection!r} for storage '
+                '{storage!r}. A same-named collection was found for the other '
+                'storage, and vdirsyncer is configured to synchronize '
+                'those.'.format(pair=pair_name, collection=collection,
+                                storage=storage_name))
+
+
 def _collections_for_pair_impl(status_path, name_a, name_b, pair_name,
                                config_a, config_b, pair_options):
-
-    def _discover_from_config(config):
-        storage_type = config['type']
-        cls, config = storage_class_from_config(config)
-
-        try:
-            discovered = list(cls.discover(**config))
-        except Exception:
-            return handle_storage_init_error(cls, config)
-        else:
-            rv = {}
-            for args in discovered:
-                args['type'] = storage_type
-                rv[args['collection']] = args
-            return rv
-
-    def _get_coll(discovered, collection, storage_name, config):
-        try:
-            return discovered[collection]
-        except KeyError:
-            storage_type = config['type']
-            cls, config = storage_class_from_config(config)
-            try:
-                rv = cls.join_collection(collection=collection, **config)
-                rv['type'] = storage_type
-                return rv
-            except NotImplementedError:
-                raise CliError(
-                    'Unable to find collection {collection!r} for storage '
-                    '{storage_name!r}.\n For pair {pair_name!r}, you wanted '
-                    'to use the collections {shortcut!r}, which yielded '
-                    '{collection!r} (amongst others). Vdirsyncer was unable '
-                    'to find an equivalent collection for the other '
-                    'storage.'.format(
-                        collection=collection, shortcut=shortcut,
-                        storage_name=storage_name, pair_name=pair_name
-                    )
-                )
 
     shortcuts = set(_parse_old_config_list_value(pair_options, 'collections'))
     if not shortcuts:
@@ -174,20 +206,23 @@ def _collections_for_pair_impl(status_path, name_a, name_b, pair_name,
         a_discovered = _discover_from_config(config_a)
         b_discovered = _discover_from_config(config_b)
 
-    for shortcut in shortcuts:
-        if shortcut in ('from a', 'from b'):
-            collections = (a_discovered if shortcut == 'from a'
-                           else b_discovered)
-        else:
-            collections = [shortcut]
+        for shortcut in shortcuts:
+            if shortcut == 'from a':
+                collections = a_discovered
+            elif shortcut == 'from b':
+                collections = b_discovered
+            else:
+                collections = [shortcut]
 
-        for collection in collections:
-            a_args = _get_coll(a_discovered, collection, name_a, config_a)
-            b_args = _get_coll(b_discovered, collection, name_b, config_b)
-            yield collection, (a_args, b_args)
+            for collection in collections:
+                a_args = _get_coll(pair_name, name_a, collection, a_discovered,
+                                   config_a)
+                b_args = _get_coll(pair_name, name_b, collection, b_discovered,
+                                   config_b)
+                yield collection, (a_args, b_args)
 
 
-def validate_general_section(general_config):
+def _validate_general_section(general_config):
     if general_config is None:
         raise CliError(
             'Unable to find general section. You should copy the example '
@@ -252,13 +287,13 @@ def load_config(f):
         else:
             handlers.get(section_type, bad_section)(name, get_options(section))
 
-    validate_general_section(general)
+    _validate_general_section(general)
     return general, pairs, storages
 
 
 def load_status(base_path, pair, collection=None, data_type=None):
     assert data_type is not None
-    status_name = get_status_name(pair, collection)
+    status_name = _get_status_name(pair, collection)
     path = expand_path(os.path.join(base_path, status_name))
     if os.path.isfile(path) and data_type == 'items':
         new_path = path + '.items'
@@ -288,7 +323,7 @@ def load_status(base_path, pair, collection=None, data_type=None):
 def save_status(base_path, pair, collection=None, data_type=None, data=None):
     assert data_type is not None
     assert data is not None
-    status_name = get_status_name(pair, collection)
+    status_name = _get_status_name(pair, collection)
     path = expand_path(os.path.join(base_path, status_name)) + '.' + data_type
     base_path = os.path.dirname(path)
 
@@ -308,7 +343,7 @@ def save_status(base_path, pair, collection=None, data_type=None, data=None):
         json.dump(data, f)
 
 
-def storage_class_from_config(config):
+def _storage_class_from_config(config):
     config = dict(config)
     storage_name = config.pop('type')
     cls = storage_names.get(storage_name, None)
@@ -317,14 +352,14 @@ def storage_class_from_config(config):
     return cls, config
 
 
-def storage_instance_from_config(config):
+def _storage_instance_from_config(config):
     '''
     :param config: A configuration dictionary to pass as kwargs to the class
         corresponding to config['type']
     :param description: A name for the storage for debugging purposes
     '''
 
-    cls, config = storage_class_from_config(config)
+    cls, config = _storage_class_from_config(config)
 
     try:
         return cls(**config)
@@ -416,44 +451,9 @@ def sync_pair(wq, pair_name, collections_to_sync, general, all_pairs,
         wq.spawn_worker()
 
 
-def handle_cli_error(status_name='sync'):
-    try:
-        raise
-    except CliError as e:
-        cli_logger.critical(str(e))
-    except StorageEmpty as e:
-        cli_logger.error(
-            '{status_name}: Storage "{name}" was completely emptied. Use '
-            '`vdirsyncer sync --force-delete {status_name}` to synchronize '
-            'that emptyness to the other side, or delete the status by '
-            'yourself to restore the items from the non-empty side.'.format(
-                name=e.empty_storage.instance_name,
-                status_name=status_name
-            )
-        )
-    except SyncConflict as e:
-        cli_logger.error(
-            '{status_name}: One item changed on both sides. Resolve this '
-            'conflict manually, or by setting the `conflict_resolution` '
-            'parameter in your config file.\n'
-            'See also {docs}/api.html#pair-section\n'
-            'Item ID: {e.ident}\n'
-            'Item href on side A: {e.href_a}\n'
-            'Item href on side B: {e.href_b}\n'
-            .format(status_name=status_name, e=e, docs=DOCS_HOME)
-        )
-    except (click.Abort, KeyboardInterrupt, JobFailed):
-        pass
-    except Exception as e:
-        cli_logger.exception('Unhandled exception occured while syncing {}.'
-                             .format(status_name))
-    else:
-        return True
-
-
 def sync_collection(wq, pair_name, collection, config_a, config_b,
                     pair_options, general, force_delete):
-    status_name = get_status_name(pair_name, collection)
+    status_name = _get_status_name(pair_name, collection)
 
     key = ('sync', pair_name, collection)
     if key in wq.handled_jobs:
@@ -468,8 +468,8 @@ def sync_collection(wq, pair_name, collection, config_a, config_b,
                              collection, data_type='items') or {}
         cli_logger.debug('Loaded status for {}'.format(status_name))
 
-        a = storage_instance_from_config(config_a)
-        b = storage_instance_from_config(config_b)
+        a = _storage_instance_from_config(config_a)
+        b = _storage_instance_from_config(config_b)
         sync(
             a, b, status,
             conflict_resolution=pair_options.get('conflict_resolution', None),
