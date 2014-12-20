@@ -16,6 +16,30 @@ import pytest
 import vdirsyncer.cli as cli
 
 
+class _CustomRunner(object):
+    def __init__(self, tmpdir):
+        self.tmpdir = tmpdir
+        self.cfg = tmpdir.join('config')
+        self.runner = CliRunner()
+
+    def invoke(self, args, env=None, **kwargs):
+        env = env or {}
+        env.setdefault('VDIRSYNCER_CONFIG', str(self.cfg))
+        return self.runner.invoke(cli.app, args, env=env, **kwargs)
+
+    def write_with_general(self, data):
+        self.cfg.write(dedent('''
+        [general]
+        status_path = {}/status/
+        ''').format(str(self.tmpdir)))
+        self.cfg.write(data, mode='a')
+
+
+@pytest.fixture
+def runner(tmpdir, monkeypatch):
+    return _CustomRunner(tmpdir)
+
+
 def test_load_config(monkeypatch):
     f = io.StringIO(dedent(u'''
         [general]
@@ -85,12 +109,8 @@ def test_parse_pairs_args():
     ]
 
 
-def test_simple_run(tmpdir):
-    config_file = tmpdir.join('config')
-    config_file.write(dedent('''
-    [general]
-    status_path = {0}/status/
-
+def test_simple_run(tmpdir, runner):
+    runner.write_with_general(dedent('''
     [pair my_pair]
     a = my_a
     b = my_b
@@ -106,22 +126,17 @@ def test_simple_run(tmpdir):
     fileext = .txt
     ''').format(str(tmpdir)))
 
-    runner = CliRunner(env={'VDIRSYNCER_CONFIG': str(config_file)})
-    result = runner.invoke(cli.app, ['sync'])
+    result = runner.invoke(['sync'])
     assert not result.exception
 
     tmpdir.join('path_a/haha.txt').write('UID:haha')
-    result = runner.invoke(cli.app, ['sync'])
+    result = runner.invoke(['sync'])
     assert 'Copying (uploading) item haha to my_b' in result.output
     assert tmpdir.join('path_b/haha.txt').read() == 'UID:haha'
 
 
-def test_empty_storage(tmpdir):
-    config_file = tmpdir.join('config')
-    config_file.write(dedent('''
-    [general]
-    status_path = {0}/status/
-
+def test_empty_storage(tmpdir, runner):
+    runner.write_with_general(dedent('''
     [pair my_pair]
     a = my_a
     b = my_b
@@ -137,14 +152,13 @@ def test_empty_storage(tmpdir):
     fileext = .txt
     ''').format(str(tmpdir)))
 
-    runner = CliRunner(env={'VDIRSYNCER_CONFIG': str(config_file)})
-    result = runner.invoke(cli.app, ['sync'])
+    result = runner.invoke(['sync'])
     assert not result.exception
 
     tmpdir.join('path_a/haha.txt').write('UID:haha')
-    result = runner.invoke(cli.app, ['sync'])
+    result = runner.invoke(['sync'])
     tmpdir.join('path_b/haha.txt').remove()
-    result = runner.invoke(cli.app, ['sync'])
+    result = runner.invoke(['sync'])
     lines = result.output.splitlines()
     assert len(lines) == 2
     assert lines[0] == 'Syncing my_pair'
@@ -153,9 +167,8 @@ def test_empty_storage(tmpdir):
     assert result.exception
 
 
-def test_missing_general_section(tmpdir):
-    config_file = tmpdir.join('config')
-    config_file.write(dedent('''
+def test_missing_general_section(tmpdir, runner):
+    runner.cfg.write(dedent('''
     [pair my_pair]
     a = my_a
     b = my_b
@@ -171,28 +184,18 @@ def test_missing_general_section(tmpdir):
     fileext = .txt
     ''').format(str(tmpdir)))
 
-    runner = CliRunner()
-    result = runner.invoke(
-        cli.app, ['sync'],
-        env={'VDIRSYNCER_CONFIG': str(config_file)}
-    )
+    result = runner.invoke(['sync'])
     assert result.exception
     assert result.output.startswith('critical:')
     assert 'unable to find general section' in result.output.lower()
 
 
-def test_wrong_general_section(tmpdir):
-    config_file = tmpdir.join('config')
-    config_file.write(dedent('''
+def test_wrong_general_section(tmpdir, runner):
+    runner.cfg.write(dedent('''
     [general]
     wrong = true
     '''))
-
-    runner = CliRunner()
-    result = runner.invoke(
-        cli.app, ['sync'],
-        env={'VDIRSYNCER_CONFIG': str(config_file)}
-    )
+    result = runner.invoke(['sync'])
 
     assert result.exception
     lines = result.output.splitlines()
@@ -207,10 +210,7 @@ def test_wrong_general_section(tmpdir):
 def test_verbosity(tmpdir):
     runner = CliRunner()
     config_file = tmpdir.join('config')
-    config_file.write(dedent('''
-    [general]
-    status_path = {0}/status/
-    ''').format(str(tmpdir)))
+    config_file.write('')
 
     result = runner.invoke(
         cli.app, ['--verbosity=HAHA', 'sync'],
@@ -255,12 +255,8 @@ def test_deprecated_item_status(tmpdir):
         str(tmpdir), 'mypair', data_type='items') == data
 
 
-def test_collections_cache_invalidation(tmpdir):
-    cfg = tmpdir.join('config')
-    cfg.write(dedent('''
-    [general]
-    status_path = {0}/status/
-
+def test_collections_cache_invalidation(tmpdir, runner):
+    runner.write_with_general(dedent('''
     [storage foo]
     type = filesystem
     path = {0}/foo/
@@ -281,19 +277,14 @@ def test_collections_cache_invalidation(tmpdir):
     bar = tmpdir.mkdir('bar')
     foo.mkdir('a').join('itemone.txt').write('UID:itemone')
 
-    runner = CliRunner()
-    result = runner.invoke(cli.app, ['sync'],
-                           env={'VDIRSYNCER_CONFIG': str(cfg)})
+    result = runner.invoke(['sync'])
     assert not result.exception
 
     rv = bar.join('a').listdir()
     assert len(rv) == 1
     assert rv[0].basename == 'itemone.txt'
 
-    cfg.write(dedent('''
-    [general]
-    status_path = {0}/status/
-
+    runner.write_with_general(dedent('''
     [storage foo]
     type = filesystem
     path = {0}/foo/
@@ -312,8 +303,7 @@ def test_collections_cache_invalidation(tmpdir):
 
     tmpdir.join('status').remove()
     bar2 = tmpdir.mkdir('bar2')
-    result = runner.invoke(cli.app, ['sync'],
-                           env={'VDIRSYNCER_CONFIG': str(cfg)})
+    result = runner.invoke(['sync'])
     assert not result.exception
 
     rv = bar.join('a').listdir()
@@ -322,12 +312,8 @@ def test_collections_cache_invalidation(tmpdir):
     assert rv[0].basename == rv2[0].basename == 'itemone.txt'
 
 
-def test_invalid_pairs_as_cli_arg(tmpdir):
-    cfg = tmpdir.join('config')
-    cfg.write(dedent('''
-    [general]
-    status_path = {0}/status/
-
+def test_invalid_pairs_as_cli_arg(tmpdir, runner):
+    runner.write_with_general(dedent('''
     [storage foo]
     type = filesystem
     path = {0}/foo/
@@ -347,19 +333,13 @@ def test_invalid_pairs_as_cli_arg(tmpdir):
     tmpdir.mkdir('foo')
     tmpdir.mkdir('bar')
 
-    runner = CliRunner()
-    result = runner.invoke(cli.app, ['sync', 'foobar/d'],
-                           env={'VDIRSYNCER_CONFIG': str(cfg)})
+    result = runner.invoke(['sync', 'foobar/d'])
     assert result.exception
     assert 'pair foobar: collection d not found' in result.output.lower()
 
 
-def test_discover_command(tmpdir):
-    cfg = tmpdir.join('config')
-    cfg.write(dedent('''
-    [general]
-    status_path = {0}/status/
-
+def test_discover_command(tmpdir, runner):
+    runner.write_with_general(dedent('''
     [storage foo]
     type = filesystem
     path = {0}/foo/
@@ -383,9 +363,7 @@ def test_discover_command(tmpdir):
     foo.mkdir('b')
     foo.mkdir('c')
 
-    runner = CliRunner()
-    result = runner.invoke(cli.app, ['sync'],
-                           env={'VDIRSYNCER_CONFIG': str(cfg)})
+    result = runner.invoke(['sync'])
     assert not result.exception
     lines = result.output.splitlines()
     assert lines[0].startswith('Discovering')
@@ -394,47 +372,38 @@ def test_discover_command(tmpdir):
     assert 'Syncing foobar/c' in lines
 
     foo.mkdir('d')
-    result = runner.invoke(cli.app, ['sync'],
-                           env={'VDIRSYNCER_CONFIG': str(cfg)})
+    result = runner.invoke(['sync'])
     assert not result.exception
     assert 'Syncing foobar/d' not in result.output
 
-    result = runner.invoke(cli.app, ['discover'],
-                           env={'VDIRSYNCER_CONFIG': str(cfg)})
+    result = runner.invoke(['discover'])
     assert not result.exception
 
-    result = runner.invoke(cli.app, ['sync'],
-                           env={'VDIRSYNCER_CONFIG': str(cfg)})
+    result = runner.invoke(['sync'])
     assert not result.exception
     assert 'Syncing foobar/d' in result.output
 
 
-def test_multiple_pairs(tmpdir):
-    cfg_content = [dedent('''
-    [general]
-    status_path = {}/status/
-    ''').format(str(tmpdir))]
-    for name_a, name_b in ('foo', 'bar'), ('bam', 'baz'):
-        cfg_content.append(dedent('''
-        [pair {a}{b}]
-        a = {a}
-        b = {b}
-        ''').format(a=name_a, b=name_b))
+def test_multiple_pairs(tmpdir, runner):
+    def get_cfg():
+        for name_a, name_b in ('foo', 'bar'), ('bam', 'baz'):
+            yield dedent('''
+            [pair {a}{b}]
+            a = {a}
+            b = {b}
+            ''').format(a=name_a, b=name_b)
 
-        for name in name_a, name_b:
-            cfg_content.append(dedent('''
-            [storage {name}]
-            type = filesystem
-            path = {base}/{name}/
-            fileext = .txt
-            ''').format(name=name, base=str(tmpdir)))
+            for name in name_a, name_b:
+                yield dedent('''
+                [storage {name}]
+                type = filesystem
+                path = {base}/{name}/
+                fileext = .txt
+                ''').format(name=name, base=str(tmpdir))
 
-    cfg = tmpdir.join('config')
-    cfg.write(''.join(cfg_content))
+    runner.write_with_general(''.join(get_cfg()))
 
-    runner = CliRunner()
-    result = runner.invoke(cli.app, ['sync'],
-                           env={'VDIRSYNCER_CONFIG': str(cfg)})
+    result = runner.invoke(['sync'])
     assert sorted(result.output.splitlines()) == [
         'Discovering collections for pair bambaz',
         'Discovering collections for pair foobar',
