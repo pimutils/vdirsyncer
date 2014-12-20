@@ -407,3 +407,37 @@ def test_discover_command(tmpdir):
                            env={'VDIRSYNCER_CONFIG': str(cfg)})
     assert not result.exception
     assert 'Syncing foobar/d' in result.output
+
+
+def test_multiple_pairs(tmpdir):
+    cfg_content = [dedent('''
+    [general]
+    status_path = {}/status/
+    ''').format(str(tmpdir))]
+    for name_a, name_b in ('foo', 'bar'), ('bam', 'baz'):
+        cfg_content.append(dedent('''
+        [pair {a}{b}]
+        a = {a}
+        b = {b}
+        ''').format(a=name_a, b=name_b))
+
+        for name in name_a, name_b:
+            cfg_content.append(dedent('''
+            [storage {name}]
+            type = filesystem
+            path = {base}/{name}/
+            fileext = .txt
+            ''').format(name=name, base=str(tmpdir)))
+
+    cfg = tmpdir.join('config')
+    cfg.write(''.join(cfg_content))
+
+    runner = CliRunner()
+    result = runner.invoke(cli.app, ['sync'],
+                           env={'VDIRSYNCER_CONFIG': str(cfg)})
+    assert sorted(result.output.splitlines()) == [
+        'Discovering collections for pair bambaz',
+        'Discovering collections for pair foobar',
+        'Syncing bambaz',
+        'Syncing foobar',
+    ]

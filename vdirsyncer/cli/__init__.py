@@ -105,11 +105,11 @@ def sync(ctx, pairs, force_delete, max_workers):
 
     for pair_name, collections in parse_pairs_args(pairs, all_pairs):
         wq.spawn_worker()
-        wq.put(lambda wq: sync_pair(wq, pair_name=pair_name,
-                                    collections_to_sync=collections,
-                                    general=general, all_pairs=all_pairs,
-                                    all_storages=all_storages,
-                                    force_delete=force_delete))
+        wq.put(functools.partial(sync_pair, pair_name=pair_name,
+                                 collections_to_sync=collections,
+                                 general=general, all_pairs=all_pairs,
+                                 all_storages=all_storages,
+                                 force_delete=force_delete))
 
     wq.join()
 
@@ -136,11 +136,12 @@ def discover(ctx, pairs, max_workers):
                            .format(pair, list(all_pairs)))
 
         wq.spawn_worker()
-        wq.put(lambda wq: collections_for_pair(
+        wq.put(functools.partial(
+            (lambda wq, **kwargs: collections_for_pair(**kwargs)),
             status_path=general['status_path'], name_a=name_a, name_b=name_b,
             pair_name=pair, config_a=all_storages[name_a],
             config_b=all_storages[name_b], pair_options=pair_options,
-            skip_cache=True)
-        )
+            skip_cache=True
+        ))
 
     wq.join()
