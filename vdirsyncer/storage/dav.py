@@ -49,6 +49,20 @@ def _parse_xml(content):
                          'Double-check the URLs in your config.'.format(e))
 
 
+def _fuzzy_matches_mimetype(strict, weak):
+    # different servers give different getcontenttypes:
+    # "text/vcard", "text/x-vcard", "text/x-vcard; charset=utf-8",
+    # "text/directory;profile=vCard", "text/directory",
+    # "text/vcard; charset=utf-8"
+    if strict is None or weak is None:
+        return True
+
+    mediatype, subtype = strict.split('/')
+    if subtype in weak:
+        return True
+    return False
+
+
 class Discover(object):
     _resourcetype = None
     _homeset_xml = None
@@ -284,6 +298,9 @@ class DavStorage(Storage):
             href = href.replace(char, '_')
         return self._normalize_href(href + self.fileext)
 
+    def _is_item_mimetype(self, mimetype):
+        return _fuzzy_matches_mimetype(self.item_mimetype, mimetype)
+
     def get(self, href):
         ((actual_href, item, etag),) = self.get_multi([href])
         assert href == actual_href
@@ -403,8 +420,6 @@ class DavStorage(Storage):
                 dav_logger.warning('Skipping identical href: {!r}'
                                    .format(href))
                 continue
-            else:
-                hrefs.add(href)
 
             try:
                 prop = response.find('{DAV:}propstat/{DAV:}prop')
@@ -420,18 +435,13 @@ class DavStorage(Storage):
                 dav_logger.debug('Skipping {!r}, is collection.'.format(href))
                 continue
 
-            # different servers give different getcontenttypes:
-            # "text/vcard", "text/x-vcard", "text/x-vcard; charset=utf-8",
-            # "text/directory;profile=vCard", "text/directory",
-            # "text/vcard; charset=utf-8"
-            if self.item_mimetype is not None:
-                mediatype, subtype = self.item_mimetype.split('/')
-                if contenttype is not None and subtype not in contenttype.text:
-                    dav_logger.debug('Skipping {!r}, {!r} != {!r}.'
-                                     .format(href, contenttype,
-                                             self.item_mimetype))
-                    continue
+            if not self._is_item_mimetype(getattr(contenttype, 'text', None)):
+                dav_logger.debug('Skipping {!r}, {!r} != {!r}.'
+                                 .format(href, contenttype,
+                                         self.item_mimetype))
+                continue
 
+            hrefs.add(href)
             yield href, etag, prop
 
 
