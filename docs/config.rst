@@ -5,14 +5,17 @@ Configuration
 Vdirsyncer uses an ini-like format for storing its configuration. All values
 are JSON, invalid JSON will get interpreted as string::
 
-    "foo"
-    foo              # Same as "foo"
-    42
-    ["a", "b", "c"]
-    [a, b, c]        # This doesn't work though!
-    true
-    false
-    null             # Also known as None
+    x = "foo"  # String
+    x = foo  # Shorthand for same string
+
+    x = 42  # Integer
+
+    x = ["a", "b", "c"]  # List of strings
+
+    x = true  # Boolean
+    x = false
+
+    x = null  # Also known as None
 
 
 .. _general_config:
@@ -24,15 +27,14 @@ General Section
 
     [general]
     status_path = ...
-    #processes = 0
-    #password_config =
+    #password_command =
 
 
 - ``status_path``: A directory where vdirsyncer will store metadata for the
   next sync. The data is needed to determine whether a new item means it has
   been added on one side or deleted on the other.
 
-- ``password_config`` specifies a command to query for server passwords. The
+- ``password_command`` specifies a command to query for server passwords. The
   command will be called with the username as the first argument, and the
   hostname as the second.
 
@@ -40,7 +42,7 @@ General Section
    The ``passwordeval`` parameter.
 
 .. versionchanged:: 0.4.0
-   The ``passwordeval`` parameter has been renamed to ``password_config``.
+   The ``passwordeval`` parameter has been renamed to ``password_command``.
 
 .. _pair_config:
 
@@ -52,7 +54,8 @@ Pair Section
     [pair pair_name]
     a = ...
     b = ...
-    #conflict_resolution = ...
+    #collections = null
+    #conflict_resolution = null
 
 - Pair names can consist of any alphanumeric characters and the underscore.
 
@@ -63,11 +66,20 @@ Pair Section
   pointing to one collection each. Specifying a collection multiple times won't
   make vdirsyncer sync that collection more than once.
 
-  Furthermore, there are the special values ``"from a"`` and ``"from b"``,
-  which tell vdirsyncer to try autodiscovery on a specific storage::
+  If any collections don't exist, vdirsyncer will try to create them or raise
+  an error, depending on the storages' configuration (see the ``create``
+  parameter for some storages).
 
-      collections = ["from b", "foo", "bar"]  # all in storage b + "foo" + "bar"
-      collections = ["from b", from a"]  # all in storage a + all in storage b
+  Furthermore, there are the special values ``"from a"`` and ``"from b"``,
+  which tell vdirsyncer to try autodiscovery on a specific storage.
+
+  Examples:
+
+  - ``collections = ["from b", "foo", "bar"]`` makes vdirsyncer synchronize the
+    collections from side B, and also the collections named "foo" and "bar".
+
+  - ``collections = ["from b", from a"]`` makes vdirsyncer synchronize all
+    existing collections on either side.
 
 - ``conflict_resolution``: Optional, define how conflicts should be handled.  A
   conflict occurs when one item (event, task) changed on both sides since the
