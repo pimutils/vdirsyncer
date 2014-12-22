@@ -7,13 +7,14 @@
     :license: MIT, see LICENSE for more details.
 '''
 import hashlib
+from itertools import chain, tee
 
 import icalendar.cal
 import icalendar.caselessdict
 import icalendar.parser
 
-from . import cached_property, split_sequence
-from .compat import itervalues, text_type
+from . import cached_property, split_sequence, uniq
+from .compat import text_type
 
 
 def _process_properties(*s):
@@ -140,33 +141,27 @@ def split_collection(text, inline=(u'VTIMEZONE',),
     collection_name = None
 
     for collection in collections:
-        items = collection.subcomponents
         if collection_name is None:
             collection_name = collection.name
-
+            start = end = ()
             if collection_name in wrap_items_with:
-                start = u'BEGIN:{}'.format(collection_name)
-                end = u'END:{}'.format(collection_name)
-            else:
-                start = end = u''
+                start = (u'BEGIN:{}'.format(collection_name),)
+                end = (u'END:{}'.format(collection_name),)
 
-        if collection.name != collection_name:
+        elif collection.name != collection_name:
             raise ValueError('Different types of components at top-level. '
                              'Expected {}, got {}.'
                              .format(collection_name, collection.name))
 
-        inlined_items, normal_items = \
-            split_sequence(items, lambda item: item.name in inline)
+        inlined_items, normal_items = split_sequence(
+            collection.subcomponents,
+            lambda item: item.name in inline
+        )
+        inlined_lines = list(chain(*(to_unicode_lines(inlined_item)
+                                     for inlined_item in inlined_items)))
 
         for item in normal_items:
-            lines = []
-            lines.append(start)
-            for inlined_item in inlined_items:
-                lines.extend(to_unicode_lines(inlined_item))
-
-            lines.extend(to_unicode_lines(item))
-            lines.append(end)
-
+            lines = chain(start, inlined_lines, to_unicode_lines(item), end)
             yield u''.join(line + u'\r\n' for line in lines if line)
 
 
@@ -189,58 +184,43 @@ def to_unicode_lines(item):
 
 
 _default_join_wrappers = {
-    u'VCALENDAR': (u'VCALENDAR', (u'VTIMEZONE',)),
-    u'VEVENT': (u'VCALENDAR', (u'VTIMEZONE',)),
-    u'VTODO': (u'VCALENDAR', (u'VTIMEZONE',)),
-    u'VCARD': (u'VADDRESSBOOK', ())
+    u'VCALENDAR': u'VCALENDAR',
+    u'VEVENT': u'VCALENDAR',
+    u'VTODO': u'VCALENDAR',
+    u'VCARD': u'VADDRESSBOOK'
 }
 
 
 def join_collection(items, wrappers=_default_join_wrappers):
     '''
     :param wrappers: {
-        item_type: wrapper_type, common_components
+        item_type: wrapper_type
     }
-
-    Common components are those who can be moved from the item into the
-    wrapper, with duplicates removed.
     '''
-    inline = {}
-    components = []
-    wrapper_type = None
-    inline_types = None
-    item_type = None
 
-    def handle_item(item):
-        if item.name in inline_types:
-            inline[tuple(to_unicode_lines(item))] = item
-        else:
-            components.append(item)
+    items1, items2 = tee((icalendar.cal.Component.from_ical(x)
+                          for x in items), 2)
+    item_type, wrapper_type = _get_item_type(items1, wrappers)
+    _get_item_components = lambda x: (x.name == wrapper_type
+                                      and x.subcomponents
+                                      or [x])
+    components = chain(*(_get_item_components(x) for x in items2))
+    lines = chain(*uniq(tuple(to_unicode_lines(x)) for x in components))
 
-    for item in items:
-        component = icalendar.cal.Component.from_ical(item)
-
-        if item_type is None:
-            item_type = component.name
-            wrapper_type, inline_types = wrappers[item_type]
-
-        if component.name == item_type:
-            if item_type == wrapper_type:
-                for subcomponent in component.subcomponents:
-                    handle_item(subcomponent)
-            else:
-                handle_item(component)
-
-    start = end = u''
     if wrapper_type is not None:
-        start = u'BEGIN:{}'.format(wrapper_type)
-        end = u'END:{}'.format(wrapper_type)
-
-    lines = [start]
-    for inlined_item in itervalues(inline):
-        lines.extend(to_unicode_lines(inlined_item))
-    for component in components:
-        lines.extend(to_unicode_lines(component))
-    lines.append(end)
-
+        start = [u'BEGIN:{}'.format(wrapper_type)]
+        end = [u'END:{}'.format(wrapper_type)]
+        lines = chain(start, lines, end)
     return u''.join(line + u'\r\n' for line in lines)
+
+
+def _get_item_type(components, wrappers):
+    for component in components:
+        try:
+            item_type = component.name
+            wrapper_type = wrappers[item_type]
+        except KeyError:
+            pass
+        else:
+            return item_type, wrapper_type
+    return None, None
