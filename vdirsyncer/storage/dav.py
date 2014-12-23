@@ -120,8 +120,9 @@ class Discover(object):
 
     @_catch_generator_exceptions
     def _find_dav(self):
-        response = self.session.request('GET', self._well_known_uri)
-        yield response.url
+        response = self.session.request('GET', self._well_known_uri,
+                                        allow_redirects=False)
+        yield response.headers['Location']
 
     def discover(self):
         """discover all the user's CalDAV or CardDAV collections on the server
