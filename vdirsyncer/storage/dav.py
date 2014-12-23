@@ -64,20 +64,16 @@ def _fuzzy_matches_mimetype(strict, weak):
     return False
 
 
-def _catch_generator_exceptions(rv=None):
-    def wrapper(f):
-        @functools.wraps(f)
-        def inner(*args, **kwargs):
-            try:
-                for x in f(*args, **kwargs):
-                    yield x
-            except Exception:
-                import traceback
-                dav_logger.debug(traceback.format_exc())
-                for x in rv:
-                    yield x
-        return inner
-    return wrapper
+def _catch_generator_exceptions(f):
+    @functools.wraps(f)
+    def inner(*args, **kwargs):
+        try:
+            for x in f(*args, **kwargs):
+                yield x
+        except Exception:
+            import traceback
+            dav_logger.debug(traceback.format_exc())
+    return inner
 
 
 class Discover(object):
@@ -97,7 +93,7 @@ class Discover(object):
     def __init__(self, session):
         self.session = session
 
-    @_catch_generator_exceptions(rv=())
+    @_catch_generator_exceptions
     def _find_principal(self, url):
         """tries to find the principal URL of the user
         :returns: iterable (but should be only of element) of urls
@@ -122,7 +118,7 @@ class Discover(object):
                 if principal.tag.endswith('href'):
                     yield principal.text
 
-    @_catch_generator_exceptions(rv=())
+    @_catch_generator_exceptions
     def _find_dav(self):
         response = self.session.request('GET', self._well_known_uri)
         yield response.url
@@ -150,7 +146,7 @@ class Discover(object):
                             done.add(href)
                             yield collection
 
-    @_catch_generator_exceptions(rv=())
+    @_catch_generator_exceptions
     def _find_homes(self, principal):
         headers = self.session.get_default_headers()
         headers['Depth'] = 0
@@ -164,7 +160,7 @@ class Discover(object):
                 if homeset.tag.endswith('href'):
                     yield homeset.text
 
-    @_catch_generator_exceptions(rv=())
+    @_catch_generator_exceptions
     def _find_collections(self, home):
         """find all CalDAV collections under `home`"""
 
