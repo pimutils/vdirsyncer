@@ -26,6 +26,8 @@ Version 0.4.0
   ``VDIRSYNCER_CONFIG`` environment variable isn't set and the
   ``~/.vdirsyncer/config`` file doesn't exist, it will look for the
   configuration file at ``$XDG_CONFIG_HOME/vdirsyncer/config``.
+- Some improvements to CardDAV and CalDAV discovery, based on problems found
+  with FastMail. Support for ``.well-known``-URIs has been added.
 
 Version 0.3.4
 =============

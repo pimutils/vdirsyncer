@@ -7,6 +7,7 @@
     :license: MIT, see LICENSE for more details.
 '''
 import datetime
+import functools
 import itertools
 
 from lxml import etree
@@ -63,10 +64,27 @@ def _fuzzy_matches_mimetype(strict, weak):
     return False
 
 
+def _catch_generator_exceptions(rv=None):
+    def wrapper(f):
+        @functools.wraps(f)
+        def inner(*args, **kwargs):
+            try:
+                for x in f(*args, **kwargs):
+                    yield x
+            except Exception:
+                import traceback
+                dav_logger.debug(traceback.format_exc())
+                for x in rv:
+                    yield x
+        return inner
+    return wrapper
+
+
 class Discover(object):
     _resourcetype = None
     _homeset_xml = None
     _homeset_tag = None
+    _well_known_uri = None
     _collection_xml = """
     <d:propfind xmlns:d="DAV:">
         <d:prop>
@@ -79,7 +97,8 @@ class Discover(object):
     def __init__(self, session):
         self.session = session
 
-    def _find_principal(self):
+    @_catch_generator_exceptions(rv=())
+    def _find_principal(self, url):
         """tries to find the principal URL of the user
         :returns: iterable (but should be only of element) of urls
         :rtype: iterable(unicode)
@@ -94,14 +113,19 @@ class Discover(object):
             </d:prop>
         </d:propfind>
         """
-        response = self.session.request('PROPFIND', '', headers=headers,
-                                        data=body)
+        response = self.session.request('PROPFIND', url, headers=headers,
+                                        data=body, is_subpath=False)
         root = _parse_xml(response.content)
 
         for element in root.iter('{*}current-user-principal'):
             for principal in element.iter():  # should be only one
                 if principal.tag.endswith('href'):
                     yield principal.text
+
+    @_catch_generator_exceptions(rv=())
+    def _find_dav(self):
+        response = self.session.request('GET', self._well_known_uri)
+        yield response.url
 
     def discover(self):
         """discover all the user's CalDAV or CardDAV collections on the server
@@ -111,18 +135,23 @@ class Discover(object):
         # Another one of Radicale's specialties: Discovery is broken (returning
         # completely wrong URLs at every stage) as of version 0.9.
         # https://github.com/Kozea/Radicale/issues/196
-        done = set()
-        for principal in itertools.chain(self._find_principal(), ['']):
-            for home in itertools.chain(self._find_home(principal), ['']):
-                for collection in self._find_collections(home):
-                    collection['href'] = href = \
-                        utils.urlparse.urljoin(self.session.url,
-                                               collection['href'])
-                    if href not in done:
-                        done.add(href)
-                        yield collection
+        #
+        # So we just brute-force a lot of paths here.
 
-    def _find_home(self, principal):
+        done = set()
+        for dav in list(self._find_dav()) or ['']:
+            for principal in list(self._find_principal(dav)) or ['']:
+                for home in itertools.chain(self._find_homes(principal), ['']):
+                    for collection in self._find_collections(home):
+                        collection['href'] = href = \
+                            utils.urlparse.urljoin(self.session.url,
+                                                   collection['href'])
+                        if href not in done:
+                            done.add(href)
+                            yield collection
+
+    @_catch_generator_exceptions(rv=())
+    def _find_homes(self, principal):
         headers = self.session.get_default_headers()
         headers['Depth'] = 0
         response = self.session.request('PROPFIND', principal, headers=headers,
@@ -135,6 +164,7 @@ class Discover(object):
                 if homeset.tag.endswith('href'):
                     yield homeset.text
 
+    @_catch_generator_exceptions(rv=())
     def _find_collections(self, home):
         """find all CalDAV collections under `home`"""
 
@@ -168,6 +198,7 @@ class CalDiscover(Discover):
     </d:propfind>
     """
     _homeset_tag = '{*}calendar-home-set'
+    _well_known_uri = '/.well-known/caldav/'
 
 
 class CardDiscover(Discover):
@@ -180,6 +211,7 @@ class CardDiscover(Discover):
     </d:propfind>
     """
     _homeset_tag = '{*}addressbook-home-set'
+    _well_known_uri = '/.well-known/carddav/'
 
 
 class DavSession(object):
