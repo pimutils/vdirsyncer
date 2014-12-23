@@ -230,16 +230,17 @@ class DavSession(object):
         self.parsed_url = utils.urlparse.urlparse(self.url)
         self._session = None
 
-    def request(self, method, path, data=None, headers=None,
-                is_subpath=True):
+    def request(self, method, path, is_subpath=True, **kwargs):
         url = self.url
         if path:
             url = utils.urlparse.urljoin(self.url, path)
         assert url.startswith(self.url) or not is_subpath
         if self._session is None:
             self._session = requests_session()
-        return utils.request(method, url, data=data, headers=headers,
-                             session=self._session, **self._settings)
+
+        more = dict(self._settings)
+        more.update(kwargs)
+        return utils.request(method, url, session=self._session, **more)
 
     def get_default_headers(self):
         return {

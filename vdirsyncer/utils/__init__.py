@@ -232,8 +232,8 @@ class _FingerprintAdapter(requests.adapters.HTTPAdapter):
                                        assert_fingerprint=self.fingerprint)
 
 
-def request(method, url, data=None, headers=None, auth=None, verify=None,
-            session=None, latin1_fallback=True, verify_fingerprint=None):
+def request(method, url, session=None, latin1_fallback=True,
+            verify_fingerprint=None, **kwargs):
     '''
     Wrapper method for requests, to ease logging and mocking. Parameters should
     be the same as for ``requests.request``, except:
@@ -262,10 +262,10 @@ def request(method, url, data=None, headers=None, auth=None, verify=None,
     func = session.request
 
     logger.debug(u'{} {}'.format(method, url))
-    logger.debug(headers)
-    logger.debug(data)
+    logger.debug(kwargs.get('headers', {}))
+    logger.debug(kwargs.get('data', None))
     logger.debug('Sending request...')
-    r = func(method, url, data=data, headers=headers, auth=auth, verify=verify)
+    r = func(method, url, **kwargs)
 
     # See https://github.com/kennethreitz/requests/issues/2042
     content_type = r.headers.get('Content-Type', '')
