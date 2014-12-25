@@ -11,9 +11,9 @@ import functools
 import os
 import sys
 
-from .tasks import sync_pair
-from .utils import CliError, WorkerQueue, cli_logger, collections_for_pair, \
-    handle_cli_error, load_config, parse_pairs_args
+from .tasks import discover_collections, sync_pair
+from .utils import CliError, WorkerQueue, cli_logger, handle_cli_error, \
+    load_config, parse_pairs_args
 from .. import __version__, log
 from ..doubleclick import click
 from ..utils import expand_path
@@ -138,7 +138,7 @@ def discover(ctx, pairs, max_workers):
 
         wq.spawn_worker()
         wq.put(functools.partial(
-            (lambda wq, **kwargs: collections_for_pair(**kwargs)),
+            discover_collections,
             status_path=general['status_path'], name_a=name_a, name_b=name_b,
             pair_name=pair, config_a=all_storages[name_a],
             config_b=all_storages[name_b], pair_options=pair_options,

@@ -136,7 +136,7 @@ def collections_for_pair(status_path, name_a, name_b, pair_name, config_a,
     :param skip_cache: Whether to skip the cached data and always do discovery.
         Even with this option enabled, the new cache is written.
 
-    :returns: iterable of (collection, a_args, b_args)
+    :returns: iterable of (collection, (a_args, b_args))
     '''
     rv = load_status(status_path, pair_name, data_type='collections')
     cache_key = _get_collections_cache_key(pair_options, config_a, config_b)

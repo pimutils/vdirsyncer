@@ -8,6 +8,7 @@
 '''
 
 import functools
+import json
 
 from .utils import CliError, JobFailed, cli_logger, collections_for_pair, \
     get_status_name, handle_cli_error, load_status, save_status, \
@@ -81,3 +82,12 @@ def sync_collection(wq, pair_name, collection, config_a, config_b,
 
     save_status(general['status_path'], pair_name, collection,
                 data_type='items', data=status)
+
+
+def discover_collections(wq, pair_name, **kwargs):
+    rv = collections_for_pair(pair_name=pair_name, **kwargs)
+    collections = list(c for c, (a, b) in rv)
+    if collections == [None]:
+        collections = None
+    cli_logger.info('Saved for {}: collections = {}'
+                    .format(pair_name, json.dumps(collections)))
