@@ -90,7 +90,7 @@ def test_storage_instance_from_config(monkeypatch):
     import vdirsyncer.storage
     monkeypatch.setitem(vdirsyncer.storage.storage_names, 'lol', lol)
     config = {'type': 'lol', 'foo': 'bar', 'baz': 1}
-    assert cli.utils._storage_instance_from_config(config) == 'OK'
+    assert cli.utils.storage_instance_from_config(config) == 'OK'
 
 
 def test_parse_pairs_args():

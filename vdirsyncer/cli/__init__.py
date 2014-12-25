@@ -11,8 +11,9 @@ import functools
 import os
 import sys
 
+from .tasks import sync_pair
 from .utils import CliError, WorkerQueue, cli_logger, collections_for_pair, \
-    handle_cli_error, load_config, parse_pairs_args, sync_pair
+    handle_cli_error, load_config, parse_pairs_args
 from .. import __version__, log
 from ..doubleclick import click
 from ..utils import expand_path
