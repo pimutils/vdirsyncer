@@ -435,3 +435,47 @@ def test_invalid_collections_arg(tmpdir, runner):
         'Section `pair foobar`: `collections` parameter must be a list of '
         'collection names (strings!) or `null`.'
     )
+
+
+def test_parse_config_value():
+    x = cli.utils.parse_config_value
+    with pytest.raises(ValueError):
+        x('123  # comment!')
+
+    assert x('"123  # comment!"') == '123  # comment!'
+    assert x('True') is True
+    assert x('False') is False
+    assert x('Yes') is True
+    assert x('3.14') == 3.14
+    assert x('') == ''
+    assert x('""') == ''
+
+
+def test_parse_options():
+    o = {
+        'foo': 'yes',
+        'hah': 'true',
+        'bar': '',
+        'baz': 'whatever',
+        'bam': '123',
+        'asd': 'off'
+    }
+
+    a = dict(cli.utils.parse_options(o.items()))
+
+    expected = {
+        'foo': True,
+        'hah': True,
+        'bar': '',
+        'baz': 'whatever',
+        'bam': 123,
+        'asd': False
+    }
+
+    assert a == expected
+
+    for key in a:
+        # Yes, we want a very strong typecheck here, because we actually have
+        # to differentiate between bool and int, and in Python 2, bool is a
+        # subclass of int.
+        assert type(a[key]) is type(expected[key])  # noqa

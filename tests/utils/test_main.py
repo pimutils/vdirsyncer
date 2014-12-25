@@ -7,27 +7,29 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-import click
-import pytest
-
-from click.testing import CliRunner
 import os
 import stat
+
+import click
+from click.testing import CliRunner
+
 import pytest
+
 import requests
 
-import vdirsyncer.utils as utils
 import vdirsyncer.doubleclick as doubleclick
-from vdirsyncer.utils.vobject import split_collection
+import vdirsyncer.utils as utils
 
-from .. import blow_up, normalize_item, SIMPLE_TEMPLATE, BARE_EVENT_TEMPLATE
+from .. import blow_up
 
 
 class EmptyNetrc(object):
     def __init__(self, file=None):
         self._file = file
+
     def authenticators(self, hostname):
         return None
+
 
 class EmptyKeyring(object):
     def get_password(self, *a, **kw):
@@ -38,49 +40,6 @@ class EmptyKeyring(object):
 def empty_password_storages(monkeypatch):
     monkeypatch.setattr('netrc.netrc', EmptyNetrc)
     monkeypatch.setattr(utils, 'keyring', EmptyKeyring())
-
-
-def test_parse_options():
-    o = {
-        'foo': 'yes',
-        'hah': 'true',
-        'bar': '',
-        'baz': 'whatever',
-        'bam': '123',
-        'asd': 'off'
-    }
-
-    a = dict(utils.parse_options(o.items()))
-
-    expected = {
-        'foo': True,
-        'hah': True,
-        'bar': '',
-        'baz': 'whatever',
-        'bam': 123,
-        'asd': False
-    }
-
-    assert a == expected
-
-    for key in a:
-        # Yes, we want a very strong typecheck here, because we actually have
-        # to differentiate between bool and int, and in Python 2, bool is a
-        # subclass of int.
-        assert type(a[key]) is type(expected[key])  # flake8: noqa
-
-
-def test_parse_config_value():
-    with pytest.raises(ValueError):
-        utils.parse_config_value('123  # comment!')
-
-    assert utils.parse_config_value('"123  # comment!"') == '123  # comment!'
-    assert utils.parse_config_value('True') is True
-    assert utils.parse_config_value('False') is False
-    assert utils.parse_config_value('Yes') is True
-    assert utils.parse_config_value('3.14') == 3.14
-    assert utils.parse_config_value('') == ''
-    assert utils.parse_config_value('""') == ''
 
 
 def test_get_password_from_netrc(monkeypatch):
@@ -133,9 +92,9 @@ def test_get_password_from_command(tmpdir):
     filepath = str(tmpdir) + '/' + filename
     f = open(filepath, 'w')
     f.write('#!/bin/sh\n'
-        '[ "$1" != "my_username" ] && exit 1\n'
-        '[ "$2" != "example.com" ] && exit 1\n'
-        'echo "{}"'.format(password))
+            '[ "$1" != "my_username" ] && exit 1\n'
+            '[ "$2" != "example.com" ] && exit 1\n'
+            'echo "{}"'.format(password))
     f.close()
 
     st = os.stat(filepath)
@@ -144,7 +103,7 @@ def test_get_password_from_command(tmpdir):
     @doubleclick.click.command()
     @doubleclick.click.pass_context
     def fake_app(ctx):
-        ctx.obj = {'config' : ({'password_command' : filepath},{},{})}
+        ctx.obj = {'config': ({'password_command': filepath}, {}, {})}
         _password = utils.get_password(username, resource)
         assert _password == password
 
@@ -154,8 +113,6 @@ def test_get_password_from_command(tmpdir):
 
 
 def test_get_password_from_prompt():
-    getpass_calls = []
-
     user = 'my_user'
     resource = 'http://example.com'
 

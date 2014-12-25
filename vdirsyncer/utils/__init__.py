@@ -7,7 +7,6 @@
     :license: MIT, see LICENSE for more details.
 '''
 
-import json
 import os
 import threading
 
@@ -66,53 +65,6 @@ def uniq(s):
         if x not in d:
             d.add(x)
             yield x
-
-
-def parse_config_value(value):
-    try:
-        return json.loads(value)
-    except ValueError:
-        rv = value
-
-    if value.lower() in ('on', 'true', 'yes'):
-        logger.warning('{} is deprecated for the config, please use true.\n'
-                       'The old form will be removed in 0.4.0.'
-                       .format(value))
-        return True
-    if value.lower() in ('off', 'false', 'no'):
-        logger.warning('{} is deprecated for the config, please use false.\n'
-                       'The old form will be removed in 0.4.0.'
-                       .format(value))
-        return False
-    if value.lower() == 'none':
-        logger.warning('None is deprecated for the config, please use null.\n'
-                       'The old form will be removed in 0.4.0.')
-        return None
-
-    if '#' in value:
-        raise ValueError('Invalid value:{}\n'
-                         'Use double quotes (") if you want to use hashes in '
-                         'your value.')
-
-    if len(value.splitlines()) > 1:
-        # ConfigParser's barrier for mistaking an arbitrary line for the
-        # continuation of a value is awfully low. The following example will
-        # also contain the second line in the value:
-        #
-        # foo = bar
-        #  # my comment
-        raise ValueError('No multiline-values allowed:\n{!r}'.format(value))
-
-    return rv
-
-
-def parse_options(items, section=None):
-    for key, value in items:
-        try:
-            yield key, parse_config_value(value)
-        except ValueError as e:
-            raise ValueError('Section {!r}, option {!r}: {}'
-                             .format(section, key, e))
 
 
 def get_password(username, resource, _lock=threading.Lock()):

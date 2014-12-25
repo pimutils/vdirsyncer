@@ -20,8 +20,7 @@ from .. import DOCS_HOME, PROJECT_HOME, log
 from ..doubleclick import click
 from ..storage import storage_names
 from ..sync import StorageEmpty, SyncConflict
-from ..utils import expand_path, get_class_init_args, parse_options, \
-    safe_write
+from ..utils import expand_path, get_class_init_args, safe_write
 from ..utils.compat import text_type
 
 
@@ -465,3 +464,56 @@ class WorkerQueue(object):
 
     def put(self, f):
         return self._queue.put(f)
+
+
+def parse_config_value(value):
+    try:
+        return json.loads(value)
+    except ValueError:
+        rv = value
+
+    if value.lower() in ('on', 'true', 'yes'):
+        cli_logger.warning(
+            '{} is deprecated for the config, please use true.\n'
+            'The old form will be removed in 0.4.0.'
+            .format(value)
+        )
+        return True
+    if value.lower() in ('off', 'false', 'no'):
+        cli_logger.warning(
+            '{} is deprecated for the config, please use false.\n'
+            'The old form will be removed in 0.4.0.'
+            .format(value)
+        )
+        return False
+    if value.lower() == 'none':
+        cli_logger.warning(
+            'None is deprecated for the config, please use null.\n'
+            'The old form will be removed in 0.4.0.'
+        )
+        return None
+
+    if '#' in value:
+        raise ValueError('Invalid value:{}\n'
+                         'Use double quotes (") if you want to use hashes in '
+                         'your value.')
+
+    if len(value.splitlines()) > 1:
+        # ConfigParser's barrier for mistaking an arbitrary line for the
+        # continuation of a value is awfully low. The following example will
+        # also contain the second line in the value:
+        #
+        # foo = bar
+        #  # my comment
+        raise ValueError('No multiline-values allowed:\n{!r}'.format(value))
+
+    return rv
+
+
+def parse_options(items, section=None):
+    for key, value in items:
+        try:
+            yield key, parse_config_value(value)
+        except ValueError as e:
+            raise ValueError('Section {!r}, option {!r}: {}'
+                             .format(section, key, e))
