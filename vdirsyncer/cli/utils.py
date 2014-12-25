@@ -22,6 +22,7 @@ from ..storage import storage_names
 from ..sync import StorageEmpty, SyncConflict
 from ..utils import expand_path, get_class_init_args, parse_options, \
     safe_write
+from ..utils.compat import text_type
 
 
 try:
@@ -222,12 +223,6 @@ def _collections_for_pair_impl(status_path, name_a, name_b, pair_name,
 
 
 def _validate_general_section(general_config):
-    if general_config is None:
-        raise CliError(
-            'Unable to find general section. You should copy the example '
-            'config from the repository and edit it.\n{}'.format(PROJECT_HOME)
-        )
-
     if 'passwordeval' in general_config:
         # XXX: Deprecation
         cli_logger.warning('The `passwordeval` parameter has been renamed to '
@@ -245,7 +240,20 @@ def _validate_general_section(general_config):
                             .format(u', '.join(missing)))
 
     if invalid or missing:
-        raise CliError('Invalid general section.')
+        raise ValueError('Invalid general section. You should copy the '
+                         'example config from the repository and edit it.\n{}'
+                         .format(PROJECT_HOME))
+
+
+def _validate_pair_section(pair_config):
+    collections = pair_config.get('collections', None)
+    if collections is None:
+        return
+    e = ValueError('`collections` parameter must be a list of collection '
+                   'names (strings!) or `null`.')
+    if not isinstance(collections, list) or \
+       any(not isinstance(x, (text_type, bytes)) for x in collections):
+        raise e
 
 
 def load_config(f):
@@ -254,24 +262,29 @@ def load_config(f):
 
     get_options = lambda s: dict(parse_options(c.items(s), section=s))
 
-    general = None
+    general = {}
     pairs = {}
     storages = {}
 
     def handle_storage(storage_name, options):
-        validate_section_name(storage_name, 'storage')
         storages.setdefault(storage_name, {}).update(options)
         storages[storage_name]['instance_name'] = storage_name
 
     def handle_pair(pair_name, options):
-        validate_section_name(pair_name, 'pair')
+        _validate_pair_section(options)
         a, b = options.pop('a'), options.pop('b')
         pairs[pair_name] = a, b, options
+
+    def handle_general(_, options):
+        if general:
+            raise CliError('More than one general section in config file.')
+        general.update(options)
 
     def bad_section(name, options):
         cli_logger.error('Unknown section: {}'.format(name))
 
-    handlers = {'storage': handle_storage, 'pair': handle_pair}
+    handlers = {'storage': handle_storage, 'pair': handle_pair, 'general':
+                handle_general}
 
     for section in c.sections():
         if ' ' in section:
@@ -279,12 +292,12 @@ def load_config(f):
         else:
             section_type = name = section
 
-        if section_type == 'general':
-            if general is not None:
-                raise CliError('More than one general section in config file.')
-            general = get_options(section_type)
-        else:
-            handlers.get(section_type, bad_section)(name, get_options(section))
+        try:
+            validate_section_name(name, section_type)
+            f = handlers.get(section_type, bad_section)
+            f(name, get_options(section))
+        except ValueError as e:
+            raise CliError('Section `{}`: {}'.format(section, str(e)))
 
     _validate_general_section(general)
     return general, pairs, storages

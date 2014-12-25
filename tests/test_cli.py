@@ -187,7 +187,7 @@ def test_missing_general_section(tmpdir, runner):
     result = runner.invoke(['sync'])
     assert result.exception
     assert result.output.startswith('critical:')
-    assert 'unable to find general section' in result.output.lower()
+    assert 'invalid general section' in result.output.lower()
 
 
 def test_wrong_general_section(tmpdir, runner):
@@ -199,12 +199,11 @@ def test_wrong_general_section(tmpdir, runner):
 
     assert result.exception
     lines = result.output.splitlines()
-    assert lines[:-1] == [
+    assert lines[:-2] == [
         'critical: general section doesn\'t take the parameters: wrong',
         'critical: general section is missing the parameters: status_path'
     ]
-    assert lines[-1].startswith('critical:')
-    assert lines[-1].endswith('Invalid general section.')
+    assert 'Invalid general section.' in lines[-2]
 
 
 def test_verbosity(tmpdir):
@@ -270,7 +269,7 @@ def test_collections_cache_invalidation(tmpdir, runner):
     [pair foobar]
     a = foo
     b = bar
-    collections = a, b, c
+    collections = ["a", "b", "c"]
     ''').format(str(tmpdir)))
 
     foo = tmpdir.mkdir('foo')
@@ -298,7 +297,7 @@ def test_collections_cache_invalidation(tmpdir, runner):
     [pair foobar]
     a = foo
     b = bar
-    collections = a, b, c
+    collections = ["a", "b", "c"]
     ''').format(str(tmpdir)))
 
     tmpdir.join('status').remove()
@@ -327,7 +326,7 @@ def test_invalid_pairs_as_cli_arg(tmpdir, runner):
     [pair foobar]
     a = foo
     b = bar
-    collections = a, b, c
+    collections = ["a", "b", "c"]
     ''').format(str(tmpdir)))
 
     tmpdir.mkdir('foo')
@@ -353,7 +352,7 @@ def test_discover_command(tmpdir, runner):
     [pair foobar]
     a = foo
     b = bar
-    collections = from a
+    collections = ["from a"]
     ''').format(str(tmpdir)))
 
     foo = tmpdir.mkdir('foo')
@@ -410,3 +409,29 @@ def test_multiple_pairs(tmpdir, runner):
         'Syncing bambaz',
         'Syncing foobar',
     ]
+
+
+def test_invalid_collections_arg(tmpdir, runner):
+    runner.write_with_general(dedent('''
+    [pair foobar]
+    a = foo
+    b = bar
+    collections = [null]
+
+    [storage foo]
+    type = filesystem
+    path = {base}/foo/
+    fileext = .txt
+
+    [storage bar]
+    type = filesystem
+    path = {base}/bar/
+    fileext = .txt
+    '''.format(base=str(tmpdir))))
+
+    result = runner.invoke(['sync'])
+    assert result.exception
+    assert result.output.strip().endswith(
+        'Section `pair foobar`: `collections` parameter must be a list of '
+        'collection names (strings!) or `null`.'
+    )
