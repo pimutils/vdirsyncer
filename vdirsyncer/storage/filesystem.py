@@ -50,12 +50,18 @@ class FilesystemStorage(Storage):
         if kwargs.pop('collection', None) is not None:
             raise TypeError('collection argument must not be given.')
         path = expand_path(path)
-        for collection in os.listdir(path):
-            collection_path = os.path.join(path, collection)
-            if os.path.isdir(collection_path):
-                args = dict(collection=collection, path=collection_path,
-                            **kwargs)
-                yield args
+        try:
+            collections = os.listdir(path)
+        except OSError:
+            if not kwargs.get('create', True):
+                raise
+        else:
+            for collection in collections:
+                collection_path = os.path.join(path, collection)
+                if os.path.isdir(collection_path):
+                    args = dict(collection=collection, path=collection_path,
+                                **kwargs)
+                    yield args
 
     @classmethod
     def join_collection(cls, collection, **kwargs):
