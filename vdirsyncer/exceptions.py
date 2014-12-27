@@ -44,3 +44,7 @@ class AlreadyExistingError(PreconditionFailed):
 
 class WrongEtagError(PreconditionFailed):
     '''Wrong etag'''
+
+
+class ReadOnlyError(Error):
+    '''Storage is read-only.'''

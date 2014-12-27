@@ -9,6 +9,7 @@
 
 import pytest
 
+import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.memory import MemoryStorage
 from vdirsyncer.sync import BothReadOnly, StorageEmpty, SyncConflict, sync
@@ -251,10 +252,14 @@ def test_both_readonly():
 
 def test_readonly():
     a = MemoryStorage()
-    b = MemoryStorage(read_only=True)
+    b = MemoryStorage()
     status = {}
     href_a, _ = a.upload(Item(u'UID:1'))
     href_b, _ = b.upload(Item(u'UID:2'))
+    b.read_only = True
+    with pytest.raises(exceptions.ReadOnlyError):
+        b.upload(Item(u'UID:3'))
+
     sync(a, b, status)
     assert len(status) == 2 and a.has(href_a) and not b.has(href_a)
     sync(a, b, status)

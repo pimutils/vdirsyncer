@@ -7,13 +7,31 @@
     :license: MIT, see LICENSE for more details.
 '''
 
+import functools
 
 from .. import exceptions
 from ..utils import uniq
+from ..utils.compat import with_metaclass
 from ..utils.vobject import Item  # noqa
 
 
-class Storage(object):
+def mutating_storage_method(f):
+    @functools.wraps(f)
+    def inner(self, *args, **kwargs):
+        if self.read_only:
+            raise exceptions.ReadOnlyError('This storage is read-only.')
+        return f(self, *args, **kwargs)
+    return inner
+
+
+class StorageMeta(type):
+    def __init__(cls, name, bases, d):
+        for method in ('update', 'upload', 'delete'):
+            setattr(cls, method, mutating_storage_method(getattr(cls, method)))
+        return super(StorageMeta, cls).__init__(name, bases, d)
+
+
+class Storage(with_metaclass(StorageMeta)):
 
     '''Superclass of all storages, mainly useful to summarize the interface to
     implement.
@@ -63,8 +81,9 @@ class Storage(object):
         if read_only is None:
             read_only = self.read_only
         if self.read_only and not read_only:
-            raise ValueError('This storage is read-only.')
+            raise ValueError('This storage can only be read-only.')
         self.read_only = bool(read_only)
+
         if collection and instance_name:
             instance_name = '{}/{}'.format(instance_name, collection)
         self.instance_name = instance_name

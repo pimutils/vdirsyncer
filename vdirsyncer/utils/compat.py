@@ -27,3 +27,11 @@ else:  # pragma: no cover
     text_type = str
     iteritems = lambda x: x.items()
     itervalues = lambda x: x.values()
+
+
+def with_metaclass(meta, *bases):
+    '''Original code from six, by Benjamin Peterson.'''
+    class metaclass(meta):
+        def __new__(cls, name, this_bases, d):
+            return meta(name, bases, d)
+    return type.__new__(metaclass, 'temporary_class', (), {})
