@@ -138,8 +138,8 @@ would be synchronized to the location ``~/.contacts/default/``.
 
 Vdirsyncer fetches this list on first sync, and will re-fetch it if you change
 your configuration file. However, if new collections are created on the server,
-it will not automatically start synchronizing those [1]_. You should run
+it will not automatically start synchronizing those [2]_. You should run
 ``vdirsyncer discover`` to re-fetch this list instead.
 
-.. [1] Because collections are added rarely, and checking for this case before
+.. [2] Because collections are added rarely, and checking for this case before
    every synchronization isn't worth the overhead.
