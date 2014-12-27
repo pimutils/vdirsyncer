@@ -282,7 +282,17 @@ def get_etag_from_file(fpath):
     return '{:.9f}'.format(os.path.getmtime(fpath))
 
 
-def get_class_init_args(cls):
+def get_class_init_specs(cls, stop_at=object):
+    if cls is stop_at:
+        return ()
+    import inspect
+    spec = inspect.getargspec(cls.__init__)
+    supercls = next(getattr(x.__init__, '__objclass__', x)
+                    for x in cls.__mro__[1:])
+    return (spec,) + get_class_init_specs(supercls, stop_at=stop_at)
+
+
+def get_class_init_args(cls, stop_at=object):
     '''
     Get args which are taken during class initialization. Assumes that all
     classes' __init__ calls super().__init__ with the rest of the arguments.
@@ -292,19 +302,12 @@ def get_class_init_args(cls):
         class can take, and ``required`` is the subset of arguments the class
         requires.
     '''
-    import inspect
+    all, required = set(), set()
+    for spec in get_class_init_specs(cls, stop_at=stop_at):
+        all.update(spec.args[1:])
+        required.update(spec.args[1:-len(spec.defaults or ())])
 
-    if cls is object:
-        return set(), set()
-
-    spec = inspect.getargspec(cls.__init__)
-    all = set(spec.args[1:])
-    required = set(spec.args[1:-len(spec.defaults or ())])
-    supercls = next(getattr(x.__init__, '__objclass__', x)
-                    for x in cls.__mro__[1:])
-    s_all, s_required = get_class_init_args(supercls)
-
-    return all | s_all, required | s_required
+    return all, required
 
 
 def checkdir(path, create=False, mode=0o750):

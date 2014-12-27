@@ -126,13 +126,13 @@ These storages generally support reading and changing of their items. Their
 default value for ``read_only`` is ``false``, but can be set to ``true`` if
 wished.
 
-.. autoclass:: CaldavStorage
+.. autostorage:: CaldavStorage
 
-.. autoclass:: CarddavStorage
+.. autostorage:: CarddavStorage
 
-.. autoclass:: FilesystemStorage
+.. autostorage:: FilesystemStorage
 
-.. autoclass:: SingleFileStorage
+.. autostorage:: SingleFileStorage
 
 Read-only storages
 ~~~~~~~~~~~~~~~~~~
@@ -141,4 +141,4 @@ These storages don't support writing of their items, consequently ``read_only``
 is set to ``true`` by default. Changing ``read_only`` to ``false`` on them
 leads to an error.
 
-.. autoclass:: HttpStorage
+.. autostorage:: HttpStorage

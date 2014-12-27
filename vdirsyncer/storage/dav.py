@@ -253,12 +253,6 @@ class DavSession(object):
 class DavStorage(Storage):
 
     '''
-    .. note::
-
-        Please also see :doc:`supported` for very important information, as
-        changing some of the default options might be very dangerous with some
-        servers.
-
     :param url: Base URL or an URL to a collection.
     :param username: Username for authentication.
     :param password: Password for authentication.
@@ -272,6 +266,12 @@ class DavStorage(Storage):
     :param useragent: Default ``vdirsyncer``.
     :param unsafe_href_chars: Replace the given characters when generating
         hrefs. Defaults to ``'@'``.
+
+    .. note::
+
+        Please also see :doc:`supported` for very important information, as
+        changing some of the default options might be very dangerous with some
+        servers.
     '''
 
     # the file extension of items. Useful for testing against radicale.
@@ -478,7 +478,7 @@ class DavStorage(Storage):
 class CaldavStorage(DavStorage):
 
     __doc__ = '''
-    CalDAV. Usable as ``caldav`` in the config file.
+    CalDAV.
 
     You can set a timerange to synchronize with the parameters ``start_date``
     and ``end_date``. Inside those parameters, you can use any Python
@@ -492,15 +492,13 @@ class CaldavStorage(DavStorage):
     Either both or none have to be specified. The default is to synchronize
     everything.
 
-    ''' + DavStorage.__doc__ + '''
     :param start_date: Start date of timerange to show, default -inf.
     :param end_date: End date of timerange to show, default +inf.
     :param item_types: Comma-separated collection types to show from the
         server. Dependent on server functionality, no clientside validation of
         results. The empty value ``''`` is the same as ``'VTODO, VEVENT,
         VJOURNAL'``.
-
-    '''
+    ''' + DavStorage.__doc__
 
     storage_name = 'caldav'
     fileext = '.ics'
@@ -625,7 +623,7 @@ class CaldavStorage(DavStorage):
 class CarddavStorage(DavStorage):
 
     __doc__ = '''
-    CardDAV. Usable as ``carddav`` in the config file.
+    CardDAV.
     ''' + DavStorage.__doc__
 
     storage_name = 'carddav'

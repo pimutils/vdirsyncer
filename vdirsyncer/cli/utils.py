@@ -517,3 +517,17 @@ def parse_options(items, section=None):
         except ValueError as e:
             raise ValueError('Section {!r}, option {!r}: {}'
                              .format(section, key, e))
+
+
+def format_storage_config(cls, header=True):
+    if header is True:
+        yield '[storage {}]'.format(cls.storage_name)
+
+    from ..storage.base import Storage
+    from ..utils import get_class_init_specs
+    for spec in get_class_init_specs(cls, stop_at=Storage):
+        defaults = dict(zip(spec.args[-len(spec.defaults):], spec.defaults))
+        for key in spec.args[1:]:
+            comment = '' if key not in defaults else '#'
+            value = defaults.get(key, '...')
+            yield '{}{} = {}'.format(comment, key, json.dumps(value))

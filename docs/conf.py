@@ -89,6 +89,31 @@ def github_issue_role(name, rawtext, text, lineno, inliner, options={},
     return [node], []
 
 
+from sphinx.ext import autodoc
+
+
+class StorageDocumenter(autodoc.ClassDocumenter):
+    '''Custom formatter for auto-documenting storage classes. It assumes that
+    the first line of the class' docstring is its own paragraph.
+
+    After that first paragraph, an example configuration will be inserted and
+    Sphinx' __init__ signature removed.'''
+
+    objtype = 'storage'
+    directivetype = 'attribute'
+
+    def format_signature(self):
+        return ''
+
+    def get_doc(self, encoding=None, ignore=1):
+        from vdirsyncer.cli.utils import format_storage_config
+        rv = autodoc.ClassDocumenter.get_doc(self, encoding, ignore)
+        config = [u'    ' + x for x in format_storage_config(self.object)]
+        rv[0] = rv[0][:1] + [u'::', u''] + config + [u''] + rv[0][1:]
+        return rv
+
+
 def setup(app):
     app.add_role('gh', github_issue_role)
     app.add_role('ghpr', github_issue_role)
+    app.add_autodocumenter(StorageDocumenter)

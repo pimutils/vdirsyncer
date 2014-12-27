@@ -20,8 +20,7 @@ logger = log.get(__name__)
 
 
 class SingleFileStorage(Storage):
-    '''Save data in single ``.vcf`` or ``.ics`` file. Usable as ``singlefile``
-    in the config file.
+    '''Save data in single local ``.vcf`` or ``.ics`` file.
 
     The storage basically guesses how items should be joined in the file.
 

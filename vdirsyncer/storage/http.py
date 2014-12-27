@@ -46,8 +46,7 @@ def prepare_verify(verify):
 
 class HttpStorage(Storage):
     '''
-    Use a simple ``.ics`` file (or similar) from the web. Usable as ``http`` in
-    the config file.
+    Use a simple ``.ics`` file (or similar) from the web.
 
     :param url: URL to the ``.ics`` file.
     :param username: Username for authentication.
