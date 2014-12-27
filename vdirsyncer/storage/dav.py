@@ -496,8 +496,7 @@ class CaldavStorage(DavStorage):
     :param end_date: End date of timerange to show, default +inf.
     :param item_types: Comma-separated collection types to show from the
         server. Dependent on server functionality, no clientside validation of
-        results. The empty value ``''`` is the same as ``'VTODO, VEVENT,
-        VJOURNAL'``.
+        results. The empty value ``[]`` means "all items".
     ''' + DavStorage.__doc__
 
     storage_name = 'caldav'

@@ -175,10 +175,22 @@ class TestCaldavStorage(DavStorageTests):
             list(s.list())
         assert len(calls) == 1
 
+    def test_item_types(self, s):
+        event = s.upload(format_item(EVENT_TEMPLATE))
+        task = s.upload(format_item(TASK_TEMPLATE))
+        s.item_types = ('VTODO', 'VEVENT')
+        assert set(s.list()) == set([event, task])
+        s.item_types = ('VTODO',)
+        assert set(s.list()) == set([task])
+        s.item_types = ('VEVENT',)
+        assert set(s.list()) == set([event])
+        s.item_types = ()
+        assert set(s.list()) == set([event, task])
+
 
 class TestCarddavStorage(DavStorageTests):
     storage_class = CarddavStorage
 
     @pytest.fixture
-    def item_template(self, request):
+    def item_template(self):
         return VCARD_TEMPLATE
