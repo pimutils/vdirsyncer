@@ -6,6 +6,7 @@
     :copyright: (c) 2014 Markus Unterwaditzer & contributors
     :license: MIT, see LICENSE for more details.
 '''
+import functools
 import random
 
 import pytest
@@ -24,7 +25,7 @@ def format_item(item_template):
     return Item(item_template.format(r=r))
 
 
-class BaseStorageTests(object):
+class StorageTests(object):
     @pytest.fixture
     def get_storage_args(self):
         '''
@@ -45,6 +46,11 @@ class BaseStorageTests(object):
     @pytest.fixture
     def get_item(self, item_template):
         return lambda: format_item(item_template)
+
+    @pytest.fixture
+    def requires_collections(self):
+        if not getattr(self, 'supports_collections', True):
+            pytest.skip('This storage does not support collections.')
 
     def test_generic(self, s, get_item):
         items = [get_item() for i in range(1, 10)]
@@ -144,9 +150,7 @@ class BaseStorageTests(object):
         assert s.instance_name is None
 
 
-class SupportsCollections(object):
-
-    def test_discover(self, get_storage_args, get_item):
+    def test_discover(self, requires_collections, get_storage_args, get_item):
         expected = set()
         items = {}
 
@@ -172,19 +176,16 @@ class SupportsCollections(object):
             rv = list(s.list())
             assert rv == items[collection]
 
-    def test_discover_collection_arg(self, get_storage_args):
+    def test_discover_collection_arg(self, requires_collections,
+                                     get_storage_args):
         args = get_storage_args(collection='test2')
         with pytest.raises(TypeError) as excinfo:
             list(self.storage_class.discover(**args))
 
         assert 'collection argument must not be given' in str(excinfo.value)
 
-    def test_collection_arg(self, get_storage_args):
+    def test_collection_arg(self, requires_collections, get_storage_args):
         s = self.storage_class(**get_storage_args(collection='test2'))
         # Can't do stronger assertion because of radicale, which needs a
         # fileextension to guess the collection type.
         assert 'test2' in s.collection
-
-
-class StorageTests(BaseStorageTests, SupportsCollections):
-    pass

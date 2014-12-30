@@ -11,13 +11,14 @@ import pytest
 
 from vdirsyncer.storage.singlefile import SingleFileStorage
 
-from . import BaseStorageTests
+from . import StorageTests
 from .. import assert_item_equals
 
 
-class TestSingleFileStorage(BaseStorageTests):
+class TestSingleFileStorage(StorageTests):
 
     storage_class = SingleFileStorage
+    supports_collections = False
 
     @pytest.fixture(autouse=True)
     def setup(self, tmpdir):

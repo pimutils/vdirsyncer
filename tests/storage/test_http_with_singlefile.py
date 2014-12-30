@@ -15,7 +15,7 @@ from vdirsyncer.storage.base import Storage
 import vdirsyncer.storage.http
 from vdirsyncer.storage.singlefile import SingleFileStorage
 
-from . import BaseStorageTests
+from . import StorageTests
 from .. import assert_item_equals
 
 
@@ -48,8 +48,9 @@ class CombinedStorage(Storage):
         return self._writer.delete(*a, **kw)
 
 
-class TestHttpStorage(BaseStorageTests):
+class TestHttpStorage(StorageTests):
     storage_class = CombinedStorage
+    supports_collections = False
 
     @pytest.fixture(autouse=True)
     def setup_tmpdir(self, tmpdir, monkeypatch):
