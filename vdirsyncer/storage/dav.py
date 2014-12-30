@@ -465,7 +465,8 @@ class DavStorage(Storage):
                 dav_logger.debug('Skipping {!r}, is collection.'.format(href))
                 continue
 
-            if not self._is_item_mimetype(getattr(contenttype, 'text', None)):
+            contenttype = getattr(contenttype, 'text', None)
+            if not self._is_item_mimetype(contenttype):
                 dav_logger.debug('Skipping {!r}, {!r} != {!r}.'
                                  .format(href, contenttype,
                                          self.item_mimetype))
