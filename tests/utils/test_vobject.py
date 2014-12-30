@@ -18,9 +18,9 @@ from .. import BARE_EVENT_TEMPLATE, EVENT_TEMPLATE, VCARD_TEMPLATE, \
     normalize_item
 
 _simple_split = [
-    VCARD_TEMPLATE.format(r=123),
-    VCARD_TEMPLATE.format(r=345),
-    VCARD_TEMPLATE.format(r=678)
+    VCARD_TEMPLATE.format(r=123, uid=123),
+    VCARD_TEMPLATE.format(r=345, uid=345),
+    VCARD_TEMPLATE.format(r=678, uid=678)
 ]
 
 _simple_joined = u'\r\n'.join(
@@ -115,8 +115,8 @@ def test_join_collection_vevents():
 
 def test_split_collection_timezones():
     items = [
-        BARE_EVENT_TEMPLATE.format(r=123),
-        BARE_EVENT_TEMPLATE.format(r=345)
+        BARE_EVENT_TEMPLATE.format(r=123, uid=123),
+        BARE_EVENT_TEMPLATE.format(r=345, uid=345)
     ]
 
     timezone = (
@@ -151,7 +151,7 @@ def test_split_collection_timezones():
 
 
 def test_hash_item():
-    a = EVENT_TEMPLATE.format(r=1)
+    a = EVENT_TEMPLATE.format(r=1, uid=1)
     b = u'\n'.join(line for line in a.splitlines()
                    if u'PRODID' not in line and u'VERSION' not in line)
     assert vobject.hash_item(a) == vobject.hash_item(b)

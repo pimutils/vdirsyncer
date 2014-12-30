@@ -19,10 +19,10 @@ from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
     assert_item_equals
 
 
-def format_item(item_template):
+def format_item(item_template, uid=None):
     # assert that special chars are handled correctly.
     r = '{}@vdirsyncer'.format(random.random())
-    return Item(item_template.format(r=r))
+    return Item(item_template.format(r=r, uid=uid or r))
 
 
 class StorageTests(object):
@@ -45,7 +45,7 @@ class StorageTests(object):
 
     @pytest.fixture
     def get_item(self, item_template):
-        return lambda: format_item(item_template)
+        return lambda **kw: format_item(item_template, **kw)
 
     @pytest.fixture
     def requires_collections(self):
@@ -91,7 +91,7 @@ class StorageTests(object):
         href, etag = s.upload(item)
         assert_item_equals(s.get(href)[0], item)
 
-        new_item = get_item()
+        new_item = get_item(uid=item.uid)
         new_etag = s.update(href, new_item, etag)
         # See https://github.com/untitaker/vdirsyncer/issues/48
         assert isinstance(new_etag, (bytes, text_type))
