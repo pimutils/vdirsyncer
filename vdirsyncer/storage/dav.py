@@ -94,6 +94,9 @@ class Discover(object):
     def __init__(self, session):
         self.session = session
 
+    def find_principal(self, url):
+        return list(self._find_principal(url)) or ['']
+
     @_catch_generator_exceptions
     def _find_principal(self, url):
         """tries to find the principal URL of the user
@@ -126,6 +129,9 @@ class Discover(object):
                                         is_subpath=False)
         yield response.headers.get('Location', '')
 
+    def find_dav(self):
+        return list(self._find_dav()) or ['']
+
     def discover(self):
         """discover all the user's CalDAV or CardDAV collections on the server
         :returns: a list of the user's collections (as urls)
@@ -138,7 +144,7 @@ class Discover(object):
         # So we just brute-force a lot of paths here.
 
         done = set()
-        for dav in list(self._find_dav()) or ['']:
+        for dav in self.find_dav():
             for principal in list(self._find_principal(dav)) or ['']:
                 for home in itertools.chain(self._find_homes(principal), ['']):
                     for collection in self._find_collections(home):
@@ -305,21 +311,30 @@ class DavStorage(Storage):
         self.url = url
 
     @classmethod
-    def discover(cls, url, **kwargs):
+    def _get_discovery_instance(cls, url, **kwargs):
         if kwargs.pop('collection', None) is not None:
             raise TypeError('collection argument must not be given.')
+
         discover_args, _ = utils.split_dict(kwargs, lambda key: key in (
             'username', 'password', 'verify', 'auth', 'useragent',
             'verify_fingerprint',
         ))
-        d = cls.discovery_class(DavSession(url=url, **discover_args))
-        for c in d.discover():
+        return cls.discovery_class(DavSession(url=url, **discover_args))
+
+    @classmethod
+    def discover(cls, **kwargs):
+        for c in cls._get_discovery_instance(**kwargs).discover():
             url = c['href']
             _, collection = url.rstrip('/').rsplit('/', 1)
             storage_args = {'url': url, 'collection': collection,
                             'collection_human': c['displayname']}
             storage_args.update(kwargs)
             yield storage_args
+
+    @classmethod
+    def join_collection(cls, **kwargs):
+        d = cls._get_discovery_instance(**kwargs)
+
 
     def _normalize_href(self, *args, **kwargs):
         return _normalize_href(self.session.url, *args, **kwargs)
