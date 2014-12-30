@@ -71,13 +71,18 @@ def _catch_generator_exceptions(f):
         try:
             for x in f(*args, **kwargs):
                 yield x
-        except RequestException:
-            import traceback
-            dav_logger.debug(traceback.format_exc())
+        except RequestException, exceptions.Error:
+            pass
     return inner
 
 
 class Discover(object):
+    # Another one of Radicale's specialties: Discovery is broken (returning
+    # completely wrong URLs at every stage) as of version 0.9.
+    # https://github.com/Kozea/Radicale/issues/196
+    #
+    # So we just brute-force a lot of paths here.
+
     _resourcetype = None
     _homeset_xml = None
     _homeset_tag = None
@@ -94,8 +99,10 @@ class Discover(object):
     def __init__(self, session):
         self.session = session
 
-    def find_principal(self, url):
-        return list(self._find_principal(url)) or ['']
+    def find_principal(self):
+        for server in self.find_dav():
+            for x in list(self._find_principal(server)) or ['']:
+                yield x
 
     @_catch_generator_exceptions
     def _find_principal(self, url):
@@ -122,6 +129,9 @@ class Discover(object):
                 if principal.tag.endswith('href'):
                     yield principal.text
 
+    def find_dav(self):
+        return list(self._find_dav()) or ['']
+
     @_catch_generator_exceptions
     def _find_dav(self):
         response = self.session.request('GET', self._well_known_uri,
@@ -129,31 +139,24 @@ class Discover(object):
                                         is_subpath=False)
         yield response.headers.get('Location', '')
 
-    def find_dav(self):
-        return list(self._find_dav()) or ['']
-
     def discover(self):
         """discover all the user's CalDAV or CardDAV collections on the server
         :returns: a list of the user's collections (as urls)
         :rtype: list(unicode)
         """
-        # Another one of Radicale's specialties: Discovery is broken (returning
-        # completely wrong URLs at every stage) as of version 0.9.
-        # https://github.com/Kozea/Radicale/issues/196
-        #
-        # So we just brute-force a lot of paths here.
 
         done = set()
-        for dav in self.find_dav():
-            for principal in list(self._find_principal(dav)) or ['']:
-                for home in itertools.chain(self._find_homes(principal), ['']):
-                    for collection in self._find_collections(home):
-                        collection['href'] = href = \
-                            utils.urlparse.urljoin(self.session.url,
-                                                   collection['href'])
-                        if href not in done:
-                            done.add(href)
-                            yield collection
+        for collection in self.find_collections():
+            collection['href'] = href = \
+                utils.urlparse.urljoin(self.session.url, collection['href'])
+            if href not in done:
+                done.add(href)
+                yield collection
+
+    def find_homes(self):
+        for principal in self.find_principal():
+            for x in self._find_homes(principal):
+                yield x
 
     @_catch_generator_exceptions
     def _find_homes(self, principal):
@@ -168,6 +171,11 @@ class Discover(object):
             for homeset in element.iter():
                 if homeset.tag.endswith('href'):
                     yield homeset.text
+
+    def find_collections(self):
+        for home in itertools.chain(self.find_homes(), ['']):
+            for x in self._find_collections(home):
+                yield x
 
     @_catch_generator_exceptions
     def _find_collections(self, home):
@@ -311,30 +319,53 @@ class DavStorage(Storage):
         self.url = url
 
     @classmethod
-    def _get_discovery_instance(cls, url, **kwargs):
-        if kwargs.pop('collection', None) is not None:
-            raise TypeError('collection argument must not be given.')
-
+    def _get_session(cls, **kwargs):
         discover_args, _ = utils.split_dict(kwargs, lambda key: key in (
-            'username', 'password', 'verify', 'auth', 'useragent',
+            'url', 'username', 'password', 'verify', 'auth', 'useragent',
             'verify_fingerprint',
         ))
-        return cls.discovery_class(DavSession(url=url, **discover_args))
+        return DavSession(**discover_args)
 
     @classmethod
     def discover(cls, **kwargs):
-        for c in cls._get_discovery_instance(**kwargs).discover():
+        if kwargs.pop('collection', None) is not None:
+            raise TypeError('collection argument must not be given.')
+
+        d = cls.discovery_class(cls._get_session(**kwargs))
+        for c in d.discover():
             url = c['href']
             _, collection = url.rstrip('/').rsplit('/', 1)
-            storage_args = {'url': url, 'collection': collection,
-                            'collection_human': c['displayname']}
-            storage_args.update(kwargs)
+            storage_args = dict(kwargs)
+            storage_args.update({'url': url, 'collection': collection,
+                                 'collection_human': c['displayname']})
             yield storage_args
 
     @classmethod
-    def join_collection(cls, **kwargs):
-        d = cls._get_discovery_instance(**kwargs)
+    def join_collection(cls, collection, **kwargs):
+        session = cls._get_session(**kwargs)
+        d = cls.discovery_class(session)
 
+        for c in cls.discover(**kwargs):
+            if c['collection'] == collection:
+                return c
+
+        homes = list(d.find_homes())
+        if len(homes) != 1:
+            raise NotImplementedError('Not sure where to create {r!}, {} '
+                                      'homeset-URLs found (need exactly 1).'
+                                      .format(collection, len(homes)))
+
+        try:
+            collection_url = '{}/{}'.format(homes[0].rstrip('/'), collection)
+            response = d.session.request('MKCOL', collection_url,
+                                         is_subpath=False)
+        except RequestException as e:
+            raise NotImplementedError(e)
+        else:
+            rv = dict(kwargs)
+            rv['collection'] = collection
+            rv['url'] = response.url
+            return rv
 
     def _normalize_href(self, *args, **kwargs):
         return _normalize_href(self.session.url, *args, **kwargs)

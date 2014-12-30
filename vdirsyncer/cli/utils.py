@@ -186,13 +186,16 @@ def _get_coll(pair_name, storage_name, collection, discovered, config):
             args = cls.join_collection(collection=collection, **config)
             args['type'] = storage_type
             return args
-        except NotImplementedError:
+        except NotImplementedError as e:
+            cli_logger.error(e)
             raise CliError(
-                '{pair}: Unable to find collection {collection!r} for storage '
-                '{storage!r}. A same-named collection was found for the other '
-                'storage, and vdirsyncer is configured to synchronize '
-                'those.'.format(pair=pair_name, collection=collection,
-                                storage=storage_name))
+                '{pair}: Unable to find or create collection {collection!r} '
+                'for storage {storage!r}. A same-named collection was found '
+                'for the other storage, and vdirsyncer is configured to '
+                'synchronize these two collections. Please create the '
+                'collection yourself.'
+                .format(pair=pair_name, collection=collection,
+                        storage=storage_name))
 
 
 def _collections_for_pair_impl(status_path, name_a, name_b, pair_name,
