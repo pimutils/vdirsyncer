@@ -6,7 +6,6 @@
     :copyright: (c) 2014 Markus Unterwaditzer & contributors
     :license: MIT, see LICENSE for more details.
 '''
-import functools
 import random
 
 import pytest
@@ -148,7 +147,6 @@ class StorageTests(object):
     def test_repr(self, s, get_storage_args):
         assert self.storage_class.__name__ in repr(s)
         assert s.instance_name is None
-
 
     def test_discover(self, requires_collections, get_storage_args, get_item):
         expected = set()
