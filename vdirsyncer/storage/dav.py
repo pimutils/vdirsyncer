@@ -71,7 +71,7 @@ def _catch_generator_exceptions(f):
         try:
             for x in f(*args, **kwargs):
                 yield x
-        except RequestException, exceptions.Error:
+        except (RequestException, exceptions.Error):
             pass
     return inner
 
