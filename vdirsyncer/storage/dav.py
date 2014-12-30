@@ -13,7 +13,7 @@ import itertools
 from lxml import etree
 
 from requests import session as requests_session
-from requests.exception import RequestException
+from requests.exceptions import RequestException
 
 from .base import Item, Storage
 from .http import USERAGENT, prepare_auth, prepare_verify
