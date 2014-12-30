@@ -13,6 +13,7 @@ import itertools
 from lxml import etree
 
 from requests import session as requests_session
+from requests.exception import RequestException
 
 from .base import Item, Storage
 from .http import USERAGENT, prepare_auth, prepare_verify
@@ -70,7 +71,7 @@ def _catch_generator_exceptions(f):
         try:
             for x in f(*args, **kwargs):
                 yield x
-        except Exception:
+        except RequestException:
             import traceback
             dav_logger.debug(traceback.format_exc())
     return inner
@@ -121,8 +122,9 @@ class Discover(object):
     @_catch_generator_exceptions
     def _find_dav(self):
         response = self.session.request('GET', self._well_known_uri,
-                                        allow_redirects=False)
-        yield response.headers['Location']
+                                        allow_redirects=False,
+                                        is_subpath=False)
+        yield response.headers.get('Location', '')
 
     def discover(self):
         """discover all the user's CalDAV or CardDAV collections on the server
