@@ -325,10 +325,8 @@ def checkdir(path, create=False, mode=0o750):
         if create:
             os.makedirs(path, mode)
         else:
-            raise IOError('Directory {} does not exist. Use create = '
-                          'True in your configuration to automatically '
-                          'create it, or create it '
-                          'yourself.'.format(path))
+            raise exceptions.CollectionNotFound('Directory {} does not exist.'
+                                                .format(path))
 
 
 def checkfile(path, create=False):
@@ -343,10 +341,8 @@ def checkfile(path, create=False):
         if os.path.exists(path):
             raise IOError('{} is not a file.'.format(path))
         if not create:
-            raise IOError('File {} does not exist. Use create = '
-                          'True in your configuration to automatically '
-                          'create it, or create it '
-                          'yourself.'.format(path))
+            raise exceptions.CollectionNotFound('File {} does not exist.'
+                                                .format(path))
 
 
 class cached_property(object):

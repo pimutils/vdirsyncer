@@ -23,6 +23,10 @@ class Error(Exception):
         super(Error, self).__init__(*args)
 
 
+class CollectionNotFound(Error):
+    '''Collection not found'''
+
+
 class PreconditionFailed(Error):
     '''
       - The item doesn't exist although it should
