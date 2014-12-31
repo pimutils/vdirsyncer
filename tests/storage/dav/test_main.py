@@ -148,12 +148,6 @@ class TestCaldavStorage(DavStorageTests):
 
         assert list(s.list()) == [(href, etag)]
 
-    def test_item_types_passed_as_string(self, get_storage_args):
-        kw = get_storage_args()
-        a = self.storage_class(item_types='VTODO,VEVENT', **kw)
-        b = self.storage_class(item_types=('VTODO', 'VEVENT'), **kw)
-        assert a.item_types == b.item_types == ('VTODO', 'VEVENT')
-
     def test_invalid_resource(self, monkeypatch, get_storage_args):
         calls = []
         args = get_storage_args(collection=None)
