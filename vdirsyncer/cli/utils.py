@@ -368,7 +368,8 @@ def storage_instance_from_config(config, create=True):
 
     try:
         return cls(**new_config)
-    except exceptions.CollectionNotFound:
+    except exceptions.CollectionNotFound as e:
+        cli_logger.error(str(e))
         if create:
             _handle_collection_not_found(config, None)
             return storage_instance_from_config(config, create=False)
