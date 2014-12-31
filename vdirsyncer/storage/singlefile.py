@@ -86,7 +86,7 @@ class SingleFileStorage(Storage):
     def create_collection(cls, collection, **kwargs):
         if collection is not None:
             raise ValueError('collection is not a valid argument for {}'
-                             .format(type(self).__name__))
+                             .format(cls.__name__))
 
         checkfile(kwargs['path'], create=True)
         return kwargs
