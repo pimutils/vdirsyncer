@@ -341,7 +341,7 @@ class DavStorage(Storage):
             yield storage_args
 
     @classmethod
-    def join_collection(cls, collection, **kwargs):
+    def create_collection(cls, collection, **kwargs):
         session = cls._get_session(**kwargs)
         d = cls.discovery_class(session)
 
