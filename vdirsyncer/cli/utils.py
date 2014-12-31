@@ -170,7 +170,7 @@ def _get_coll(pair_name, storage_name, collection, discovered, config):
         storage_type = config['type']
         cls, config = storage_class_from_config(config)
         try:
-            args = cls.join_collection(collection=collection, **config)
+            args = cls.create_collection(collection=collection, **config)
             args['type'] = storage_type
             return args
         except NotImplementedError as e:
