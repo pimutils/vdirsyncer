@@ -95,19 +95,6 @@ def validate_section_name(name, section_type):
                                                 chars_display))
 
 
-def _parse_old_config_list_value(d, key):
-    value = d.get(key, [])
-    if isinstance(value, str):
-        # XXX: Deprecation
-        old_form = value
-        value = list(filter(bool, (x.strip() for x in value.split(','))))
-        cli_logger.warning(
-            '{!r} is deprecated, please use:\n{} = {}\n'
-            'The old form will be removed in 0.4.0.'
-            .format(old_form, key, json.dumps(value)))
-    return value
-
-
 def get_status_name(pair, collection):
     if collection is None:
         return pair
@@ -201,7 +188,7 @@ def _get_coll(pair_name, storage_name, collection, discovered, config):
 def _collections_for_pair_impl(status_path, name_a, name_b, pair_name,
                                config_a, config_b, pair_options):
 
-    shortcuts = set(_parse_old_config_list_value(pair_options, 'collections'))
+    shortcuts = set(pair_options.get('collections', ()))
     if not shortcuts:
         yield None, (config_a, config_b)
     else:

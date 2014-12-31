@@ -571,18 +571,8 @@ class CaldavStorage(DavStorage):
     def __init__(self, start_date=None, end_date=None,
                  item_types=('VTODO', 'VEVENT'), **kwargs):
         super(CaldavStorage, self).__init__(**kwargs)
-        if isinstance(item_types, str):
-            orig_item_types = item_types
-            item_types = list(filter(
-                bool, (x.strip() for x in item_types.split(','))
-            ))
-
-            # XXX: Deprecation
-            import json
-            dav_logger.warning(
-                '{!r} is deprecated, please use:\nitem_types = {}\n'
-                'The old form will be removed in 0.4.0.'
-                .format(orig_item_types, json.dumps(item_types)))
+        if not isinstance(item_types, (list, tuple)):
+            raise ValueError('item_types must be a list.')
 
         self.item_types = tuple(item_types)
         if (start_date is None) != (end_date is None):
