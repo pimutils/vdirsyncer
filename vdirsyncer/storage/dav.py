@@ -65,6 +65,11 @@ def _fuzzy_matches_mimetype(strict, weak):
     return False
 
 
+def _get_collection_from_url(url):
+    _, collection = url.rstrip('/').rsplit('/', 1)
+    return collection
+
+
 def _catch_generator_exceptions(f):
     @functools.wraps(f)
     def inner(*args, **kwargs):
@@ -334,7 +339,7 @@ class DavStorage(Storage):
         d = cls.discovery_class(cls._get_session(**kwargs))
         for c in d.discover():
             url = c['href']
-            _, collection = url.rstrip('/').rsplit('/', 1)
+            collection = _get_collection_from_url(url)
             storage_args = dict(kwargs)
             storage_args.update({'url': url, 'collection': collection,
                                  'collection_human': c['displayname']})
@@ -342,6 +347,8 @@ class DavStorage(Storage):
 
     @classmethod
     def create_collection(cls, collection, **kwargs):
+        if collection is None:
+            collection = _get_collection_from_url(kwargs['url'])
         session = cls._get_session(**kwargs)
         d = cls.discovery_class(session)
 

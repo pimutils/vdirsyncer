@@ -67,8 +67,9 @@ class FilesystemStorage(Storage):
 
     @classmethod
     def create_collection(cls, collection, **kwargs):
-        kwargs['path'] = path = os.path.join(kwargs['path'], collection)
-        checkdir(path, create=True)
+        if collection is not None:
+            kwargs['path'] = os.path.join(kwargs['path'], collection)
+        checkdir(kwargs['path'], create=True)
         return kwargs
 
     def _get_filepath(self, href):

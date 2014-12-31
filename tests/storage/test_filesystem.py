@@ -35,19 +35,11 @@ class TestFilesystemStorage(StorageTests):
             return {'path': path, 'fileext': '.txt', 'collection': collection}
         return inner
 
-    def test_create_is_false(self, tmpdir):
-        with pytest.raises(IOError):
-            self.storage_class(str(tmpdir) + '/lol', '.txt', create=False)
-
     def test_is_not_directory(self, tmpdir):
         with pytest.raises(IOError):
             f = tmpdir.join('hue')
             f.write('stub')
             self.storage_class(str(tmpdir) + '/hue', '.txt')
-
-    def test_create_is_true(self, tmpdir):
-        self.storage_class(str(tmpdir) + '/asd', '.txt')
-        assert tmpdir.listdir() == [tmpdir.join('asd')]
 
     def test_broken_data(self, tmpdir):
         s = self.storage_class(str(tmpdir), '.txt')
