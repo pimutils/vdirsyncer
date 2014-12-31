@@ -16,7 +16,7 @@ import sys
 import threading
 from itertools import chain
 
-from .. import DOCS_HOME, PROJECT_HOME, log
+from .. import DOCS_HOME, PROJECT_HOME, exceptions, log
 from ..doubleclick import click
 from ..storage import storage_names
 from ..sync import StorageEmpty, SyncConflict
@@ -167,6 +167,14 @@ def _get_coll(pair_name, storage_name, collection, discovered, config):
     try:
         return discovered[collection]
     except KeyError:
+        return _handle_collection_not_found(config, collection)
+
+
+def _handle_collection_not_found(config, collection):
+    storage_name = config.get('instance_name', None)
+    cli_logger.error('No collection {} found for storage {}.'
+                     .format(collection, storage_name))
+    if click.confirm('Should vdirsyncer attempt to create it?'):
         storage_type = config['type']
         cls, config = storage_class_from_config(config)
         try:
@@ -175,14 +183,11 @@ def _get_coll(pair_name, storage_name, collection, discovered, config):
             return args
         except NotImplementedError as e:
             cli_logger.error(e)
-            raise CliError(
-                '{pair}: Unable to find or create collection {collection!r} '
-                'for storage {storage!r}. A same-named collection was found '
-                'for the other storage, and vdirsyncer is configured to '
-                'synchronize these two collections. Please create the '
-                'collection yourself.'
-                .format(pair=pair_name, collection=collection,
-                        storage=storage_name))
+
+    raise CliError('Unable to find or create collection {collection!r} for '
+                   'storage {storage!r}. Please create the collection '
+                   'yourself.'.format(collection=collection,
+                                      storage=storage_name))
 
 
 def _collections_for_pair_impl(status_path, name_a, name_b, pair_name,
@@ -353,19 +358,24 @@ def storage_class_from_config(config):
     return cls, config
 
 
-def storage_instance_from_config(config):
+def storage_instance_from_config(config, create=True):
     '''
     :param config: A configuration dictionary to pass as kwargs to the class
         corresponding to config['type']
-    :param description: A name for the storage for debugging purposes
     '''
 
-    cls, config = storage_class_from_config(config)
+    cls, new_config = storage_class_from_config(config)
 
     try:
-        return cls(**config)
+        return cls(**new_config)
+    except exceptions.CollectionNotFound:
+        if create:
+            _handle_collection_not_found(config, None)
+            return storage_instance_from_config(config, create=False)
+        else:
+            raise
     except Exception:
-        handle_storage_init_error(cls, config)
+        return handle_storage_init_error(cls, new_config)
 
 
 def handle_storage_init_error(cls, config):

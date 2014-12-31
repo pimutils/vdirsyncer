@@ -53,7 +53,7 @@ class TestHttpStorage(StorageTests):
 
     @pytest.fixture(autouse=True)
     def setup_tmpdir(self, tmpdir, monkeypatch):
-        self.tmpfile = str(tmpdir.join('collection.txt'))
+        self.tmpfile = str(tmpdir.ensure('collection.txt'))
 
         def _request(method, url, *args, **kwargs):
             assert method == 'GET'
