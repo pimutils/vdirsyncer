@@ -12,9 +12,9 @@ may want to subscribe to `GitHub's tag feed
 Version 0.4.0
 =============
 
-*yet to be released*
+*released on 31 December 2014*
 
-- The ``passwordeval`` parameter has been renamed to ``passwordconfig``.
+- The ``passwordeval`` parameter has been renamed to ``password_command``.
 - The old way of writing certain config values such as lists is now gone.
 - Collection discovery has been rewritten. Old configuration files should be
   compatible with it, but vdirsyncer now caches the results of the collection
