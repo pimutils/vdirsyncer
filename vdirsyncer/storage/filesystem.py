@@ -32,7 +32,6 @@ class FilesystemStorage(Storage):
         trigger a re-download of everything (but *should* not cause data-loss
         of any kind).
     :param encoding: File encoding for items.
-    :param create: Create directories if they don't exist.
     '''
 
     storage_name = 'filesystem'

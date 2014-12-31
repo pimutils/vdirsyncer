@@ -38,7 +38,6 @@ class SingleFileStorage(Storage):
 
     :param path: The filepath to the file to be written to.
     :param encoding: Which encoding the file should use. Defaults to UTF-8.
-    :param create: Create the file if it does not exist.
 
     Example for syncing with :py:class:`vdirsyncer.storage.CaldavStorage`::
 
