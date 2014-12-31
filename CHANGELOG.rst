@@ -14,6 +14,9 @@ Version 0.4.1
 
 *yet to be released*
 
+- All ``create`` arguments from all storages are gone. Vdirsyncer now asks if
+  it should try to create collections.
+
 Version 0.4.0
 =============
 
