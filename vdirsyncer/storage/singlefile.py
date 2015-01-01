@@ -99,7 +99,7 @@ class SingleFileStorage(Storage):
                 text = f.read().decode(self.encoding)
         except OSError as e:
             import errno
-            if e.errno != errno.ENOENT or not self.create:  # file not found
+            if e.errno != errno.ENOENT:  # file not found
                 raise IOError(e)
             text = None
 

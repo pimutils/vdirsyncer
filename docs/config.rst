@@ -66,10 +66,6 @@ Pair Section
   pointing to one collection each. Specifying a collection multiple times won't
   make vdirsyncer sync that collection more than once.
 
-  If any collections don't exist, vdirsyncer will try to create them or raise
-  an error, depending on the storages' configuration (see the ``create``
-  parameter for some storages).
-
   Furthermore, there are the special values ``"from a"`` and ``"from b"``,
   which tell vdirsyncer to try autodiscovery on a specific storage.
 
