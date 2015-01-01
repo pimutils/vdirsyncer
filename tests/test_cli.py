@@ -458,6 +458,37 @@ def test_invalid_collections_arg(tmpdir, runner):
     )
 
 
+def test_create_collections(tmpdir, runner):
+    runner.write_with_general(dedent('''
+    [pair foobar]
+    a = foo
+    b = bar
+    collections = ["a", "b", "c"]
+
+    [storage foo]
+    type = filesystem
+    path = {base}/foo/
+    fileext = .txt
+
+    [storage bar]
+    type = filesystem
+    path = {base}/bar/
+    fileext = .txt
+    '''.format(base=str(tmpdir))))
+
+    result = runner.invoke(['sync'])
+    assert result.exception
+    entries = set(x.basename for x in tmpdir.listdir())
+    assert 'foo' not in entries and 'bar' not in entries
+
+    result = runner.invoke(['sync'], input='y\n' * 6)
+    assert not result.exception
+    assert \
+        set(x.basename for x in tmpdir.join('foo').listdir()) == \
+        set(x.basename for x in tmpdir.join('bar').listdir()) == \
+        set('abc')
+
+
 def test_parse_config_value():
     x = cli.utils.parse_config_value
     with pytest.raises(ValueError):
