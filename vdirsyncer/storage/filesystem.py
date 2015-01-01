@@ -7,6 +7,7 @@
     :license: MIT, see LICENSE for more details.
 '''
 
+import errno
 import os
 
 from .base import Item, Storage
@@ -53,8 +54,8 @@ class FilesystemStorage(Storage):
         path = expand_path(path)
         try:
             collections = os.listdir(path)
-        except OSError:
-            if not kwargs.get('create', True):
+        except OSError as e:
+            if e.errno != errno.ENOENT:
                 raise
         else:
             for collection in collections:
