@@ -40,16 +40,14 @@ Contacts
 Supported servers
 =================
 
-vdirsyncer is currently regularly and automatically tested against the latest
-versions of Radicale and ownCloud. In principle, vdirsyncer is supposed to run
-correctly with any remotely popular CalDAV or CardDAV server.
+CalDAV and CardDAV servers not listed here may work anyway.
 
 Radicale
 --------
 
-Vdirsyncer is tested against the git version and the latest PyPI release of
-Radicale. Versions ``<= 0.7`` have substantial deficiencies, and using them is
-neither supported nor encouraged.
+Vdirsyncer is continuously tested against the git version and the latest PyPI
+release of Radicale_. Versions ``< 0.9`` have substantial deficiencies, and
+using them is neither supported nor encouraged.
 
 - Radicale doesn't `support time ranges in the calendar-query of CalDAV
   <https://github.com/Kozea/Radicale/issues/146>`_, so setting ``start_date``
@@ -70,13 +68,42 @@ neither supported nor encouraged.
   non-RFC-compliant format for such queries, one which vdirsyncer doesn't
   support.
 
+.. _Radicale: http://radicale.org/
+
 ownCloud
 --------
 
-Vdirsyncer is tested against the latest version of ownCloud.
+Vdirsyncer is continuously tested against the latest version of ownCloud_.
 
 - *Versions older than 7.0.0:* ownCloud uses SabreDAV, which had problems
   detecting collisions and race-conditions. The problems were reported and are
   fixed in SabreDAV's repo, and the corresponding fix is also in ownCloud since
-  7.0.0. See `Bug #16 <https://github.com/untitaker/vdirsyncer/issues/16>`_ for
-  more information.
+  7.0.0. See :gh:`16` for more information.
+
+.. _ownCloud:: https://owncloud.org/
+
+FastMail
+--------
+
+Vdirsyncer is irregularly tested against FastMail_. There are no known issues
+with it.
+
+.. _FastMail:: https://www.fastmail.com/
+
+iCloud
+------
+
+Vdirsyncer is irregularly tested against iCloud_. There are no known issues
+with it.
+
+.. _iCloud:: http://icloud.com/
+
+DavMail (Exchange, Outlook)
+---------------------------
+
+Using vdirsyncer with DavMail_ is currently not recommended (if even possible).
+
+- DavMail (or the server it is proxying) handles URLs case-insensitively. See
+  :gh:`144`.
+
+.. _DavMail:: http://davmail.sourceforge.net/
