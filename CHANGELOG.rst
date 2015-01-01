@@ -16,6 +16,8 @@ Version 0.4.1
 
 - All ``create`` arguments from all storages are gone. Vdirsyncer now asks if
   it should try to create collections.
+- The old config values ``True``, ``False``, ``on``, ``off`` and ``None`` are
+  now invalid.
 
 Version 0.4.0
 =============

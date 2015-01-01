@@ -471,28 +471,17 @@ def parse_config_value(value):
     try:
         return json.loads(value)
     except ValueError:
-        rv = value
+        pass
 
-    if value.lower() in ('on', 'true', 'yes'):
-        cli_logger.warning(
-            '{} is deprecated for the config, please use true.\n'
-            'The old form will be removed in 0.4.0.'
-            .format(value)
-        )
-        return True
-    if value.lower() in ('off', 'false', 'no'):
-        cli_logger.warning(
-            '{} is deprecated for the config, please use false.\n'
-            'The old form will be removed in 0.4.0.'
-            .format(value)
-        )
-        return False
-    if value.lower() == 'none':
-        cli_logger.warning(
-            'None is deprecated for the config, please use null.\n'
-            'The old form will be removed in 0.4.0.'
-        )
-        return None
+    for wrong, right in [
+        (('on', 'yes'), 'true'),
+        (('off', 'no'), 'false'),
+        (('none',), 'null')
+    ]:
+        if value.lower() in wrong + (right,):
+            cli_logger.warning('You probably meant {} instead of "{}", which '
+                               'will now be interpreted as a literal string.'
+                               .format(right, value))
 
     if '#' in value:
         raise ValueError('Invalid value:{}\n'
@@ -508,7 +497,7 @@ def parse_config_value(value):
         #  # my comment
         raise ValueError('No multiline-values allowed:\n{}'.format(value))
 
-    return rv
+    return value
 
 
 def parse_options(items, section=None):

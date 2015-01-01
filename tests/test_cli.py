@@ -55,7 +55,7 @@ def test_load_config(monkeypatch):
         type = filesystem
         path = /tmp/contacts/
         fileext = .vcf
-        yesno = off
+        yesno = false
         number = 42
 
         [storage bob_b]
@@ -489,45 +489,31 @@ def test_create_collections(tmpdir, runner):
         set('abc')
 
 
-def test_parse_config_value():
-    x = cli.utils.parse_config_value
-    with pytest.raises(ValueError):
-        x('123  # comment!')
+def test_parse_config_value(capsys):
+    invalid = object()
 
-    assert x('"123  # comment!"') == '123  # comment!'
-    assert x('True') is True
-    assert x('False') is False
-    assert x('Yes') is True
-    assert x('3.14') == 3.14
-    assert x('') == ''
-    assert x('""') == ''
+    def x(s):
+        try:
+            rv = cli.utils.parse_config_value(s)
+        except ValueError:
+            return invalid
+        else:
+            warnings = capsys.readouterr()[1]
+            return rv, len(warnings.splitlines())
 
+    assert x('123  # comment!') is invalid
 
-def test_parse_options():
-    o = {
-        'foo': 'yes',
-        'hah': 'true',
-        'bar': '',
-        'baz': 'whatever',
-        'bam': '123',
-        'asd': 'off'
-    }
+    assert x('True') == ('True', 1)
+    assert x('False') == ('False', 1)
+    assert x('Yes') == ('Yes', 1)
+    assert x('None') == ('None', 1)
+    assert x('"True"') == ('True', 0)
+    assert x('"False"') == ('False', 0)
 
-    a = dict(cli.utils.parse_options(o.items()))
-
-    expected = {
-        'foo': True,
-        'hah': True,
-        'bar': '',
-        'baz': 'whatever',
-        'bam': 123,
-        'asd': False
-    }
-
-    assert a == expected
-
-    for key in a:
-        # Yes, we want a very strong typecheck here, because we actually have
-        # to differentiate between bool and int, and in Python 2, bool is a
-        # subclass of int.
-        assert a[key].__class__ is expected[key].__class__
+    assert x('"123  # comment!"') == ('123  # comment!', 0)
+    assert x('true') == (True, 0)
+    assert x('false') == (False, 0)
+    assert x('null') == (None, 0)
+    assert x('3.14') == (3.14, 0)
+    assert x('') == ('', 0)
+    assert x('""') == ('', 0)
