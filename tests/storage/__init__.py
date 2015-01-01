@@ -187,3 +187,10 @@ class StorageTests(object):
         # Can't do stronger assertion because of radicale, which needs a
         # fileextension to guess the collection type.
         assert 'test2' in s.collection
+
+    def test_case_sensitive_uids(self, s, get_item):
+        s.upload(get_item(uid='A' * 42))
+        s.upload(get_item(uid='a' * 42))
+        items = list(href for href, etag in s.list())
+        assert len(items) == 2
+        assert len(set(items)) == 2
