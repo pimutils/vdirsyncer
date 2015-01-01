@@ -33,16 +33,15 @@ class FilesystemStorage(Storage):
         trigger a re-download of everything (but *should* not cause data-loss
         of any kind).
     :param encoding: File encoding for items.
-    :param create: Create directories if they don't exist.
     '''
 
     storage_name = 'filesystem'
     _repr_attributes = ('path',)
 
-    def __init__(self, path, fileext, encoding='utf-8', create=True, **kwargs):
+    def __init__(self, path, fileext, encoding='utf-8', **kwargs):
         super(FilesystemStorage, self).__init__(**kwargs)
         path = expand_path(path)
-        checkdir(path, create=create)
+        checkdir(path, create=False)
         self.path = path
         self.encoding = encoding
         self.fileext = fileext
@@ -66,8 +65,10 @@ class FilesystemStorage(Storage):
                     yield args
 
     @classmethod
-    def join_collection(cls, collection, **kwargs):
-        kwargs['path'] = os.path.join(kwargs['path'], collection)
+    def create_collection(cls, collection, **kwargs):
+        if collection is not None:
+            kwargs['path'] = os.path.join(kwargs['path'], collection)
+        checkdir(kwargs['path'], create=True)
         return kwargs
 
     def _get_filepath(self, href):

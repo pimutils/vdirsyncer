@@ -109,10 +109,11 @@ class Storage(with_metaclass(StorageMeta)):
         raise NotImplementedError()
 
     @classmethod
-    def join_collection(cls, collection, **kwargs):
-        '''Append the collection to the URL or path specified in ``**kwargs``
-        and return the new arguments.
-        '''
+    def create_collection(cls, collection, **kwargs):
+        '''Create the specified collection and return the new arguments.
+
+        ``collection=None`` means the arguments are already pointing to a
+        possible collection location.'''
         raise NotImplementedError()
 
     def __repr__(self):

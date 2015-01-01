@@ -38,7 +38,6 @@ class SingleFileStorage(Storage):
 
     :param path: The filepath to the file to be written to.
     :param encoding: Which encoding the file should use. Defaults to UTF-8.
-    :param create: Create the file if it does not exist.
 
     Example for syncing with :py:class:`vdirsyncer.storage.CaldavStorage`::
 
@@ -68,7 +67,7 @@ class SingleFileStorage(Storage):
     _items = None
     _last_mtime = None
 
-    def __init__(self, path, encoding='utf-8', create=True, **kwargs):
+    def __init__(self, path, encoding='utf-8', **kwargs):
         super(SingleFileStorage, self).__init__(**kwargs)
         path = expand_path(path)
 
@@ -77,15 +76,19 @@ class SingleFileStorage(Storage):
             raise ValueError('collection is not a valid argument for {}'
                              .format(type(self).__name__))
 
-        checkfile(path, create=create)
-
-        if create:
-            self._write_mode = 'wb+'
-            self._append_mode = 'ab+'
+        checkfile(path, create=False)
 
         self.path = path
         self.encoding = encoding
-        self.create = create
+
+    @classmethod
+    def create_collection(cls, collection, **kwargs):
+        if collection is not None:
+            raise ValueError('collection is not a valid argument for {}'
+                             .format(cls.__name__))
+
+        checkfile(kwargs['path'], create=True)
+        return kwargs
 
     def list(self):
         self._items = collections.OrderedDict()

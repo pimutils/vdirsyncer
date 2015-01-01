@@ -21,7 +21,7 @@ class TestSingleFileStorage(StorageTests):
 
     @pytest.fixture(autouse=True)
     def setup(self, tmpdir):
-        self._path = str(tmpdir.join('test.txt'))
+        self._path = str(tmpdir.ensure('test.txt'))
 
     @pytest.fixture
     def get_storage_args(self):
@@ -33,14 +33,3 @@ class TestSingleFileStorage(StorageTests):
     def test_collection_arg(self, tmpdir):
         with pytest.raises(ValueError):
             self.storage_class(str(tmpdir.join('foo.ics')), collection='ha')
-
-    def test_create_arg(self, tmpdir):
-        s = self.storage_class(str(tmpdir) + '/foo.ics')
-        assert not s.list()
-
-        s.create = False
-        with pytest.raises(IOError):
-            s.list()
-
-        with pytest.raises(IOError):
-            s = self.storage_class(str(tmpdir) + '/foo.ics', create=False)

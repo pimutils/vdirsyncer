@@ -126,6 +126,9 @@ def test_simple_run(tmpdir, runner):
     fileext = .txt
     ''').format(str(tmpdir)))
 
+    tmpdir.mkdir('path_a')
+    tmpdir.mkdir('path_b')
+
     result = runner.invoke(['sync'])
     assert not result.exception
 
@@ -151,6 +154,9 @@ def test_empty_storage(tmpdir, runner):
     path = {0}/path_b/
     fileext = .txt
     ''').format(str(tmpdir)))
+
+    tmpdir.mkdir('path_a')
+    tmpdir.mkdir('path_b')
 
     result = runner.invoke(['sync'])
     assert not result.exception
@@ -274,7 +280,10 @@ def test_collections_cache_invalidation(tmpdir, runner):
 
     foo = tmpdir.mkdir('foo')
     bar = tmpdir.mkdir('bar')
-    foo.mkdir('a').join('itemone.txt').write('UID:itemone')
+    for x in 'abc':
+        foo.mkdir(x)
+        bar.mkdir(x)
+    foo.join('a/itemone.txt').write('UID:itemone')
 
     result = runner.invoke(['sync'])
     assert not result.exception
@@ -302,6 +311,8 @@ def test_collections_cache_invalidation(tmpdir, runner):
 
     tmpdir.join('status').remove()
     bar2 = tmpdir.mkdir('bar2')
+    for x in 'abc':
+        bar2.mkdir(x)
     result = runner.invoke(['sync'])
     assert not result.exception
 
@@ -329,8 +340,10 @@ def test_invalid_pairs_as_cli_arg(tmpdir, runner):
     collections = ["a", "b", "c"]
     ''').format(str(tmpdir)))
 
-    tmpdir.mkdir('foo')
-    tmpdir.mkdir('bar')
+    for base in ('foo', 'bar'):
+        base = tmpdir.mkdir(base)
+        for c in 'abc':
+            base.mkdir(c)
 
     result = runner.invoke(['sync', 'foobar/d'])
     assert result.exception
@@ -356,11 +369,12 @@ def test_discover_command(tmpdir, runner):
     ''').format(str(tmpdir)))
 
     foo = tmpdir.mkdir('foo')
-    tmpdir.mkdir('bar')
+    bar = tmpdir.mkdir('bar')
 
-    foo.mkdir('a')
-    foo.mkdir('b')
-    foo.mkdir('c')
+    for x in 'abc':
+        foo.mkdir(x)
+        bar.mkdir(x)
+    bar.mkdir('d')
 
     result = runner.invoke(['sync'])
     assert not result.exception
@@ -369,10 +383,14 @@ def test_discover_command(tmpdir, runner):
     assert 'Syncing foobar/a' in lines
     assert 'Syncing foobar/b' in lines
     assert 'Syncing foobar/c' in lines
+    assert 'Syncing foobar/d' not in lines
 
     foo.mkdir('d')
     result = runner.invoke(['sync'])
     assert not result.exception
+    assert 'Syncing foobar/a' in lines
+    assert 'Syncing foobar/b' in lines
+    assert 'Syncing foobar/c' in lines
     assert 'Syncing foobar/d' not in result.output
 
     result = runner.invoke(['discover'])
@@ -380,6 +398,9 @@ def test_discover_command(tmpdir, runner):
 
     result = runner.invoke(['sync'])
     assert not result.exception
+    assert 'Syncing foobar/a' in lines
+    assert 'Syncing foobar/b' in lines
+    assert 'Syncing foobar/c' in lines
     assert 'Syncing foobar/d' in result.output
 
 
@@ -403,12 +424,12 @@ def test_multiple_pairs(tmpdir, runner):
     runner.write_with_general(''.join(get_cfg()))
 
     result = runner.invoke(['sync'])
-    assert sorted(result.output.splitlines()) == [
+    assert set(result.output.splitlines()) > set([
         'Discovering collections for pair bambaz',
         'Discovering collections for pair foobar',
         'Syncing bambaz',
         'Syncing foobar',
-    ]
+    ])
 
 
 def test_invalid_collections_arg(tmpdir, runner):
@@ -435,6 +456,37 @@ def test_invalid_collections_arg(tmpdir, runner):
         'Section `pair foobar`: `collections` parameter must be a list of '
         'collection names (strings!) or `null`.'
     )
+
+
+def test_create_collections(tmpdir, runner):
+    runner.write_with_general(dedent('''
+    [pair foobar]
+    a = foo
+    b = bar
+    collections = ["a", "b", "c"]
+
+    [storage foo]
+    type = filesystem
+    path = {base}/foo/
+    fileext = .txt
+
+    [storage bar]
+    type = filesystem
+    path = {base}/bar/
+    fileext = .txt
+    '''.format(base=str(tmpdir))))
+
+    result = runner.invoke(['sync'])
+    assert result.exception
+    entries = set(x.basename for x in tmpdir.listdir())
+    assert 'foo' not in entries and 'bar' not in entries
+
+    result = runner.invoke(['sync'], input='y\n' * 6)
+    assert not result.exception
+    assert \
+        set(x.basename for x in tmpdir.join('foo').listdir()) == \
+        set(x.basename for x in tmpdir.join('bar').listdir()) == \
+        set('abc')
 
 
 def test_parse_config_value():
