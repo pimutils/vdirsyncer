@@ -127,7 +127,7 @@ by automatically downloading a list of the configured user's collections::
 
     [storage my_contacts_remote]
     type = carddav
-    url = https://owncloud.example.com/remote.php/carddav/addressbooks/bob/
+    url = https://owncloud.example.com/remote.php/carddav/
     username = bob
     password = asdf
 
