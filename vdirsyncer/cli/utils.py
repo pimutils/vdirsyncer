@@ -89,7 +89,7 @@ def validate_section_name(name, section_type):
     invalid = set(name) - SECTION_NAME_CHARS
     if invalid:
         chars_display = ''.join(sorted(SECTION_NAME_CHARS))
-        raise CliError('The {}-section {!r} contains invalid characters. Only '
+        raise CliError('The {}-section "{}" contains invalid characters. Only '
                        'the following characters are allowed for storage and '
                        'pair names:\n{}'.format(section_type, name,
                                                 chars_display))
@@ -495,7 +495,7 @@ def parse_config_value(value):
         #
         # foo = bar
         #  # my comment
-        raise ValueError('No multiline-values allowed:\n{!r}'.format(value))
+        raise ValueError('No multiline-values allowed:\n{}'.format(value))
 
     return rv
 
@@ -505,7 +505,7 @@ def parse_options(items, section=None):
         try:
             yield key, parse_config_value(value)
         except ValueError as e:
-            raise ValueError('Section {!r}, option {!r}: {}'
+            raise ValueError('Section "{}", option "{}": {}'
                              .format(section, key, e))
 
 
