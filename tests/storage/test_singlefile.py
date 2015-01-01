@@ -12,7 +12,6 @@ import pytest
 from vdirsyncer.storage.singlefile import SingleFileStorage
 
 from . import StorageTests
-from .. import assert_item_equals
 
 
 class TestSingleFileStorage(StorageTests):

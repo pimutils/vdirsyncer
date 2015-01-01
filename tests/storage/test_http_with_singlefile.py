@@ -16,7 +16,6 @@ import vdirsyncer.storage.http
 from vdirsyncer.storage.singlefile import SingleFileStorage
 
 from . import StorageTests
-from .. import assert_item_equals
 
 
 class CombinedStorage(Storage):
