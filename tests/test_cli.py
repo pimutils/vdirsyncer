@@ -280,9 +280,12 @@ def test_collections_cache_invalidation(tmpdir, runner):
 
     foo = tmpdir.mkdir('foo')
     bar = tmpdir.mkdir('bar')
-    foo.mkdir('a').join('itemone.txt').write('UID:itemone')
+    for x in 'abc':
+        foo.mkdir(x)
+        bar.mkdir(x)
+    foo.join('a/itemone.txt').write('UID:itemone')
 
-    result = runner.invoke(['sync'], input='y\n' * 5)
+    result = runner.invoke(['sync'])
     assert not result.exception
 
     rv = bar.join('a').listdir()
@@ -308,7 +311,9 @@ def test_collections_cache_invalidation(tmpdir, runner):
 
     tmpdir.join('status').remove()
     bar2 = tmpdir.mkdir('bar2')
-    result = runner.invoke(['sync'], input='y\n' * 3)
+    for x in 'abc':
+        bar2.mkdir(x)
+    result = runner.invoke(['sync'])
     assert not result.exception
 
     rv = bar.join('a').listdir()
@@ -364,30 +369,38 @@ def test_discover_command(tmpdir, runner):
     ''').format(str(tmpdir)))
 
     foo = tmpdir.mkdir('foo')
-    tmpdir.mkdir('bar')
+    bar = tmpdir.mkdir('bar')
 
-    foo.mkdir('a')
-    foo.mkdir('b')
-    foo.mkdir('c')
+    for x in 'abc':
+        foo.mkdir(x)
+        bar.mkdir(x)
+    bar.mkdir('d')
 
-    result = runner.invoke(['sync'], input='y\n' * 3)
+    result = runner.invoke(['sync'])
     assert not result.exception
     lines = result.output.splitlines()
     assert lines[0].startswith('Discovering')
     assert 'Syncing foobar/a' in lines
     assert 'Syncing foobar/b' in lines
     assert 'Syncing foobar/c' in lines
+    assert 'Syncing foobar/d' not in lines
 
     foo.mkdir('d')
     result = runner.invoke(['sync'])
     assert not result.exception
+    assert 'Syncing foobar/a' in lines
+    assert 'Syncing foobar/b' in lines
+    assert 'Syncing foobar/c' in lines
     assert 'Syncing foobar/d' not in result.output
 
-    result = runner.invoke(['discover'], input='y\n')
+    result = runner.invoke(['discover'])
     assert not result.exception
 
     result = runner.invoke(['sync'])
     assert not result.exception
+    assert 'Syncing foobar/a' in lines
+    assert 'Syncing foobar/b' in lines
+    assert 'Syncing foobar/c' in lines
     assert 'Syncing foobar/d' in result.output
 
 
