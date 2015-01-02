@@ -129,10 +129,9 @@ class Discover(object):
                                         data=body, is_subpath=False)
         root = _parse_xml(response.content)
 
-        for element in root.iter('{*}current-user-principal'):
-            for principal in element.iter():  # should be only one
-                if principal.tag.endswith('href'):
-                    yield principal.text
+        for principal in root.iter('{*}current-user-principal/{*}href'):
+            # should be only one
+            yield principal.text
 
     def find_dav(self):
         return list(self._find_dav()) or ['']
@@ -172,10 +171,8 @@ class Discover(object):
                                         is_subpath=False)
 
         root = etree.fromstring(response.content)
-        for element in root.iter(self._homeset_tag):
-            for homeset in element.iter():
-                if homeset.tag.endswith('href'):
-                    yield homeset.text
+        for homeset in root.iter(self._homeset_tag + '/{*}href'):
+            yield homeset.text
 
     def find_collections(self):
         for home in itertools.chain(self.find_homes(), ['']):
