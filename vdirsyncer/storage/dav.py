@@ -104,6 +104,16 @@ class Discover(object):
     def __init__(self, session):
         self.session = session
 
+    def find_dav(self):
+        return list(self._find_dav()) or ['']
+
+    @_catch_generator_exceptions
+    def _find_dav(self):
+        response = self.session.request('GET', self._well_known_uri,
+                                        allow_redirects=False,
+                                        is_subpath=False)
+        yield response.headers.get('Location', '')
+
     def find_principal(self):
         for server in self.find_dav():
             for x in list(self._find_principal(server)) or ['']:
@@ -132,30 +142,6 @@ class Discover(object):
         for principal in root.iter('{*}current-user-principal/{*}href'):
             # should be only one
             yield principal.text
-
-    def find_dav(self):
-        return list(self._find_dav()) or ['']
-
-    @_catch_generator_exceptions
-    def _find_dav(self):
-        response = self.session.request('GET', self._well_known_uri,
-                                        allow_redirects=False,
-                                        is_subpath=False)
-        yield response.headers.get('Location', '')
-
-    def discover(self):
-        """discover all the user's CalDAV or CardDAV collections on the server
-        :returns: a list of the user's collections (as urls)
-        :rtype: list(unicode)
-        """
-
-        done = set()
-        for collection in self.find_collections():
-            collection['href'] = href = \
-                utils.urlparse.urljoin(self.session.url, collection['href'])
-            if href not in done:
-                done.add(href)
-                yield collection
 
     def find_homes(self):
         for principal in self.find_principal():
@@ -201,6 +187,20 @@ class Discover(object):
             }
 
             yield collection
+
+    def discover(self):
+        """discover all the user's CalDAV or CardDAV collections on the server
+        :returns: a list of the user's collections (as urls)
+        :rtype: list(unicode)
+        """
+
+        done = set()
+        for collection in self.find_collections():
+            collection['href'] = href = \
+                utils.urlparse.urljoin(self.session.url, collection['href'])
+            if href not in done:
+                done.add(href)
+                yield collection
 
 
 class CalDiscover(Discover):
