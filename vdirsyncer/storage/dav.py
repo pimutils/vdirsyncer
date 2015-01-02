@@ -13,7 +13,7 @@ import itertools
 from lxml import etree
 
 from requests import session as requests_session
-from requests.exceptions import RequestException
+from requests.exceptions import HTTPError
 
 from .base import Item, Storage
 from .http import USERAGENT, prepare_auth, prepare_verify
@@ -76,7 +76,7 @@ def _catch_generator_exceptions(f):
         try:
             for x in f(*args, **kwargs):
                 yield x
-        except (RequestException, exceptions.Error):
+        except (HTTPError, exceptions.Error):
             pass
     return inner
 
