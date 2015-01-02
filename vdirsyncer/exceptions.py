@@ -52,3 +52,7 @@ class WrongEtagError(PreconditionFailed):
 
 class ReadOnlyError(Error):
     '''Storage is read-only.'''
+
+
+class InvalidResponse(Error, ValueError):
+    '''The backend returned an invalid result.'''

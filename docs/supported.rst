@@ -46,8 +46,8 @@ Radicale
 --------
 
 Vdirsyncer is continuously tested against the git version and the latest PyPI
-release of Radicale_. Versions ``< 0.9`` have substantial deficiencies, and
-using them is neither supported nor encouraged.
+release of Radicale_. Older versions have substantial deficiencies, and using
+them is neither supported nor encouraged.
 
 - Radicale doesn't `support time ranges in the calendar-query of CalDAV
   <https://github.com/Kozea/Radicale/issues/146>`_, so setting ``start_date``
