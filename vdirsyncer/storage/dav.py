@@ -7,8 +7,6 @@
     :license: MIT, see LICENSE for more details.
 '''
 import datetime
-import functools
-import itertools
 
 from lxml import etree
 
@@ -43,12 +41,25 @@ def _decode_href(x):
     return utils.compat.urlunquote(x)
 
 
+class InvalidXMLResponse(exceptions.InvalidResponse):
+    pass
+
+
 def _parse_xml(content):
     try:
         return etree.XML(content)
     except etree.Error as e:
-        raise ValueError('Invalid XML encountered: {}\n'
-                         'Double-check the URLs in your config.'.format(e))
+        raise InvalidXMLResponse('Invalid XML encountered: {}\n'
+                                 'Double-check the URLs in your config.'
+                                 .format(e))
+
+
+def _find_xml(root, query, **kw):
+    rv = root.find(query, **kw)
+    if rv is None:
+        raise InvalidXMLResponse('Invalid response from the DAV server. '
+                                 'Was looking for {}.'.format(query))
+    return rv
 
 
 def _fuzzy_matches_mimetype(strict, weak):
@@ -70,24 +81,7 @@ def _get_collection_from_url(url):
     return collection
 
 
-def _catch_generator_exceptions(f):
-    @functools.wraps(f)
-    def inner(*args, **kwargs):
-        try:
-            for x in f(*args, **kwargs):
-                yield x
-        except (HTTPError, exceptions.Error):
-            pass
-    return inner
-
-
 class Discover(object):
-    # Another one of Radicale's specialties: Discovery is broken (returning
-    # completely wrong URLs at every stage) as of version 0.9.
-    # https://github.com/Kozea/Radicale/issues/196
-    #
-    # So we just brute-force a lot of paths here.
-
     _resourcetype = None
     _homeset_xml = None
     _homeset_tag = None
@@ -105,27 +99,20 @@ class Discover(object):
         self.session = session
 
     def find_dav(self):
-        return list(self._find_dav()) or ['']
+        try:
+            response = self.session.request('GET', self._well_known_uri,
+                                            allow_redirects=False,
+                                            is_subpath=False)
+            return response.headers.get('Location', '')
+        except (HTTPError, exceptions.Error):
+            # The user might not have well-known URLs set up and instead points
+            # vdirsyncer directly to the DAV server.
+            dav_logger.debug('Server does not support well-known URIs.')
+            return ''
 
-    @_catch_generator_exceptions
-    def _find_dav(self):
-        response = self.session.request('GET', self._well_known_uri,
-                                        allow_redirects=False,
-                                        is_subpath=False)
-        yield response.headers.get('Location', '')
-
-    def find_principal(self):
-        for server in self.find_dav():
-            for x in list(self._find_principal(server)) or ['']:
-                yield x
-
-    @_catch_generator_exceptions
-    def _find_principal(self, url):
-        """tries to find the principal URL of the user
-        :returns: iterable (but should be only of element) of urls
-        :rtype: iterable(unicode)
-
-        """
+    def find_principal(self, url=None):
+        if url is None:
+            url = self.find_dav()
         headers = self.session.get_default_headers()
         headers['Depth'] = 0
         body = """
@@ -138,69 +125,57 @@ class Discover(object):
         response = self.session.request('PROPFIND', url, headers=headers,
                                         data=body, is_subpath=False)
         root = _parse_xml(response.content)
+        return _find_xml(root, ('.//{DAV:}current-user-principal'
+                                '/{DAV:}href')).text
 
-        for principal in root.iter('{*}current-user-principal/{*}href'):
-            # should be only one
-            yield principal.text
-
-    def find_homes(self):
-        for principal in self.find_principal():
-            for x in self._find_homes(principal):
-                yield x
-
-    @_catch_generator_exceptions
-    def _find_homes(self, principal):
+    def find_home(self, url=None):
+        if url is None:
+            url = self.find_principal()
         headers = self.session.get_default_headers()
         headers['Depth'] = 0
-        response = self.session.request('PROPFIND', principal, headers=headers,
+        response = self.session.request('PROPFIND', url,
+                                        headers=headers,
                                         data=self._homeset_xml,
                                         is_subpath=False)
 
         root = etree.fromstring(response.content)
-        for homeset in root.iter(self._homeset_tag + '/{*}href'):
-            yield homeset.text
+        # Better don't do string formatting here, because of XML namespaces
+        return _find_xml(root, './/' + self._homeset_tag + '/{*}href').text
 
-    def find_collections(self):
-        for home in itertools.chain(self.find_homes(), ['']):
-            for x in self._find_collections(home):
-                yield x
-
-    @_catch_generator_exceptions
-    def _find_collections(self, home):
-        """find all CalDAV collections under `home`"""
-
+    def find_collections(self, url=None):
+        if url is None:
+            url = self.find_home()
         headers = self.session.get_default_headers()
         headers['Depth'] = 1
-        response = self.session.request('PROPFIND', home, headers=headers,
+        response = self.session.request('PROPFIND', url, headers=headers,
                                         data=self._collection_xml,
                                         is_subpath=False)
         root = _parse_xml(response.content)
-        for response in root.iter('{*}response'):
-            prop = response.find('{*}propstat/{*}prop')
+        done = set()
+        for response in root.findall('{DAV:}response'):
+            prop = _find_xml(response, '{*}propstat/{*}prop')
             if prop.find('{*}resourcetype/{*}' + self._resourcetype) is None:
                 continue
 
-            displayname = prop.find('{*}displayname')
-            collection = {
-                'href': response.find('{*}href').text,
-                'displayname': '' if displayname is None else displayname.text
-            }
-
-            yield collection
-
-    def discover(self):
-        """discover all the user's CalDAV or CardDAV collections on the server
-        :returns: a list of the user's collections (as urls)
-        :rtype: list(unicode)
-        """
-
-        done = set()
-        for collection in self.find_collections():
-            collection['href'] = href = \
-                utils.urlparse.urljoin(self.session.url, collection['href'])
+            displayname = getattr(prop.find('{*}displayname'), 'text', '')
+            href = utils.urlparse.urljoin(self.session.url,
+                                          _find_xml(response, '{*}href').text)
             if href not in done:
                 done.add(href)
-                yield collection
+                yield {'href': href, 'displayname': displayname}
+
+    def discover(self):
+        for x in self.find_collections():
+            yield x
+
+        # Another one of Radicale's specialties: Discovery is broken (returning
+        # completely wrong URLs at every stage) as of version 0.9.
+        # https://github.com/Kozea/Radicale/issues/196
+        try:
+            for x in self.find_collections(''):
+                yield x
+        except (InvalidXMLResponse, HTTPError, exceptions.Error):
+            pass
 
 
 class CalDiscover(Discover):
@@ -353,17 +328,13 @@ class DavStorage(Storage):
             if c['collection'] == collection:
                 return c
 
-        homes = list(d.find_homes())
-        if len(homes) != 1:
-            raise NotImplementedError('Not sure where to create {r!}, {} '
-                                      'homeset-URLs found (need exactly 1).'
-                                      .format(collection, len(homes)))
+        home = d.find_home()
+        collection_url = '{}/{}'.format(home.rstrip('/'), collection)
 
         try:
-            collection_url = '{}/{}'.format(homes[0].rstrip('/'), collection)
             response = d.session.request('MKCOL', collection_url,
                                          is_subpath=False)
-        except RequestException as e:
+        except HTTPError as e:
             raise NotImplementedError(e)
         else:
             rv = dict(kwargs)
@@ -410,8 +381,8 @@ class DavStorage(Storage):
         hrefs_left = set(hrefs)
         for href, etag, prop in self._parse_prop_responses(root):
             try:
-                raw = prop.find(self.get_multi_data_query).text
-            except AttributeError:
+                raw = _find_xml(prop, self.get_multi_data_query).text
+            except InvalidXMLResponse:
                 dav_logger.warning('Skipping {}, the item content is missing.'
                                    .format(href))
                 continue
@@ -484,8 +455,8 @@ class DavStorage(Storage):
         hrefs = set()
         for response in root.iter('{DAV:}response'):
             try:
-                href = response.find('{DAV:}href').text
-            except AttributeError:
+                href = _find_xml(response, '{DAV:}href').text
+            except InvalidXMLResponse:
                 dav_logger.error('Skipping response, href is missing.')
                 continue
 
@@ -504,10 +475,11 @@ class DavStorage(Storage):
                 continue
 
             try:
-                prop = response.find('{DAV:}propstat/{DAV:}prop')
-                contenttype = prop.find('{DAV:}getcontenttype')
-                etag = prop.find('{DAV:}getetag').text
-            except AttributeError:
+                prop = _find_xml(response, '{DAV:}propstat/{DAV:}prop')
+                contenttype = _find_xml(prop, '{DAV:}getcontenttype').text
+                etag = _find_xml(prop, '{DAV:}getetag').text
+            except InvalidXMLResponse as e:
+                dav_logger.error(str(e))
                 dav_logger.warning('Skipping {!r}, properties are missing.'
                                    .format(href))
                 continue
@@ -517,7 +489,6 @@ class DavStorage(Storage):
                 dav_logger.debug('Skipping {!r}, is collection.'.format(href))
                 continue
 
-            contenttype = getattr(contenttype, 'text', None)
             if not self._is_item_mimetype(contenttype):
                 dav_logger.debug('Skipping {!r}, {!r} != {!r}.'
                                  .format(href, contenttype,
@@ -565,6 +536,7 @@ class CaldavStorage(DavStorage):
             xmlns:C="urn:ietf:params:xml:ns:caldav">
             <D:prop>
                 <D:getetag/>
+                <D:getcontenttype/>
                 <C:calendar-data/>
             </D:prop>
             {hrefs}
@@ -678,6 +650,7 @@ class CarddavStorage(DavStorage):
                     xmlns:C="urn:ietf:params:xml:ns:carddav">
                 <D:prop>
                     <D:getetag/>
+                    <D:getcontenttype/>
                     <C:address-data/>
                 </D:prop>
                 {hrefs}
