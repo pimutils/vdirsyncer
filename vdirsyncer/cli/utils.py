@@ -184,8 +184,8 @@ def _handle_collection_not_found(config, collection):
         except NotImplementedError as e:
             cli_logger.error(e)
 
-    raise CliError('Unable to find or create collection {collection!r} for '
-                   'storage {storage!r}. Please create the collection '
+    raise CliError('Unable to find or create collection "{collection}" for '
+                   'storage "{storage}". Please create the collection '
                    'yourself.'.format(collection=collection,
                                       storage=storage_name))
 
