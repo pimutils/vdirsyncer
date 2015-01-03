@@ -12,7 +12,8 @@ import pytest
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.memory import MemoryStorage
-from vdirsyncer.sync import BothReadOnly, StorageEmpty, SyncConflict, sync
+from vdirsyncer.sync import BothReadOnly, IdentConflict, StorageEmpty, \
+    SyncConflict, sync
 
 from . import assert_item_equals, normalize_item
 
@@ -264,3 +265,20 @@ def test_readonly():
     assert len(status) == 2 and a.has(href_a) and not b.has(href_a)
     sync(a, b, status)
     assert len(status) == 1 and not a.has(href_a) and not b.has(href_a)
+
+
+@pytest.mark.parametrize('sync_inbetween', (True, False))
+def test_ident_conflict(sync_inbetween):
+    a = MemoryStorage()
+    b = MemoryStorage()
+    status = {}
+    href_a, etag_a = a.upload(Item(u'UID:aaa'))
+    href_b, etag_b = a.upload(Item(u'UID:bbb'))
+    if sync_inbetween:
+        sync(a, b, status)
+
+    a.update(href_a, Item(u'UID:xxx'), etag_a)
+    a.update(href_b, Item(u'UID:xxx'), etag_b)
+
+    with pytest.raises(IdentConflict):
+        sync(a, b, status)

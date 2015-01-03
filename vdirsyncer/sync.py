@@ -42,6 +42,27 @@ class SyncConflict(SyncError):
     href_b = None
 
 
+class IdentConflict(SyncError):
+    '''
+    Multiple items on the same storage have the same UID.
+
+    :param storage: The affected storage.
+    :param hrefs: List of affected hrefs on `storage`.
+    '''
+    storage = None
+    _hrefs = None
+
+    @property
+    def hrefs(self):
+        return self._hrefs
+
+    @hrefs.setter
+    def hrefs(self, val):
+        val = set(val)
+        assert len(val) > 1
+        self._hrefs = val
+
+
 class StorageEmpty(SyncError):
     '''
     One storage unexpectedly got completely empty between two synchronizations.
@@ -61,7 +82,23 @@ class BothReadOnly(SyncError):
     '''
 
 
-def _prepare_idents(storage, other_storage, href_to_status):
+def _prefetch(storage, rv, hrefs):
+    if rv is None:
+        rv = {}
+    if not hrefs:
+        return rv
+
+    for href, item, etag in storage.get_multi(hrefs):
+        props = rv[href]
+        props['item'] = item
+        props['ident'] = item.ident
+        if props['etag'] != etag:
+            raise SyncError('Etag changed during sync.')
+
+    return rv
+
+
+def _prepare_hrefs(storage, other_storage, href_to_status):
     hrefs = {}
     download = []
     for href, etag in storage.list():
@@ -75,21 +112,18 @@ def _prepare_idents(storage, other_storage, href_to_status):
             download.append(href)
 
     _prefetch(storage, hrefs, download)
-    return dict((x['ident'], x) for href, x in iteritems(hrefs))
+    return hrefs
 
 
-def _prefetch(storage, rv, hrefs):
-    if rv is None:
-        rv = {}
-    if not hrefs:
-        return rv
+def _prepare_idents(storage, other_storage, href_to_status):
+    hrefs = _prepare_hrefs(storage, other_storage, href_to_status)
 
-    for href, item, etag in storage.get_multi(hrefs):
-        props = rv[href]
-        props['item'] = item
-        props['ident'] = item.ident
-        if props['etag'] != etag:
-            raise SyncError('Etag changed during sync.')
+    rv = {}
+    for href, props in iteritems(hrefs):
+        other_props = rv.setdefault(props['ident'], props)
+        if other_props != props:
+            raise IdentConflict(storage=storage,
+                                hrefs=[props['href'], other_props['href']])
 
     return rv
 

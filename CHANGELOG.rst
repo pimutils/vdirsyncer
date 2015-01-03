@@ -18,6 +18,8 @@ Version 0.4.1
   it should try to create collections.
 - The old config values ``True``, ``False``, ``on``, ``off`` and ``None`` are
   now invalid.
+- UID conflicts are now properly handled instead of ignoring one item. Card-
+  and CalDAV servers are already supposed to take care of those though.
 
 Version 0.4.0
 =============
