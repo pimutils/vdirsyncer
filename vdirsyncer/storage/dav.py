@@ -54,11 +54,9 @@ def _parse_xml(content):
                                  .format(e))
 
 
-def _find_xml(root, query, **kw):
-    rv = root.find(query, **kw)
-    if rv is None:
-        raise InvalidXMLResponse('Invalid response from the DAV server. '
-                                 'Was looking for {}.'.format(query))
+def _merge_xml(items):
+    rv = items[0]
+    rv.extend(items[1:])
     return rv
 
 
@@ -125,8 +123,10 @@ class Discover(object):
         response = self.session.request('PROPFIND', url, headers=headers,
                                         data=body, is_subpath=False)
         root = _parse_xml(response.content)
-        return _find_xml(root, ('.//{DAV:}current-user-principal'
-                                '/{DAV:}href')).text
+        rv = root.find('.//{DAV:}current-user-principal/{DAV:}href')
+        if rv is None:
+            raise InvalidXMLResponse()
+        return rv.text
 
     def find_home(self, url=None):
         if url is None:
@@ -140,7 +140,10 @@ class Discover(object):
 
         root = etree.fromstring(response.content)
         # Better don't do string formatting here, because of XML namespaces
-        return _find_xml(root, './/' + self._homeset_tag + '/{*}href').text
+        rv = root.find('.//' + self._homeset_tag + '/{*}href')
+        if rv is None:
+            raise InvalidXMLResponse()
+        return rv.text
 
     def find_collections(self, url=None):
         if url is None:
@@ -153,13 +156,15 @@ class Discover(object):
         root = _parse_xml(response.content)
         done = set()
         for response in root.findall('{DAV:}response'):
-            prop = _find_xml(response, '{*}propstat/{*}prop')
-            if prop.find('{*}resourcetype/{*}' + self._resourcetype) is None:
+            props = _merge_xml(response.findall('{*}propstat/{*}prop'))
+            if props.find('{*}resourcetype/{*}' + self._resourcetype) is None:
                 continue
 
-            displayname = getattr(prop.find('{*}displayname'), 'text', '')
-            href = utils.urlparse.urljoin(self.session.url,
-                                          _find_xml(response, '{*}href').text)
+            displayname = getattr(props.find('{*}displayname'), 'text', '')
+            href = response.find('{*}href')
+            if href is None:
+                raise InvalidXMLResponse()
+            href = utils.urlparse.urljoin(self.session.url, href.text)
             if href not in done:
                 done.add(href)
                 yield {'href': href, 'displayname': displayname}
@@ -380,17 +385,17 @@ class DavStorage(Storage):
         rv = []
         hrefs_left = set(hrefs)
         for href, etag, prop in self._parse_prop_responses(root):
-            try:
-                raw = _find_xml(prop, self.get_multi_data_query).text
-            except InvalidXMLResponse:
+            raw = prop.find(self.get_multi_data_query)
+            if raw is None:
                 dav_logger.warning('Skipping {}, the item content is missing.'
                                    .format(href))
                 continue
-
-            if isinstance(raw, bytes):
-                raw = raw.decode(response.encoding)
-            if isinstance(etag, bytes):
-                etag = etag.decode(response.encoding)
+            else:
+                raw = raw.text
+                if isinstance(raw, bytes):
+                    raw = raw.decode(response.encoding)
+                if isinstance(etag, bytes):
+                    etag = etag.decode(response.encoding)
 
             try:
                 hrefs_left.remove(href)
@@ -454,13 +459,12 @@ class DavStorage(Storage):
     def _parse_prop_responses(self, root, decoding_rounds=1):
         hrefs = set()
         for response in root.iter('{DAV:}response'):
-            try:
-                href = _find_xml(response, '{DAV:}href').text
-            except InvalidXMLResponse:
+            href = response.find('{DAV:}href')
+            if href is None:
                 dav_logger.error('Skipping response, href is missing.')
                 continue
 
-            href = self._normalize_href(href)
+            href = self._normalize_href(href.text)
             for i in range(decoding_rounds):
                 href = _decode_href(href)
 
@@ -475,20 +479,26 @@ class DavStorage(Storage):
                 continue
 
             try:
-                prop = _find_xml(response, '{DAV:}propstat/{DAV:}prop')
-                contenttype = _find_xml(prop, '{DAV:}getcontenttype').text
-                etag = _find_xml(prop, '{DAV:}getetag').text
+                props = response.findall('{DAV:}propstat/{DAV:}prop')
+                if props is None:
+                    raise InvalidXMLResponse()
+                props = _merge_xml(props)
+
+                etag = getattr(props.find('{DAV:}getetag'), 'text', '')
+                if not etag:
+                    raise InvalidXMLResponse('Etag is missing.')
             except InvalidXMLResponse as e:
                 dav_logger.error(str(e))
                 dav_logger.warning('Skipping {!r}, properties are missing.'
                                    .format(href))
                 continue
 
-            is_collection = prop.find('{DAV:}resourcetype/{DAV:}collection')
-            if is_collection is not None:
+            if props.find('{DAV:}resourcetype/{DAV:}collection') is not None:
                 dav_logger.debug('Skipping {!r}, is collection.'.format(href))
                 continue
 
+            contenttype = getattr(props.find('{DAV:}getcontenttype'),
+                                  'text', None)
             if not self._is_item_mimetype(contenttype):
                 dav_logger.debug('Skipping {!r}, {!r} != {!r}.'
                                  .format(href, contenttype,
@@ -496,7 +506,7 @@ class DavStorage(Storage):
                 continue
 
             hrefs.add(href)
-            yield href, etag, prop
+            yield href, etag, props
 
 
 class CaldavStorage(DavStorage):
@@ -536,7 +546,6 @@ class CaldavStorage(DavStorage):
             xmlns:C="urn:ietf:params:xml:ns:caldav">
             <D:prop>
                 <D:getetag/>
-                <D:getcontenttype/>
                 <C:calendar-data/>
             </D:prop>
             {hrefs}
@@ -650,7 +659,6 @@ class CarddavStorage(DavStorage):
                     xmlns:C="urn:ietf:params:xml:ns:carddav">
                 <D:prop>
                     <D:getetag/>
-                    <D:getcontenttype/>
                     <C:address-data/>
                 </D:prop>
                 {hrefs}
