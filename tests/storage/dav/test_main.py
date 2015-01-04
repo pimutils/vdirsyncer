@@ -37,6 +37,8 @@ ServerMixin = _get_server_mixin(dav_server)
 
 
 class DavStorageTests(ServerMixin, StorageTests):
+    dav_server = dav_server
+
     def test_dav_broken_item(self, s):
         item = Item(u'HAHA:YES')
         try:

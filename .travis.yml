@@ -10,7 +10,7 @@ env:
     - BUILD=tests DAV_SERVER=radicale RADICALE_BACKEND=multifilesystem REQUIREMENTS=devel
     - BUILD=tests DAV_SERVER=radicale RADICALE_BACKEND=database REQUIREMENTS=devel
     - BUILD=tests DAV_SERVER=owncloud REQUIREMENTS=release
-    #- BUILD=tests DAV_SERVER=baikal REQUIREMENTS=release
+    - BUILD=tests DAV_SERVER=baikal REQUIREMENTS=release
     - BUILD=style
 
 install:
