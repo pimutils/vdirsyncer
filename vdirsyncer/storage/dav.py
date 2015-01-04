@@ -433,10 +433,9 @@ class DavStorage(Storage):
         return href, etag
 
     def update(self, href, item, etag):
-        href = self._normalize_href(href)
         if etag is None:
             raise ValueError('etag must be given and must not be None.')
-        href, etag = self._put(href, item, etag)
+        href, etag = self._put(self._normalize_href(href), item, etag)
         return etag
 
     def upload(self, item):
@@ -479,7 +478,7 @@ class DavStorage(Storage):
                 continue
 
             props = response.findall('{DAV:}propstat/{DAV:}prop')
-            if props is None:
+            if not props:
                 dav_logger.warning('Skipping {!r}, properties are missing.'
                                    .format(href))
                 continue
