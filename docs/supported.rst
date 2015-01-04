@@ -80,7 +80,7 @@ Vdirsyncer is continuously tested against the latest version of ownCloud_.
   fixed in SabreDAV's repo, and the corresponding fix is also in ownCloud since
   7.0.0. See :gh:`16` for more information.
 
-.. _ownCloud:: https://owncloud.org/
+.. _ownCloud: https://owncloud.org/
 
 FastMail
 --------
@@ -88,7 +88,7 @@ FastMail
 Vdirsyncer is irregularly tested against FastMail_. There are no known issues
 with it.
 
-.. _FastMail:: https://www.fastmail.com/
+.. _FastMail: https://www.fastmail.com/
 
 iCloud
 ------
@@ -96,7 +96,7 @@ iCloud
 Vdirsyncer is irregularly tested against iCloud_. There are no known issues
 with it.
 
-.. _iCloud:: http://icloud.com/
+.. _iCloud: http://icloud.com/
 
 DavMail (Exchange, Outlook)
 ---------------------------
@@ -106,4 +106,4 @@ Using vdirsyncer with DavMail_ is currently not recommended (if even possible).
 - DavMail (or the server it is proxying) handles URLs case-insensitively. See
   :gh:`144`.
 
-.. _DavMail:: http://davmail.sourceforge.net/
+.. _DavMail: http://davmail.sourceforge.net/
