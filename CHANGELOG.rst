@@ -20,6 +20,7 @@ Version 0.4.1
   now invalid.
 - UID conflicts are now properly handled instead of ignoring one item. Card-
   and CalDAV servers are already supposed to take care of those though.
+- Official Baikal support added.
 
 Version 0.4.0
 =============
