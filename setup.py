@@ -38,10 +38,13 @@ setup(
         'console_scripts': ['vdirsyncer = vdirsyncer.cli:main']
     },
     install_requires=[
+        # https://github.com/mitsuhiko/click/issues/200
         'click>=3.1',
+        # https://github.com/shazow/urllib3/pull/444
         'requests>=2.4.1',
         'lxml>=3.0',
         'icalendar>=3.6',
+        # https://github.com/sigmavirus24/requests-toolbelt/pull/28
         'requests_toolbelt>=0.3.0'
     ],
     extras_require={'keyring': ['keyring']}
