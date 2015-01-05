@@ -44,11 +44,7 @@ def prepare_verify(verify):
     return verify
 
 
-class HttpStorage(Storage):
-    '''
-    Use a simple ``.ics`` file (or similar) from the web.
-
-    :param url: URL to the ``.ics`` file.
+HTTP_STORAGE_PARAMETERS = '''
     :param username: Username for authentication.
     :param password: Password for authentication.
     :param verify: Verify SSL certificate, default True. This can also be a
@@ -59,6 +55,15 @@ class HttpStorage(Storage):
         ``guess``. If you know yours, consider setting it explicitly for
         performance.
     :param useragent: Default ``vdirsyncer``.
+'''
+
+
+class HttpStorage(Storage):
+    __doc__ = '''
+    Use a simple ``.ics`` file (or similar) from the web.
+
+    :param url: URL to the ``.ics`` file.
+    ''' + HTTP_STORAGE_PARAMETERS + '''
 
     A simple example::
 

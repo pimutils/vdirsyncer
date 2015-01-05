@@ -14,7 +14,8 @@ from requests import session as requests_session
 from requests.exceptions import HTTPError
 
 from .base import Item, Storage
-from .http import USERAGENT, prepare_auth, prepare_verify
+from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
+    prepare_verify
 from .. import exceptions, log, utils
 
 
@@ -250,18 +251,9 @@ class DavSession(object):
 
 class DavStorage(Storage):
 
-    '''
+    __doc__ = '''
     :param url: Base URL or an URL to a collection.
-    :param username: Username for authentication.
-    :param password: Password for authentication.
-    :param verify: Verify SSL certificate, default True. This can also be a
-        local path to a self-signed SSL certificate.
-    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
-        expected server certificate.
-    :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. Default
-        ``guess``. If you know yours, consider setting it explicitly for
-        performance.
-    :param useragent: Default ``vdirsyncer``.
+    ''' + HTTP_STORAGE_PARAMETERS + '''
     :param unsafe_href_chars: Replace the given characters when generating
         hrefs. Defaults to ``'@'``.
 
