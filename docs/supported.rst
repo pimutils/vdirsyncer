@@ -107,3 +107,13 @@ Using vdirsyncer with DavMail_ is currently not recommended (if even possible).
   :gh:`144`.
 
 .. _DavMail: http://davmail.sourceforge.net/
+
+Baikal
+------
+
+Vdirsyncer is continuously tested against the latest version of Baikal_.
+
+- Baikal up to ``0.2.7`` also uses an old version of SabreDAV, with the same issue as
+  ownCloud, see :gh:`160`.
+
+.. _Baikal: http://baikal-server.com/
