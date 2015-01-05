@@ -144,6 +144,8 @@ it will not automatically start synchronizing those [2]_. You should run
 .. [2] Because collections are added rarely, and checking for this case before
    every synchronization isn't worth the overhead.
 
+.. _ssl-tutorial:
+
 SSL
 ---
 

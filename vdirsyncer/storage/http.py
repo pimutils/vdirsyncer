@@ -48,9 +48,11 @@ HTTP_STORAGE_PARAMETERS = '''
     :param username: Username for authentication.
     :param password: Password for authentication.
     :param verify: Verify SSL certificate, default True. This can also be a
-        local path to a self-signed SSL certificate.
+        local path to a self-signed SSL certificate. See :ref:`ssl-tutorial`
+        for more information.
     :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
-        expected server certificate.
+        expected server certificate. See :ref:`ssl-tutorial` for more
+        information.
     :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. Default
         ``guess``. If you know yours, consider setting it explicitly for
         performance.
