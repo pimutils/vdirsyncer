@@ -12,7 +12,7 @@ may want to subscribe to `GitHub's tag feed
 Version 0.4.1
 =============
 
-*yet to be released*
+*released on 05 January 2015*
 
 - All ``create`` arguments from all storages are gone. Vdirsyncer now asks if
   it should try to create collections.
