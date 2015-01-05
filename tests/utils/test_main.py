@@ -208,6 +208,8 @@ def test_get_class_init_args_on_storage():
     assert not required
 
 
+@pytest.mark.skipif(not utils.compat.PY2,
+                    reason='https://github.com/shazow/urllib3/issues/529')
 def test_request_ssl(httpsserver):
     sha1 = '94:FD:7A:CB:50:75:A4:69:82:0A:F8:23:DF:07:FC:69:3E:CD:90:CA'
     md5 = '19:90:F7:23:94:F2:EF:AB:2B:64:2D:57:3D:25:95:2D'
@@ -221,3 +223,7 @@ def test_request_ssl(httpsserver):
     utils.request('GET', httpsserver.url, verify=False,
                   verify_fingerprint=sha1)
     utils.request('GET', httpsserver.url, verify=False, verify_fingerprint=md5)
+    with pytest.raises(requests.exceptions.SSLError) as excinfo:
+        utils.request('GET', httpsserver.url, verify=False,
+                      verify_fingerprint=''.join(reversed(sha1)))
+    assert 'Fingerprints did not match' in str(excinfo.value)
