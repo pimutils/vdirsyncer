@@ -154,14 +154,14 @@ Vdirsyncer uses the requests_ library for all its HTTP and SSL interaction.
 All SSL configuration is done per-storage. Storages that have anything to do
 with SSL have two parameters: ``verify`` and ``verify_fingerprint``.
 
-- The ``verify`` parameter determines whether to verify SSL certificates
-  against a set of trusted root CAs or PEM certificates.
+- The ``verify`` parameter determines whether to verify SSL certificates.
 
   1. The default, ``true``, means that certificates will be validated against
      `requests' own set of root CAs
      <http://www.python-requests.org/en/latest/user/advanced/#ca-certificates>`_.
 
-  2. The value ``false`` will disable any validation. Unless combined with
+  2. The value ``false`` will disable both trusted-CA-validation and the
+     validation of the certificate's expiration date. Unless combined with
      ``verify_fingerprint``, you should not use this value at all.
 
   3. You can also set ``verify`` to a path of the server's certificate in PEM
@@ -170,7 +170,7 @@ with SSL have two parameters: ``verify`` and ``verify_fingerprint``.
          [storage foo]
          type = caldav
          ...
-         verify = /path/to/cert.pem
+         verify = "/path/to/cert.pem"
 
 - The ``verify_fingerprint`` parameter can be used to *additionally* compare
   the SSL fingerprint to a fixed value. The value can be either a
@@ -183,6 +183,6 @@ with SSL have two parameters: ``verify`` and ``verify_fingerprint``.
 
   Using it will *not* turn off the normal CA validation. If you use a
   self-signed certificate which you want to pin down, you have to also set
-  ``verify = False``.
+  ``verify = false``.
 
 .. _requests: www.python-requests.org/
