@@ -37,6 +37,8 @@ Contacts
 - `contactquery.c <https://github.com/t-8ch/snippets/blob/master/contactquery.c>`_,
   a small program explicitly written for querying vdirs from mutt.
 
+.. _supported-servers:
+
 Supported servers
 =================
 

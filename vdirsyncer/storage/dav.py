@@ -267,9 +267,9 @@ class DavStorage(Storage):
 
     .. note::
 
-        Please also see :doc:`supported` for very important information, as
-        changing some of the default options might be very dangerous with some
-        servers.
+        Please also see :ref:`supported-servers` for very important
+        information, as changing some of the default options might be very
+        dangerous with some servers.
     '''
 
     # the file extension of items. Useful for testing against radicale.
