@@ -14,6 +14,9 @@ Version 0.4.2
 
 *yet to be released*
 
+- Vdirsyncer now respects redirects when uploading and updating items. This
+  might fix issues with Zimbra.
+
 Version 0.4.1
 =============
 

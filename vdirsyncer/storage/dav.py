@@ -427,6 +427,7 @@ class DavStorage(Storage):
             headers=headers
         )
         etag = response.headers.get('etag', None)
+        href = self._normalize_href(response.url)
         if not etag:
             item2, etag = self.get(href)
             assert item2.uid == item.uid
