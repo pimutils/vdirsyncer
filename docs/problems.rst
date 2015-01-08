@@ -17,7 +17,7 @@ Requests-related ImportErrors on Debian-based distributions
     ImportError: cannot import name iter_field_objects
 
 Debian has had its problems in the past with the Python requests package, see
-:gh:`82` and :gh:`140`. You have two options for solving this problem:
+:gh:`82` and :gh:`140`. You have several options for solving this problem:
 
 - Set the ``auth`` parameter of :py:class:`vdirsyncer.storage.CaldavStorage`,
   :py:class:`vdirsyncer.storage.CarddavStorage`, and/or
