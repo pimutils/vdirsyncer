@@ -354,7 +354,7 @@ class DavStorage(Storage):
         href = item.ident
         for char in self.unsafe_href_chars:
             href = href.replace(char, '_')
-        return _encode_href(self._normalize_href(href + self.fileext))
+        return self._normalize_href(href + self.fileext)
 
     def _is_item_mimetype(self, mimetype):
         return _fuzzy_matches_mimetype(self.item_mimetype, mimetype)
