@@ -686,6 +686,6 @@ class CarddavStorage(DavStorage):
 
         # Decode twice because ownCloud encodes twice.
         # See https://github.com/owncloud/contacts/issues/581
-        rv = self._parse_prop_responses(root, decoding_rounds=2)
+        rv = self._parse_prop_responses(root)
         for href, etag, prop in rv:
             yield href, etag
