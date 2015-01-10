@@ -517,3 +517,17 @@ def test_parse_config_value(capsys):
     assert x('3.14') == (3.14, 0)
     assert x('') == ('', 0)
     assert x('""') == ('', 0)
+
+
+def test_duplicate_sections(runner):
+    runner.write_with_general(dedent('''
+    [storage foo]
+    yes = true
+
+    [storage foo]
+    yes = false
+    '''))
+
+    result = runner.invoke(['sync'])
+    assert result.exception
+    assert ': section \'storage foo\' already exists' in result.output.lower()

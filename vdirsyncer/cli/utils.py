@@ -21,13 +21,13 @@ from ..doubleclick import click
 from ..storage import storage_names
 from ..sync import StorageEmpty, SyncConflict
 from ..utils import expand_path, get_class_init_args, safe_write
-from ..utils.compat import text_type
+from ..utils.compat import PY2, text_type
 
 
 try:
-    from ConfigParser import RawConfigParser
+    import ConfigParser as configparser
 except ImportError:
-    from configparser import RawConfigParser
+    import configparser
 
 try:
     from Queue import Queue
@@ -40,6 +40,38 @@ cli_logger = log.get(__name__)
 GENERAL_ALL = frozenset(['status_path', 'password_command'])
 GENERAL_REQUIRED = frozenset(['status_path'])
 SECTION_NAME_CHARS = frozenset(chain(string.ascii_letters, string.digits, '_'))
+
+
+class CustomConfigParser(configparser.RawConfigParser, object):
+    '''A config parser that works around some bugs (or unexpected behavior) in
+    Python 2.
+
+    http://bugs.python.org/issue2204 -- Duplicate sections are melded into one.
+    This is actually intended behavior for some reason.  This subclass works
+    around it by setting an internal dictionary to a custom class, which raises
+    an error when the ``_read`` method is trying to fetch and reuse the old
+    section values.
+
+    '''
+    def __init__(self, *args, **kwargs):
+        super(CustomConfigParser, self).__init__(*args, **kwargs)
+        self._currently_reading = False
+
+        if PY2:
+            class SectionsDict(dict):
+                def __getitem__(d, name):
+                    if self._currently_reading:
+                        raise configparser.DuplicateSectionError(name)
+                    return dict.__getitem__(d, name)
+
+            self._sections = SectionsDict()
+
+    def _read(self, *args, **kwargs):
+        self._currently_reading = True
+        try:
+            return super(CustomConfigParser, self)._read(*args, **kwargs)
+        finally:
+            self._currently_reading = False
 
 
 class CliError(RuntimeError):
@@ -251,7 +283,7 @@ def _validate_pair_section(pair_config):
 
 
 def load_config(f):
-    c = RawConfigParser()
+    c = CustomConfigParser()
     c.readfp(f)
 
     get_options = lambda s: dict(parse_options(c.items(s), section=s))
