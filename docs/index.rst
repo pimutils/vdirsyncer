@@ -18,8 +18,9 @@ Table of Contents
    :maxdepth: 1
 
    tutorial
-   config
+   ssl-tutorial
    keyring
+   config
    supported
    problems
    vdir
