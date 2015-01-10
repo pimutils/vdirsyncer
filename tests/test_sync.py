@@ -15,7 +15,7 @@ from vdirsyncer.storage.memory import MemoryStorage
 from vdirsyncer.sync import BothReadOnly, IdentConflict, StorageEmpty, \
     SyncConflict, sync
 
-from . import assert_item_equals, normalize_item
+from . import assert_item_equals, blow_up, normalize_item
 
 
 def empty_storage(x):
@@ -282,3 +282,26 @@ def test_ident_conflict(sync_inbetween):
 
     with pytest.raises(IdentConflict):
         sync(a, b, status)
+
+
+def test_moved_href():
+    '''
+    Concrete application: ppl_ stores contact aliases in filenames, which means
+    item's hrefs get changed. Vdirsyncer doesn't synchronize this data, but
+    also shouldn't do things like deleting and re-uploading to the server.
+
+    .. _ppl: http://ppladdressbook.org/
+    '''
+    a = MemoryStorage()
+    b = MemoryStorage()
+    status = {}
+    href, etag = a.upload(Item(u'UID:haha'))
+    sync(a, b, status)
+
+    b.items['lol'] = b.items.pop('haha')
+    a.delete = a.update = a.upload = blow_up
+
+    sync(a, b, status)
+    assert len(status) == 1
+    assert len(list(a.list())) == len(list(b.list())) == 1
+    assert status['haha'][2] == 'haha'
