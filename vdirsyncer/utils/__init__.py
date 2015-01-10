@@ -205,6 +205,7 @@ def request(method, url, session=None, latin1_fallback=True,
         session = requests.Session()
 
     if verify_fingerprint is not None:
+        kwargs['verify'] = False
         https_prefix = 'https://'
 
         if not isinstance(session.adapters[https_prefix], _FingerprintAdapter):

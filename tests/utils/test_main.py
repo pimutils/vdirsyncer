@@ -220,10 +220,10 @@ def test_request_ssl(httpsserver):
         utils.request('GET', httpsserver.url)
     assert 'certificate verify failed' in str(excinfo.value)
     utils.request('GET', httpsserver.url, verify=False)
-    utils.request('GET', httpsserver.url, verify=False,
+    utils.request('GET', httpsserver.url,
                   verify_fingerprint=sha1)
-    utils.request('GET', httpsserver.url, verify=False, verify_fingerprint=md5)
+    utils.request('GET', httpsserver.url, verify_fingerprint=md5)
     with pytest.raises(requests.exceptions.SSLError) as excinfo:
-        utils.request('GET', httpsserver.url, verify=False,
+        utils.request('GET', httpsserver.url,
                       verify_fingerprint=''.join(reversed(sha1)))
     assert 'Fingerprints did not match' in str(excinfo.value)
