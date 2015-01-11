@@ -4,33 +4,33 @@ python:
     - "3.3"
     - "3.4"
 env:
-    - BUILD=tests DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=release
+    - BUILD=test DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=release
       # Radicale with filesystem storage (default)
 
-    - BUILD=tests DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=release
+    - BUILD=test DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=release
       PKGS='icalendar==3.6 lxml==3.0 requests==2.4.1 requests_toolbelt==0.3.0 click==3.1'
       # Minimal requirements
 
-    - BUILD=tests DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=devel
+    - BUILD=test DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=devel
       # Radicale-git with filesystem storage (default)
 
-    - BUILD=tests DAV_SERVER=radicale RADICALE_BACKEND=multifilesystem REQUIREMENTS=devel
+    - BUILD=test DAV_SERVER=radicale RADICALE_BACKEND=multifilesystem REQUIREMENTS=devel
       # Radicale-git with multifilesystem storage
 
-    - BUILD=tests DAV_SERVER=radicale RADICALE_BACKEND=database REQUIREMENTS=devel
+    - BUILD=test DAV_SERVER=radicale RADICALE_BACKEND=database REQUIREMENTS=devel
       # Radicale-git with database storage (release's database storage is broken)
 
-    - BUILD=tests DAV_SERVER=owncloud REQUIREMENTS=release
+    - BUILD=test DAV_SERVER=owncloud REQUIREMENTS=release
       # Latest ownCloud release
 
-    - BUILD=tests DAV_SERVER=baikal REQUIREMENTS=release
+    - BUILD=test DAV_SERVER=baikal REQUIREMENTS=release
       # Latest Baikal release
 
     - BUILD=style
       # flake8 with plugins
 
 install:
-    - "./build.sh install_$BUILD"
+    - "make install-$BUILD"
     - '[ -z "$PKGS" ] || pip install $PKGS'
 script:
-    - "./build.sh $BUILD"
+    - "make $BUILD"

@@ -48,25 +48,6 @@ command__tests() {
     fi
 }
 
-command__install_style() {
-    $PIP_INSTALL flake8 flake8-import-order
-}
-
-command__style() {
-    flake8 vdirsyncer tests
-    ! git grep -i syncroniz $(ls | grep -v 'build.sh')
-}
-
-command__install_docs() {
-    $PIP_INSTALL sphinx sphinx_rtd_theme
-    $PIP_INSTALL -e .
-}
-
-command__docs() {
-    cd docs
-    make html
-}
-
 
 COMMAND="$1"
 if [ -z "$COMMAND" ]; then
