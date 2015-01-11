@@ -41,7 +41,7 @@ command__install_tests() {
 
 command__tests() {
     if [ "$TRAVIS" = "true" ]; then
-        coverage run --source=vdirsyncer/,tests/ --module pytest
+        coverage run --source=vdirsyncer/ --module pytest
         coveralls
     else
         py.test
