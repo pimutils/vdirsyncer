@@ -20,7 +20,7 @@ from .. import DOCS_HOME, PROJECT_HOME, exceptions, log
 from ..doubleclick import click
 from ..storage import storage_names
 from ..sync import StorageEmpty, SyncConflict
-from ..utils import expand_path, get_class_init_args, safe_write
+from ..utils import atomic_write, expand_path, get_class_init_args
 from ..utils.compat import text_type
 
 
@@ -345,7 +345,7 @@ def save_status(base_path, pair, collection=None, data_type=None, data=None):
         if e.errno != errno.EEXIST:
             raise
 
-    with safe_write(path, 'w+') as f:
+    with atomic_write(path, binary=True, overwrite=True) as f:
         json.dump(data, f)
 
 

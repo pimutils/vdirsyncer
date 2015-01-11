@@ -227,3 +227,17 @@ def test_request_ssl(httpsserver):
         utils.request('GET', httpsserver.url,
                       verify_fingerprint=''.join(reversed(sha1)))
     assert 'Fingerprints did not match' in str(excinfo.value)
+
+
+def test_atomic_write(tmpdir):
+    x = utils.atomic_write
+    fname = tmpdir.join('ha')
+    for i in range(2):
+        with x(str(fname), binary=False, overwrite=True) as f:
+            f.write('hoho')
+
+    with pytest.raises(OSError):
+        with x(str(fname), binary=False, overwrite=False) as f:
+            f.write('haha')
+
+    assert fname.read() == 'hoho'

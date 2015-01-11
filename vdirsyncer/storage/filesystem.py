@@ -12,7 +12,7 @@ import os
 
 from .base import Item, Storage
 from .. import exceptions, log
-from ..utils import checkdir, expand_path, get_etag_from_file, safe_write
+from ..utils import atomic_write, checkdir, expand_path, get_etag_from_file
 from ..utils.compat import text_type
 
 logger = log.get(__name__)
@@ -101,15 +101,21 @@ class FilesystemStorage(Storage):
     def upload(self, item):
         href = self._get_href(item)
         fpath = self._get_filepath(href)
-        if os.path.exists(fpath):
-            raise exceptions.AlreadyExistingError(item)
 
         if not isinstance(item.raw, text_type):
             raise TypeError('item.raw must be a unicode string.')
 
-        with safe_write(fpath, 'wb+') as f:
-            f.write(item.raw.encode(self.encoding))
-            return href, f.get_etag()
+
+        try:
+            with atomic_write(fpath, binary=True, overwrite=False) as f:
+                f.write(item.raw.encode(self.encoding))
+                return href, f.get_etag()
+        except OSError as e:
+            import errno
+            if e.errno == errno.EEXIST:
+                raise exceptions.AlreadyExistingError(item)
+            else:
+                raise
 
     def update(self, href, item, etag):
         fpath = self._get_filepath(href)
@@ -125,7 +131,7 @@ class FilesystemStorage(Storage):
         if not isinstance(item.raw, text_type):
             raise TypeError('item.raw must be a unicode string.')
 
-        with safe_write(fpath, 'wb') as f:
+        with atomic_write(fpath, binary=True, overwrite=True) as f:
             f.write(item.raw.encode(self.encoding))
             return f.get_etag()
 

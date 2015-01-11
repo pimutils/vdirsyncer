@@ -9,6 +9,7 @@
 
 import os
 import threading
+import uuid
 
 import requests
 from requests.packages.urllib3.poolmanager import PoolManager
@@ -241,15 +242,21 @@ def request(method, url, session=None, latin1_fallback=True,
     return r
 
 
-class safe_write(object):
-    '''A helper class for performing atomic writes.  Writes to a tempfile in
-    the same directory and then renames. The tempfile location can be
-    overridden, but must reside on the same filesystem to be atomic.
+class atomic_write(object):
+    '''
+    A helper class for performing atomic writes.
 
     Usage::
 
-        with safe_write(fpath, 'w+') as f:
+        with safe_write(fpath, binary=False, overwrite=False) as f:
             f.write('hohoho')
+
+    :param fpath: The destination filepath. May or may not exist.
+    :param binary: Whether binary write mode should be used.
+    :param overwrite: If set to false, an error is raised if ``fpath`` exists.
+        This should still be atomic.
+    :param tmppath: An alternative tmpfile location. Must reside on the same
+        filesystem to be atomic.
     '''
 
     f = None
@@ -257,22 +264,34 @@ class safe_write(object):
     fpath = None
     mode = None
 
-    def __init__(self, fpath, mode, tmppath=None):
-        self.tmppath = tmppath or fpath + '.tmp'
+    def __init__(self, fpath, binary, overwrite, tmppath=None):
+        if not tmppath:
+            base = os.path.dirname(fpath)
+            tmppath = os.path.join(base, str(uuid.uuid4()) + '.tmp')
+
         self.fpath = fpath
-        self.mode = mode
+        self.binary = binary
+        self.overwrite = overwrite
+        self.tmppath = tmppath
 
     def __enter__(self):
-        self.f = f = open(self.tmppath, self.mode)
+        self.f = f = open(self.tmppath, 'wb' if self.binary else 'w')
         self.write = f.write
         return self
 
     def __exit__(self, cls, value, tb):
         self.f.close()
         if cls is None:
-            os.rename(self.tmppath, self.fpath)
+            self._commit()
         else:
             os.remove(self.tmppath)
+
+    def _commit(self):
+        if self.overwrite:
+            os.rename(self.tmppath, self.fpath)  # atomic
+        else:
+            os.link(self.tmppath, self.fpath)  # atomic, fails if file exists
+            os.unlink(self.tmppath)  # doesn't matter if atomic
 
     def get_etag(self):
         self.f.flush()
