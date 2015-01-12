@@ -345,7 +345,7 @@ def save_status(base_path, pair, collection=None, data_type=None, data=None):
         if e.errno != errno.EEXIST:
             raise
 
-    with atomic_write(path, binary=True, overwrite=True) as f:
+    with atomic_write(path, binary=False, overwrite=True) as f:
         json.dump(data, f)
 
 
