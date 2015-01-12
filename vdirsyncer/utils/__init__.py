@@ -34,7 +34,7 @@ password_key_prefix = 'vdirsyncer:'
 
 def expand_path(p):
     p = os.path.expanduser(p)
-    p = os.path.abspath(p)
+    p = os.path.normpath(p)
     return p
 
 

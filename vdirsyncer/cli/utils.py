@@ -261,7 +261,10 @@ def load_config():
         with open(fname) as f:
             general, pairs, storages = read_config(f)
         _validate_general_section(general)
-        general['status_path'] = os.path.join(fname, general['status_path'])
+        general['status_path'] = os.path.join(
+            os.path.dirname(fname),
+            expand_path(general['status_path'])
+        )
     except Exception as e:
         raise CliError('Error during reading config {}: {}'
                        .format(fname, e))
