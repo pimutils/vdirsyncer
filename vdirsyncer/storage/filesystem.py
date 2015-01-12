@@ -105,7 +105,6 @@ class FilesystemStorage(Storage):
         if not isinstance(item.raw, text_type):
             raise TypeError('item.raw must be a unicode string.')
 
-
         try:
             with atomic_write(fpath, binary=True, overwrite=False) as f:
                 f.write(item.raw.encode(self.encoding))
