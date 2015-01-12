@@ -250,7 +250,26 @@ def _validate_pair_section(pair_config):
         raise e
 
 
-def load_config(f):
+def load_config():
+    fname = expand_path(os.environ.get('VDIRSYNCER_CONFIG',
+                                       '~/.vdirsyncer/config'))
+    if not os.path.exists(fname):
+        xdg_config_dir = os.environ.get('XDG_CONFIG_HOME',
+                                        expand_path('~/.config/'))
+        fname = os.path.join(xdg_config_dir, 'vdirsyncer/config')
+    try:
+        with open(fname) as f:
+            general, pairs, storages = read_config(f)
+        _validate_general_section(general)
+        general['status_path'] = os.path.join(fname, general['status_path'])
+    except Exception as e:
+        raise CliError('Error during reading config {}: {}'
+                       .format(fname, e))
+
+    return general, pairs, storages
+
+
+def read_config(f):
     c = RawConfigParser()
     c.readfp(f)
 
@@ -293,7 +312,6 @@ def load_config(f):
         except ValueError as e:
             raise CliError('Section `{}`: {}'.format(section, str(e)))
 
-    _validate_general_section(general)
     return general, pairs, storages
 
 

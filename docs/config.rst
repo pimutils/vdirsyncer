@@ -32,7 +32,8 @@ General Section
 
 - ``status_path``: A directory where vdirsyncer will store metadata for the
   next sync. The data is needed to determine whether a new item means it has
-  been added on one side or deleted on the other.
+  been added on one side or deleted on the other. Relative paths will be
+  interpreted as relative to the configuration file's directory.
 
 - ``password_command`` specifies a command to query for server passwords. The
   command will be called with the username as the first argument, and the

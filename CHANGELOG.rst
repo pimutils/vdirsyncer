@@ -16,6 +16,8 @@ Version 0.4.2
 
 - Vdirsyncer now respects redirects when uploading and updating items. This
   might fix issues with Zimbra.
+- Relative ``status_path`` values are now interpreted as relative to the
+  configuration file's directory.
 
 Version 0.4.1
 =============

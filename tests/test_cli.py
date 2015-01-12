@@ -40,7 +40,7 @@ def runner(tmpdir, monkeypatch):
     return _CustomRunner(tmpdir)
 
 
-def test_load_config(monkeypatch):
+def test_read_config(monkeypatch):
     f = io.StringIO(dedent(u'''
         [general]
         status_path = /tmp/status/
@@ -67,7 +67,7 @@ def test_load_config(monkeypatch):
 
     errors = []
     monkeypatch.setattr('vdirsyncer.cli.cli_logger.error', errors.append)
-    general, pairs, storages = cli.load_config(f)
+    general, pairs, storages = cli.utils.read_config(f)
     assert general == {'status_path': '/tmp/status/'}
     assert pairs == {'bob': ('bob_a', 'bob_b', {'bam': True, 'foo': 'bar'})}
     assert storages == {
@@ -234,7 +234,7 @@ def test_invalid_storage_name():
         '''))
 
     with pytest.raises(cli.CliError) as excinfo:
-        cli.load_config(f)
+        cli.utils.read_config(f)
 
     assert 'invalid characters' in str(excinfo.value).lower()
 

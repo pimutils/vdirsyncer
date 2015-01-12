@@ -8,7 +8,6 @@
 '''
 
 import functools
-import os
 import sys
 
 from .tasks import discover_collections, sync_pair
@@ -16,7 +15,6 @@ from .utils import CliError, WorkerQueue, cli_logger, handle_cli_error, \
     load_config, parse_pairs_args
 from .. import __version__, log
 from ..doubleclick import click
-from ..utils import expand_path
 
 
 def catch_errors(f):
@@ -58,18 +56,7 @@ def app(ctx, verbosity):
         ctx.obj = {}
 
     if 'config' not in ctx.obj:
-        fname = expand_path(os.environ.get('VDIRSYNCER_CONFIG',
-                                           '~/.vdirsyncer/config'))
-        if not os.path.exists(fname):
-            xdg_config_dir = os.environ.get('XDG_CONFIG_HOME',
-                                            expand_path('~/.config/'))
-            fname = os.path.join(xdg_config_dir, 'vdirsyncer/config')
-        try:
-            with open(fname) as f:
-                ctx.obj['config'] = load_config(f)
-        except Exception as e:
-            raise CliError('Error during reading config {}: {}'
-                           .format(fname, e))
+        ctx.obj['config'] = load_config()
 
 main = app
 
