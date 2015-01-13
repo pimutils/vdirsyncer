@@ -69,8 +69,8 @@ max_workers_option = click.option(
 @app.command()
 @click.argument('pairs', nargs=-1)
 @click.option('--force-delete/--no-force-delete',
-              help=('Disable data-loss protection for the given pairs. '
-                    'Can be passed multiple times'))
+              help=('Do/Don\'t abort synchronization when all items are about '
+                    'to be deleted from both sides.'))
 @max_workers_option
 @click.pass_context
 @catch_errors
@@ -79,11 +79,12 @@ def sync(ctx, pairs, force_delete, max_workers):
     Synchronize the given collections or pairs. If no arguments are given,
     all will be synchronized.
 
-    Examples:
     `vdirsyncer sync` will sync everything configured.
+
     `vdirsyncer sync bob frank` will sync the pairs "bob" and "frank".
-    `vdirsyncer sync bob/first_collection` will sync "first_collection"
-    from the pair "bob".
+
+    `vdirsyncer sync bob/first_collection` will sync "first_collection" from
+    the pair "bob".
     '''
     general, all_pairs, all_storages = ctx.obj['config']
 
