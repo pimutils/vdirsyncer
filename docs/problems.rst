@@ -69,7 +69,12 @@ the simplest possible way would look something like::
     alias vdirsyncer="~/vdirsyncer_env/bin/vdirsyncer
 
 You'll have to put the last line into your ``.bashrc`` or ``.bash_profile``.
-The main advantage is that you can delete the ``~/vdirsyncer_env`` folder to
-uninstall vdirsyncer.
+
+This method has two advantages:
+
+- It separately installs all Python packages into ``~/vdirsyncer_env/``,
+  without relying on the system packages. This works around OS- or
+  distro-specific issues.
+- You can delete ``~/vdirsyncer_env/`` to uninstall vdirsyncer entirely.
 
 .. _virtualenv: https://virtualenv.readthedocs.org/
