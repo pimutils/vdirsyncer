@@ -37,17 +37,24 @@ Manual installation
 -------------------
 
 If your distribution doesn't provide a package for vdirsyncer, you still can
-use Python's package manager "pip". First, you'll have to check that a
-compatible version of Python (2.7+ or 3.3+) and the corresponding pip package
-are installed. On Linux systems, using the distro's package manager is the best
-way to do this.
+use Python's package manager "pip". First, you'll have to check that the
+following things are installed:
+
+- A compatible version of Python (2.7+ or 3.3+) and the corresponding pip package
+- ``libxml`` and ``libxslt``
+- ``zlib``
+
+On Linux systems, using the distro's package manager is the best
+way to do this, for example, using Ubuntu::
+
+    sudo apt-get install libxml2 libxslt1.1 zlib1g python
 
 The easiest way to install vdirsyncer at this point would be to run::
 
     pip install --user vdirsyncer
 
 This method has a major flaw though: Pip doesn't keep track of the files it
-installs.  Vdirsyncer's files would be located somewhere in
+installs. Vdirsyncer's files would be located somewhere in
 ``~/.local/lib/python*``, but you can't possibly know which packages were
 installed as dependencies of vdirsyncer and which ones were not, should you
 decide to uninstall it. In other words, using pip that way would pollute your
