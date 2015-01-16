@@ -607,18 +607,12 @@ class CaldavStorage(DavStorage):
                 </C:filter>
             </C:calendar-query>'''
 
-        # CardDAV: The request MUST include a Depth header. The scope of the
-        # query is determined by the value of the Depth header. For example,
-        # to query all address object resources in an address book collection,
-        # the REPORT would use the address book collection as the Request- URI
-        # and specify a Depth of 1 or infinity.
-        # http://tools.ietf.org/html/rfc6352#section-8.6
-        #
-        # CalDAV: The request MAY include a Depth header.  If no Depth header
-        # is included, Depth:0 is assumed.
-        # http://tools.ietf.org/search/rfc4791#section-7.8
         headers = self.session.get_default_headers()
-        headers['Depth'] = 'infinity'
+        # https://github.com/untitaker/vdirsyncer/issues/166
+        # The default in CalDAV's calendar-queries is 0, but the examples use
+        # an explicit value of 1 for querying items. it is extremely unclear in
+        # the spec which values from WebDAV are actually allowed.
+        headers['Depth'] = 1
 
         caldavfilters = self._get_list_filters(self.item_types,
                                                self.start_date, self.end_date)
