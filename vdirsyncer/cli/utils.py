@@ -457,11 +457,18 @@ class WorkerQueue(object):
         self._max_workers = max_workers
 
     def _worker(self):
+        # This is a daemon thread. Since the global namespace is going to
+        # vanish on interpreter shutdown, redefine everything from the global
+        # namespace here.
+        _TypeError = TypeError
+        _Empty = queue.Empty
+        _handle_cli_error = handle_cli_error
+
         while True:
             try:
                 func = self._queue.get()
-            except (TypeError, queue.Empty):
-                # TypeError might be raised if vdirsyncer just finished
+            except (_TypeError, _Empty):
+                # Any kind of error might be raised if vdirsyncer just finished
                 # processing all items and the interpreter is shutting down,
                 # yet the workers try to get new tasks.
                 # https://github.com/untitaker/vdirsyncer/issues/167
@@ -471,7 +478,7 @@ class WorkerQueue(object):
             try:
                 func(wq=self)
             except:
-                if not handle_cli_error():
+                if not _handle_cli_error():
                     self._exceptions.append(sys.exc_info()[1])
             finally:
                 self._queue.task_done()
