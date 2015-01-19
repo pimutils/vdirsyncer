@@ -18,6 +18,9 @@ Version 0.4.2
   might fix issues with Zimbra.
 - Relative ``status_path`` values are now interpreted as relative to the
   configuration file's directory.
+- Fixed compatibility with custom SabreDAV servers. See :gh:`166`.
+- Catch harmless threading exceptions that occur when shutting down vdirsyncer.
+  See :gh:`167`.
 
 Version 0.4.1
 =============
