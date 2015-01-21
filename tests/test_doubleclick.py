@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
-    tests.test_doubleclick
-    ~~~~~~~~~~~~~~~~~~~~~~
 
-    :copyright: (c) 2014 Markus Unterwaditzer & contributors
-    :license: MIT, see LICENSE for more details.
-'''
 from click.testing import CliRunner
 
 from vdirsyncer.doubleclick import _ctx_stack, click, ctx as global_ctx

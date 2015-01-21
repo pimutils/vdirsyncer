@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
-    tests.utils.vobject
-    ~~~~~~~~~~~~~~~~
 
-    :copyright: (c) 2014 Markus Unterwaditzer & contributors
-    :license: MIT, see LICENSE for more details.
-'''
 from textwrap import dedent
 
 import icalendar

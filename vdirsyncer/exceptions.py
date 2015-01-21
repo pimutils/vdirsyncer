@@ -1,13 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
-    vdirsyncer.exceptions
-    ~~~~~~~~~~~~~~~~~~~~~
-
-    Contains exception classes used by vdirsyncer. Not all exceptions are here,
-    only the most commonly used ones.
-
-    :copyright: (c) 2014 Markus Unterwaditzer & contributors
-    :license: MIT, see LICENSE for more details.
+Contains exception classes used by vdirsyncer. Not all exceptions are here,
+only the most commonly used ones.
 '''
 
 

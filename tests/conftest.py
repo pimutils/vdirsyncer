@@ -1,12 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-    tests.conftest
-    ~~~~~~~~~~~~~~
-
-    General-purpose fixtures for vdirsyncer's testsuite.
-
-    :copyright: (c) 2014 Markus Unterwaditzer & contributors
-    :license: MIT, see LICENSE for more details.
+General-purpose fixtures for vdirsyncer's testsuite.
 '''
 import pytest
 

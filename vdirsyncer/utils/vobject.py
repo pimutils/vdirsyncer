@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
-    vdirsyncer.utils.vobject
-    ~~~~~~~~~~~~~~~~~~~~~~~~
 
-    :copyright: (c) 2014 Markus Unterwaditzer & contributors
-    :license: MIT, see LICENSE for more details.
-'''
 import hashlib
 from itertools import chain, tee
 

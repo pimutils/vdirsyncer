@@ -1,11 +1,4 @@
 # -*- coding: utf-8 -*-
-'''
-    vdirsyncer.storage.http
-    ~~~~~~~~~~~~~~~~~~~~~~~
-
-    :copyright: (c) 2014 Markus Unterwaditzer & contributors
-    :license: MIT, see LICENSE for more details.
-'''
 
 from .base import Item, Storage
 from ..exceptions import NotFoundError

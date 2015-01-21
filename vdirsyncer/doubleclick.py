@@ -1,26 +1,18 @@
 # -*- coding: utf-8 -*-
 '''
-    vdirsyncer.doubleclick
-    ~~~~~~~~~~~~~~~~~~~~~~
+Utilities for writing threaded applications with click:
 
-    Utilities for writing threaded applications with click.
+- There is a global ``ctx`` object to be used.
 
-    Two objects are useful:
+- The ``click`` object's attributes are supposed to be used instead of the
+  click package's content.
 
-    - There is a global ``ctx`` object to be used.
+  - It wraps some UI functions such that they don't produce overlapping
+    output or prompt the user at the same time.
 
-    - The ``click`` object's attributes are supposed to be used instead of the
-      click package's content.
-
-      - It wraps some UI functions such that they don't produce overlapping
-        output or prompt the user at the same time.
-
-      - It wraps BaseCommand subclasses such that their invocation changes the
-        ctx global, and also changes the shortcut decorators to use the new
-        classes.
-
-    :copyright: (c) 2014 Markus Unterwaditzer & contributors
-    :license: MIT, see LICENSE for more details.
+  - It wraps BaseCommand subclasses such that their invocation changes the
+    ctx global, and also changes the shortcut decorators to use the new
+    classes.
 '''
 
 import functools
