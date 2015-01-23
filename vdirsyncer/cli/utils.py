@@ -542,9 +542,14 @@ def format_storage_config(cls, header=True):
 
     from ..storage.base import Storage
     from ..utils import get_class_init_specs
+    handled = set()
     for spec in get_class_init_specs(cls, stop_at=Storage):
         defaults = dict(zip(spec.args[-len(spec.defaults):], spec.defaults))
         for key in spec.args[1:]:
+            if key in handled:
+                continue
+            handled.add(key)
+
             comment = '' if key not in defaults else '#'
             value = defaults.get(key, '...')
             yield '{}{} = {}'.format(comment, key, json.dumps(value))
