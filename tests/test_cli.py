@@ -501,7 +501,7 @@ def test_ident_conflict(tmpdir, runner):
     '''.format(base=str(tmpdir))))
 
     foo = tmpdir.mkdir('foo')
-    bar = tmpdir.mkdir('bar')
+    tmpdir.mkdir('bar')
 
     foo.join('one.txt').write('UID:1')
     foo.join('two.txt').write('UID:1')
