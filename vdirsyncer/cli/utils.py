@@ -12,7 +12,7 @@ from itertools import chain
 from .. import DOCS_HOME, PROJECT_HOME, exceptions, log
 from ..doubleclick import click
 from ..storage import storage_names
-from ..sync import StorageEmpty, SyncConflict
+from ..sync import IdentConflict, StorageEmpty, SyncConflict
 from ..utils import atomic_write, expand_path, get_class_init_args
 from ..utils.compat import text_type
 
@@ -69,13 +69,22 @@ def handle_cli_error(status_name='sync'):
             'Item href on side B: {e.href_b}\n'
             .format(status_name=status_name, e=e, docs=DOCS_HOME)
         )
+    except IdentConflict as e:
+        cli_logger.error(
+            '{status_name}: Storage "{name}" contains multiple items with the '
+            'same UID or even content. Vdirsyncer will now abort the '
+            'synchronization of this collection, because the fix for this is '
+            'not clear; It could be the result of a badly behaving server.\n'
+            '\n{href_list}\n'
+            .format(status_name=status_name,
+                    name=e.storage.instance_name,
+                    href_list='\n'.join(map(repr, e.hrefs)))
+        )
     except (click.Abort, KeyboardInterrupt, JobFailed):
         pass
     except Exception as e:
         cli_logger.exception('Unhandled exception occured while syncing {}.'
                              .format(status_name))
-    else:
-        return True
 
 
 def validate_section_name(name, section_type):
@@ -470,9 +479,9 @@ class WorkerQueue(object):
 
             try:
                 func(wq=self)
-            except:
+            except Exception as e:
                 if not _handle_cli_error():
-                    self._exceptions.append(sys.exc_info()[1])
+                    self._exceptions.append(e)
             finally:
                 self._queue.task_done()
 

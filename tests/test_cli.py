@@ -483,6 +483,41 @@ def test_create_collections(tmpdir, runner):
         set('abc')
 
 
+def test_ident_conflict(tmpdir, runner):
+    runner.write_with_general(dedent('''
+    [pair foobar]
+    a = foo
+    b = bar
+
+    [storage foo]
+    type = filesystem
+    path = {base}/foo/
+    fileext = .txt
+
+    [storage bar]
+    type = filesystem
+    path = {base}/bar/
+    fileext = .txt
+    '''.format(base=str(tmpdir))))
+
+    foo = tmpdir.mkdir('foo')
+    bar = tmpdir.mkdir('bar')
+
+    foo.join('one.txt').write('UID:1')
+    foo.join('two.txt').write('UID:1')
+    foo.join('three.txt').write('UID:1')
+
+    result = runner.invoke(['sync'])
+    assert result.exception
+    assert ('error: foobar: Storage "foo" contains multiple items with the '
+            'same UID or even content') in result.output
+    assert sorted([
+        'one.txt' in result.output,
+        'two.txt' in result.output,
+        'three.txt' in result.output,
+    ]) == [False, True, True]
+
+
 def test_parse_config_value(capsys):
     invalid = object()
 
