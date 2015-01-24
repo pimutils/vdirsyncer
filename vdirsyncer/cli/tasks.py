@@ -70,8 +70,8 @@ def sync_collection(wq, pair_name, collection, config_a, config_b,
             force_delete=force_delete
         )
     except:
-        if not handle_cli_error(status_name):
-            raise JobFailed()
+        handle_cli_error(status_name)
+        raise JobFailed()
 
     save_status(general['status_path'], pair_name, collection,
                 data_type='items', data=status)

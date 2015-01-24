@@ -16,8 +16,8 @@ def catch_errors(f):
         try:
             f(*a, **kw)
         except:
-            if not handle_cli_error():
-                sys.exit(1)
+            handle_cli_error()
+            sys.exit(1)
 
     return inner
 

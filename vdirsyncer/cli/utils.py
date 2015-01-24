@@ -44,6 +44,13 @@ class JobFailed(RuntimeError):
 
 
 def handle_cli_error(status_name='sync'):
+    '''
+    Print a useful error message for the current exception.
+
+    This is supposed to catch all exceptions, and should never raise any
+    exceptions itself.
+    '''
+
     try:
         raise
     except CliError as e:
@@ -480,8 +487,8 @@ class WorkerQueue(object):
             try:
                 func(wq=self)
             except Exception as e:
-                if not _handle_cli_error():
-                    self._exceptions.append(e)
+                _handle_cli_error()
+                self._exceptions.append(e)
             finally:
                 self._queue.task_done()
 
