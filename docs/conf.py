@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 import os
 import sys
 
@@ -13,7 +14,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 project = u'vdirsyncer'
-copyright = u'2014, Markus Unterwaditzer & contributors'
+copyright = (u'2014-{}, Markus Unterwaditzer & contributors'
+             .format(datetime.date.today().strftime('%Y')))
 
 try:
     # The full version, including alpha/beta/rc tags.
