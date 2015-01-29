@@ -21,6 +21,7 @@ Version 0.4.2
 - Fixed compatibility with custom SabreDAV servers. See :gh:`166`.
 - Catch harmless threading exceptions that occur when shutting down vdirsyncer.
   See :gh:`167`.
+- Vdirsyncer now depends on ``atomicwrites``.
 
 Version 0.4.1
 =============
