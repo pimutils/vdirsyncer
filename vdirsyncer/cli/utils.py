@@ -9,11 +9,13 @@ import sys
 import threading
 from itertools import chain
 
+from atomicwrites import atomic_write
+
 from .. import DOCS_HOME, PROJECT_HOME, exceptions, log
 from ..doubleclick import click
 from ..storage import storage_names
 from ..sync import IdentConflict, StorageEmpty, SyncConflict
-from ..utils import atomic_write, expand_path, get_class_init_args
+from ..utils import expand_path, get_class_init_args
 from ..utils.compat import text_type
 
 

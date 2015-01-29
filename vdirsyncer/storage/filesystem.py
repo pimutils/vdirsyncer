@@ -3,10 +3,12 @@
 import errno
 import os
 
+from atomicwrites import atomic_write
+
 from .base import Item, Storage
 from .. import exceptions, log
-from ..utils import atomic_write, checkdir, expand_path, \
-    get_etag_from_file, get_etag_from_fileobject
+from ..utils import checkdir, expand_path, get_etag_from_file, \
+    get_etag_from_fileobject
 from ..utils.compat import text_type
 
 logger = log.get(__name__)

@@ -2,9 +2,6 @@
 
 import os
 import threading
-import uuid
-
-from atomicwrites import atomic_write
 
 import requests
 from requests.packages.urllib3.poolmanager import PoolManager

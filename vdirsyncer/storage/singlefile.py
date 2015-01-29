@@ -3,9 +3,11 @@
 import collections
 import os
 
+from atomicwrites import atomic_write
+
 from .base import Item, Storage
 from .. import exceptions, log
-from ..utils import atomic_write, checkfile, expand_path
+from ..utils import checkfile, expand_path
 from ..utils.compat import iteritems, itervalues
 from ..utils.vobject import join_collection, split_collection
 
