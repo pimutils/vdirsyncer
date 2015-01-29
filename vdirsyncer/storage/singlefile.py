@@ -25,6 +25,7 @@ def _write_after(f):
         return rv
     return inner
 
+
 class SingleFileStorage(Storage):
     '''Save data in single local ``.vcf`` or ``.ics`` file.
 
