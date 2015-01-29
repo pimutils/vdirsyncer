@@ -5,7 +5,8 @@ import os
 
 from .base import Item, Storage
 from .. import exceptions, log
-from ..utils import atomic_write, checkdir, expand_path, get_etag_from_file
+from ..utils import atomic_write, checkdir, expand_path, \
+    get_etag_from_file, get_etag_from_fileobject
 from ..utils.compat import text_type
 
 logger = log.get(__name__)
@@ -99,9 +100,9 @@ class FilesystemStorage(Storage):
             raise TypeError('item.raw must be a unicode string.')
 
         try:
-            with atomic_write(fpath, binary=True, overwrite=False) as f:
+            with atomic_write(fpath, mode='wb', overwrite=False) as f:
                 f.write(item.raw.encode(self.encoding))
-                return href, f.get_etag()
+                return href, get_etag_from_fileobject(f)
         except OSError as e:
             import errno
             if e.errno == errno.EEXIST:
@@ -123,9 +124,9 @@ class FilesystemStorage(Storage):
         if not isinstance(item.raw, text_type):
             raise TypeError('item.raw must be a unicode string.')
 
-        with atomic_write(fpath, binary=True, overwrite=True) as f:
+        with atomic_write(fpath, mode='wb', overwrite=True) as f:
             f.write(item.raw.encode(self.encoding))
-            return f.get_etag()
+            return get_etag_from_fileobject(f)
 
     def delete(self, href, etag):
         fpath = self._get_filepath(href)

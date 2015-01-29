@@ -159,7 +159,7 @@ class SingleFileStorage(Storage):
             (item.raw for item, etag in itervalues(self._items)),
         )
         try:
-            with atomic_write(self.path, binary=True, overwrite=True) as f:
+            with atomic_write(self.path, mode='wb', overwrite=True) as f:
                 f.write(text.encode(self.encoding))
         finally:
             self._items = None

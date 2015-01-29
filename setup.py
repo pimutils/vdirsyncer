@@ -39,7 +39,8 @@ setup(
         'lxml>=3.0',
         'icalendar>=3.6',
         # https://github.com/sigmavirus24/requests-toolbelt/pull/28
-        'requests_toolbelt>=0.3.0'
+        'requests_toolbelt>=0.3.0',
+        'atomicwrites'
     ],
     extras_require={'keyring': ['keyring']}
 )
