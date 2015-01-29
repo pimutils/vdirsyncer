@@ -170,8 +170,10 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
 
     actions = list(_get_actions(storages, status))
 
-    for action in actions:
-        action(storages, status, conflict_resolution)
+    with storage_a.at_once():
+        with storage_b.at_once():
+            for action in actions:
+                action(storages, status, conflict_resolution)
 
 
 def _action_upload(ident, dest):

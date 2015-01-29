@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import collections
+import contextlib
+import functools
 import os
 
 from atomicwrites import atomic_write
@@ -13,6 +15,15 @@ from ..utils.vobject import join_collection, split_collection
 
 logger = log.get(__name__)
 
+
+def _write_after(f):
+    @functools.wraps(f)
+    def inner(self, *args, **kwargs):
+        rv = f(self, *args, **kwargs)
+        if not self._at_once:
+            self._write()
+        return rv
+    return inner
 
 class SingleFileStorage(Storage):
     '''Save data in single local ``.vcf`` or ``.ics`` file.
@@ -75,6 +86,7 @@ class SingleFileStorage(Storage):
 
         self.path = path
         self.encoding = encoding
+        self._at_once = False
 
     @classmethod
     def create_collection(cls, collection, **kwargs):
@@ -117,6 +129,7 @@ class SingleFileStorage(Storage):
         except KeyError:
             raise exceptions.NotFoundError(href)
 
+    @_write_after
     def upload(self, item):
         href = item.ident
         self.list()
@@ -124,9 +137,9 @@ class SingleFileStorage(Storage):
             raise exceptions.AlreadyExistingError(href)
 
         self._items[href] = item, item.hash
-        self._write()
         return href, item.hash
 
+    @_write_after
     def update(self, href, item, etag):
         self.list()
         if href not in self._items:
@@ -137,9 +150,9 @@ class SingleFileStorage(Storage):
             raise exceptions.WrongEtagError(etag, actual_etag)
 
         self._items[href] = item, item.hash
-        self._write()
         return item.hash
 
+    @_write_after
     def delete(self, href, etag):
         self.list()
         if href not in self._items:
@@ -150,7 +163,6 @@ class SingleFileStorage(Storage):
             raise exceptions.WrongEtagError(etag, actual_etag)
 
         del self._items[href]
-        self._write()
 
     def _write(self):
         if self._last_mtime is not None and \
@@ -166,3 +178,15 @@ class SingleFileStorage(Storage):
         finally:
             self._items = None
             self._last_mtime = None
+
+    @contextlib.contextmanager
+    def at_once(self):
+        self._at_once = True
+        try:
+            yield self
+        except:
+            raise
+        else:
+            self._write()
+        finally:
+            self._at_once = False

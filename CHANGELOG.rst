@@ -22,6 +22,7 @@ Version 0.4.2
 - Catch harmless threading exceptions that occur when shutting down vdirsyncer.
   See :gh:`167`.
 - Vdirsyncer now depends on ``atomicwrites``.
+- Massive performance improvements to ``singlefile``-storage.
 
 Version 0.4.1
 =============

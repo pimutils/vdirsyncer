@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import contextlib
 import functools
 
 from .. import exceptions
@@ -186,3 +187,23 @@ class Storage(with_metaclass(StorageMeta)):
             a different etag or doesn't exist.
         '''
         raise NotImplementedError()
+
+    @contextlib.contextmanager
+    def at_once(self):
+        '''A contextmanager that buffers all writes.
+
+        Essentially, this::
+
+            s.upload(...)
+            s.update(...)
+
+        becomes this::
+
+            with s.at_once():
+                s.upload(...)
+                s.update(...)
+
+        Note that this removes guarantees about which exceptions are returned
+        when.
+        '''
+        yield
