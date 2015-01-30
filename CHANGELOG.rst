@@ -12,7 +12,7 @@ may want to subscribe to `GitHub's tag feed
 Version 0.4.2
 =============
 
-*yet to be released*
+*released on 30 January 2015*
 
 - Vdirsyncer now respects redirects when uploading and updating items. This
   might fix issues with Zimbra.
