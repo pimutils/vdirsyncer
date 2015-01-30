@@ -2,6 +2,7 @@
 
 import errno
 import os
+import uuid
 
 from atomicwrites import atomic_write
 
@@ -70,10 +71,13 @@ class FilesystemStorage(Storage):
     def _get_filepath(self, href):
         return os.path.join(self.path, href)
 
-    def _get_href(self, item):
+    def _deterministic_href(self, item):
         # XXX: POSIX only defines / and \0 as invalid chars, but we should make
         # this work crossplatform.
         return item.ident.replace('/', '_') + self.fileext
+
+    def _random_href(self):
+        return str(uuid.uuid4()) + self.fileext
 
     def list(self):
         for fname in os.listdir(self.path):
@@ -88,25 +92,34 @@ class FilesystemStorage(Storage):
                 return (Item(f.read().decode(self.encoding)),
                         get_etag_from_file(fpath))
         except IOError as e:
-            import errno
             if e.errno == errno.ENOENT:
                 raise exceptions.NotFoundError(href)
             else:
                 raise
 
     def upload(self, item):
-        href = self._get_href(item)
-        fpath = self._get_filepath(href)
-
         if not isinstance(item.raw, text_type):
             raise TypeError('item.raw must be a unicode string.')
 
+        try:
+            href = self._deterministic_href(item)
+            return self._upload_impl(item, href)
+        except OSError as e:
+            if e.errno == errno.ENAMETOOLONG:
+                logger.debug('UID as filename rejected, trying with random '
+                             'one.')
+                href = self._random_href()
+                return self._upload_impl(item, href)
+            else:
+                raise
+
+    def _upload_impl(self, item, href):
+        fpath = self._get_filepath(href)
         try:
             with atomic_write(fpath, mode='wb', overwrite=False) as f:
                 f.write(item.raw.encode(self.encoding))
                 return href, get_etag_from_fileobject(f)
         except OSError as e:
-            import errno
             if e.errno == errno.EEXIST:
                 raise exceptions.AlreadyExistingError(item)
             else:
@@ -114,9 +127,6 @@ class FilesystemStorage(Storage):
 
     def update(self, href, item, etag):
         fpath = self._get_filepath(href)
-        if href != self._get_href(item) and item.uid:
-            logger.warning('href != uid + fileext: href={}; uid={}'
-                           .format(href, item.uid))
         if not os.path.exists(fpath):
             raise exceptions.NotFoundError(item.uid)
         actual_etag = get_etag_from_file(fpath)

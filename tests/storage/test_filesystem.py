@@ -49,3 +49,9 @@ class TestFilesystemStorage(StorageTests):
         s.upload(Item(u'UID:a/b/c'))
         item_file, = tmpdir.listdir()
         assert str(item_file).endswith('a_b_c.txt')
+
+    def test_too_long_uid(self, tmpdir):
+        s = self.storage_class(str(tmpdir), '.txt')
+        item = Item(u'UID:' + u'hue' * 600)
+        href, etag = s.upload(item)
+        assert item.uid not in href

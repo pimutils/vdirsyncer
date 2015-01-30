@@ -28,18 +28,10 @@ event.
 
 The filename *should* consist of the ``ident``, followed by the file extension.
 The ``ident`` is either the ``UID``, if the item has one, else a string with
-similar properties as the ``UID``:
-
-   Type name: UID
-
-   Type purpose: To specify a value that represents a globally unique
-   identifier corresponding to the individual or resource associated
-   with the vCard.
-
-   -- The vCard_ RFC
-
-Character limitations imposed by the filesystem *should* be circumvented by
-replacing the offending characters with underscores ``_``.
+similar properties as the ``UID``. However, several restrictions of the
+underlying filesystem might make an implementation of this naming scheme for
+items' filenames impossible. The approach to deal with such cases is left to
+the client, which are free to choose a different scheme for filenames instead.
 
 .. _vCard: https://tools.ietf.org/html/rfc6350
 .. _iCalendar: https://tools.ietf.org/html/rfc5545
