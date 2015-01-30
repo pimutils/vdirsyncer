@@ -23,7 +23,8 @@ Installation and usage
 ======================
 
 If you already have it installed and want to quickly configure it, copy the
-``example.cfg`` to ``~/.vdirsyncer/config`` [1]_ and edit it.
+``example.cfg`` to ``~/.vdirsyncer/config`` [1]_ and edit it. Then run
+``vdirsyncer sync``.
 
 If that method doesn't work for you or you want a deeper understanding of what
 you just did, check out `the tutorial
