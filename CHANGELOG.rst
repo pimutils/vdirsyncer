@@ -23,6 +23,8 @@ Version 0.4.2
   See :gh:`167`.
 - Vdirsyncer now depends on ``atomicwrites``.
 - Massive performance improvements to ``singlefile``-storage.
+- Items with extremely long UIDs should now be saved properly in
+  ``filesystem``-storage. See :gh:`173`.
 
 Version 0.4.1
 =============
