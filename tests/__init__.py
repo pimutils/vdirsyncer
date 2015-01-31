@@ -4,18 +4,11 @@ Test suite for vdirsyncer.
 '''
 
 from vdirsyncer.utils.compat import text_type
-from vdirsyncer.utils.vobject import normalize_item as _normalize_item
+from vdirsyncer.utils.vobject import normalize_item
 
 
 def blow_up(*a, **kw):
     raise AssertionError('Did not expect to be called.')
-
-
-def normalize_item(item):
-    if not isinstance(item, text_type):
-        item = item.raw
-    return tuple(sorted(_normalize_item(
-        item, use_icalendar=False).splitlines()))
 
 
 def assert_item_equals(a, b):

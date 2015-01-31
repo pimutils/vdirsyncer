@@ -16,9 +16,11 @@ from ..utils.vobject import join_collection, split_collection
 logger = log.get(__name__)
 
 
-def _write_after(f):
+def _writing_op(f):
     @functools.wraps(f)
     def inner(self, *args, **kwargs):
+        if not self._at_once:
+            self.list()
         rv = f(self, *args, **kwargs)
         if not self._at_once:
             self._write()
@@ -130,19 +132,17 @@ class SingleFileStorage(Storage):
         except KeyError:
             raise exceptions.NotFoundError(href)
 
-    @_write_after
+    @_writing_op
     def upload(self, item):
         href = item.ident
-        self.list()
         if href in self._items:
             raise exceptions.AlreadyExistingError(href)
 
         self._items[href] = item, item.hash
         return href, item.hash
 
-    @_write_after
+    @_writing_op
     def update(self, href, item, etag):
-        self.list()
         if href not in self._items:
             raise exceptions.NotFoundError(href)
 
@@ -153,9 +153,8 @@ class SingleFileStorage(Storage):
         self._items[href] = item, item.hash
         return item.hash
 
-    @_write_after
+    @_writing_op
     def delete(self, href, etag):
-        self.list()
         if href not in self._items:
             raise exceptions.NotFoundError(href)
 
@@ -182,6 +181,7 @@ class SingleFileStorage(Storage):
 
     @contextlib.contextmanager
     def at_once(self):
+        self.list()
         self._at_once = True
         try:
             yield self

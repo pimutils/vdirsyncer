@@ -19,7 +19,6 @@ def _process_properties(*s):
 
     return tuple(rv)
 
-
 IGNORE_PROPS = _process_properties(
     # PRODID is changed by radicale for some reason after upload
     'PRODID',
@@ -32,6 +31,8 @@ IGNORE_PROPS = _process_properties(
     # item does -- however, we can determine that ourselves
     'REV'
 )
+del _process_properties
+
 
 # Whether the installed icalendar version has
 # https://github.com/collective/icalendar/pull/136
@@ -107,18 +108,12 @@ class Item(object):
             return None
 
 
-def normalize_item(item, ignore_props=IGNORE_PROPS, use_icalendar=True):
+def normalize_item(item, ignore_props=IGNORE_PROPS):
+    '''Create syntactically invalid mess that is equal for similar items.'''
     if not isinstance(item, Item):
         item = Item(item)
-    if use_icalendar and item.parsed is not None:
-        # We have to explicitly check "is not None" here because VCALENDARS
-        # with only subcomponents and no own properties are also false-ish.
-        lines = to_unicode_lines(item.parsed)
-    else:
-        lines = sorted(item.raw.splitlines())
-
     return u'\r\n'.join(line.strip()
-                        for line in lines
+                        for line in sorted(item.raw.splitlines())
                         if line.strip() and
                         not line.startswith(IGNORE_PROPS))
 
