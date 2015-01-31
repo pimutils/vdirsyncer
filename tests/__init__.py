@@ -3,7 +3,6 @@
 Test suite for vdirsyncer.
 '''
 
-from vdirsyncer.utils.compat import text_type
 from vdirsyncer.utils.vobject import normalize_item
 
 
