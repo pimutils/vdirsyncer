@@ -302,7 +302,7 @@ def checkfile(path, create=False):
         if os.path.exists(path):
             raise IOError('{} is not a file.'.format(path))
         if create:
-            with open(path, 'wb') as f:
+            with open(path, 'wb'):
                 pass
         else:
             raise exceptions.CollectionNotFound('File {} does not exist.'
