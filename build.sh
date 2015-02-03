@@ -32,7 +32,7 @@ _davserver() {
 }
 
 command__install_tests() {
-    $PIP_INSTALL pytest pytest-xprocess git+https://github.com/mitsuhiko/werkzeug/ pytest-localserver
+    $PIP_INSTALL pytest pytest-xprocess werkzeug pytest-localserver
     _optimize_pip
     _davserver $DAV_SERVER
     [ "$TRAVIS" != "true" ] || $PIP_INSTALL coverage coveralls
