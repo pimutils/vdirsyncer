@@ -105,7 +105,10 @@ class FilesystemStorage(Storage):
             href = self._deterministic_href(item)
             return self._upload_impl(item, href)
         except OSError as e:
-            if e.errno == errno.ENAMETOOLONG:
+            if e.errno in (
+                errno.ENAMETOOLONG,  # Unix
+                errno.ENOENT  # Windows
+            ):
                 logger.debug('UID as filename rejected, trying with random '
                              'one.')
                 href = self._random_href()
