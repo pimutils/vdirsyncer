@@ -6,6 +6,8 @@ import sys
 
 import pkg_resources
 
+from sphinx.ext import autodoc
+
 extensions = ['sphinx.ext.autodoc']
 
 templates_path = ['_templates']
@@ -89,9 +91,6 @@ def github_issue_role(name, rawtext, text, lineno, inliner, options={},
     node = nodes.reference(rawtext, linktext, refuri=link,
                            **options)
     return [node], []
-
-
-from sphinx.ext import autodoc
 
 
 class StorageDocumenter(autodoc.ClassDocumenter):

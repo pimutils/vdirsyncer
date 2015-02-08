@@ -287,7 +287,8 @@ def read_config(f):
     c = RawConfigParser()
     c.readfp(f)
 
-    get_options = lambda s: dict(parse_options(c.items(s), section=s))
+    def get_options(s):
+        return dict(parse_options(c.items(s), section=s))
 
     general = {}
     pairs = {}

@@ -190,9 +190,10 @@ def join_collection(items, wrappers=_default_join_wrappers):
     items1, items2 = tee((icalendar.cal.Component.from_ical(x)
                           for x in items), 2)
     item_type, wrapper_type = _get_item_type(items1, wrappers)
-    _get_item_components = lambda x: (x.name == wrapper_type
-                                      and x.subcomponents
-                                      or [x])
+
+    def _get_item_components(x):
+        return x.name == wrapper_type and x.subcomponents or [x]
+
     components = chain(*(_get_item_components(x) for x in items2))
     lines = chain(*uniq(tuple(to_unicode_lines(x)) for x in components))
 
