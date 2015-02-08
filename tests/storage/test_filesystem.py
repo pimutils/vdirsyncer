@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 
 import pytest
 
@@ -55,3 +56,12 @@ class TestFilesystemStorage(StorageTests):
         item = Item(u'UID:' + u'hue' * 600)
         href, etag = s.upload(item)
         assert item.uid not in href
+
+    if sys.platform == 'win32':
+        def test_case_sensitive_uids(self, s, get_item):
+            s.upload(get_item(uid='A' * 42))
+            with pytest.raises(AlreadyExistingError):
+                s.upload(get_item(uid='a' * 42))
+            items = list(href for href, etag in s.list())
+            assert len(items) == 1
+            assert len(set(items)) == 1
