@@ -23,7 +23,7 @@ setup(
     author='Markus Unterwaditzer',
     author_email='markus@unterwaditzer.net',
     url='https://github.com/untitaker/vdirsyncer',
-    description='A synchronization tool for vdir',
+    description='Synchronize calendars and contacts',
     license='MIT',
     long_description=open('README.rst').read(),
     packages=find_packages(exclude=['tests.*', 'tests']),
