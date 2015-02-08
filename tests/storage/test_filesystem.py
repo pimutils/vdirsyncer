@@ -2,6 +2,7 @@
 
 import os
 import sys
+import subprocess
 
 import pytest
 
@@ -66,3 +67,29 @@ class TestFilesystemStorage(StorageTests):
             items = list(href for href, etag in s.list())
             assert len(items) == 1
             assert len(set(items)) == 1
+
+    def test_post_hook_inactive(self, tmpdir, monkeypatch):
+
+        def check_call_mock(*args, **kwargs):
+            assert False
+
+        monkeypatch.setattr(subprocess, 'call', check_call_mock)
+
+        s = self.storage_class(str(tmpdir), '.txt', post_hook=None)
+        s.upload(Item(u'UID:a/b/c'))
+
+    def test_post_hook_active(self, tmpdir, monkeypatch):
+
+        calls = []
+        exe = 'foo'
+
+        def check_call_mock(l, *args, **kwargs):
+            calls.append(True)
+            assert len(l) == 2
+            assert l[0] == exe
+
+        monkeypatch.setattr(subprocess, 'call', check_call_mock)
+
+        s = self.storage_class(str(tmpdir), '.txt', post_hook=exe)
+        s.upload(Item(u'UID:a/b/c'))
+        assert calls

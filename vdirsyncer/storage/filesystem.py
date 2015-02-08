@@ -2,6 +2,7 @@
 
 import errno
 import os
+import subprocess
 import uuid
 
 from atomicwrites import atomic_write
@@ -30,18 +31,23 @@ class FilesystemStorage(Storage):
         trigger a re-download of everything (but *should* not cause data-loss
         of any kind).
     :param encoding: File encoding for items.
+    :param post_hook: A command to call for each item creation and
+        modification. The command will be called with the path of the
+        new/updated file.
     '''
 
     storage_name = 'filesystem'
     _repr_attributes = ('path',)
 
-    def __init__(self, path, fileext, encoding='utf-8', **kwargs):
+    def __init__(self, path, fileext, encoding='utf-8', post_hook=None,
+                 **kwargs):
         super(FilesystemStorage, self).__init__(**kwargs)
         path = expand_path(path)
         checkdir(path, create=False)
         self.path = path
         self.encoding = encoding
         self.fileext = fileext
+        self.post_hook = post_hook
 
     @classmethod
     def discover(cls, path, **kwargs):
@@ -103,7 +109,7 @@ class FilesystemStorage(Storage):
 
         try:
             href = self._deterministic_href(item)
-            return self._upload_impl(item, href)
+            fpath, etag = self._upload_impl(item, href)
         except OSError as e:
             if e.errno in (
                 errno.ENAMETOOLONG,  # Unix
@@ -112,16 +118,20 @@ class FilesystemStorage(Storage):
                 logger.debug('UID as filename rejected, trying with random '
                              'one.')
                 href = self._random_href()
-                return self._upload_impl(item, href)
+                fpath, etag = self._upload_impl(item, href)
             else:
                 raise
+
+        if self.post_hook:
+            self._run_post_hook(fpath)
+        return href, etag
 
     def _upload_impl(self, item, href):
         fpath = self._get_filepath(href)
         try:
             with atomic_write(fpath, mode='wb', overwrite=False) as f:
                 f.write(item.raw.encode(self.encoding))
-                return href, get_etag_from_fileobject(f)
+                return fpath, get_etag_from_fileobject(f)
         except OSError as e:
             if e.errno == errno.EEXIST:
                 raise exceptions.AlreadyExistingError(item)
@@ -141,7 +151,11 @@ class FilesystemStorage(Storage):
 
         with atomic_write(fpath, mode='wb', overwrite=True) as f:
             f.write(item.raw.encode(self.encoding))
-            return get_etag_from_fileobject(f)
+            etag = get_etag_from_fileobject(f)
+
+        if self.post_hook:
+            self._run_post_hook(fpath)
+        return etag
 
     def delete(self, href, etag):
         fpath = self._get_filepath(href)
@@ -151,3 +165,11 @@ class FilesystemStorage(Storage):
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
         os.remove(fpath)
+
+    def _run_post_hook(self, fpath):
+        logger.info('Calling post_hook={} with argument={}'.format(
+            self.post_hook, fpath))
+        try:
+            subprocess.call([self.post_hook, fpath])
+        except OSError:
+            logger.exception('Error executing external hook.')
