@@ -240,6 +240,7 @@ def get_etag_from_file(fpath):
 
 def get_etag_from_fileobject(f):
     f.flush()
+    os.fsync(f.fileno())
     return get_etag_from_file(f.name)
 
 
