@@ -171,5 +171,5 @@ class FilesystemStorage(Storage):
             self.post_hook, fpath))
         try:
             subprocess.call([self.post_hook, fpath])
-        except OSError:
-            logger.exception('Error executing external hook.')
+        except OSError as e:
+            logger.warning('Error executing external hook: {}'.format(str(e)))
