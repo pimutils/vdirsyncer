@@ -15,6 +15,7 @@ Version 0.4.3
 *yet to be released*
 
 - More performance improvements to ``singlefile``-storage.
+- Add ``post_hook`` param to ``filesystem``-storage.
 
 Version 0.4.2
 =============

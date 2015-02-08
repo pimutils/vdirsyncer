@@ -31,6 +31,9 @@ class FilesystemStorage(Storage):
         trigger a re-download of everything (but *should* not cause data-loss
         of any kind).
     :param encoding: File encoding for items.
+    :param post_hook: A command to call for each item creation and
+        modification. The command will be called with the path of the
+        new/updated file.
     '''
 
     storage_name = 'filesystem'
