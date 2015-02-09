@@ -30,6 +30,9 @@ If that method doesn't work for you or you want a deeper understanding of what
 you just did, check out `the tutorial
 <https://vdirsyncer.readthedocs.org/en/stable/tutorial.html>`_.
 
+.. [1] Or ``$XDG_CONFIG_HOME/vdirsyncer/config`` (normally
+   ``~/.config/vdirsyncer/config``) for XDG-Basedir spec compliance.
+
 Donations
 =========
 
@@ -38,6 +41,3 @@ Donations
 
 .. image:: https://api.flattr.com/button/flattr-badge-large.png
     :target: https://flattr.com/submit/auto?user_id=untitaker&url=https%3A%2F%2Fgithub.com%2Funtitaker%2Fvdirsyncer
-
-.. [1] Or ``$XDG_CONFIG_HOME/vdirsyncer/config`` (normally
-   ``~/.config/vdirsyncer/config``) for XDG-Basedir spec compliance.
