@@ -2,11 +2,9 @@
 
 import os
 import subprocess
-import sys
 
 import pytest
 
-from vdirsyncer.exceptions import AlreadyExistingError
 from vdirsyncer.storage.filesystem import FilesystemStorage
 from vdirsyncer.utils.vobject import Item
 
