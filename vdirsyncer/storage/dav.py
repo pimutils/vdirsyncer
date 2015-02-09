@@ -322,9 +322,25 @@ class DavStorage(Storage):
         home = d.find_home()
         collection_url = '{}/{}'.format(home.rstrip('/'), collection)
 
+        data = '''<?xml version="1.0" encoding="utf-8" ?>
+        <D:mkcol xmlns:D="DAV:" xmlns:C="{}">
+            <D:set>
+                <D:prop>
+                    <D:resourcetype>
+                        <D:collection/>
+                        <C:{}/>
+                    </D:resourcetype>
+                </D:prop>
+            </D:set>
+        </D:mkcol>
+        '''.format(cls._dav_namespace, cls._dav_resourcetype)
+
+        headers = d.session.get_default_headers()
+
         try:
             response = d.session.request('MKCOL', collection_url,
-                                         is_subpath=False)
+                                         is_subpath=False, data=data,
+                                         headers=headers)
         except HTTPError as e:
             raise NotImplementedError(e)
         else:
@@ -521,6 +537,8 @@ class CaldavStorage(DavStorage):
     fileext = '.ics'
     item_mimetype = 'text/calendar'
     discovery_class = CalDiscover
+    _dav_namespace = 'urn:ietf:params:xml:ns:caldav'
+    _dav_resourcetype = 'calendar'
 
     start_date = None
     end_date = None
@@ -642,6 +660,8 @@ class CarddavStorage(DavStorage):
                 {hrefs}
             </C:addressbook-multiget>'''
 
+    _dav_namespace = 'urn:ietf:params:xml:ns:carddav'
+    _dav_resourcetype = 'addressbook'
     get_multi_data_query = '{urn:ietf:params:xml:ns:carddav}address-data'
 
     def list(self):
