@@ -29,9 +29,9 @@ Contacts
 - khard_, a commandline addressbook supporting :doc:`vdir <vdir>`.  You can use
   :py:class:`vdirsyncer.storage.FilesystemStorage` with it.
 
-- `The ppl addressbook <ppl>`_ uses a storage format similar to :doc:`vdir
-  <vdir>`. There are some pitfalls though, `see the notes on the related issue
-  <https://github.com/hnrysmth/ppl/issues/47>`_.
+- `The ppl addressbook <http://ppladdressbook.org/>`_ uses a storage format
+  similar to :doc:`vdir <vdir>`. There are some pitfalls though, `see the notes
+  on the related issue <https://github.com/hnrysmth/ppl/issues/47>`_.
 
 - contactquery.c_, a small program explicitly written for querying vdirs from
   mutt.
@@ -39,7 +39,6 @@ Contacts
 - mates_, a commandline addressbook supporting :doc:`vdir <vdir>`.
 
 .. _khard: http://github.com/scheibler/khard/
-.. _ppl: http://ppladdressbook.org/
 .. _contactquery.c: https://github.com/t-8ch/snippets/blob/master/contactquery.c
 .. _mates: https://github.com/untitaker/mates.rs
 
