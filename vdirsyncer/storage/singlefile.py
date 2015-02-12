@@ -19,7 +19,7 @@ logger = log.get(__name__)
 def _writing_op(f):
     @functools.wraps(f)
     def inner(self, *args, **kwargs):
-        if not self._at_once:
+        if self._items is None or not self._at_once:
             self.list()
         rv = f(self, *args, **kwargs)
         if not self._at_once:
@@ -125,7 +125,7 @@ class SingleFileStorage(Storage):
         return ((href, etag) for href, (item, etag) in iteritems(self._items))
 
     def get(self, href):
-        if self._items is None:
+        if self._items is None or not self._at_once:
             self.list()
 
         try:
