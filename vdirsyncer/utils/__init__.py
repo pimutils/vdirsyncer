@@ -192,6 +192,7 @@ def _verify_fingerprint_works():
 #   packaging stuff doesn't check installed versions.
 # - The people who don't use `verify_fingerprint` wouldn't care.
 VERIFY_FINGERPRINT_WORKS = _verify_fingerprint_works()
+del _verify_fingerprint_works
 
 
 def request(method, url, session=None, latin1_fallback=True,
