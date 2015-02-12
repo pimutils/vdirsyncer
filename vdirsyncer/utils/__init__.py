@@ -177,6 +177,23 @@ class _FingerprintAdapter(requests.adapters.HTTPAdapter):
                                        assert_fingerprint=self.fingerprint)
 
 
+def _verify_fingerprint_works():
+    try:
+        import requests
+        from pkg_resources import parse_version as ver
+
+        return ver(requests.__version__) >= ver('2.4.1')
+    except Exception:
+        return False
+
+# https://github.com/shazow/urllib3/pull/444
+# We check this here instead of setup.py, because:
+# - This is critical to security of `verify_fingerprint`, and Python's
+#   packaging stuff doesn't check installed versions.
+# - The people who don't use `verify_fingerprint` wouldn't care.
+VERIFY_FINGERPRINT_WORKS = _verify_fingerprint_works()
+
+
 def request(method, url, session=None, latin1_fallback=True,
             verify_fingerprint=None, **kwargs):
     '''
@@ -198,6 +215,9 @@ def request(method, url, session=None, latin1_fallback=True,
         session = requests.Session()
 
     if verify_fingerprint is not None:
+        if not VERIFY_FINGERPRINT_WORKS:
+            raise ValueError('`verify_fingerprint` can only be used with '
+                             'requests versions >= 2.4.1')
         kwargs['verify'] = False
         https_prefix = 'https://'
 

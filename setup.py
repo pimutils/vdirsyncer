@@ -34,8 +34,7 @@ setup(
     install_requires=[
         # https://github.com/mitsuhiko/click/issues/200
         'click>=3.1',
-        # https://github.com/shazow/urllib3/pull/444
-        'requests>=2.4.1',
+        'requests',
         'lxml>=3.0',
         'icalendar>=3.6',
         # https://github.com/sigmavirus24/requests-toolbelt/pull/28
