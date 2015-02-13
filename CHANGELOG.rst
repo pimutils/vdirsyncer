@@ -16,6 +16,8 @@ Version 0.4.3
 
 - More performance improvements to ``singlefile``-storage.
 - Add ``post_hook`` param to ``filesystem``-storage.
+- Collection creation now also works with SabreDAV-based servers, such as
+  Baikal or ownCloud.
 
 Version 0.4.2
 =============
