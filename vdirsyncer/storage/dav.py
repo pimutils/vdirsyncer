@@ -556,7 +556,7 @@ class CaldavStorage(DavStorage):
     get_multi_data_query = '{urn:ietf:params:xml:ns:caldav}calendar-data'
 
     def __init__(self, start_date=None, end_date=None,
-                 item_types=('VTODO', 'VEVENT'), **kwargs):
+                 item_types=(), **kwargs):
         super(CaldavStorage, self).__init__(**kwargs)
         if not isinstance(item_types, (list, tuple)):
             raise ValueError('item_types must be a list.')

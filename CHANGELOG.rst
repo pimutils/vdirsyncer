@@ -18,6 +18,8 @@ Version 0.4.3
 - Add ``post_hook`` param to ``filesystem``-storage.
 - Collection creation now also works with SabreDAV-based servers, such as
   Baikal or ownCloud.
+- Removed some workarounds for Radicale. Upgrading to the latest Radicale will
+  fix the issues.
 
 Version 0.4.2
 =============

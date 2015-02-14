@@ -64,16 +64,9 @@ them is neither supported nor encouraged.
 - `Versions of Radicale older than 0.9b1 choke on RFC-conform queries for all
   items of a collection <https://github.com/Kozea/Radicale/issues/143>`_.
 
-  Vdirsyncer's default value ``["VTODO", "VEVENT"]'`` for
-  :py:class:`vdirsyncer.storage.CaldavStorage`'s ``item_types`` parameter will
-  work fine with these versions, and so will all values, except for the empty
-  one.
-
-  The empty list ``[]`` will get vdirsyncer to send a single HTTP request to
-  fetch all items, instead of one HTTP request for each possible item type. As
-  the linked issue describes, old versions of Radicale expect a
-  non-RFC-compliant format for such queries, one which vdirsyncer doesn't
-  support.
+  You have to set ``item_types = ["VTODO", "VEVENT"]`` in
+  :py:class:`vdirsyncer.storage.CaldavStorage` for vdirsyncer to work with
+  those versions.
 
 .. _Radicale: http://radicale.org/
 
