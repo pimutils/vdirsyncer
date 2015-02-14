@@ -256,12 +256,30 @@ def request(method, url, session=None, latin1_fallback=True,
 
 
 def get_etag_from_file(fpath):
-    return '{:.9f}'.format(os.path.getmtime(fpath))
+    '''Get mtime-based etag from a filepath.'''
+    stat = os.stat(fpath)
+    mtime = getattr(stat, 'st_mtime_ns', None)
+    if mtime is None:
+        mtime = stat.st_mtime
+    return '{:.9f}'.format(mtime)
 
 
 def get_etag_from_fileobject(f):
-    f.flush()
-    os.fsync(f.fileno())
+    '''
+    Get mtime-based etag from a local file's fileobject.
+
+    This function will flush/sync the file as much as necessary to obtain a
+    correct mtime.
+
+    In filesystem-based storages, this is used instead of
+    :py:func:`get_etag_from_file` to determine the correct etag *before*
+    writing the temporary file to the target location.
+
+    This works because, as far as I've tested, moving and linking a file
+    doesn't change its mtime.
+    '''
+    f.flush()  # Only this is necessary on Linux
+    os.fsync(f.fileno())  # Apparently necessary on Windows
     return get_etag_from_file(f.name)
 
 
