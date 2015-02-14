@@ -52,9 +52,13 @@ CalDAV and CardDAV servers not listed here may work anyway.
 Radicale
 --------
 
-Vdirsyncer is continuously tested against the git version and the latest PyPI
-release of Radicale_. Older versions have substantial deficiencies, and using
-them is neither supported nor encouraged.
+Radicale is a very lightweight server, however, it intentionally doesn't
+implement the CalDAV and CardDAV standards completely, which might lead to
+issues even with very well-written clients.
+
+That said, vdirsyncer is continuously tested against the git version and the
+latest PyPI release of Radicale_. Older versions have substantial deficiencies,
+and using them is neither supported nor encouraged.
 
 - Radicale doesn't `support time ranges in the calendar-query of CalDAV
   <https://github.com/Kozea/Radicale/issues/146>`_, so setting ``start_date``
