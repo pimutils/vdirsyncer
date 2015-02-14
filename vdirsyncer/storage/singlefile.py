@@ -36,14 +36,9 @@ class SingleFileStorage(Storage):
     .. versionadded:: 0.1.6
 
     .. note::
-        This storage has many raceconditions, which basically means that you
-        should avoid changing the file with another program (or even running
-        any programs which might modify the file) while vdirsyncer is running.
-
-        Also it is currently very slow, so you should consider limiting the
-        amount of items you synchronize. In combination with
-        :py:class:`vdirsyncer.storage.CaldavStorage` this can be achieved via
-        the ``start_date`` and ``end_date`` parameters.
+        This storage is very slow, and that is unlikely to change. You should
+        consider using :py:class:`vdirsyncer.storage.FilesystemStorage` if it
+        fits your usecase.
 
     :param path: The filepath to the file to be written to.
     :param encoding: Which encoding the file should use. Defaults to UTF-8.
@@ -169,7 +164,9 @@ class SingleFileStorage(Storage):
         if self._last_mtime is not None and \
            self._last_mtime != os.path.getmtime(self.path):
             raise exceptions.PreconditionFailed(
-                'Some other program modified the file {r!}'.format(self.path))
+                'Some other program modified the file {r!}. Re-run the '
+                'synchronization and make sure absolutely no other program is '
+                'writing into the same file.'.format(self.path))
         text = join_collection(
             (item.raw for item, etag in itervalues(self._items)),
         )
