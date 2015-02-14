@@ -526,11 +526,18 @@ class CaldavStorage(DavStorage):
     Either both or none have to be specified. The default is to synchronize
     everything.
 
+    You can set ``item_types`` to restrict the *kind of items* you want to
+    synchronize. For example, if you want to only synchronize events (but don't
+    download any tasks from the server), set ``item_types = ["VEVENT"]``. If
+    you want to synchronize events and tasks, but have some ``VJOURNAL`` items
+    on the server you don't want to synchronize, use ``item_types = ["VEVENT",
+    "VTODO"]``.
+
     :param start_date: Start date of timerange to show, default -inf.
     :param end_date: End date of timerange to show, default +inf.
-    :param item_types: Comma-separated collection types to show from the
-        server. Dependent on server functionality, no clientside validation of
-        results. The empty value ``[]`` means "all items".
+    :param item_types: Kind of items to show. The default, the empty list, is
+        to show all. This depends on particular features on the server, the
+        results are not validated.
     ''' + DavStorage.__doc__
 
     storage_name = 'caldav'
