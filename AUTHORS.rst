@@ -8,4 +8,5 @@ In alphabetical order:
 - Hugo Osvaldo Barrera
 - Julian Mehne
 - Markus Unterwaditzer
+- Michael Adler
 - Thomas Weißschuh
