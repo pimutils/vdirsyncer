@@ -144,7 +144,7 @@ class Discover(object):
         headers = self.session.get_default_headers()
         headers['Depth'] = 1
         r = self.session.request('PROPFIND', url, headers=headers,
-                                        data=self._collection_xml)
+                                 data=self._collection_xml)
         root = _parse_xml(r.content)
         done = set()
         for response in root.findall('{DAV:}response'):
