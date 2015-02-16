@@ -114,6 +114,21 @@ iCloud
 Vdirsyncer is irregularly tested against iCloud_. There are no known issues
 with it.
 
+::
+
+    [storage cal]
+    type = caldav
+    url = https://caldav.icloud.com/
+    username = ...
+    password = ...
+
+    [storage card]
+    type = carddav
+    url = https://contacts.icloud.com/
+    username = ...
+    password = ...
+
+
 .. _iCloud: http://icloud.com/
 
 DavMail (Exchange, Outlook)
