@@ -20,6 +20,7 @@ Version 0.4.3
   Baikal or ownCloud.
 - Removed some workarounds for Radicale. Upgrading to the latest Radicale will
   fix the issues.
+- Fixed issues with iCloud discovery.
 
 Version 0.4.2
 =============

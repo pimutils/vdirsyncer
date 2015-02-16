@@ -120,7 +120,7 @@ class Discover(object):
         rv = root.find('.//{DAV:}current-user-principal/{DAV:}href')
         if rv is None:
             raise InvalidXMLResponse()
-        return rv.text
+        return utils.urlparse.urljoin(response.url, rv.text)
 
     def find_home(self, url=None):
         if url is None:
@@ -136,16 +136,16 @@ class Discover(object):
         rv = root.find('.//' + self._homeset_tag + '/{*}href')
         if rv is None:
             raise InvalidXMLResponse()
-        return rv.text
+        return utils.urlparse.urljoin(response.url, rv.text)
 
     def find_collections(self, url=None):
         if url is None:
             url = self.find_home()
         headers = self.session.get_default_headers()
         headers['Depth'] = 1
-        response = self.session.request('PROPFIND', url, headers=headers,
+        r = self.session.request('PROPFIND', url, headers=headers,
                                         data=self._collection_xml)
-        root = _parse_xml(response.content)
+        root = _parse_xml(r.content)
         done = set()
         for response in root.findall('{DAV:}response'):
             props = _merge_xml(response.findall('{*}propstat/{*}prop'))
@@ -156,7 +156,7 @@ class Discover(object):
             href = response.find('{*}href')
             if href is None:
                 raise InvalidXMLResponse()
-            href = utils.urlparse.urljoin(self.session.url, href.text)
+            href = utils.urlparse.urljoin(r.url, href.text)
             if href not in done:
                 done.add(href)
                 yield {'href': href, 'displayname': displayname}
