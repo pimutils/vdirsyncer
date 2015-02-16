@@ -121,3 +121,22 @@ Vdirsyncer is continuously tested against the latest version of Baikal_.
   ownCloud, see :gh:`160`.
 
 .. _Baikal: http://baikal-server.com/
+
+Google
+------
+
+Vdirsyncer can currently download events from Google Calendar, but any
+writing/uploading is explicitly prohibited by Google. `Google's support forum
+<https://support.google.com/calendar/answer/99358>`_ explains how to set up its
+CalDAV support::
+
+    [storage cal]
+    type = caldav
+    url = https://www.google.com/calendar/dav/
+    username = ...
+    password = ...
+    read_only = true
+
+Unfortunately vdirsyncer current doesn't support Google Contacts in any way.
+
+See :gh:`8` for the discussion.
