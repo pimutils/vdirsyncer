@@ -94,8 +94,7 @@ class Discover(object):
     def find_dav(self):
         try:
             response = self.session.request('GET', self._well_known_uri,
-                                            allow_redirects=False,
-                                            is_subpath=False)
+                                            allow_redirects=False)
             return response.headers.get('Location', '')
         except (HTTPError, exceptions.Error):
             # The user might not have well-known URLs set up and instead points
@@ -116,7 +115,7 @@ class Discover(object):
         </d:propfind>
         """
         response = self.session.request('PROPFIND', url, headers=headers,
-                                        data=body, is_subpath=False)
+                                        data=body)
         root = _parse_xml(response.content)
         rv = root.find('.//{DAV:}current-user-principal/{DAV:}href')
         if rv is None:
@@ -130,8 +129,7 @@ class Discover(object):
         headers['Depth'] = 0
         response = self.session.request('PROPFIND', url,
                                         headers=headers,
-                                        data=self._homeset_xml,
-                                        is_subpath=False)
+                                        data=self._homeset_xml)
 
         root = etree.fromstring(response.content)
         # Better don't do string formatting here, because of XML namespaces
@@ -146,8 +144,7 @@ class Discover(object):
         headers = self.session.get_default_headers()
         headers['Depth'] = 1
         response = self.session.request('PROPFIND', url, headers=headers,
-                                        data=self._collection_xml,
-                                        is_subpath=False)
+                                        data=self._collection_xml)
         root = _parse_xml(response.content)
         done = set()
         for response in root.findall('{DAV:}response'):
@@ -224,11 +221,10 @@ class DavSession(object):
         self.parsed_url = utils.urlparse.urlparse(self.url)
         self._session = None
 
-    def request(self, method, path, is_subpath=True, **kwargs):
+    def request(self, method, path, **kwargs):
         url = self.url
         if path:
             url = utils.urlparse.urljoin(self.url, path)
-        assert url.startswith(self.url) or not is_subpath
         if self._session is None:
             self._session = requests_session()
 
@@ -337,8 +333,7 @@ class DavStorage(Storage):
         headers = d.session.get_default_headers()
 
         try:
-            response = d.session.request('MKCOL', collection_url,
-                                         is_subpath=False, data=data,
+            response = d.session.request('MKCOL', collection_url, data=data,
                                          headers=headers)
         except HTTPError as e:
             raise NotImplementedError(e)
