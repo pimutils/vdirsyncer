@@ -21,6 +21,8 @@ Version 0.4.3
 - Removed some workarounds for Radicale. Upgrading to the latest Radicale will
   fix the issues.
 - Fixed issues with iCloud discovery.
+- Vdirsyncer now includes a simple ``repair`` command that seeks to fix some
+  broken items.
 
 Version 0.4.2
 =============

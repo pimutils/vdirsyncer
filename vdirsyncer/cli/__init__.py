@@ -3,7 +3,7 @@
 import functools
 import sys
 
-from .tasks import discover_collections, sync_pair
+from .tasks import discover_collections, repair_collection, sync_pair
 from .utils import CliError, WorkerQueue, cli_logger, handle_cli_error, \
     load_config, parse_pairs_args
 from .. import __version__, log
@@ -127,3 +127,21 @@ def discover(ctx, pairs, max_workers):
         ))
 
     wq.join()
+
+
+@app.command()
+@click.argument('collection')
+@click.pass_context
+@catch_errors
+def repair(ctx, collection):
+    '''
+    Repair a given collection: `storage/collection/storage`
+
+    `vdirsyncer repair calendars_local/foo` repairs the `foo` collection of the
+    `calendars_local` storage.
+
+    It will download all items and repair their properties if necessary.
+    Currently this only fixes absent or duplicate UIDs.
+    '''
+    general, all_pairs, all_storages = ctx.obj['config']
+    repair_collection(general, all_pairs, all_storages, collection)

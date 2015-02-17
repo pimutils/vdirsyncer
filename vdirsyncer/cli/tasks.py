@@ -2,12 +2,14 @@
 
 import functools
 import json
+import uuid
 
 from .utils import CliError, JobFailed, cli_logger, collections_for_pair, \
     get_status_name, handle_cli_error, load_status, save_status, \
-    storage_instance_from_config
+    storage_class_from_config, storage_instance_from_config
 
 from ..sync import sync
+from ..utils.vobject import Item, to_unicode_lines
 
 
 def sync_pair(wq, pair_name, collections_to_sync, general, all_pairs,
@@ -84,3 +86,67 @@ def discover_collections(wq, pair_name, **kwargs):
         collections = None
     cli_logger.info('Saved for {}: collections = {}'
                     .format(pair_name, json.dumps(collections)))
+
+
+def repair_collection(general, all_pairs, all_storages, collection):
+    storage_name, collection = collection, None
+    if '/' in storage_name:
+        storage_name, collection = storage_name.split('/')
+
+    config = all_storages[storage_name]
+    storage_type = config['type']
+
+    if collection is not None:
+        cli_logger.info('Discovering collections (skipping cache).')
+        cls, config = storage_class_from_config(config)
+        for config in cls.discover(**config):
+            if config['collection'] == collection:
+                break
+        else:
+            raise CliError('Couldn\'t find collection {} for storage {}.'
+                           .format(collection, storage_name))
+
+    config['type'] = storage_type
+    storage = storage_instance_from_config(config)
+
+    cli_logger.info('Repairing {}/{}'.format(storage_name, collection))
+    cli_logger.warning('Make sure no other program is talking to the server.')
+    _repair_collection(storage)
+
+
+def _repair_collection(storage):
+    seen_uids = set()
+    all_hrefs = list(storage.list())
+    for i, (href, _) in enumerate(all_hrefs):
+        item, etag = storage.get(href)
+        cli_logger.info('[{}/{}] Processing {}'
+                        .format(i, len(all_hrefs), href))
+
+        parsed = item.parsed
+        changed = False
+        if parsed is None:
+            cli_logger.warning('Item {} can\'t be parsed, skipping.'
+                               .format(href))
+            continue
+
+        if item.uid is None or item.uid in seen_uids:
+            if item.uid is None:
+                cli_logger.warning('No UID, assigning random one.')
+            else:
+                cli_logger.warning('Duplicate UID, reassigning random one.')
+
+            new_uid = uuid.uuid4()
+            stack = [parsed]
+            while stack:
+                component = stack.pop()
+                if component.name in ('VEVENT', 'VTODO', 'VJOURNAL', 'VCARD'):
+                    component['UID'] = new_uid
+                    changed = True
+                else:
+                    stack.extend(component.subcomponents)
+
+        new_item = Item(u'\n'.join(to_unicode_lines(parsed)))
+        assert new_item.uid
+        seen_uids.add(new_item.uid)
+        if changed:
+            storage.update(href, new_item, etag)

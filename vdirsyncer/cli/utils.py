@@ -45,7 +45,7 @@ class JobFailed(RuntimeError):
     pass
 
 
-def handle_cli_error(status_name='sync'):
+def handle_cli_error(status_name=None):
     '''
     Print a useful error message for the current exception.
 
@@ -80,20 +80,27 @@ def handle_cli_error(status_name='sync'):
         )
     except IdentConflict as e:
         cli_logger.error(
-            '{status_name}: Storage "{name}" contains multiple items with the '
-            'same UID or even content. Vdirsyncer will now abort the '
-            'synchronization of this collection, because the fix for this is '
-            'not clear; It could be the result of a badly behaving server.\n'
-            '\n{href_list}\n'
+            '{status_name}: Storage "{storage.instance_name}" contains '
+            'multiple items with the same UID or even content. Vdirsyncer '
+            'will now abort the synchronization of this collection, because '
+            'the fix for this is not clear; It could be the result of a badly '
+            'behaving server. You can try running:\n\n'
+            '    vdirsyncer repair {storage.instance_name}\n\n'
+            'But make sure to have a backup of your data in some form. The '
+            'offending hrefs are:\n\n{href_list}\n'
             .format(status_name=status_name,
-                    name=e.storage.instance_name,
+                    storage=e.storage,
                     href_list='\n'.join(map(repr, e.hrefs)))
         )
     except (click.Abort, KeyboardInterrupt, JobFailed):
         pass
     except Exception as e:
-        cli_logger.exception('Unhandled exception occured while syncing {}.'
-                             .format(status_name))
+        if status_name:
+            msg = 'Unhandled exception occured for {}.'.format(status_name)
+        else:
+            msg = 'Unhandled exception occured.'
+
+        cli_logger.exception(msg)
 
 
 def validate_section_name(name, section_type):
