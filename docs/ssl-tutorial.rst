@@ -53,4 +53,4 @@ the system certificate CAs. Normally these two stores are similar enough for
 you not to care. If the behavior on your system is somehow confusing, your best
 bet is explicitly setting the SSL options above.
 
-.. _requests: www.python-requests.org/
+.. _requests: http://www.python-requests.org/
