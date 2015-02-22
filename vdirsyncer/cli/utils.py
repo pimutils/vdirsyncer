@@ -186,7 +186,6 @@ def _discover_from_config(config):
 
 def _handle_collection_not_found(config, collection, e=None):
     storage_name = config.get('instance_name', None)
-    assert config.setdefault('collection', collection) == collection
 
     cli_logger.error('{}No collection {} found for storage {}.'
                      .format('{}\n'.format(e) if e else '',
@@ -196,7 +195,7 @@ def _handle_collection_not_found(config, collection, e=None):
         storage_type = config['type']
         cls, config = storage_class_from_config(config)
         try:
-            args = cls.create_collection(**config)
+            args = cls.create_collection(collection=collection, **config)
             args['type'] = storage_type
             return args
         except NotImplementedError as e:
