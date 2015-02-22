@@ -72,6 +72,7 @@ class FilesystemStorage(Storage):
         if collection is not None:
             kwargs['path'] = os.path.join(kwargs['path'], collection)
         checkdir(kwargs['path'], create=True)
+        kwargs['collection'] = collection
         return kwargs
 
     def _get_filepath(self, href):

@@ -104,10 +104,14 @@ class Storage(with_metaclass(StorageMeta)):
 
     @classmethod
     def create_collection(cls, collection, **kwargs):
-        '''Create the specified collection and return the new arguments.
+        '''
+        Create the specified collection and return the new arguments.
 
         ``collection=None`` means the arguments are already pointing to a
-        possible collection location.'''
+        possible collection location.
+
+        The returned args should contain the collection name, for UI purposes.
+        '''
         raise NotImplementedError()
 
     def __repr__(self):

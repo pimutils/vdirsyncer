@@ -184,17 +184,13 @@ def _discover_from_config(config):
         return rv
 
 
-def _get_coll(pair_name, storage_name, collection, discovered, config):
-    try:
-        return discovered[collection]
-    except KeyError:
-        return _handle_collection_not_found(config, collection)
-
-
-def _handle_collection_not_found(config, collection):
+def _handle_collection_not_found(config, collection, e=None):
     storage_name = config.get('instance_name', None)
-    cli_logger.error('No collection {} found for storage {}.'
-                     .format(collection, storage_name))
+
+    cli_logger.error('{}No collection {} found for storage {}.'
+                     .format('{}\n'.format(e) if e else '',
+                             collection, storage_name))
+
     if click.confirm('Should vdirsyncer attempt to create it?'):
         storage_type = config['type']
         cls, config = storage_class_from_config(config)
@@ -230,10 +226,16 @@ def _collections_for_pair_impl(status_path, name_a, name_b, pair_name,
                 collections = [shortcut]
 
             for collection in collections:
-                a_args = _get_coll(pair_name, name_a, collection, a_discovered,
-                                   config_a)
-                b_args = _get_coll(pair_name, name_b, collection, b_discovered,
-                                   config_b)
+                try:
+                    a_args = a_discovered[collection]
+                except KeyError:
+                    a_args = _handle_collection_not_found(config_a, collection)
+
+                try:
+                    b_args = b_discovered[collection]
+                except KeyError:
+                    b_args = _handle_collection_not_found(config_b, collection)
+
                 yield collection, (a_args, b_args)
 
 
@@ -412,9 +414,9 @@ def storage_instance_from_config(config, create=True):
     try:
         return cls(**new_config)
     except exceptions.CollectionNotFound as e:
-        cli_logger.error(str(e))
         if create:
-            _handle_collection_not_found(config, None)
+            config = _handle_collection_not_found(
+                config, config.get('collection', None), e=str(e))
             return storage_instance_from_config(config, create=False)
         else:
             raise
