@@ -37,7 +37,8 @@ For many patches, it might suffice to just let Travis run the tests. However,
 Travis is slow, so you might want to run them locally too. For this, set up a
 virtualenv_ and run this inside of it::
 
-    make install
+    make install-test
+    make install-style
 
 This will install all dependencies required for the integration tests against
 the latest release of Radicale (a CalDAV server). Then you can run::

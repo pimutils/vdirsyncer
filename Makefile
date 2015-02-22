@@ -1,7 +1,3 @@
-install:
-	make install-test
-	make install-style
-
 install-test:
 	sh build.sh install_tests
 
