@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 import threading
 
 import requests
@@ -279,7 +280,8 @@ def get_etag_from_fileobject(f):
     doesn't change its mtime.
     '''
     f.flush()  # Only this is necessary on Linux
-    os.fsync(f.fileno())  # Apparently necessary on Windows
+    if sys.platform == 'win32':
+        os.fsync(f.fileno())  # Apparently necessary on Windows
     return get_etag_from_file(f.name)
 
 
