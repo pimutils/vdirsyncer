@@ -201,10 +201,10 @@ def _handle_collection_not_found(config, collection, e=None):
         except NotImplementedError as e:
             cli_logger.error(e)
 
-    raise CliError('Unable to find or create collection "{collection}" for '
-                   'storage "{storage}". Please create the collection '
-                   'yourself.'.format(collection=collection,
-                                      storage=storage_name))
+    raise exceptions.CollectionNotFound(
+        'Unable to find or create collection "{collection}" for storage '
+        '"{storage}". Please create the collection yourself.'
+        .format(collection=collection, storage=storage_name))
 
 
 def _collections_for_pair_impl(status_path, name_a, name_b, pair_name,
@@ -227,16 +227,20 @@ def _collections_for_pair_impl(status_path, name_a, name_b, pair_name,
 
             for collection in collections:
                 try:
-                    a_args = a_discovered[collection]
-                except KeyError:
-                    a_args = _handle_collection_not_found(config_a, collection)
+                    try:
+                        a_args = a_discovered[collection]
+                    except KeyError:
+                        a_args = _handle_collection_not_found(config_a, collection)
 
-                try:
-                    b_args = b_discovered[collection]
-                except KeyError:
-                    b_args = _handle_collection_not_found(config_b, collection)
-
-                yield collection, (a_args, b_args)
+                    try:
+                        b_args = b_discovered[collection]
+                    except KeyError:
+                        b_args = _handle_collection_not_found(config_b, collection)
+                except exceptions.CollectionNotFound as e:
+                    cli_logger.warning('Skipping collection {}: {}'
+                                       .format(collection, str(e)))
+                else:
+                    yield collection, (a_args, b_args)
 
 
 def _validate_general_section(general_config):
