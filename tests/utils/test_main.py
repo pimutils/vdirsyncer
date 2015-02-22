@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import platform
 import stat
 
 import click
@@ -201,7 +202,8 @@ def test_get_class_init_args_on_storage():
     assert not required
 
 
-@pytest.mark.skipif(not utils.compat.PY2,
+@pytest.mark.skipif((not utils.compat.PY2
+                     or platform.python_implementation() == 'PyPy'),
                     reason='https://github.com/shazow/urllib3/issues/529')
 def test_request_ssl(httpsserver):
     sha1 = '94:FD:7A:CB:50:75:A4:69:82:0A:F8:23:DF:07:FC:69:3E:CD:90:CA'
