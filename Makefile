@@ -8,7 +8,8 @@ install-style:
 	pip install flake8 flake8-import-order
 	
 style:
-	flake8
+	flake8 \
+		--ignore=W503  # Line break before operator
 	! grep -ri syncroniz */*
 
 install-docs:
