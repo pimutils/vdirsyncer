@@ -73,7 +73,7 @@ class FilesystemStorage(Storage):
 
         if collection is not None:
             rv['path'] = os.path.join(rv['path'], collection)
-        checkdir(rv['path'], create=True)
+        checkdir(expand_path(rv['path']), create=True)
         rv['collection'] = collection
         return kwargs
 
