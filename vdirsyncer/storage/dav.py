@@ -11,7 +11,7 @@ from .base import Item, Storage
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_verify
 from .. import exceptions, log, utils
-from .._compat import text_type
+from ..utils.compat import text_type
 
 
 dav_logger = log.get(__name__)
