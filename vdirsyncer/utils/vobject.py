@@ -40,8 +40,12 @@ del _process_properties
 #
 # This basically checks whether the superclass of all icalendar classes has a
 # method from OrderedDict.
-ICALENDAR_ORIGINAL_ORDER_SUPPORT = \
-    hasattr(icalendar.caselessdict.CaselessDict, '__reversed__')
+try:
+    reversed(icalendar.caselessdict.CaselessDict())
+except TypeError:
+    ICALENDAR_ORIGINAL_ORDER_SUPPORT = False
+else:
+    ICALENDAR_ORIGINAL_ORDER_SUPPORT = True
 
 
 class Item(object):
