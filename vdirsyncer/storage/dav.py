@@ -11,6 +11,7 @@ from .base import Item, Storage
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_verify
 from .. import exceptions, log, utils
+from .._compat import text_type
 
 
 dav_logger = log.get(__name__)
@@ -569,10 +570,12 @@ class CaldavStorage(DavStorage):
         elif start_date is not None and end_date is not None:
             namespace = dict(datetime.__dict__)
             namespace['start_date'] = self.start_date = \
-                (eval(start_date, namespace) if isinstance(start_date, str)
+                (eval(start_date, namespace)
+                 if isinstance(start_date, (bytes, text_type))
                  else start_date)
             self.end_date = \
-                (eval(end_date, namespace) if isinstance(end_date, str)
+                (eval(end_date, namespace)
+                 if isinstance(end_date, (bytes, text_type))
                  else end_date)
 
     @staticmethod
