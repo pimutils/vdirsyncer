@@ -9,7 +9,7 @@ from requests.exceptions import HTTPError
 
 from .base import Item, Storage
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
-    prepare_verify
+    prepare_verify, prepare_client_cert
 from .. import exceptions, log, utils
 from ..utils.compat import text_type
 
@@ -208,7 +208,8 @@ class DavSession(object):
     '''
 
     def __init__(self, url, username='', password='', verify=True, auth=None,
-                 useragent=USERAGENT, verify_fingerprint=None):
+                 useragent=USERAGENT, verify_fingerprint=None,
+                 auth_cert=None):
         if username and not password:
             password = utils.get_password(username, url)
 
@@ -216,6 +217,7 @@ class DavSession(object):
             'verify': prepare_verify(verify),
             'auth': prepare_auth(auth, username, password),
             'verify_fingerprint': verify_fingerprint,
+            'cert': prepare_client_cert(auth_cert),
         }
         self.useragent = useragent
         self.url = url.rstrip('/') + '/'
@@ -270,12 +272,13 @@ class DavStorage(Storage):
 
     def __init__(self, url, username='', password='', verify=True, auth=None,
                  useragent=USERAGENT, unsafe_href_chars='@',
-                 verify_fingerprint=None, **kwargs):
+                 verify_fingerprint=None, auth_cert=None, **kwargs):
         super(DavStorage, self).__init__(**kwargs)
 
         url = url.rstrip('/') + '/'
         self.session = DavSession(url, username, password, verify, auth,
-                                  useragent, verify_fingerprint)
+                                  useragent, verify_fingerprint,
+                                  auth_cert)
         self.unsafe_href_chars = unsafe_href_chars
 
         # defined for _repr_attributes
@@ -286,7 +289,7 @@ class DavStorage(Storage):
     def _get_session(cls, **kwargs):
         discover_args, _ = utils.split_dict(kwargs, lambda key: key in (
             'url', 'username', 'password', 'verify', 'auth', 'useragent',
-            'verify_fingerprint',
+            'verify_fingerprint', 'auth_cert',
         ))
         return DavSession(**discover_args)
 

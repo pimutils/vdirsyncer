@@ -37,6 +37,14 @@ def prepare_verify(verify):
     return verify
 
 
+def prepare_client_cert(cert):
+    if isinstance(cert, (text_type, bytes)):
+        cert = expand_path(cert)
+    elif isinstance(cert, list):
+        cert = map(prepare_client_cert, cert)
+    return cert
+
+
 HTTP_STORAGE_PARAMETERS = '''
     :param username: Username for authentication.
     :param password: Password for authentication.
@@ -49,6 +57,8 @@ HTTP_STORAGE_PARAMETERS = '''
     :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. Default
         ``guess``. If you know yours, consider setting it explicitly for
         performance.
+    :param auth_cert: Optional. Either a path to a certificate with a client
+        certificate and the key or a list of paths to the files with them.
     :param useragent: Default ``vdirsyncer``.
 '''
 
@@ -82,7 +92,8 @@ class HttpStorage(Storage):
     _items = None
 
     def __init__(self, url, username='', password='', verify=True, auth=None,
-                 useragent=USERAGENT, verify_fingerprint=None, **kwargs):
+                 useragent=USERAGENT, verify_fingerprint=None, auth_cert=None,
+                 **kwargs):
         super(HttpStorage, self).__init__(**kwargs)
 
         if username and not password:
@@ -92,7 +103,8 @@ class HttpStorage(Storage):
             'verify': prepare_verify(verify),
             'verify_fingerprint': verify_fingerprint,
             'auth': prepare_auth(auth, username, password),
-            'latin1_fallback': False
+            'cert': prepare_client_cert(auth_cert),
+            'latin1_fallback': False,
         }
         self.username, self.password = username, password
         self.useragent = useragent

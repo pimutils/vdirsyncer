@@ -53,4 +53,24 @@ the system certificate CAs. Normally these two stores are similar enough for
 you not to care. If the behavior on your system is somehow confusing, your best
 bet is explicitly setting the SSL options above.
 
+.. _ssl-client-certs:
+
+Client Certificates
+-------------------
+
+Client certificates may be specified with the ``auth_cert`` parameter. If the
+key and certificate are stored in the same file, it may be a string::
+
+   [storage foo]
+   type = caldav
+   ...
+   auth_cert = "/path/to/certificate"
+
+If the key and certificate are separate, a list may be used::
+
+   [storage foo]
+   type = caldav
+   ...
+   auth_cert = ["/path/to/certificate", "/path/to/key"]
+
 .. _requests: http://www.python-requests.org/
