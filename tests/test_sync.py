@@ -245,8 +245,8 @@ def test_both_readonly():
 
 
 def test_readonly():
-    a = MemoryStorage()
-    b = MemoryStorage()
+    a = MemoryStorage(instance_name='a')
+    b = MemoryStorage(instance_name='b')
     status = {}
     href_a, _ = a.upload(Item(u'UID:1'))
     href_b, _ = b.upload(Item(u'UID:2'))
