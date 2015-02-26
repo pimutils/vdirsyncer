@@ -12,7 +12,7 @@ may want to subscribe to `GitHub's tag feed
 Version 0.4.3
 =============
 
-*yet to be released*
+*released on 20 February 2015*
 
 - More performance improvements to ``singlefile``-storage.
 - Add ``post_hook`` param to ``filesystem``-storage.
