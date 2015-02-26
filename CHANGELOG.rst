@@ -9,6 +9,14 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/untitaker/vdirsyncer/tags.atom>`_.
 
+Version 0.4.4
+=============
+
+*yet to be released*
+
+- Support for client certificates via the new ``auth_cert``
+  parameter, see :gh:`182` and :ghpr:`183`.
+
 Version 0.4.3
 =============
 
