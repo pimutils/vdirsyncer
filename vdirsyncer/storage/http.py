@@ -41,7 +41,7 @@ def prepare_client_cert(cert):
     if isinstance(cert, (text_type, bytes)):
         cert = expand_path(cert)
     elif isinstance(cert, list):
-        cert = map(prepare_client_cert, cert)
+        cert = tuple(map(prepare_client_cert, cert))
     return cert
 
 
