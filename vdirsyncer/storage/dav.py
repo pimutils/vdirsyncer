@@ -9,7 +9,7 @@ from requests.exceptions import HTTPError
 
 from .base import Item, Storage
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
-    prepare_verify, prepare_client_cert
+    prepare_client_cert, prepare_verify
 from .. import exceptions, log, utils
 from ..utils.compat import text_type
 
