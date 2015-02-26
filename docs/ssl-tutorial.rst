@@ -64,13 +64,13 @@ key and certificate are stored in the same file, it may be a string::
    [storage foo]
    type = caldav
    ...
-   auth_cert = "/path/to/certificate"
+   auth_cert = "/path/to/certificate.pem"
 
 If the key and certificate are separate, a list may be used::
 
    [storage foo]
    type = caldav
    ...
-   auth_cert = ["/path/to/certificate", "/path/to/key"]
+   auth_cert = ["/path/to/certificate.crt", "/path/to/key.key"]
 
 .. _requests: http://www.python-requests.org/
