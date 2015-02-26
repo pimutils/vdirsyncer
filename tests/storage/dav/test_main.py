@@ -147,8 +147,7 @@ class TestCaldavStorage(DavStorageTests):
         calls = []
         args = get_storage_args(collection=None)
 
-        def request(session, method, url, data=None, headers=None, auth=None,
-                    verify=None):
+        def request(session, method, url, **kwargs):
             assert url == args['url']
             calls.append(None)
 
