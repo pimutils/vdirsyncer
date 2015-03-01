@@ -135,13 +135,13 @@ def discover(ctx, pairs, max_workers):
 @catch_errors
 def repair(ctx, collection):
     '''
-    Repair a given collection: `storage/collection/storage`
+    Repair a given collection.
 
-    `vdirsyncer repair calendars_local/foo` repairs the `foo` collection of the
-    `calendars_local` storage.
+    Downloads all items and repairs some properties if necessary. Currently
+    this only fixes absent or duplicate UIDs.
 
-    It will download all items and repair their properties if necessary.
-    Currently this only fixes absent or duplicate UIDs.
+    Example: `vdirsyncer repair calendars_local/foo` repairs the `foo`
+    collection of the `calendars_local` storage.
     '''
     general, all_pairs, all_storages = ctx.obj['config']
     repair_collection(general, all_pairs, all_storages, collection)
