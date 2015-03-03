@@ -69,21 +69,21 @@ class Item(object):
     def uid(self):
         '''Global identifier of the item, across storages, doesn't change after
         a modification of the item.'''
-        stack = [self.parsed]
-        while stack:
-            component = stack.pop()
-            if component is None:
-                continue
-            uid = component.get('UID', None)
-            if uid:
-                return uid
-            stack.extend(component.subcomponents)
-
-        for line in self.raw.splitlines():
+        lines = iter(self.raw.splitlines())
+        for line in lines:
             if line.startswith(u'UID:'):
-                uid = line[4:].strip()
-                if uid:
-                    return uid
+                uid = line[4:]
+                break
+        else:
+            return None
+
+        for line in lines:
+            if line.startswith((' ', '\t')):
+                uid += line[1:]
+            else:
+                break
+
+        return uid.strip() or None
 
     @cached_property
     def hash(self):
