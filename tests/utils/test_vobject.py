@@ -151,12 +151,12 @@ def test_hash_item():
     assert vobject.hash_item(a) == vobject.hash_item(b)
 
 
-def test_multiline_uid():
+def test_multiline_uid(benchmark):
     a = (u'BEGIN:FOO\r\n'
          u'UID:123456789abcd\r\n'
          u' efgh\r\n'
          u'END:FOO\r\n')
-    assert vobject.Item(a).uid == u'123456789abcdefgh'
+    assert benchmark(lambda: vobject.Item(a).uid) == u'123456789abcdefgh'
 
 
 def test_multiline_uid_complex():

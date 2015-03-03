@@ -11,3 +11,13 @@ import vdirsyncer.log
 def setup_logging():
     vdirsyncer.log.set_level(vdirsyncer.log.logging.DEBUG)
     vdirsyncer.log.add_handler(vdirsyncer.log.stdout_handler)
+
+
+try:
+    import pytest_benchmark
+except ImportError:
+    @pytest.fixture
+    def benchmark():
+        return lambda x: x()
+else:
+    del pytest_benchmark
