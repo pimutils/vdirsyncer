@@ -91,8 +91,8 @@ FastMail
 
 Vdirsyncer is irregularly tested against FastMail_. There are no known issues
 with it. `FastMail's support pages
-https://www.fastmail.com/help/technical/servernamesandports.html>`_ provide the
-settings to use::
+<https://www.fastmail.com/help/technical/servernamesandports.html>`_ provide
+the settings to use::
 
     [storage cal]
     type = caldav
