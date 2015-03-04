@@ -38,7 +38,7 @@ Contacts
 
 - mates_, a commandline addressbook supporting :doc:`vdir <vdir>`.
 
-.. _khard: http://github.com/scheibler/khard/
+.. _khard: https://github.com/scheibler/khard/
 .. _contactquery.c: https://github.com/t-8ch/snippets/blob/master/contactquery.c
 .. _mates: https://github.com/untitaker/mates.rs
 
@@ -129,7 +129,7 @@ with it.
     password = ...
 
 
-.. _iCloud: http://icloud.com/
+.. _iCloud: https://www.icloud.com/
 
 DavMail (Exchange, Outlook)
 ---------------------------
