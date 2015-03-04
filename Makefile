@@ -5,11 +5,13 @@ test:
 	sh build.sh tests
 
 install-style:
-	pip install flake8 flake8-import-order
+	pip install flake8 flake8-import-order sphinx
 	
 style:
 	flake8
 	! grep -ri syncroniz */*
+	sphinx-build -W -b html ./docs/ ./docs/_build/html/
+	sphinx-build -W -b linkcheck ./docs/ ./docs/_build/linkcheck/
 
 install-docs:
 	pip install sphinx sphinx_rtd_theme
