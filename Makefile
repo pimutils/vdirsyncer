@@ -6,6 +6,7 @@ test:
 
 install-style:
 	pip install flake8 flake8-import-order sphinx
+	pip install -e .
 	
 style:
 	flake8
