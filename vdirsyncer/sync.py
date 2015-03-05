@@ -115,13 +115,11 @@ class StorageInfo(object):
             props = self.idents.setdefault(item.ident, {})
             props['item'] = item
             props['ident'] = item.ident
-            props.setdefault('etag', etag)
-            props.setdefault('href', href)
 
-            if props['href'] != href:
+            if props.setdefault('href', href) != href:
                 raise IdentConflict(storage=self.storage,
                                     hrefs=[props['href'], href])
-            if props['etag'] != etag:
+            if props.setdefault('etag', etag) != etag:
                 raise SyncError('Etag changed during sync.')
 
 
