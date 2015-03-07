@@ -281,6 +281,7 @@ def test_collections_cache_invalidation(tmpdir, runner):
 
     result = runner.invoke(['sync'])
     assert not result.exception
+    assert 'detected change in config file' not in result.output.lower()
 
     rv = bar.join('a').listdir()
     assert len(rv) == 1
@@ -303,11 +304,14 @@ def test_collections_cache_invalidation(tmpdir, runner):
     collections = ["a", "b", "c"]
     ''').format(str(tmpdir)))
 
-    tmpdir.join('status').remove()
+    for entry in tmpdir.join('status').listdir():
+        if not str(entry).endswith('.collections'):
+            entry.remove()
     bar2 = tmpdir.mkdir('bar2')
     for x in 'abc':
         bar2.mkdir(x)
     result = runner.invoke(['sync'])
+    assert 'detected change in config file' in result.output.lower()
     assert not result.exception
 
     rv = bar.join('a').listdir()
