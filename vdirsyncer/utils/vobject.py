@@ -51,21 +51,10 @@ class Item(object):
     def uid(self):
         '''Global identifier of the item, across storages, doesn't change after
         a modification of the item.'''
-        lines = iter(self.raw.splitlines())
-        for line in lines:
-            if line.startswith(u'UID:'):
-                uid = line[4:]
-                break
-        else:
+        try:
+            return self.parsed['UID'].strip() or None
+        except KeyError:
             return None
-
-        for line in lines:
-            if line.startswith((' ', '\t')):
-                uid += line[1:]
-            else:
-                break
-
-        return uid.strip() or None
 
     @cached_property
     def hash(self):
@@ -188,9 +177,15 @@ class _Component(object):
     '''
     Raw outline of the components.
 
-    Barely parsing ``BEGIN`` and ``END`` lines, but not any other properties.
-    This gives us better performance and more tolerance towards slightly broken
-    items.
+    Vdirsyncer's operations on iCalendar and VCard objects are limited to
+    retrieving the UID and splitting larger files into items. Consequently this
+    parser is very lazy, with the downside that manipulation of item properties
+    are extremely costly.
+
+    Other features:
+
+    - Preserve the original property order and wrapping.
+    - Don't choke on irrelevant details like invalid datetime formats.
 
     Original version from https://github.com/collective/icalendar/, but apart
     from the similar API, very few parts have been reused.
@@ -247,3 +242,44 @@ class _Component(object):
             for line in c.dump_lines():
                 yield line
         yield u'END:{}'.format(self.name)
+
+    def __delitem__(self, key):
+        prefix = u'{}:'.format(key)
+        new_lines = []
+        lineiter = iter(self.lines)
+        for line in lineiter:
+            if line.startswith(prefix):
+                break
+            else:
+                new_lines.append(line)
+
+        for line in lineiter:
+            if not line.startswith((u' ', u'\t')):
+                new_lines.append(line)
+                break
+
+        new_lines.extend(lineiter)
+        self.lines = new_lines
+
+    def __setitem__(self, key, val):
+        del self[key]
+        line = u'{}:{}'.format(key, val)
+        self.lines.append(line)
+
+    def __getitem__(self, key):
+        prefix = u'{}:'.format(key)
+        iterlines = iter(self.lines)
+        for line in iterlines:
+            if line.startswith(prefix):
+                rv = line[len(prefix):]
+                break
+        else:
+            raise KeyError()
+
+        for line in iterlines:
+            if line.startswith((u' ', u'\t')):
+                rv += line[1:]
+            else:
+                break
+
+        return rv
