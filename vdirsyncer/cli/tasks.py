@@ -2,14 +2,12 @@
 
 import functools
 import json
-import uuid
 
 from .utils import CliError, JobFailed, cli_logger, collections_for_pair, \
-    get_status_name, handle_cli_error, load_status, save_status, \
-    storage_class_from_config, storage_instance_from_config
+    get_status_name, handle_cli_error, load_status, repair_storage, \
+    save_status, storage_class_from_config, storage_instance_from_config
 
 from ..sync import sync
-from ..utils.vobject import Item
 
 
 def sync_pair(wq, pair_name, collections_to_sync, general, all_pairs,
@@ -111,42 +109,4 @@ def repair_collection(general, all_pairs, all_storages, collection):
 
     cli_logger.info('Repairing {}/{}'.format(storage_name, collection))
     cli_logger.warning('Make sure no other program is talking to the server.')
-    _repair_collection(storage)
-
-
-def _repair_collection(storage):
-    seen_uids = set()
-    all_hrefs = list(storage.list())
-    for i, (href, _) in enumerate(all_hrefs):
-        item, etag = storage.get(href)
-        cli_logger.info('[{}/{}] Processing {}'
-                        .format(i, len(all_hrefs), href))
-
-        parsed = item.parsed
-        changed = False
-        if parsed is None:
-            cli_logger.warning('Item {} can\'t be parsed, skipping.'
-                               .format(href))
-            continue
-
-        if item.uid is None or item.uid in seen_uids:
-            if item.uid is None:
-                cli_logger.warning('No UID, assigning random one.')
-            else:
-                cli_logger.warning('Duplicate UID, reassigning random one.')
-
-            new_uid = uuid.uuid4()
-            stack = [parsed]
-            while stack:
-                component = stack.pop()
-                if component.name in ('VEVENT', 'VTODO', 'VJOURNAL', 'VCARD'):
-                    component['UID'] = new_uid
-                    changed = True
-                else:
-                    stack.extend(component.subcomponents)
-
-        new_item = Item(u'\r\n'.join(parsed.dump_lines()))
-        assert new_item.uid
-        seen_uids.add(new_item.uid)
-        if changed:
-            storage.update(href, new_item, etag)
+    repair_storage(storage)

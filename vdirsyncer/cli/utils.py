@@ -7,6 +7,7 @@ import os
 import string
 import sys
 import threading
+import uuid
 from itertools import chain
 
 from atomicwrites import atomic_write
@@ -17,6 +18,7 @@ from ..storage import storage_names
 from ..sync import IdentConflict, StorageEmpty, SyncConflict
 from ..utils import expand_path, get_class_init_args
 from ..utils.compat import text_type
+from ..utils.vobject import Item
 
 
 try:
@@ -604,3 +606,41 @@ def format_storage_config(cls, header=True):
             comment = '' if key not in defaults else '#'
             value = defaults.get(key, '...')
             yield '{}{} = {}'.format(comment, key, json.dumps(value))
+
+
+def repair_storage(storage):
+    seen_uids = set()
+    all_hrefs = list(storage.list())
+    for i, (href, _) in enumerate(all_hrefs):
+        item, etag = storage.get(href)
+        cli_logger.info('[{}/{}] Processing {}'
+                        .format(i, len(all_hrefs), href))
+
+        parsed = item.parsed
+        changed = False
+        if parsed is None:
+            cli_logger.warning('Item {} can\'t be parsed, skipping.'
+                               .format(href))
+            continue
+
+        if item.uid is None or item.uid in seen_uids:
+            if item.uid is None:
+                cli_logger.warning('No UID, assigning random one.')
+            else:
+                cli_logger.warning('Duplicate UID, reassigning random one.')
+
+            new_uid = uuid.uuid4()
+            stack = [parsed]
+            while stack:
+                component = stack.pop()
+                if component.name in ('VEVENT', 'VTODO', 'VJOURNAL', 'VCARD'):
+                    component['UID'] = new_uid
+                    changed = True
+                else:
+                    stack.extend(component.subcomponents)
+
+        new_item = Item(u'\r\n'.join(parsed.dump_lines()))
+        assert new_item.uid
+        seen_uids.add(new_item.uid)
+        if changed:
+            storage.update(href, new_item, etag)
