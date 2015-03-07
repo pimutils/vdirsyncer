@@ -38,7 +38,21 @@ SECTION_NAME_CHARS = frozenset(chain(string.ascii_letters, string.digits, '_'))
 
 
 class CliError(RuntimeError):
-    pass
+    def __init__(self, msg, problems=None):
+        self.msg = msg
+        self.problems = problems
+        RuntimeError.__init__(self, msg)
+
+    def format_cli(self):
+        msg = self.msg.rstrip(u'.:')
+        if self.problems:
+            msg += u':'
+            if len(self.problems) == 1:
+                msg += u' {}'.format(self.problems[0])
+            else:
+                msg += u'\n' + u'\n  - '.join(self.problems) + u'\n\n'
+
+        return msg
 
 
 class JobFailed(RuntimeError):
@@ -56,7 +70,7 @@ def handle_cli_error(status_name=None):
     try:
         raise
     except CliError as e:
-        cli_logger.critical(str(e))
+        cli_logger.critical(e.format_cli())
     except StorageEmpty as e:
         cli_logger.error(
             '{status_name}: Storage "{name}" was completely emptied. Use '
@@ -247,19 +261,20 @@ def _validate_general_section(general_config):
 
     invalid = set(general_config) - GENERAL_ALL
     missing = GENERAL_REQUIRED - set(general_config)
+    problems = []
 
     if invalid:
-        cli_logger.critical(u'general section doesn\'t take the parameters: {}'
-                            .format(u', '.join(invalid)))
+        problems.append(u'general section doesn\'t take the parameters: {}'
+                        .format(u', '.join(invalid)))
 
     if missing:
-        cli_logger.critical(u'general section is missing the parameters: {}'
-                            .format(u', '.join(missing)))
+        problems.append(u'general section is missing the parameters: {}'
+                        .format(u', '.join(missing)))
 
-    if invalid or missing:
-        raise ValueError('Invalid general section. You should copy the '
-                         'example config from the repository and edit it.\n{}'
-                         .format(PROJECT_HOME))
+    if problems:
+        raise CliError(u'Invalid general section. You should copy the example '
+                       u'config from the repository and edit it: {}\n'
+                       .format(PROJECT_HOME), problems=problems)
 
 
 def _validate_pair_section(pair_config):
@@ -283,11 +298,6 @@ def load_config():
     try:
         with open(fname) as f:
             general, pairs, storages = read_config(f)
-        _validate_general_section(general)
-        general['status_path'] = os.path.join(
-            os.path.dirname(fname),
-            expand_path(general['status_path'])
-        )
     except Exception as e:
         raise CliError('Error during reading config {}: {}'
                        .format(fname, e))
@@ -339,6 +349,12 @@ def read_config(f):
         except ValueError as e:
             raise CliError('Section `{}`: {}'.format(section, str(e)))
 
+    _validate_general_section(general)
+    if getattr(f, 'name', None):
+        general['status_path'] = os.path.join(
+            os.path.dirname(f.name),
+            expand_path(general['status_path'])
+        )
     return general, pairs, storages
 
 
@@ -434,6 +450,8 @@ def handle_storage_init_error(cls, config):
     missing = required - given
     invalid = given - all
 
+    problems = []
+
     if missing:
         cli_logger.critical(
             u'{} storage requires the parameters: {}'
@@ -444,10 +462,12 @@ def handle_storage_init_error(cls, config):
             u'{} storage doesn\'t take the parameters: {}'
             .format(cls.storage_name, u', '.join(invalid)))
 
-    if not missing and not invalid:
+    if not problems:
         cli_logger.exception('')
+        problems.append('Internal error, see above.')
 
-    raise CliError('Failed to initialize {}.'.format(config['instance_name']))
+    raise CliError(u'Failed to initialize {}'.format(config['instance_name']),
+                   problems=problems)
 
 
 def parse_pairs_args(pairs_args, all_pairs):

@@ -227,32 +227,6 @@ def test_multiple_pairs(tmpdir, runner):
     ])
 
 
-def test_invalid_collections_arg(tmpdir, runner):
-    runner.write_with_general(dedent('''
-    [pair foobar]
-    a = foo
-    b = bar
-    collections = [null]
-
-    [storage foo]
-    type = filesystem
-    path = {base}/foo/
-    fileext = .txt
-
-    [storage bar]
-    type = filesystem
-    path = {base}/bar/
-    fileext = .txt
-    '''.format(base=str(tmpdir))))
-
-    result = runner.invoke(['sync'])
-    assert result.exception
-    assert result.output.strip().endswith(
-        'Section `pair foobar`: `collections` parameter must be a list of '
-        'collection names (strings!) or `null`.'
-    )
-
-
 def test_create_collections(tmpdir, runner):
     runner.write_with_general(dedent('''
     [pair foobar]

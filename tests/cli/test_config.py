@@ -6,8 +6,18 @@ import pytest
 from vdirsyncer import cli
 
 
-def test_read_config(monkeypatch):
-    f = io.StringIO(dedent(u'''
+@pytest.fixture
+def read_config(tmpdir):
+    def inner(cfg):
+        f = io.StringIO(dedent(cfg.format(base=str(tmpdir))))
+        return cli.utils.read_config(f)
+    return inner
+
+
+def test_read_config(read_config, monkeypatch):
+    errors = []
+    monkeypatch.setattr('vdirsyncer.cli.cli_logger.error', errors.append)
+    general, pairs, storages = read_config(u'''
         [general]
         status_path = /tmp/status/
 
@@ -29,11 +39,8 @@ def test_read_config(monkeypatch):
 
         [bogus]
         lol = true
-        '''))
+        ''')
 
-    errors = []
-    monkeypatch.setattr('vdirsyncer.cli.cli_logger.error', errors.append)
-    general, pairs, storages = cli.utils.read_config(f)
     assert general == {'status_path': '/tmp/status/'}
     assert pairs == {'bob': ('bob_a', 'bob_b', {'bam': True, 'foo': 'bar'})}
     assert storages == {
@@ -75,49 +82,45 @@ def test_parse_pairs_args():
     ]
 
 
-def test_missing_general_section(tmpdir, runner):
-    runner.cfg.write(dedent('''
-    [pair my_pair]
-    a = my_a
-    b = my_b
+def test_missing_general_section(read_config):
+    with pytest.raises(cli.CliError) as excinfo:
+        rv = read_config(u'''
+            [pair my_pair]
+            a = my_a
+            b = my_b
 
-    [storage my_a]
-    type = filesystem
-    path = {0}/path_a/
-    fileext = .txt
+            [storage my_a]
+            type = filesystem
+            path = {base}/path_a/
+            fileext = .txt
 
-    [storage my_b]
-    type = filesystem
-    path = {0}/path_b/
-    fileext = .txt
-    ''').format(str(tmpdir)))
+            [storage my_b]
+            type = filesystem
+            path = {base}/path_b/
+            fileext = .txt
+            ''')
 
-    result = runner.invoke(['sync'])
-    assert result.exception
-    assert result.output.startswith('critical:')
-    assert 'invalid general section' in result.output.lower()
+    assert 'Invalid general section.' in excinfo.value.msg
 
 
-def test_wrong_general_section(tmpdir, runner):
-    runner.cfg.write(dedent('''
-    [general]
-    wrong = true
-    '''))
-    result = runner.invoke(['sync'])
+def test_wrong_general_section(read_config):
+    with pytest.raises(cli.CliError) as excinfo:
+        rv = read_config(u'''
+            [general]
+            wrong = true
+            ''')
 
-    assert result.exception
-    lines = result.output.splitlines()
-    assert lines[:-2] == [
-        'critical: general section doesn\'t take the parameters: wrong',
-        'critical: general section is missing the parameters: status_path'
+    assert 'Invalid general section.' in excinfo.value.msg
+    assert excinfo.value.problems == [
+        'general section doesn\'t take the parameters: wrong',
+        'general section is missing the parameters: status_path'
     ]
-    assert 'Invalid general section.' in lines[-2]
 
 
 def test_invalid_storage_name():
     f = io.StringIO(dedent(u'''
         [general]
-        status_path = /tmp/status/
+        status_path = {base}/status/
 
         [storage foo.bar]
         '''))
@@ -156,3 +159,33 @@ def test_parse_config_value(capsys):
     assert x('3.14') == (3.14, 0)
     assert x('') == ('', 0)
     assert x('""') == ('', 0)
+
+
+def test_invalid_collections_arg():
+    f = io.StringIO(dedent(u'''
+        [general]
+        status_path = /tmp/status/
+
+        [pair foobar]
+        a = foo
+        b = bar
+        collections = [null]
+
+        [storage foo]
+        type = filesystem
+        path = /tmp/foo/
+        fileext = .txt
+
+        [storage bar]
+        type = filesystem
+        path = /tmp/bar/
+        fileext = .txt
+        '''))
+
+    with pytest.raises(cli.utils.CliError) as excinfo:
+        cli.utils.read_config(f)
+
+    assert (
+        'Section `pair foobar`: `collections` parameter must be a list of '
+        'collection names (strings!) or `null`.'
+    ) in str(excinfo.value)
