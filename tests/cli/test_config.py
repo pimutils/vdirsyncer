@@ -84,7 +84,7 @@ def test_parse_pairs_args():
 
 def test_missing_general_section(read_config):
     with pytest.raises(cli.CliError) as excinfo:
-        rv = read_config(u'''
+        read_config(u'''
             [pair my_pair]
             a = my_a
             b = my_b
@@ -105,7 +105,7 @@ def test_missing_general_section(read_config):
 
 def test_wrong_general_section(read_config):
     with pytest.raises(cli.CliError) as excinfo:
-        rv = read_config(u'''
+        read_config(u'''
             [general]
             wrong = true
             ''')
