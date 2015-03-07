@@ -222,8 +222,7 @@ class _Component(object):
                 else:
                     rv.append(component)
             else:
-                line = line.strip()
-                if line:
+                if line.strip():
                     stack[-1].lines.append(line)
 
         if multiple:
