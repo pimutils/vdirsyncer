@@ -51,8 +51,11 @@ class Item(object):
     def uid(self):
         '''Global identifier of the item, across storages, doesn't change after
         a modification of the item.'''
+        # Don't actually parse component, but treat all lines as single
+        # component, avoiding traversal through all subcomponents.
+        x = _Component('TEMP', self.raw.splitlines(), [])
         try:
-            return self.parsed['UID'].strip() or None
+            return x['UID'].strip() or None
         except KeyError:
             return None
 
