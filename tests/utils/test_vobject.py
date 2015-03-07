@@ -24,8 +24,8 @@ _simple_joined = u'\r\n'.join(
 )
 
 
-def test_split_collection_simple():
-    given = list(vobject.split_collection(_simple_joined))
+def test_split_collection_simple(benchmark):
+    given = benchmark(lambda: list(vobject.split_collection(_simple_joined)))
 
     assert [normalize_item(item) for item in given] == \
         [normalize_item(item) for item in _simple_split]
@@ -35,14 +35,14 @@ def test_split_collection_simple():
             [x.splitlines() for x in _simple_split]
 
 
-def test_split_collection_multiple_wrappers():
+def test_split_collection_multiple_wrappers(benchmark):
     joined = u'\r\n'.join(
         u'BEGIN:VADDRESSBOOK\r\n' +
         x +
         u'\r\nEND:VADDRESSBOOK\r\n'
         for x in _simple_split
     )
-    given = list(vobject.split_collection(joined))
+    given = benchmark(lambda: list(vobject.split_collection(joined)))
 
     assert [normalize_item(item) for item in given] == \
         [normalize_item(item) for item in _simple_split]
@@ -67,15 +67,15 @@ def test_split_collection_different_wrappers():
         str(exc_info.value).lower()
 
 
-def test_join_collection_simple():
-    given = vobject.join_collection(_simple_split)
+def test_join_collection_simple(benchmark):
+    given = benchmark(lambda: vobject.join_collection(_simple_split))
     assert normalize_item(given) == normalize_item(_simple_joined)
     if vobject.ICALENDAR_ORIGINAL_ORDER_SUPPORT:
         assert given.splitlines() == _simple_joined.splitlines()
 
 
-def test_join_collection_vevents():
-    actual = vobject.join_collection([
+def test_join_collection_vevents(benchmark):
+    actual = benchmark(lambda: vobject.join_collection([
         dedent("""
             BEGIN:VCALENDAR
             BEGIN:VTIMEZONE
@@ -86,7 +86,8 @@ def test_join_collection_vevents():
             END:VEVENT
             END:VCALENDAR
          """).format(i) for i in range(3)
-    ])
+    ]))
+
     expected = dedent("""
         BEGIN:VCALENDAR
         BEGIN:VTIMEZONE
