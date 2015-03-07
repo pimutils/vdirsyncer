@@ -3,10 +3,6 @@
 import hashlib
 from itertools import chain, tee
 
-import icalendar.cal
-import icalendar.caselessdict
-import icalendar.parser
-
 from . import cached_property, split_sequence, uniq
 from .compat import text_type
 
@@ -32,20 +28,6 @@ IGNORE_PROPS = _process_properties(
     'REV'
 )
 del _process_properties
-
-
-# Whether the installed icalendar version has
-# https://github.com/collective/icalendar/pull/136
-# (support for keeping the order of properties and parameters)
-#
-# This basically checks whether the superclass of all icalendar classes has a
-# method from OrderedDict.
-try:
-    reversed(icalendar.caselessdict.CaselessDict())
-except TypeError:
-    ICALENDAR_ORIGINAL_ORDER_SUPPORT = False
-else:
-    ICALENDAR_ORIGINAL_ORDER_SUPPORT = True
 
 
 class Item(object):
@@ -107,7 +89,7 @@ class Item(object):
     @cached_property
     def parsed(self):
         try:
-            return icalendar.cal.Component.from_ical(self.raw)
+            return _Component.parse(self.raw)
         except Exception:
             return None
 
@@ -130,7 +112,7 @@ def split_collection(text, inline=(u'VTIMEZONE',),
                      wrap_items_with=(u'VCALENDAR',)):
     '''Emits items in the order they occur in the text.'''
     assert isinstance(text, text_type)
-    collections = icalendar.cal.Component.from_ical(text, multiple=True)
+    collections = _Component.parse(text, multiple=True)
     collection_name = None
 
     for collection in collections:
@@ -150,30 +132,12 @@ def split_collection(text, inline=(u'VTIMEZONE',),
             collection.subcomponents,
             lambda item: item.name in inline
         )
-        inlined_lines = list(chain(*(to_unicode_lines(inlined_item)
+        inlined_lines = list(chain(*(inlined_item.dump_lines()
                                      for inlined_item in inlined_items)))
 
         for item in normal_items:
-            lines = chain(start, inlined_lines, to_unicode_lines(item), end)
+            lines = chain(start, inlined_lines, item.dump_lines(), end)
             yield u''.join(line + u'\r\n' for line in lines if line)
-
-
-def to_unicode_lines(item):
-    '''icalendar doesn't provide an efficient way of getting the ical data as
-    unicode. So let's do it ourselves.'''
-
-    if ICALENDAR_ORIGINAL_ORDER_SUPPORT:
-        content_lines = item.content_lines(sorted=False)
-    else:
-        content_lines = item.content_lines()
-
-    for content_line in content_lines:
-        if content_line:
-            # https://github.com/untitaker/vdirsyncer/issues/70
-            # XXX: icalendar escapes semicolons which are not supposed to get
-            # escaped, because it is not aware of vcard
-            content_line = content_line.replace(u'\\;', u';')
-            yield icalendar.parser.foldline(content_line)
 
 
 _default_join_wrappers = {
@@ -191,7 +155,7 @@ def join_collection(items, wrappers=_default_join_wrappers):
     }
     '''
 
-    items1, items2 = tee((icalendar.cal.Component.from_ical(x)
+    items1, items2 = tee((_Component.parse(x)
                           for x in items), 2)
     item_type, wrapper_type = _get_item_type(items1, wrappers)
 
@@ -199,7 +163,7 @@ def join_collection(items, wrappers=_default_join_wrappers):
         return x.name == wrapper_type and x.subcomponents or [x]
 
     components = chain(*(_get_item_components(x) for x in items2))
-    lines = chain(*uniq(tuple(to_unicode_lines(x)) for x in components))
+    lines = chain(*uniq(tuple(x.dump_lines()) for x in components))
 
     if wrapper_type is not None:
         start = [u'BEGIN:{}'.format(wrapper_type)]
@@ -218,3 +182,68 @@ def _get_item_type(components, wrappers):
         else:
             return item_type, wrapper_type
     return None, None
+
+
+class _Component(object):
+    '''
+    Raw outline of the components.
+
+    Barely parsing ``BEGIN`` and ``END`` lines, but not any other properties.
+    This gives us better performance and more tolerance towards slightly broken
+    items.
+
+    Original version from https://github.com/collective/icalendar/, but apart
+    from the similar API, very few parts have been reused.
+    '''
+
+    def __init__(self, name, lines, subcomponents):
+        '''
+        :param name: The component name.
+        :param lines: The component's own properties, as list of lines
+            (strings).
+        :param subcomponents: List of components.
+        '''
+        self.name = name
+        self.lines = lines
+        self.subcomponents = subcomponents
+
+    @classmethod
+    def parse(cls, lines, multiple=False):
+        if isinstance(lines, bytes):
+            lines = lines.decode('utf-8')
+        if isinstance(lines, text_type):
+            lines = lines.splitlines()
+
+        stack = []
+        rv = []
+        for line in lines:
+            if line.startswith(u'BEGIN:'):
+                c_name = line[len(u'BEGIN:'):].strip().upper()
+                stack.append(cls(c_name, [], []))
+            elif line.startswith(u'END:'):
+                component = stack.pop()
+                if stack:
+                    stack[-1].subcomponents.append(component)
+                else:
+                    rv.append(component)
+            else:
+                line = line.strip()
+                if line:
+                    stack[-1].lines.append(line)
+
+        if multiple:
+            return rv
+        elif len(rv) != 1:
+            raise ValueError('Found {} components, expected one.'
+                             .format(len(rv)))
+        else:
+            return rv[0]
+
+    def dump_lines(self):
+        yield u'BEGIN:{}'.format(self.name)
+        for line in self.lines:
+            yield line
+        for c in self.subcomponents:
+            for line in c.dump_lines():
+                yield line
+        yield u'END:{}'.format(self.name)

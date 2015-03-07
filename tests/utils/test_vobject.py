@@ -2,8 +2,6 @@
 
 from textwrap import dedent
 
-import icalendar
-
 import pytest
 
 import vdirsyncer.utils.vobject as vobject
@@ -30,9 +28,8 @@ def test_split_collection_simple(benchmark):
     assert [normalize_item(item) for item in given] == \
         [normalize_item(item) for item in _simple_split]
 
-    if vobject.ICALENDAR_ORIGINAL_ORDER_SUPPORT:
-        assert [x.splitlines() for x in given] == \
-            [x.splitlines() for x in _simple_split]
+    assert [x.splitlines() for x in given] == \
+        [x.splitlines() for x in _simple_split]
 
 
 def test_split_collection_multiple_wrappers(benchmark):
@@ -47,9 +44,8 @@ def test_split_collection_multiple_wrappers(benchmark):
     assert [normalize_item(item) for item in given] == \
         [normalize_item(item) for item in _simple_split]
 
-    if vobject.ICALENDAR_ORIGINAL_ORDER_SUPPORT:
-        assert [x.splitlines() for x in given] == \
-            [x.splitlines() for x in _simple_split]
+    assert [x.splitlines() for x in given] == \
+        [x.splitlines() for x in _simple_split]
 
 
 def test_split_collection_different_wrappers():
@@ -70,8 +66,7 @@ def test_split_collection_different_wrappers():
 def test_join_collection_simple(benchmark):
     given = benchmark(lambda: vobject.join_collection(_simple_split))
     assert normalize_item(given) == normalize_item(_simple_joined)
-    if vobject.ICALENDAR_ORIGINAL_ORDER_SUPPORT:
-        assert given.splitlines() == _simple_joined.splitlines()
+    assert given.splitlines() == _simple_joined.splitlines()
 
 
 def test_join_collection_vevents(benchmark):
@@ -201,46 +196,3 @@ def test_multiline_uid_complex():
     assert vobject.Item(a).uid == (u'040000008200E00074C5B7101A82E008000000005'
                                    u'0AAABEEF50DCF001000000062548482FA830A46B9'
                                    u'EA62114AC9F0EF')
-
-
-@pytest.mark.xfail(icalendar.parser.NAME.findall('FOO.BAR') != ['FOO.BAR'],
-                   reason=('version of icalendar doesn\'t support dots in '
-                           'property names'))
-def test_vcard_property_groups():
-    vcard = dedent(u'''
-        BEGIN:VCARD
-        VERSION:3.0
-        MYLABEL123.ADR:;;This is the Address 08; Some City;;12345;Germany
-        MYLABEL123.X-ABLABEL:
-        FN:Some Name
-        N:Name;Some;;;Nickname
-        UID:67c15e43-34d2-4f55-a6c6-4adb7aa7e3b2
-        END:VCARD
-        ''').strip()
-
-    book = u'BEGIN:VADDRESSBOOK\n' + vcard + u'\nEND:VADDRESSBOOK'
-    splitted = list(vobject.split_collection(book))
-    assert len(splitted) == 1
-
-    assert vobject.Item(vcard).hash == vobject.Item(splitted[0]).hash
-    assert 'is the Address' in vobject.Item(vcard).parsed['MYLABEL123.ADR']
-
-
-def test_vcard_semicolons_in_values():
-    # If this test fails because proper vCard support was added to icalendar,
-    # we can remove some ugly postprocessing code in to_unicode_lines.
-
-    vcard = dedent(u'''
-        BEGIN:VCARD
-        VERSION:3.0
-        ADR:;;Address 08;City;;12345;Germany
-        END:VCARD
-        ''').strip()
-
-    # Assert that icalendar breaks vcard properties with semicolons in values
-    assert b'ADR:\\;\\;Address 08\\;City\\;\\;12345\\;Germany' in \
-        vobject.Item(vcard).parsed.to_ical().splitlines()
-
-    # Assert that vdirsyncer fixes these properties
-    assert u'ADR:;;Address 08;City;;12345;Germany' in \
-        list(vobject.to_unicode_lines(vobject.Item(vcard).parsed))

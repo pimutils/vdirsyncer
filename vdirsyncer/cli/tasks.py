@@ -9,7 +9,7 @@ from .utils import CliError, JobFailed, cli_logger, collections_for_pair, \
     storage_class_from_config, storage_instance_from_config
 
 from ..sync import sync
-from ..utils.vobject import Item, to_unicode_lines
+from ..utils.vobject import Item
 
 
 def sync_pair(wq, pair_name, collections_to_sync, general, all_pairs,
@@ -145,7 +145,7 @@ def _repair_collection(storage):
                 else:
                     stack.extend(component.subcomponents)
 
-        new_item = Item(u'\n'.join(to_unicode_lines(parsed)))
+        new_item = Item(u'\r\n'.join(parsed.dump_lines()))
         assert new_item.uid
         seen_uids.add(new_item.uid)
         if changed:

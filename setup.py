@@ -36,7 +36,6 @@ setup(
         'click>=3.1',
         'requests',
         'lxml>=3.0',
-        'icalendar>=3.6',
         # https://github.com/sigmavirus24/requests-toolbelt/pull/28
         'requests_toolbelt>=0.3.0',
         'atomicwrites'
