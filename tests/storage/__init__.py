@@ -162,7 +162,12 @@ class StorageTests(object):
             # Create collections, but use the "collection" attribute because
             # Radicale requires file extensions in their names.
             collection = 'test{}'.format(i)
-            s = self.storage_class(**get_storage_args(collection=collection))
+            s = self.storage_class(
+                **self.storage_class.create_collection(
+                    **get_storage_args(collection=collection)
+                )
+            )
+
             items[s.collection] = [s.upload(get_item())]
             expected.add(s.collection)
 
