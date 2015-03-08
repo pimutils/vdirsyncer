@@ -14,18 +14,14 @@ from . import StorageTests
 class TestFilesystemStorage(StorageTests):
     storage_class = FilesystemStorage
 
-    @pytest.fixture(autouse=True)
-    def setup(self, tmpdir):
-        self.tmpdir = str(tmpdir)
-
     @pytest.fixture
-    def get_storage_args(self):
-        def inner(collection=None):
-            path = self.tmpdir
+    def get_storage_args(self, tmpdir):
+        def inner(collection='test'):
+            rv = {'path': str(tmpdir), 'fileext': '.txt', 'collection':
+                  collection}
             if collection is not None:
-                os.makedirs(os.path.join(path, collection))
-                path = os.path.join(path, collection)
-            return {'path': path, 'fileext': '.txt', 'collection': collection}
+                rv = self.storage_class.create_collection(**rv)
+            return rv
         return inner
 
     def test_is_not_directory(self, tmpdir):
