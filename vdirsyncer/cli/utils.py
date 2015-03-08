@@ -210,8 +210,9 @@ def _handle_collection_not_found(config, collection, e=None):
     if click.confirm('Should vdirsyncer attempt to create it?'):
         storage_type = config['type']
         cls, config = storage_class_from_config(config)
+        config['collection'] = collection
         try:
-            args = cls.create_collection(collection=collection, **config)
+            args = cls.create_collection(**config)
             args['type'] = storage_type
             return args
         except NotImplementedError as e:
