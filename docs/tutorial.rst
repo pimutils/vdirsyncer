@@ -8,8 +8,9 @@ Installation
 Unless you want to contribute to vdirsyncer, you should use the packages from
 your distribution:
 
-- `AUR package for ArchLinux <https://aur.archlinux.org/packages/vdirsyncer>`_
+- `ArchLinux (AUR) <https://aur.archlinux.org/packages/vdirsyncer>`_
 - `pkgsrc <http://pkgsrc.se/time/py-vdirsyncer>`_
+- `Fedora <https://apps.fedoraproject.org/packages/vdirsyncer>`_
 - Debian and Ubuntu don't have packages, but make a manual installation
   especially hard. See :ref:`debian-urllib3`.
 
