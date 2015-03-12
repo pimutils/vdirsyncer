@@ -17,6 +17,7 @@ Version 0.4.4
 - Support for client certificates via the new ``auth_cert``
   parameter, see :gh:`182` and :ghpr:`183`.
 - The ``icalendar`` package is no longer required.
+- Several bugfixes related to collection creation.
 
 Version 0.4.3
 =============
