@@ -18,10 +18,15 @@ Calendars
   a calendar in a single ``.ics`` file. You can use
   :py:class:`vdirsyncer.storage.SingleFileStorage` with those.
 
+- todoman_, a CLI todo manager supports :doc:`vdir <vdir>`. It's designed to
+  manage todos (tasks), and not events. You can use
+  :py:class:`vdirsyncer.storage.FilesystemStorage` with it.
+
 .. _khal: http://lostpackets.de/khal/
 .. _dayplanner: http://www.day-planner.org/
 .. _Orage: http://www.kolumbus.fi/~w408237/orage/
 .. _rainlendar: http://www.rainlendar.net/
+.. _todoman: https://hugo.barrera.io/journal/2015/03/30/introducing-todoman/
 
 Contacts
 --------
