@@ -18,15 +18,31 @@ Calendars
   a calendar in a single ``.ics`` file. You can use
   :py:class:`vdirsyncer.storage.SingleFileStorage` with those.
 
-- todoman_, a CLI todo manager supports :doc:`vdir <vdir>`. It's designed to
-  manage todos (tasks), and not events. You can use
-  :py:class:`vdirsyncer.storage.FilesystemStorage` with it.
-
 .. _khal: http://lostpackets.de/khal/
 .. _dayplanner: http://www.day-planner.org/
 .. _Orage: http://www.kolumbus.fi/~w408237/orage/
 .. _rainlendar: http://www.rainlendar.net/
+
+Task/Todo managers
+------------------
+
+The iCalendar format also supports saving tasks in form of ``VTODO``-entries,
+with the same file extension as normal events: ``.ics``. All CalDAV servers
+support synchronizing tasks, vdirsyncer does too.
+
+- todoman_, a CLI task manager supporting :doc:`vdir <vdir>`.  You can use
+  :py:class:`vdirsyncer.storage.FilesystemStorage` with it.
+
+  Its interface is similar to the ones of Taskwarrior or the todo.txt CLI app
+  and should be intuitively usable.
+
+- watdo_, another CLI task manager supporting :doc:`vdir <vdir>`.
+
+  It opens a specially formatted textfile in your ``$EDITOR`` and writes your
+  changes back to disk when the editor closes.
+
 .. _todoman: https://hugo.barrera.io/journal/2015/03/30/introducing-todoman/
+
 
 Contacts
 --------
