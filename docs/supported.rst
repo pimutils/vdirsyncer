@@ -42,6 +42,7 @@ support synchronizing tasks, vdirsyncer does too.
   changes back to disk when the editor closes.
 
 .. _todoman: https://hugo.barrera.io/journal/2015/03/30/introducing-todoman/
+.. _watdo: https://github.com/untitaker/watdo
 
 
 Contacts
