@@ -3,7 +3,7 @@
 import contextlib
 import functools
 
-from .. import exceptions
+from .. import exceptions, sync
 from ..utils import uniq
 from ..utils.compat import with_metaclass
 from ..utils.vobject import Item  # noqa
@@ -47,6 +47,8 @@ class Storage(with_metaclass(StorageMeta)):
     '''
 
     fileext = '.txt'
+
+    syncer_class = sync.StorageSyncer
 
     # The string used in the config to denote the type of storage. Should be
     # overridden by subclasses.

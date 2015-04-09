@@ -76,7 +76,7 @@ class BothReadOnly(SyncError):
     '''
 
 
-class StorageInfo(object):
+class StorageSyncer(object):
     '''A wrapper class that holds prefetched items, the status and other
     things.'''
     def __init__(self, storage, status):
@@ -122,6 +122,10 @@ class StorageInfo(object):
             if props.setdefault('etag', etag) != etag:
                 raise SyncError('Etag changed during sync.')
 
+    def is_changed(self, ident):
+        _, status_etag = self.status.get(ident, (None, None))
+        return self.idents[ident]['etag'] != status_etag
+
 
 def sync(storage_a, storage_b, status, conflict_resolution=None,
          force_delete=False):
@@ -146,11 +150,11 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
     if storage_a.read_only and storage_b.read_only:
         raise BothReadOnly()
 
-    a_info = StorageInfo(storage_a, dict(
+    a_info = storage_a.syncer_class(storage_a, dict(
         (ident, (href_a, etag_a))
         for ident, (href_a, etag_a, href_b, etag_b) in iteritems(status)
     ))
-    b_info = StorageInfo(storage_b, dict(
+    b_info = storage_b.syncer_class(storage_b, dict(
         (ident, (href_b, etag_b))
         for ident, (href_a, etag_a, href_b, etag_b) in iteritems(status)
     ))
@@ -283,27 +287,24 @@ def _action_conflict_resolve(ident):
 def _get_actions(a_info, b_info):
     for ident in uniq(itertools.chain(a_info.idents, b_info.idents,
                                       a_info.status)):
-        a = a_info.idents.get(ident, None)
-        b = b_info.idents.get(ident, None)
-        assert not a or a['etag'] is not None
-        assert not b or b['etag'] is not None
-
-        _, status_etag_a = a_info.status.get(ident, (None, None))
-        _, status_etag_b = b_info.status.get(ident, (None, None))
+        a = ident in a_info.idents  # item exists in a
+        b = ident in b_info.idents  # item exists in b
 
         if a and b:
-            if a['etag'] != status_etag_a and b['etag'] != status_etag_b:
+            a_changed = a_info.is_changed(ident)
+            b_changed = b_info.is_changed(ident)
+            if a_changed and b_changed:
                 # item was modified on both sides
                 # OR: missing status
                 yield _action_conflict_resolve(ident)
-            elif a['etag'] != status_etag_a:
+            elif a_changed and not b_changed:
                 # item was only modified in a
                 yield _action_update(ident, a_info, b_info)
-            elif b['etag'] != status_etag_b:
+            elif not a_changed and b_changed:
                 # item was only modified in b
                 yield _action_update(ident, b_info, a_info)
         elif a and not b:
-            if a['etag'] != status_etag_a:
+            if a_info.is_changed(ident):
                 # was deleted from b but modified on a
                 # OR: new item was created in a
                 yield _action_upload(ident, a_info, b_info)
@@ -311,7 +312,7 @@ def _get_actions(a_info, b_info):
                 # was deleted from b and not modified on a
                 yield _action_delete(ident, a_info)
         elif not a and b:
-            if b['etag'] != status_etag_b:
+            if b_info.is_changed(ident):
                 # was deleted from a but modified on b
                 # OR: new item was created in b
                 yield _action_upload(ident, b_info, a_info)
