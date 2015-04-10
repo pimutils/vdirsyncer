@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.5.0
 =============
 
+*yet to be released*
+
 Version 0.4.4
 =============
 
