@@ -14,6 +14,8 @@ Version 0.5.0
 
 *yet to be released*
 
+- Raise version of required requests-toolbelt to ``0.4.0``.
+
 Version 0.4.4
 =============
 

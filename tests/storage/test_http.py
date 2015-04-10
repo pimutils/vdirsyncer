@@ -100,13 +100,12 @@ def test_prepare_auth():
 
 @pytest.mark.parametrize('auth', (None, 'guess'))
 def test_prepare_auth_guess(monkeypatch, auth):
-    import requests_toolbelt
+    import requests_toolbelt.auth.guess
 
     assert isinstance(prepare_auth(auth, 'user', 'pwd'),
-                      requests_toolbelt.GuessAuth)
+                      requests_toolbelt.auth.guess.GuessAuth)
 
-    if hasattr(requests_toolbelt, 'GuessAuth'):
-        monkeypatch.delattr(requests_toolbelt, 'GuessAuth')
+    monkeypatch.delattr(requests_toolbelt.auth.guess, 'GuessAuth')
 
     with pytest.raises(RuntimeError) as excinfo:
         prepare_auth(auth, 'user', 'pwd')
