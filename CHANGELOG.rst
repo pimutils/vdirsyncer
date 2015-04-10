@@ -12,7 +12,7 @@ may want to subscribe to `GitHub's tag feed
 Version 0.4.4
 =============
 
-*yet to be released*
+*released on 12 March 2015*
 
 - Support for client certificates via the new ``auth_cert``
   parameter, see :gh:`182` and :ghpr:`183`.
