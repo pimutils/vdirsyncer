@@ -188,9 +188,14 @@ def _verify_fingerprint_works():
         return False
 
 # https://github.com/shazow/urllib3/pull/444
+#
+# Without the above pull request, `verify=False` also disables fingerprint
+# validation. This is *not* what we want, and it's not possible to replicate
+# vdirsyncer's current behavior (verifying fingerprints without verifying
+# against CAs) with older versions of urllib3.
+#
 # We check this here instead of setup.py, because:
-# - This is critical to security of `verify_fingerprint`, and Python's
-#   packaging stuff doesn't check installed versions.
+# - Python's packaging stuff doesn't check installed versions.
 # - The people who don't use `verify_fingerprint` wouldn't care.
 VERIFY_FINGERPRINT_WORKS = _verify_fingerprint_works()
 del _verify_fingerprint_works

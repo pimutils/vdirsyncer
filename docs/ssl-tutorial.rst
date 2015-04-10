@@ -9,7 +9,9 @@ Vdirsyncer uses the requests_ library for all its HTTP and SSL interaction.
 All SSL configuration is done per-storage. Storages that have anything to do
 with SSL have two parameters: ``verify`` and ``verify_fingerprint``.
 
-- The ``verify`` parameter determines whether to verify SSL certificates.
+- The ``verify`` parameter determines whether to verify SSL certificates the
+  way browsers do: By comparing against a trust store, and by checking the
+  certificate's expiration date.
 
   1. The default, ``true``, means that certificates will be validated against a
      set of trusted CAs. See :ref:`ssl-cas`.
@@ -36,15 +38,16 @@ with SSL have two parameters: ``verify`` and ``verify_fingerprint``.
       ...
       verify_fingerprint = "94:FD:7A:CB:50:75:A4:69:82:0A:F8:23:DF:07:FC:69:3E:CD:90:CA"
 
-  Using it will effectively set ``verify=False``.
+  Using it will implicitly set ``verify=False``, which means that the pinned
+  certificate doesn't have to be by a trusted CA to be accepted by vdirsyncer.
 
 .. _ssl-cas:
 
 Trusted CAs
 -----------
 
-As said, vdirsyncer uses the requests_ library for such parts, which, by
-default, `uses its own set of trusted CAs
+As said, vdirsyncer uses the requests_ library, which, by default, `uses its
+own set of trusted CAs
 <http://www.python-requests.org/en/latest/user/advanced/#ca-certificates>`_.
 
 However, the actual behavior depends on how you have installed it. Some Linux
