@@ -21,12 +21,16 @@ def sync_pair(wq, pair_name, collections_to_sync, general, all_pairs,
     a_name, b_name, pair_options = all_pairs[pair_name]
 
     try:
-        all_collections = dict(collections_for_pair(
-            general['status_path'], a_name, b_name, pair_name,
-            all_storages[a_name], all_storages[b_name], pair_options
-        ))
-    except KeyError:
-        raise CliError('Could not find \"{}\" or \"{}\"\n'.format(a_name,b_name))
+        config_a, config_b = all_storages[a_name], all_storages[b_name]
+    except KeyError as e:
+        raise CliError('Pair {}: Storage {} not found. These are the '
+         'configured storages: {}'
+         .format(pair_name, str(e), list(all_storages)))
+
+    all_collections = dict(collections_for_pair(
+        general['status_path'], a_name, b_name, pair_name,
+        config_a, config_b, pair_options
+    ))
 
     # spawn one worker less because we can reuse the current one
     new_workers = -1
