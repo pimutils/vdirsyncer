@@ -592,7 +592,8 @@ def parse_options(items, section=None):
 
 def format_storage_config(cls, header=True):
     if header is True:
-        yield '[storage {}]'.format(cls.storage_name)
+        yield '[storage example_for_{}]'.format(cls.storage_name)
+    yield 'type = {}'.format(cls.storage_name)
 
     from ..storage.base import Storage
     from ..utils import get_class_init_specs
