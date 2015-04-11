@@ -2,10 +2,11 @@
 
 from textwrap import dedent
 
-import vdirsyncer.cli as cli
-
 from click.testing import CliRunner
+
 import pytest
+
+import vdirsyncer.cli as cli
 
 
 def test_simple_run(tmpdir, runner):
