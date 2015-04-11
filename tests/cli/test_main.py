@@ -2,9 +2,10 @@
 
 from textwrap import dedent
 
-from click.testing import CliRunner
-
 import vdirsyncer.cli as cli
+
+from click.testing import CliRunner
+import pytest
 
 
 def test_simple_run(tmpdir, runner):
@@ -291,3 +292,31 @@ def test_ident_conflict(tmpdir, runner):
         'two.txt' in result.output,
         'three.txt' in result.output,
     ]) == [False, True, True]
+
+
+@pytest.mark.parametrize('existing,missing', [
+    ('foo', 'bar'),
+    ('bar', 'foo'),
+])
+def test_unknown_storage(tmpdir, runner, existing, missing):
+    runner.write_with_general(dedent('''
+    [pair foobar]
+    a = foo
+    b = bar
+
+    [storage {existing}]
+    type = filesystem
+    path = {base}/{existing}/
+    fileext = .txt
+    '''.format(base=str(tmpdir), existing=existing)))
+
+    tmpdir.mkdir(existing)
+
+    result = runner.invoke(['sync'])
+    assert result.exception
+
+    assert (
+        "Storage '{missing}' not found. "
+        "These are the configured storages: ['{existing}']"
+        .format(missing=missing, existing=existing)
+    ) in result.output
