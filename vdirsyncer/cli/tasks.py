@@ -20,10 +20,13 @@ def sync_pair(wq, pair_name, collections_to_sync, general, all_pairs,
 
     a_name, b_name, pair_options = all_pairs[pair_name]
 
-    all_collections = dict(collections_for_pair(
-        general['status_path'], a_name, b_name, pair_name,
-        all_storages[a_name], all_storages[b_name], pair_options
-    ))
+    try:
+        all_collections = dict(collections_for_pair(
+            general['status_path'], a_name, b_name, pair_name,
+            all_storages[a_name], all_storages[b_name], pair_options
+        ))
+    except KeyError:
+        raise CliError('Could not find \"{}\" or \"{}\"\n'.format(a_name,b_name))
 
     # spawn one worker less because we can reuse the current one
     new_workers = -1
