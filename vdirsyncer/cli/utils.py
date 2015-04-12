@@ -292,12 +292,14 @@ def _validate_pair_section(pair_config):
 
 
 def load_config():
-    fname = expand_path(os.environ.get('VDIRSYNCER_CONFIG',
-                                       '~/.vdirsyncer/config'))
-    if not os.path.exists(fname):
-        xdg_config_dir = os.environ.get('XDG_CONFIG_HOME',
-                                        expand_path('~/.config/'))
-        fname = os.path.join(xdg_config_dir, 'vdirsyncer/config')
+    fname = os.environ.get('VDIRSYNCER_CONFIG', None)
+    if not fname:
+        fname = expand_path('~/.vdirsyncer/config')
+        if not os.path.exists(fname):
+            xdg_config_dir = os.environ.get('XDG_CONFIG_HOME',
+                                            expand_path('~/.config/'))
+            fname = os.path.join(xdg_config_dir, 'vdirsyncer/config')
+
     try:
         with open(fname) as f:
             general, pairs, storages = read_config(f)
