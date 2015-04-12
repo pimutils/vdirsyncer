@@ -201,6 +201,20 @@ VERIFY_FINGERPRINT_WORKS = _verify_fingerprint_works()
 del _verify_fingerprint_works
 
 
+def _install_fingerprint_adapter(session, fingerprint):
+    prefix = 'https://'
+    try:
+        from requests_toolbelt.adapters.fingerprint import \
+            FingerprintAdapter
+    except ImportError:
+        raise RuntimeError('`verify_fingerprint` can only be used with '
+                           'requests-toolbelt versions >= 0.4.0')
+
+    if not isinstance(session.adapters[prefix], FingerprintAdapter):
+        fingerprint_adapter = FingerprintAdapter(fingerprint)
+        session.mount(prefix, fingerprint_adapter)
+
+
 def request(method, url, session=None, latin1_fallback=True,
             verify_fingerprint=None, **kwargs):
     '''
@@ -223,14 +237,10 @@ def request(method, url, session=None, latin1_fallback=True,
 
     if verify_fingerprint is not None:
         if not VERIFY_FINGERPRINT_WORKS:
-            raise ValueError('`verify_fingerprint` can only be used with '
-                             'requests versions >= 2.4.1')
+            raise RuntimeError('`verify_fingerprint` can only be used with '
+                               'requests versions >= 2.4.1')
+        _install_fingerprint_adapter(session, verify_fingerprint)
         kwargs['verify'] = False
-        https_prefix = 'https://'
-
-        if not isinstance(session.adapters[https_prefix], _FingerprintAdapter):
-            fingerprint_adapter = _FingerprintAdapter(verify_fingerprint)
-            session.mount(https_prefix, fingerprint_adapter)
 
     func = session.request
 
