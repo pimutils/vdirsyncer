@@ -4,7 +4,7 @@ import datetime
 
 from lxml import etree
 
-from requests import session as requests_session
+import requests
 from requests.exceptions import HTTPError
 
 from .base import Item, Storage
@@ -24,8 +24,8 @@ def _normalize_href(base, href):
     schema.'''
     if not href:
         raise ValueError(href)
-    x = utils.urlparse.urljoin(base, href)
-    x = utils.urlparse.urlsplit(x).path
+    x = utils.compat.urlparse.urljoin(base, href)
+    x = utils.compat.urlparse.urlsplit(x).path
     return x
 
 
@@ -121,7 +121,7 @@ class Discover(object):
         rv = root.find('.//{DAV:}current-user-principal/{DAV:}href')
         if rv is None:
             raise InvalidXMLResponse()
-        return utils.urlparse.urljoin(response.url, rv.text)
+        return utils.compat.urlparse.urljoin(response.url, rv.text)
 
     def find_home(self, url=None):
         if url is None:
@@ -137,7 +137,7 @@ class Discover(object):
         rv = root.find('.//' + self._homeset_tag + '/{*}href')
         if rv is None:
             raise InvalidXMLResponse()
-        return utils.urlparse.urljoin(response.url, rv.text)
+        return utils.compat.urlparse.urljoin(response.url, rv.text)
 
     def find_collections(self, url=None):
         if url is None:
@@ -157,7 +157,7 @@ class Discover(object):
             href = response.find('{*}href')
             if href is None:
                 raise InvalidXMLResponse()
-            href = utils.urlparse.urljoin(r.url, href.text)
+            href = utils.compat.urlparse.urljoin(r.url, href.text)
             if href not in done:
                 done.add(href)
                 yield {'href': href, 'displayname': displayname}
@@ -221,19 +221,19 @@ class DavSession(object):
         }
         self.useragent = useragent
         self.url = url.rstrip('/') + '/'
-        self.parsed_url = utils.urlparse.urlparse(self.url)
+        self.parsed_url = utils.compat.urlparse.urlparse(self.url)
         self._session = None
 
     def request(self, method, path, **kwargs):
         url = self.url
         if path:
-            url = utils.urlparse.urljoin(self.url, path)
+            url = utils.compat.urlparse.urljoin(self.url, path)
         if self._session is None:
-            self._session = requests_session()
+            self._session = requests.session()
 
         more = dict(self._settings)
         more.update(kwargs)
-        return utils.request(method, url, session=self._session, **more)
+        return utils.http.request(method, url, session=self._session, **more)
 
     def get_default_headers(self):
         return {

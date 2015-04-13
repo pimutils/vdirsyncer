@@ -14,7 +14,6 @@ from atomicwrites import atomic_write
 
 from .. import DOCS_HOME, PROJECT_HOME, exceptions, log
 from ..doubleclick import click
-from ..storage import storage_names
 from ..sync import IdentConflict, StorageEmpty, SyncConflict
 from ..utils import expand_path, get_class_init_args
 from ..utils.compat import text_type
@@ -30,6 +29,33 @@ try:
     import Queue as queue
 except ImportError:
     import queue
+
+
+def _generate_storage_dict():
+    from ..storage.dav import CaldavStorage, CarddavStorage
+    from ..storage.filesystem import FilesystemStorage
+    from ..storage.http import HttpStorage
+    from ..storage.singlefile import SingleFileStorage
+
+    classes = (
+        CaldavStorage,
+        CarddavStorage,
+        FilesystemStorage,
+        HttpStorage,
+        SingleFileStorage
+    )
+
+    rv = {}
+    for cls in classes:
+        key = cls.storage_name
+        assert key
+        assert isinstance(key, str)
+        assert key not in rv
+        rv[key] = cls
+    return rv
+
+storage_names = _generate_storage_dict()
+del _generate_storage_dict
 
 
 cli_logger = log.get(__name__)

@@ -2,8 +2,10 @@
 
 from .base import Item, Storage
 from ..exceptions import NotFoundError
-from ..utils import expand_path, get_password, request
+from ..utils import expand_path
 from ..utils.compat import iteritems, text_type, urlparse
+from ..utils.http import request
+from ..utils.password import get_password
 from ..utils.vobject import split_collection
 
 USERAGENT = 'vdirsyncer'

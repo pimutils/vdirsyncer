@@ -12,6 +12,8 @@ import pytest
 import requests
 
 import vdirsyncer.doubleclick as doubleclick
+import vdirsyncer.utils.http
+import vdirsyncer.utils.password
 import vdirsyncer.utils as utils
 
 from .. import blow_up
@@ -33,7 +35,7 @@ class EmptyKeyring(object):
 @pytest.fixture(autouse=True)
 def empty_password_storages(monkeypatch):
     monkeypatch.setattr('netrc.netrc', EmptyNetrc)
-    monkeypatch.setattr(utils, 'keyring', EmptyKeyring())
+    monkeypatch.setattr(utils.password, 'keyring', EmptyKeyring())
 
 
 def test_get_password_from_netrc(monkeypatch):
@@ -52,7 +54,7 @@ def test_get_password_from_netrc(monkeypatch):
     monkeypatch.setattr('netrc.netrc', Netrc)
     monkeypatch.setattr('getpass.getpass', blow_up)
 
-    _password = utils.get_password(username, resource)
+    _password = utils.password.get_password(username, resource)
     assert _password == password
     assert calls == [hostname]
 
@@ -66,14 +68,14 @@ def test_get_password_from_system_keyring(monkeypatch):
     class KeyringMock(object):
         def get_password(self, resource, _username):
             assert _username == username
-            assert resource == utils.password_key_prefix + hostname
+            assert resource == utils.password.password_key_prefix + hostname
             return password
 
-    monkeypatch.setattr(utils, 'keyring', KeyringMock())
+    monkeypatch.setattr(utils.password, 'keyring', KeyringMock())
 
     monkeypatch.setattr('getpass.getpass', blow_up)
 
-    _password = utils.get_password(username, resource)
+    _password = utils.password.get_password(username, resource)
     assert _password == password
 
 
@@ -98,7 +100,7 @@ def test_get_password_from_command(tmpdir):
     @doubleclick.click.pass_context
     def fake_app(ctx):
         ctx.obj = {'config': ({'password_command': filepath}, {}, {})}
-        _password = utils.get_password(username, resource)
+        _password = utils.password.get_password(username, resource)
         assert _password == password
 
     runner = CliRunner()
@@ -112,7 +114,7 @@ def test_get_password_from_prompt():
 
     @click.command()
     def fake_app():
-        x = utils.get_password(user, resource)
+        x = utils.password.get_password(user, resource)
         click.echo('Password is {}'.format(x))
 
     runner = CliRunner()
@@ -127,22 +129,24 @@ def test_get_password_from_prompt():
 def test_set_keyring_password(monkeypatch):
     class KeyringMock(object):
         def get_password(self, resource, username):
-            assert resource == utils.password_key_prefix + 'example.com'
+            assert resource == \
+                utils.password.password_key_prefix + 'example.com'
             assert username == 'foouser'
             return None
 
         def set_password(self, resource, username, password):
-            assert resource == utils.password_key_prefix + 'example.com'
+            assert resource == \
+                utils.password.password_key_prefix + 'example.com'
             assert username == 'foouser'
             assert password == 'hunter2'
 
-    monkeypatch.setattr(utils, 'keyring', KeyringMock())
+    monkeypatch.setattr(utils.password, 'keyring', KeyringMock())
 
     @doubleclick.click.command()
     @doubleclick.click.pass_context
     def fake_app(ctx):
         ctx.obj = {}
-        x = utils.get_password('foouser', 'http://example.com/a/b')
+        x = utils.password.get_password('foouser', 'http://example.com/a/b')
         click.echo('password is ' + x)
 
     runner = CliRunner()
@@ -163,12 +167,12 @@ def test_get_password_from_cache(monkeypatch):
     @doubleclick.click.pass_context
     def fake_app(ctx):
         ctx.obj = {}
-        x = utils.get_password(user, resource)
+        x = utils.password.get_password(user, resource)
         click.echo('Password is {}'.format(x))
         monkeypatch.setattr(doubleclick.click, 'prompt', blow_up)
 
         assert (user, 'example.com') in ctx.obj['passwords']
-        x = utils.get_password(user, resource)
+        x = utils.password.get_password(user, resource)
         click.echo('Password is {}'.format(x))
 
     runner = CliRunner()
@@ -212,13 +216,13 @@ def test_request_ssl(httpsserver):
     httpsserver.serve_content('')  # we need to serve something
 
     with pytest.raises(requests.exceptions.SSLError) as excinfo:
-        utils.request('GET', httpsserver.url)
+        utils.http.request('GET', httpsserver.url)
     assert 'certificate verify failed' in str(excinfo.value)
-    utils.request('GET', httpsserver.url, verify=False)
-    utils.request('GET', httpsserver.url,
+    utils.http.request('GET', httpsserver.url, verify=False)
+    utils.http.request('GET', httpsserver.url,
                   verify_fingerprint=sha1)
-    utils.request('GET', httpsserver.url, verify_fingerprint=md5)
+    utils.http.request('GET', httpsserver.url, verify_fingerprint=md5)
     with pytest.raises(requests.exceptions.SSLError) as excinfo:
-        utils.request('GET', httpsserver.url,
+        utils.http.request('GET', httpsserver.url,
                       verify_fingerprint=''.join(reversed(sha1)))
     assert 'Fingerprints did not match' in str(excinfo.value)
