@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import threading
-import urlparse
 
 from . import expand_path
+from .compat import urlparse
 from .. import log
 from ..doubleclick import click, ctx
 
