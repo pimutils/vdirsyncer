@@ -117,8 +117,6 @@ Storage Section
 Supported Storages
 ------------------
 
-.. module:: vdirsyncer.storage
-
 Read-write storages
 ~~~~~~~~~~~~~~~~~~~
 
@@ -126,13 +124,13 @@ These storages generally support reading and changing of their items. Their
 default value for ``read_only`` is ``false``, but can be set to ``true`` if
 wished.
 
-.. autostorage:: CaldavStorage
+.. autostorage:: vdirsyncer.storage.dav.CaldavStorage
 
-.. autostorage:: CarddavStorage
+.. autostorage:: vdirsyncer.storage.dav.CarddavStorage
 
-.. autostorage:: FilesystemStorage
+.. autostorage:: vdirsyncer.storage.filesystem.FilesystemStorage
 
-.. autostorage:: SingleFileStorage
+.. autostorage:: vdirsyncer.storage.singlefile.SingleFileStorage
 
 Read-only storages
 ~~~~~~~~~~~~~~~~~~
@@ -141,4 +139,4 @@ These storages don't support writing of their items, consequently ``read_only``
 is set to ``true`` by default. Changing ``read_only`` to ``false`` on them
 leads to an error.
 
-.. autostorage:: HttpStorage
+.. autostorage:: vdirsyncer.storage.http.HttpStorage
