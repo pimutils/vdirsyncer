@@ -4,7 +4,7 @@ import os
 import sys
 
 from .compat import iteritems
-from .. import exceptions, log
+from .. import exceptions
 
 
 _missing = object()

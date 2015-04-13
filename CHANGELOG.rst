@@ -15,6 +15,8 @@ Version 0.5.0
 *yet to be released*
 
 - Raise version of required requests-toolbelt to ``0.4.0``.
+- Command line should be a lot faster when no work is done, e.g. for help
+  output.
 
 Version 0.4.4
 =============

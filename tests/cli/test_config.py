@@ -61,7 +61,8 @@ def test_storage_instance_from_config(monkeypatch):
         return 'OK'
 
     import vdirsyncer.storage
-    monkeypatch.setitem(vdirsyncer.cli.utils.storage_names, 'lol', lol)
+    monkeypatch.setitem(vdirsyncer.cli.utils.storage_names._storages,
+                        'lol', lol)
     config = {'type': 'lol', 'foo': 'bar', 'baz': 1}
     assert cli.utils.storage_instance_from_config(config) == 'OK'
 

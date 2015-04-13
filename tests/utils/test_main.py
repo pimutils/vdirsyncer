@@ -11,10 +11,14 @@ import pytest
 
 import requests
 
-import vdirsyncer.doubleclick as doubleclick
-import vdirsyncer.utils.http
-import vdirsyncer.utils.password
-import vdirsyncer.utils as utils
+from vdirsyncer import doubleclick, utils
+
+# These modules might be uninitialized and unavailable if not explicitly
+# imported
+import vdirsyncer.utils.compat  # noqa
+import vdirsyncer.utils.http  # noqa
+import vdirsyncer.utils.password  # noqa
+
 
 from .. import blow_up
 
@@ -220,9 +224,9 @@ def test_request_ssl(httpsserver):
     assert 'certificate verify failed' in str(excinfo.value)
     utils.http.request('GET', httpsserver.url, verify=False)
     utils.http.request('GET', httpsserver.url,
-                  verify_fingerprint=sha1)
+                       verify_fingerprint=sha1)
     utils.http.request('GET', httpsserver.url, verify_fingerprint=md5)
     with pytest.raises(requests.exceptions.SSLError) as excinfo:
         utils.http.request('GET', httpsserver.url,
-                      verify_fingerprint=''.join(reversed(sha1)))
+                           verify_fingerprint=''.join(reversed(sha1)))
     assert 'Fingerprints did not match' in str(excinfo.value)

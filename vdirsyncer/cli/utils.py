@@ -2,6 +2,7 @@
 
 import errno
 import hashlib
+import importlib
 import json
 import os
 import string
@@ -31,31 +32,30 @@ except ImportError:
     import queue
 
 
-def _generate_storage_dict():
-    from ..storage.dav import CaldavStorage, CarddavStorage
-    from ..storage.filesystem import FilesystemStorage
-    from ..storage.http import HttpStorage
-    from ..storage.singlefile import SingleFileStorage
+class _StorageIndex(object):
+    def __init__(self):
+        self._storages = dict(
+            caldav='vdirsyncer.storage.dav.CaldavStorage',
+            carddav='vdirsyncer.storage.dav.CarddavStorage',
+            filesystem='vdirsyncer.storage.filesystem.FilesystemStorage',
+            http='vdirsyncer.storage.http.HttpStorage',
+            singlefile='vdirsyncer.storage.singlefile.SingleFileStorage',
+        )
 
-    classes = (
-        CaldavStorage,
-        CarddavStorage,
-        FilesystemStorage,
-        HttpStorage,
-        SingleFileStorage
-    )
+    def __getitem__(self, name):
+        item = self._storages[name]
+        if not isinstance(item, str):
+            return item
 
-    rv = {}
-    for cls in classes:
-        key = cls.storage_name
-        assert key
-        assert isinstance(key, str)
-        assert key not in rv
-        rv[key] = cls
-    return rv
+        modname, clsname = item.rsplit('.', 1)
+        mod = importlib.import_module(modname)
+        self._storages[name] = rv = getattr(mod, clsname)
+        assert rv.storage_name == name
+        return rv
 
-storage_names = _generate_storage_dict()
-del _generate_storage_dict
+
+storage_names = _StorageIndex()
+del _StorageIndex
 
 
 cli_logger = log.get(__name__)
@@ -444,8 +444,9 @@ def save_status(base_path, pair, collection=None, data_type=None, data=None):
 def storage_class_from_config(config):
     config = dict(config)
     storage_name = config.pop('type')
-    cls = storage_names.get(storage_name, None)
-    if cls is None:
+    try:
+        cls = storage_names[storage_name]
+    except KeyError:
         raise CliError('Unknown storage type: {}'.format(storage_name))
     return cls, config
 
