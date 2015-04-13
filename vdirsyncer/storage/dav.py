@@ -211,7 +211,8 @@ class DavSession(object):
                  useragent=USERAGENT, verify_fingerprint=None,
                  auth_cert=None):
         if username and not password:
-            password = utils.get_password(username, url)
+            from ..utils.password import get_password
+            password = get_password(username, url)
 
         self._settings = {
             'verify': prepare_verify(verify),
