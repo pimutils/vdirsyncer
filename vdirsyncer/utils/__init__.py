@@ -5,7 +5,6 @@ import sys
 import threading
 
 import requests
-from requests.packages.urllib3.poolmanager import PoolManager
 
 from .compat import iteritems, urlparse
 from .. import exceptions, log
@@ -164,18 +163,6 @@ def _password_from_command(username, host):
     except OSError as e:
         logger.warning('Failed to execute command: {}\n{}'.
                        format(' '.join(command), str(e)))
-
-
-class _FingerprintAdapter(requests.adapters.HTTPAdapter):
-    def __init__(self, fingerprint=None, **kwargs):
-        self.fingerprint = str(fingerprint)
-        super(_FingerprintAdapter, self).__init__(**kwargs)
-
-    def init_poolmanager(self, connections, maxsize, block=False):
-        self.poolmanager = PoolManager(num_pools=connections,
-                                       maxsize=maxsize,
-                                       block=block,
-                                       assert_fingerprint=self.fingerprint)
 
 
 def _verify_fingerprint_works():
