@@ -507,6 +507,32 @@ class DavStorage(Storage):
             hrefs.add(href)
             yield href, etag, props
 
+    def list(self):
+        headers = self.session.get_default_headers()
+        headers['Depth'] = 1
+
+        data = '''<?xml version="1.0" encoding="utf-8" ?>
+            <D:propfind xmlns:D="DAV:">
+                <D:prop>
+                    <D:resourcetype/>
+                    <D:getcontenttype/>
+                    <D:getetag/>
+                </D:prop>
+            </D:propfind>
+            '''
+
+        # We use a PROPFIND request instead of addressbook-query due to issues
+        # with Zimbra. See https://github.com/untitaker/vdirsyncer/issues/83
+        response = self.session.request('PROPFIND', '', data=data,
+                                        headers=headers)
+        root = _parse_xml(response.content)
+
+        # Decode twice because ownCloud encodes twice.
+        # See https://github.com/owncloud/contacts/issues/581
+        rv = self._parse_prop_responses(root, decoding_rounds=2)
+        for href, etag, prop in rv:
+            yield href, etag
+
 
 class CaldavStorage(DavStorage):
 
@@ -584,7 +610,6 @@ class CaldavStorage(DavStorage):
 
     @staticmethod
     def _get_list_filters(components, start, end):
-
         if components:
             caldavfilter = '''
                 <C:comp-filter name="VCALENDAR">
@@ -611,10 +636,24 @@ class CaldavStorage(DavStorage):
                 for x in CaldavStorage._get_list_filters(('VTODO', 'VEVENT'),
                                                          start, end):
                     yield x
-            else:
-                yield '<C:comp-filter name="VCALENDAR"/>'
 
     def list(self):
+        caldavfilters = list(self._get_list_filters(
+            self.item_types,
+            self.start_date,
+            self.end_date
+        ))
+        if not caldavfilters:
+            # If we don't have any filters (which is the default), taking the
+            # risk of sending a calendar-query is not necessary. There doesn't
+            # seem to be a widely-usable way to send calendar-queries with the
+            # same semantics as a PROPFIND request... so why not use PROPFIND
+            # instead?
+            #
+            # See https://github.com/dmfs/tasks/issues/118 for backstory.
+            for x in DavStorage.list(self):
+                yield x
+
         data = '''<?xml version="1.0" encoding="utf-8" ?>
             <C:calendar-query xmlns:D="DAV:"
                 xmlns:C="urn:ietf:params:xml:ns:caldav">
@@ -633,9 +672,6 @@ class CaldavStorage(DavStorage):
         # an explicit value of 1 for querying items. it is extremely unclear in
         # the spec which values from WebDAV are actually allowed.
         headers['Depth'] = 1
-
-        caldavfilters = self._get_list_filters(self.item_types,
-                                               self.start_date, self.end_date)
 
         for caldavfilter in caldavfilters:
             xml = data.format(caldavfilter=caldavfilter)
@@ -671,29 +707,3 @@ class CarddavStorage(DavStorage):
     _dav_namespace = 'urn:ietf:params:xml:ns:carddav'
     _dav_resourcetype = 'addressbook'
     get_multi_data_query = '{urn:ietf:params:xml:ns:carddav}address-data'
-
-    def list(self):
-        headers = self.session.get_default_headers()
-        headers['Depth'] = 1
-
-        data = '''<?xml version="1.0" encoding="utf-8" ?>
-            <D:propfind xmlns:D="DAV:">
-                <D:prop>
-                    <D:resourcetype/>
-                    <D:getcontenttype/>
-                    <D:getetag/>
-                </D:prop>
-            </D:propfind>
-            '''
-
-        # We use a PROPFIND request instead of addressbook-query due to issues
-        # with Zimbra. See https://github.com/untitaker/vdirsyncer/issues/83
-        response = self.session.request('PROPFIND', '', data=data,
-                                        headers=headers)
-        root = _parse_xml(response.content)
-
-        # Decode twice because ownCloud encodes twice.
-        # See https://github.com/owncloud/contacts/issues/581
-        rv = self._parse_prop_responses(root, decoding_rounds=2)
-        for href, etag, prop in rv:
-            yield href, etag
