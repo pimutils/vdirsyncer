@@ -65,8 +65,8 @@ max_workers_option = click.option(
     '--max-workers', default=0, type=click.IntRange(min=0, max=None),
     callback=max_workers_callback,
     help=('Use at most this many connections. With debug messages enabled, '
-          'the default is 1, otherwise an unlimited amount of connections is '
-          'used.')
+          'the default is 1, otherwise one connection per collection is '
+          'opened.')
 )
 
 
