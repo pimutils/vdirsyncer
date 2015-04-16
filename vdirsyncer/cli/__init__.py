@@ -55,6 +55,7 @@ def app(ctx, verbosity):
 
 main = app
 
+
 def max_workers_callback(ctx, param, value):
     if value == 0 and ctx.obj['verbosity'] == log.logging.DEBUG:
         return 1
