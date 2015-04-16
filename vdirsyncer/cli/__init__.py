@@ -48,14 +48,25 @@ def app(ctx, verbosity):
     if ctx.obj is None:
         ctx.obj = {}
 
+    ctx.obj['verbosity'] = verbosity
+
     if 'config' not in ctx.obj:
         ctx.obj['config'] = load_config()
 
 main = app
 
+def max_workers_callback(ctx, param, value):
+    if value == 0 and ctx.obj['verbosity'] == log.logging.DEBUG:
+        return 1
+    return value
+
+
 max_workers_option = click.option(
     '--max-workers', default=0, type=click.IntRange(min=0, max=None),
-    help=('Use at most this many connections, 0 means unlimited.')
+    callback=max_workers_callback,
+    help=('Use at most this many connections. With debug messages enabled, '
+          'the default is 1, otherwise an unlimited amount of connections is '
+          'used.')
 )
 
 

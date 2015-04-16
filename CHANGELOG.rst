@@ -18,6 +18,7 @@ Version 0.5.0
 - Command line should be a lot faster when no work is done, e.g. for help
   output.
 - Fix compatibility with iCloud again.
+- Use only one worker if debug mode is activated.
 
 Version 0.4.4
 =============
