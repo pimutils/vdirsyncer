@@ -3,7 +3,7 @@
 import hashlib
 from itertools import chain, tee
 
-from . import cached_property, split_sequence, uniq
+from . import cached_property, uniq
 from .compat import text_type
 
 
@@ -104,6 +104,7 @@ def split_collection(text):
     assert isinstance(text, text_type)
     inline = []
     items = []
+
     def inner(item, main):
         if item.name == u'VTIMEZONE':
             inline.append(item)
@@ -133,6 +134,7 @@ _default_join_wrappers = {
     u'VTODO': u'VCALENDAR',
     u'VCARD': u'VADDRESSBOOK'
 }
+
 
 def join_collection(items, wrappers=_default_join_wrappers):
     '''

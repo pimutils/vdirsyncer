@@ -2,8 +2,6 @@
 
 from textwrap import dedent
 
-import pytest
-
 import vdirsyncer.utils.vobject as vobject
 
 from .. import BARE_EVENT_TEMPLATE, EVENT_TEMPLATE, VCARD_TEMPLATE, \
