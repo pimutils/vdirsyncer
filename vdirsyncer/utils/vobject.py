@@ -134,7 +134,6 @@ _default_join_wrappers = {
     u'VCARD': u'VADDRESSBOOK'
 }
 
-
 def join_collection(items, wrappers=_default_join_wrappers):
     '''
     :param wrappers: {
@@ -145,22 +144,32 @@ def join_collection(items, wrappers=_default_join_wrappers):
     items1, items2 = tee((_Component.parse(x)
                           for x in items), 2)
     item_type, wrapper_type = _get_item_type(items1, wrappers)
+    wrapper_props = []
 
     def _get_item_components(x):
-        return x.name == wrapper_type and x.subcomponents or [x]
+        if x.name == wrapper_type:
+            wrapper_props.extend(x.props)
+            return x.subcomponents
+        else:
+            return [x]
 
     components = chain(*(_get_item_components(x) for x in items2))
     lines = chain(*uniq(tuple(x.dump_lines()) for x in components))
 
     if wrapper_type is not None:
-        start = [u'BEGIN:{}'.format(wrapper_type)]
-        end = [u'END:{}'.format(wrapper_type)]
-        lines = chain(start, lines, end)
+        lines = chain(*(
+            [u'BEGIN:{}'.format(wrapper_type)],
+            uniq(wrapper_props),
+            lines,
+            [u'END:{}'.format(wrapper_type)]
+        ))
     return u''.join(line + u'\r\n' for line in lines)
 
 
 def _get_item_type(components, wrappers):
+    i = 0
     for component in components:
+        i += 1
         try:
             item_type = component.name
             wrapper_type = wrappers[item_type]
@@ -168,7 +177,11 @@ def _get_item_type(components, wrappers):
             pass
         else:
             return item_type, wrapper_type
-    return None, None
+
+    if not i:
+        return None, None
+    else:
+        raise ValueError('Not sure how to join components.')
 
 
 class _Component(object):
