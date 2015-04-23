@@ -159,6 +159,10 @@ def join_collection(items, wrappers=_default_join_wrappers):
     if wrapper_type is not None:
         lines = chain(*(
             [u'BEGIN:{}'.format(wrapper_type)],
+            # XXX: wrapper_props is a list of lines (with line-wrapping), so
+            # filtering out duplicate lines will almost certainly break
+            # multiline-values.  Since the only props we usually need to
+            # support are PRODID and VERSION, I don't care.
             uniq(wrapper_props),
             lines,
             [u'END:{}'.format(wrapper_type)]
