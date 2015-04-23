@@ -58,6 +58,8 @@ def test_join_collection_vevents(benchmark):
     actual = benchmark(lambda: vobject.join_collection([
         dedent("""
             BEGIN:VCALENDAR
+            VERSION:2.0
+            PRODID:HUEHUE
             BEGIN:VTIMEZONE
             VALUE:The Timezone
             END:VTIMEZONE
@@ -70,6 +72,8 @@ def test_join_collection_vevents(benchmark):
 
     expected = dedent("""
         BEGIN:VCALENDAR
+        VERSION:2.0
+        PRODID:HUEHUE
         BEGIN:VTIMEZONE
         VALUE:The Timezone
         END:VTIMEZONE
