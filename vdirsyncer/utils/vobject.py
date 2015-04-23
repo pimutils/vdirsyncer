@@ -100,37 +100,32 @@ def hash_item(text):
     return hashlib.sha256(normalize_item(text).encode('utf-8')).hexdigest()
 
 
-def split_collection(text, inline=(u'VTIMEZONE',),
-                     wrap_items_with=(u'VCALENDAR',)):
-    '''Emits items in the order they occur in the text.'''
+def split_collection(text):
     assert isinstance(text, text_type)
-    collections = _Component.parse(text, multiple=True)
-    collection_name = None
+    inline = []
+    items = []
+    def inner(item, main):
+        if item.name == u'VTIMEZONE':
+            inline.append(item)
+        elif item.name == u'VCARD':
+            items.append(item)
+        elif item.name in (u'VTODO', u'VEVENT', u'VJOURNAL'):
+            items.append(_Component(main.name,
+                                    main.props[:],
+                                    [item]))
+        elif item.name in (u'VCALENDAR', u'VADDRESSBOOK'):
+            for subitem in item.subcomponents:
+                inner(subitem, item)
+        else:
+            raise ValueError('Unknown component: {}'
+                             .format(item.name))
 
-    for collection in collections:
-        if collection_name is None:
-            collection_name = collection.name
-            start = end = ()
-            if collection_name in wrap_items_with:
-                start = (u'BEGIN:{}'.format(collection_name),)
-                end = (u'END:{}'.format(collection_name),)
+    for main in _Component.parse(text, multiple=True):
+        inner(main, main)
 
-        elif collection.name != collection_name:
-            raise ValueError('Different types of components at top-level. '
-                             'Expected {}, got {}.'
-                             .format(collection_name, collection.name))
-
-        inlined_items, normal_items = split_sequence(
-            collection.subcomponents,
-            lambda item: item.name in inline
-        )
-        inlined_lines = list(chain(*(inlined_item.dump_lines()
-                                     for inlined_item in inlined_items)))
-
-        for item in normal_items:
-            lines = chain(start, inlined_lines, item.dump_lines(), end)
-            yield u''.join(line + u'\r\n' for line in lines if line)
-
+    for item in items:
+        item.subcomponents.extend(inline)
+        yield u'\r\n'.join(item.dump_lines())
 
 _default_join_wrappers = {
     u'VCALENDAR': u'VCALENDAR',
@@ -202,7 +197,7 @@ class _Component(object):
         :param subcomponents: List of components.
         '''
         self.name = name
-        self.lines = lines
+        self.props = lines
         self.subcomponents = subcomponents
 
     @classmethod
@@ -226,7 +221,7 @@ class _Component(object):
                     rv.append(component)
             else:
                 if line.strip():
-                    stack[-1].lines.append(line)
+                    stack[-1].props.append(line)
 
         if multiple:
             return rv
@@ -238,7 +233,7 @@ class _Component(object):
 
     def dump_lines(self):
         yield u'BEGIN:{}'.format(self.name)
-        for line in self.lines:
+        for line in self.props:
             yield line
         for c in self.subcomponents:
             for line in c.dump_lines():
@@ -248,7 +243,7 @@ class _Component(object):
     def __delitem__(self, key):
         prefix = u'{}:'.format(key)
         new_lines = []
-        lineiter = iter(self.lines)
+        lineiter = iter(self.props)
         for line in lineiter:
             if line.startswith(prefix):
                 break
@@ -261,16 +256,16 @@ class _Component(object):
                 break
 
         new_lines.extend(lineiter)
-        self.lines = new_lines
+        self.props = new_lines
 
     def __setitem__(self, key, val):
         del self[key]
         line = u'{}:{}'.format(key, val)
-        self.lines.append(line)
+        self.props.append(line)
 
     def __getitem__(self, key):
         prefix = u'{}:'.format(key)
-        iterlines = iter(self.lines)
+        iterlines = iter(self.props)
         for line in iterlines:
             if line.startswith(prefix):
                 rv = line[len(prefix):]

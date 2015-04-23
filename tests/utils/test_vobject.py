@@ -48,21 +48,6 @@ def test_split_collection_multiple_wrappers(benchmark):
         [x.splitlines() for x in _simple_split]
 
 
-def test_split_collection_different_wrappers():
-    with pytest.raises(ValueError) as exc_info:
-        list(vobject.split_collection(u'BEGIN:VADDRESSBOOK\r\n'
-                                      u'BEGIN:FOO\r\n'
-                                      u'END:FOO\r\n'
-                                      u'END:VADDRESSBOOK\r\n'
-                                      u'BEGIN:VCALENDAR\r\n'
-                                      u'BEGIN:FOO\r\n'
-                                      u'END:FOO\r\n'
-                                      u'END:VCALENDAR\r\n'))
-
-    assert 'different types of components at top-level' in \
-        str(exc_info.value).lower()
-
-
 def test_join_collection_simple(benchmark):
     given = benchmark(lambda: vobject.join_collection(_simple_split))
     assert normalize_item(given) == normalize_item(_simple_joined)
