@@ -156,10 +156,16 @@ with it.
 DavMail (Exchange, Outlook)
 ---------------------------
 
-Using vdirsyncer with DavMail_ is currently not recommended (if even possible).
+Using vdirsyncer with DavMail_ is possible, but make sure you use the latest
+versions::
 
-- DavMail (or the server it is proxying) handles URLs case-insensitively. See
-  :gh:`144`.
+    [storage outlook]
+    type = caldav
+    url = http://localhost:1080/
+    username = user@example.com
+    password = ...
+
+- Older versions of DavMail handle URLs case-insensitively. See :gh:`144`.
 
 .. _DavMail: http://davmail.sourceforge.net/
 
