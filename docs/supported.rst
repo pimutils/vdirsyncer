@@ -76,11 +76,12 @@ Radicale
 
 Radicale is a very lightweight server, however, it intentionally doesn't
 implement the CalDAV and CardDAV standards completely, which might lead to
-issues even with very well-written clients.
+issues even with very well-written clients. Apart from its conformity with
+standards, there are multiple other problems with its code quality and the way
+it is maintained.
 
 That said, vdirsyncer is continuously tested against the git version and the
-latest PyPI release of Radicale_. Older versions have substantial deficiencies,
-and using them is neither supported nor encouraged.
+latest PyPI release of Radicale_.
 
 - Radicale doesn't `support time ranges in the calendar-query of CalDAV
   <https://github.com/Kozea/Radicale/issues/146>`_, so setting ``start_date``
