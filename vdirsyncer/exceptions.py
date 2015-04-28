@@ -17,6 +17,11 @@ class Error(Exception):
         super(Error, self).__init__(*args)
 
 
+class UserError(Error, ValueError):
+    '''Wrapper exception to be used to signify the traceback should not be
+    shown to the user.'''
+
+
 class CollectionNotFound(Error):
     '''Collection not found'''
 

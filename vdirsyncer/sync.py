@@ -278,8 +278,8 @@ def _action_conflict_resolve(ident):
             sync_logger.info('...{} wins.'.format(b.storage))
             _action_update(ident, b, a)(a, b, conflict_resolution)
         else:
-            raise ValueError('Invalid conflict resolution mode: {}'
-                             .format(conflict_resolution))
+            raise exceptions.UserError('Invalid conflict resolution mode: {}'
+                                       .format(conflict_resolution))
 
     return inner
 

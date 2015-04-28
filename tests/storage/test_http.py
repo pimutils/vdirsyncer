@@ -6,6 +6,7 @@ from requests import Response
 
 from tests import normalize_item
 
+from vdirsyncer.exceptions import UserError
 from vdirsyncer.storage.http import HttpStorage, prepare_auth
 
 
@@ -107,7 +108,15 @@ def test_prepare_auth_guess(monkeypatch, auth):
 
     monkeypatch.delattr(requests_toolbelt.auth.guess, 'GuessAuth')
 
-    with pytest.raises(RuntimeError) as excinfo:
+    with pytest.raises(UserError) as excinfo:
         prepare_auth(auth, 'user', 'pwd')
 
     assert 'requests_toolbelt is too old' in str(excinfo.value).lower()
+
+
+def test_verify_false_disallowed():
+    with pytest.raises(ValueError) as excinfo:
+        HttpStorage(url='http://example.com', verify=False)
+
+    assert 'forbidden' in str(excinfo.value).lower()
+    assert 'consider setting verify_fingerprint' in str(excinfo.value).lower()

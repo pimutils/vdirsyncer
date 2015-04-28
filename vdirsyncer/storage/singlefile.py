@@ -77,8 +77,10 @@ class SingleFileStorage(Storage):
 
         collection = kwargs.get('collection')
         if collection is not None:
-            raise ValueError('collection is not a valid argument for {}'
-                             .format(type(self).__name__))
+            raise exceptions.UserError(
+                'collection is not a valid argument for {}'
+                .format(type(self).__name__)
+            )
 
         checkfile(path, create=False)
 

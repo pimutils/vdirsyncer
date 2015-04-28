@@ -77,7 +77,7 @@ class Storage(with_metaclass(StorageMeta)):
         if read_only is None:
             read_only = self.read_only
         if self.read_only and not read_only:
-            raise ValueError('This storage can only be read-only.')
+            raise exceptions.UserError('This storage can only be read-only.')
         self.read_only = bool(read_only)
 
         if collection and instance_name:
