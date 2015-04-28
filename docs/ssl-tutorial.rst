@@ -4,57 +4,49 @@
 SSL and certificate validation
 ==============================
 
-Vdirsyncer uses the requests_ library for all its HTTP and SSL interaction.
+All SSL configuration is done per-storage.
 
-All SSL configuration is done per-storage. Storages that have anything to do
-with SSL have two parameters: ``verify`` and ``verify_fingerprint``.
+Pinning by fingerprint
+----------------------
 
-- The ``verify`` parameter determines whether to verify SSL certificates the
-  way browsers do: By comparing against a trust store, and by checking the
-  certificate's expiration date.
+To pin the certificate by SHA1- or MD5-fingerprint::
 
-  1. The default, ``true``, means that certificates will be validated against a
-     set of trusted CAs. See :ref:`ssl-cas`.
+    [storage foo]
+    type = caldav
+    ...
+    verify_fingerprint = "94:FD:7A:CB:50:75:A4:69:82:0A:F8:23:DF:07:FC:69:3E:CD:90:CA"
 
-  2. The value ``false`` will disable both trusted-CA-validation and the
-     validation of the certificate's expiration date. Unless combined with
-     ``verify_fingerprint``, **you should not use this value at all, because
-     it's a security risk**.
-
-  3. You can also set ``verify`` to a path of the server's certificate in PEM
-     format, instead of relying on the default root CAs::
-
-         [storage foo]
-         type = caldav
-         ...
-         verify = "/path/to/cert.pem"
-
-- The ``verify_fingerprint`` parameter can be used to compare the SSL
-  fingerprint to a fixed value. The value can be either a SHA1-fingerprint or
-  an MD5 one::
-
-      [storage foo]
-      type = caldav
-      ...
-      verify_fingerprint = "94:FD:7A:CB:50:75:A4:69:82:0A:F8:23:DF:07:FC:69:3E:CD:90:CA"
-
-  Using it will implicitly set ``verify=False``, which means that the pinned
-  certificate doesn't have to be by a trusted CA to be accepted by vdirsyncer.
+This disables :ref:`validation against root CAs <ssl-cas>`, since
+``verify_fingerprint`` is much stricter anyway.
 
 .. _ssl-cas:
 
-Trusted CAs
------------
+Custom root CAs
+---------------
 
-As said, vdirsyncer uses the requests_ library, which, by default, `uses its
-own set of trusted CAs
+To point vdirsyncer to a custom set of root CAs::
+
+    [storage foo]
+    type = caldav
+    ...
+    verify = "/path/to/cert.pem"
+
+Vdirsyncer uses the requests_ library, which, by default, `uses its own set of
+trusted CAs
 <http://www.python-requests.org/en/latest/user/advanced/#ca-certificates>`_.
 
 However, the actual behavior depends on how you have installed it. Some Linux
 distributions, such as Debian, patch their ``python-requests`` package to use
 the system certificate CAs. Normally these two stores are similar enough for
-you not to care. If the behavior on your system is somehow confusing, your best
-bet is explicitly setting the SSL options above.
+you to not care.
+
+But there are cases where certificate validation fails even though you can
+access the server fine through e.g. your browser. This usually indicates that
+your installation of the ``requests`` library is somehow broken. In such cases,
+it makes sense to explicitly set ``verify`` or ``verify_fingerprint`` as shown
+above.
+
+.. _requests: http://www.python-requests.org/
 
 .. _ssl-client-certs:
 
@@ -75,5 +67,3 @@ If the key and certificate are separate, a list may be used::
    type = caldav
    ...
    auth_cert = ["/path/to/certificate.crt", "/path/to/key.key"]
-
-.. _requests: http://www.python-requests.org/

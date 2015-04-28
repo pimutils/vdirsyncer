@@ -36,10 +36,29 @@ def prepare_auth(auth, username, password):
         return None
 
 
-def prepare_verify(verify):
+def prepare_verify(verify, verify_fingerprint):
     if isinstance(verify, (text_type, bytes)):
-        return expand_path(verify)
-    return verify
+        verify = expand_path(verify)
+    elif not isinstance(verify, bool):
+        raise ValueError('Invalid value for verify ({}), '
+                         'must be a path to a PEM-file or boolean.'
+                         .format(verify))
+
+    if verify_fingerprint is not None:
+        if not isinstance(verify_fingerprint, str):
+            raise ValueError('Invalid value for verify_fingerprint ({}), '
+                             'must be a string or null.'
+                             .format(verify_fingerprint))
+        verify = False
+    elif not verify:
+        raise ValueError('verify = false is forbidden. Consider setting '
+                         'verify_fingerprint instead, which also disables '
+                         'validation against CAs.')
+
+    return {
+        'verify': verify,
+        'verify_fingerprint': verify_fingerprint,
+    }
 
 
 def prepare_client_cert(cert):
@@ -105,12 +124,12 @@ class HttpStorage(Storage):
             password = get_password(username, url)
 
         self._settings = {
-            'verify': prepare_verify(verify),
-            'verify_fingerprint': verify_fingerprint,
             'auth': prepare_auth(auth, username, password),
             'cert': prepare_client_cert(auth_cert),
             'latin1_fallback': False,
         }
+        self._settings.update(prepare_verify(verify, verify_fingerprint))
+
         self.username, self.password = username, password
         self.useragent = useragent
 

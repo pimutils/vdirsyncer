@@ -19,6 +19,8 @@ Version 0.5.0
   output.
 - Fix compatibility with iCloud again.
 - Use only one worker if debug mode is activated.
+- ``verify=false`` is now disallowed in vdirsyncer, please use
+  ``verify_fingerprint`` instead.
 
 Version 0.4.4
 =============

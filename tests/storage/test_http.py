@@ -111,3 +111,11 @@ def test_prepare_auth_guess(monkeypatch, auth):
         prepare_auth(auth, 'user', 'pwd')
 
     assert 'requests_toolbelt is too old' in str(excinfo.value).lower()
+
+
+def test_verify_false_disallowed():
+    with pytest.raises(ValueError) as excinfo:
+        HttpStorage(url='http://example.com', verify=False)
+
+    assert 'forbidden' in str(excinfo.value).lower()
+    assert 'consider setting verify_fingerprint' in str(excinfo.value).lower()

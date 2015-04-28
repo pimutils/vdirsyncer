@@ -215,11 +215,11 @@ class DavSession(object):
             password = get_password(username, url)
 
         self._settings = {
-            'verify': prepare_verify(verify),
             'auth': prepare_auth(auth, username, password),
-            'verify_fingerprint': verify_fingerprint,
             'cert': prepare_client_cert(auth_cert),
         }
+        self._settings.update(prepare_verify(verify, verify_fingerprint))
+
         self.useragent = useragent
         self.url = url.rstrip('/') + '/'
         self.parsed_url = utils.compat.urlparse.urlparse(self.url)
