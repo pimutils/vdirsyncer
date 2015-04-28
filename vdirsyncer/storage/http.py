@@ -48,7 +48,7 @@ def prepare_verify(verify, verify_fingerprint):
                                    .format(verify))
 
     if verify_fingerprint is not None:
-        if not isinstance(verify_fingerprint, str):
+        if not isinstance(verify_fingerprint, (bytes, text_type)):
             raise exceptions.UserError('Invalid value for verify_fingerprint '
                                        '({}), must be a string or null.'
                                        .format(verify_fingerprint))
