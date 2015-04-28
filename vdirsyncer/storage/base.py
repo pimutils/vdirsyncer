@@ -208,3 +208,25 @@ class Storage(with_metaclass(StorageMeta)):
         when.
         '''
         yield
+
+    def get_meta(self, key):
+        '''Get metadata value for collection/storage.
+
+        See the vdir specification for the keys that *have* to be accepted.
+
+        :param key: The metadata key.
+        :type key: unicode
+        '''
+
+        raise NotImplementedError('This storage does not support metadata.')
+
+    def set_meta(self, key, value):
+        '''Get metadata value for collection/storage.
+
+        :param key: The metadata key.
+        :type key: unicode
+        :param value: The value.
+        :type value: unicode
+        '''
+
+        raise NotImplementedError('This storage does not support metadata.')

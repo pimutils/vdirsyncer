@@ -11,6 +11,7 @@ class TestSingleFileStorage(StorageTests):
 
     storage_class = SingleFileStorage
     supports_collections = False
+    supports_metadata = False
 
     @pytest.fixture(autouse=True)
     def setup(self, tmpdir):

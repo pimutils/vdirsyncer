@@ -43,10 +43,28 @@ the client, which are free to choose a different scheme for filenames instead.
 .. _CardDAV: http://tools.ietf.org/html/rfc6352
 .. _CalDAV: http://tools.ietf.org/search/rfc4791
 
+Metadata
+========
+
+Any of the below metadata files may be absent. None of the files listed below
+have any file extensions.
+
+- A file called ``color`` inside the vdir indicates the vdir's color, a
+  property that is only relevant in UI design.
+
+  Its content is an ASCII-encoded hex-RGB value of the form ``#RRGGBB``. For
+  example, a file content of ``#FF0000`` indicates that the vdir has a red
+  (user-visible) color. No short forms or informal values such as ``red`` (as
+  known from CSS, for example) are allowed. The prefixing ``#`` must be
+  present.
+
+- A file called ``displayname`` contains a UTF-8 encoded label that may be used
+  to represent the vdir in UIs.
+
 Writing to vdirs
 ================
 
-Creating and modifying items *should* happen atomically_.
+Creating and modifying items or metadata files *should* happen atomically_.
 
 Writing to a temporary file on the same physical device, and then moving it to
 the appropriate location is usually a very effective solution. For this

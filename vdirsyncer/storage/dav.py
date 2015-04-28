@@ -336,6 +336,10 @@ class DavStorage(Storage):
     _session = None
     _repr_attributes = ('username', 'url')
 
+    _property_table = {
+        'displayname': ('displayname', 'DAV:'),
+    }
+
     def __init__(self, url, username='', password='', verify=True, auth=None,
                  useragent=USERAGENT, unsafe_href_chars='@',
                  verify_fingerprint=None, auth_cert=None, **kwargs):
@@ -546,6 +550,65 @@ class DavStorage(Storage):
         for href, etag, prop in rv:
             yield utils.compat.urlunquote(href), etag
 
+    def get_meta(self, key):
+        try:
+            tagname, namespace = self._property_table[key]
+        except KeyError:
+            raise exceptions.UnsupportedMetadataError()
+
+        lxml_selector = '{%s}%s' % (namespace, tagname)
+        data = '''<?xml version="1.0" encoding="utf-8" ?>
+            <D:propfind xmlns:D="DAV:">
+                <D:prop>
+                    {}
+                </D:prop>
+            </D:propfind>
+        '''.format(
+            to_native(etree.tostring(etree.Element(lxml_selector)))
+        )
+
+        headers = self.session.get_default_headers()
+        headers['Depth'] = 0
+
+        response = self.session.request(
+            'PROPFIND', '',
+            data=data, headers=headers
+        )
+
+        root = _parse_xml(response.content)
+
+        for prop in root.findall('.//' + lxml_selector):
+            text = getattr(prop, 'text', None)
+            if text:
+                return text
+
+    def set_meta(self, key, value):
+        try:
+            tagname, namespace = self._property_table[key]
+        except KeyError:
+            raise exceptions.UnsupportedMetadataError()
+
+        lxml_selector = '{%s}%s' % (namespace, tagname)
+        element = etree.Element(lxml_selector)
+        element.text = value
+
+        data = '''<?xml version="1.0" encoding="utf-8" ?>
+            <D:propertyupdate xmlns:D="DAV:">
+                <D:set>
+                    <D:prop>
+                        {}
+                    </D:prop>
+                </D:set>
+            </D:propertyupdate>
+        '''.format(to_native(etree.tostring(element)))
+
+        self.session.request(
+            'PROPPATCH', '',
+            data=data, headers=self.session.get_default_headers()
+        )
+
+        # FIXME: Deal with response
+
 
 class CaldavStorage(DavStorage):
 
@@ -597,6 +660,11 @@ class CaldavStorage(DavStorage):
         </C:calendar-multiget>'''
 
     get_multi_data_query = '{urn:ietf:params:xml:ns:caldav}calendar-data'
+
+    _property_table = dict(DavStorage._property_table)
+    _property_table.update({
+        'color': ('calendar-color', 'http://apple.com/ns/ical/'),
+    })
 
     def __init__(self, start_date=None, end_date=None,
                  item_types=(), **kwargs):

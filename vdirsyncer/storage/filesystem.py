@@ -180,3 +180,20 @@ class FilesystemStorage(Storage):
             subprocess.call([self.post_hook, fpath])
         except OSError as e:
             logger.warning('Error executing external hook: {}'.format(str(e)))
+
+    def get_meta(self, key):
+        fpath = os.path.join(self.path, key)
+        try:
+            with open(fpath, 'rb') as f:
+                return f.read().decode(self.encoding)
+        except IOError as e:
+            if e.errno == errno.ENOENT:
+                return None
+            else:
+                raise
+
+    def set_meta(self, key, value):
+        assert isinstance(value, text_type)
+        fpath = os.path.join(self.path, key)
+        with atomic_write(fpath, mode='wb', overwrite=True) as f:
+            f.write(value.encode(self.encoding))
