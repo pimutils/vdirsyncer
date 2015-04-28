@@ -18,7 +18,8 @@ class MemoryStorage(Storage):
 
     def __init__(self, fileext='', **kwargs):
         if kwargs.get('collection') is not None:
-            raise ValueError('MemoryStorage does not support collections.')
+            raise exceptions.UserError('MemoryStorage does not support '
+                                       'collections.')
         self.items = {}  # href => (etag, item)
         self.fileext = fileext
         super(MemoryStorage, self).__init__(**kwargs)

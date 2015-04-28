@@ -591,12 +591,12 @@ class CaldavStorage(DavStorage):
                  item_types=(), **kwargs):
         super(CaldavStorage, self).__init__(**kwargs)
         if not isinstance(item_types, (list, tuple)):
-            raise ValueError('item_types must be a list.')
+            raise exceptions.UserError('item_types must be a list.')
 
         self.item_types = tuple(item_types)
         if (start_date is None) != (end_date is None):
-            raise ValueError('If start_date is given, '
-                             'end_date has to be given too.')
+            raise exceptions.UserError('If start_date is given, '
+                                       'end_date has to be given too.')
         elif start_date is not None and end_date is not None:
             namespace = dict(datetime.__dict__)
             namespace['start_date'] = self.start_date = \

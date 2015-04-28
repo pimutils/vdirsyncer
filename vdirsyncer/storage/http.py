@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .base import Item, Storage
-from ..exceptions import NotFoundError
+from .. import exceptions
 from ..utils import expand_path
 from ..utils.compat import iteritems, text_type, urlparse
 from ..utils.http import request
@@ -22,16 +22,19 @@ def prepare_auth(auth, username, password):
             try:
                 from requests_toolbelt.auth.guess import GuessAuth
             except ImportError:
-                raise RuntimeError('Your version of requests_toolbelt is too '
-                                   'old for `guess` authentication. At least '
-                                   'version 0.4.0 is required.')
+                raise exceptions.UserError(
+                    'Your version of requests_toolbelt is too '
+                    'old for `guess` authentication. At least '
+                    'version 0.4.0 is required.'
+                )
             else:
                 return GuessAuth(username, password)
         else:
-            raise ValueError('Unknown authentication method: {}'.format(auth))
+            raise exceptions.UserError('Unknown authentication method: {}'
+                                       .format(auth))
     elif auth:
-        raise ValueError('For {} authentication, you need to specify username '
-                         'and password.'.format(auth))
+        raise exceptions.UserError('You need to specify username and password '
+                                   'for {} authentication.'.format(auth))
     else:
         return None
 
@@ -40,20 +43,20 @@ def prepare_verify(verify, verify_fingerprint):
     if isinstance(verify, (text_type, bytes)):
         verify = expand_path(verify)
     elif not isinstance(verify, bool):
-        raise ValueError('Invalid value for verify ({}), '
-                         'must be a path to a PEM-file or boolean.'
-                         .format(verify))
+        raise exceptions.UserError('Invalid value for verify ({}), '
+                                   'must be a path to a PEM-file or boolean.'
+                                   .format(verify))
 
     if verify_fingerprint is not None:
         if not isinstance(verify_fingerprint, str):
-            raise ValueError('Invalid value for verify_fingerprint ({}), '
-                             'must be a string or null.'
-                             .format(verify_fingerprint))
+            raise exceptions.UserError('Invalid value for verify_fingerprint '
+                                       '({}), must be a string or null.'
+                                       .format(verify_fingerprint))
         verify = False
     elif not verify:
-        raise ValueError('verify = false is forbidden. Consider setting '
-                         'verify_fingerprint instead, which also disables '
-                         'validation against CAs.')
+        raise exceptions.UserError('verify = false is forbidden. Consider '
+                                   'setting verify_fingerprint instead, which '
+                                   'also disables validation against CAs.')
 
     return {
         'verify': verify,
@@ -161,4 +164,4 @@ class HttpStorage(Storage):
         try:
             return self._items[href]
         except KeyError:
-            raise NotFoundError(href)
+            raise exceptions.NotFoundError(href)

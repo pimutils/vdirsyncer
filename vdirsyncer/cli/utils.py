@@ -495,8 +495,9 @@ def handle_storage_init_error(cls, config):
             .format(cls.storage_name, u', '.join(invalid)))
 
     if not problems:
-        cli_logger.exception('')
-        problems.append('Internal error, see above.')
+        if not isinstance(e, exceptions.UserError):
+            cli_logger.exception('')
+        problems.append(str(e))
 
     raise CliError(u'Failed to initialize {}'.format(config['instance_name']),
                    problems=problems)
