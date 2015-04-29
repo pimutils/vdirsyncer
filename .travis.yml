@@ -12,14 +12,14 @@ env:
       PKGS='lxml==3.0 requests==2.4.1 requests_toolbelt==0.4.0 click==3.1'
       # Minimal requirements
 
-    #- BUILD=test DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=devel
-      ## Radicale-git with filesystem storage (default)
+    - BUILD=test DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=devel
+      # Radicale-git with filesystem storage (default)
 
-    #- BUILD=test DAV_SERVER=radicale RADICALE_BACKEND=multifilesystem REQUIREMENTS=devel
-      ## Radicale-git with multifilesystem storage
+    - BUILD=test DAV_SERVER=radicale RADICALE_BACKEND=multifilesystem REQUIREMENTS=devel
+      # Radicale-git with multifilesystem storage
 
-    #- BUILD=test DAV_SERVER=radicale RADICALE_BACKEND=database REQUIREMENTS=devel
-    #  # Radicale-git with database storage (release's database storage is broken)
+    - BUILD=test DAV_SERVER=radicale RADICALE_BACKEND=database REQUIREMENTS=devel
+      # Radicale-git with database storage (release's database storage is broken)
 
     - BUILD=test DAV_SERVER=owncloud REQUIREMENTS=release
       # Latest ownCloud release
