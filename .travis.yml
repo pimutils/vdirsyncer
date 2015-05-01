@@ -15,9 +15,6 @@ env:
     - BUILD=test DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=devel
       # Radicale-git with filesystem storage (default)
 
-    - BUILD=test DAV_SERVER=radicale RADICALE_BACKEND=database REQUIREMENTS=devel
-      # Radicale-git with database storage (release's database storage is broken)
-
     - BUILD=test DAV_SERVER=owncloud REQUIREMENTS=release
       # Latest ownCloud release
 
