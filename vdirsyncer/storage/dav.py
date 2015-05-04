@@ -391,12 +391,13 @@ class DavStorage(Storage):
                 dav_logger.warning('Skipping {}, the item content is missing.'
                                    .format(href))
                 continue
-            else:
-                raw = raw.text
-                if isinstance(raw, bytes):
-                    raw = raw.decode(response.encoding)
-                if isinstance(etag, bytes):
-                    etag = etag.decode(response.encoding)
+
+            raw = raw.text or u''
+
+            if isinstance(raw, bytes):
+                raw = raw.decode(response.encoding)
+            if isinstance(etag, bytes):
+                etag = etag.decode(response.encoding)
 
             try:
                 hrefs_left.remove(href)
