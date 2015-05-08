@@ -195,6 +195,6 @@ CalDAV support::
     password = ...
     read_only = true
 
-Unfortunately vdirsyncer current doesn't support Google Contacts in any way.
+Unfortunately vdirsyncer currently doesn't support Google Contacts in any way.
 
 See :gh:`8` for the discussion.
