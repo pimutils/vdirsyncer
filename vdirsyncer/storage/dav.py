@@ -29,10 +29,6 @@ def _normalize_href(base, href):
     return x
 
 
-def _encode_href(x):
-    return utils.compat.urlquote(x, '/@')
-
-
 def _decode_href(x):
     return utils.compat.urlunquote(x)
 
@@ -373,7 +369,7 @@ class DavStorage(Storage):
         for href in hrefs:
             if href != self._normalize_href(href):
                 raise exceptions.NotFoundError(href)
-            href_xml.append('<D:href>{}</D:href>'.format(_encode_href(href)))
+            href_xml.append('<D:href>{}</D:href>'.format(href))
         if not href_xml:
             return ()
 
@@ -426,7 +422,7 @@ class DavStorage(Storage):
 
         response = self.session.request(
             'PUT',
-            _encode_href(href),
+            href,
             data=item.raw.encode('utf-8'),
             headers=headers
         )
@@ -456,7 +452,7 @@ class DavStorage(Storage):
 
         self.session.request(
             'DELETE',
-            _encode_href(href),
+            href,
             headers=headers
         )
 
@@ -469,7 +465,7 @@ class DavStorage(Storage):
                 continue
 
             href = self._normalize_href(href.text)
-            for i in range(decoding_rounds):
+            for i in range(decoding_rounds - 1):
                 href = _decode_href(href)
 
             if href in hrefs:
