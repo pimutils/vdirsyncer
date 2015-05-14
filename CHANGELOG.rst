@@ -23,6 +23,9 @@ Version 0.5.0
   ``verify_fingerprint`` instead.
 - Fixed a bug where vdirsyncer's DAV storage was not using the configured
   useragent for collection discovery.
+- Fixed the way encodings are handled in DAV storage. **Make sure all your
+  data is synced before upgrading to this version**, otherwise you'll
+  experience a lot of sync conflicts.
 
 Version 0.4.4
 =============
