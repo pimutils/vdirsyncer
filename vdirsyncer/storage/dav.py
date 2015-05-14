@@ -94,8 +94,10 @@ class Discover(object):
 
     def find_dav(self):
         try:
-            response = self.session.request('GET', self._well_known_uri,
-                                            allow_redirects=False)
+            response = self.session.request(
+                'GET', self._well_known_uri, allow_redirects=False,
+                headers=self.session.get_default_headers()
+            )
             return response.headers.get('Location', '')
         except (HTTPError, exceptions.Error):
             # The user might not have well-known URLs set up and instead points

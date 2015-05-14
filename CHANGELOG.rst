@@ -21,6 +21,8 @@ Version 0.5.0
 - Use only one worker if debug mode is activated.
 - ``verify=false`` is now disallowed in vdirsyncer, please use
   ``verify_fingerprint`` instead.
+- Fixed a bug where vdirsyncer's DAV storage was not using the configured
+  useragent for collection discovery.
 
 Version 0.4.4
 =============
