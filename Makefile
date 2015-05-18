@@ -23,3 +23,8 @@ docs:
 
 linkcheck:
 	sphinx-build -W -b linkcheck ./docs/ ./docs/_build/linkcheck/
+
+install:
+	$(error Take a look at https://vdirsyncer.readthedocs.org/en/stable/tutorial.html#installation)
+
+.DEFAULT_GOAL := install
