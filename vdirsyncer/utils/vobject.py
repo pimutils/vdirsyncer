@@ -3,7 +3,7 @@
 import hashlib
 from itertools import chain, tee
 
-from . import cached_property, uniq
+from . import cached_property, split_sequence, uniq
 from .compat import text_type
 
 
@@ -100,33 +100,37 @@ def hash_item(text):
     return hashlib.sha256(normalize_item(text).encode('utf-8')).hexdigest()
 
 
-def split_collection(text):
+def split_collection(text, inline=(u'VTIMEZONE',),
+                     wrap_items_with=(u'VCALENDAR',)):
+    '''Emits items in the order they occur in the text.'''
     assert isinstance(text, text_type)
-    inline = []
-    items = []
+    collections = _Component.parse(text, multiple=True)
+    collection_name = None
 
-    def inner(item, main):
-        if item.name == u'VTIMEZONE':
-            inline.append(item)
-        elif item.name == u'VCARD':
-            items.append(item)
-        elif item.name in (u'VTODO', u'VEVENT', u'VJOURNAL'):
-            items.append(_Component(main.name,
-                                    main.props[:],
-                                    [item]))
-        elif item.name in (u'VCALENDAR', u'VADDRESSBOOK'):
-            for subitem in item.subcomponents:
-                inner(subitem, item)
-        else:
-            raise ValueError('Unknown component: {}'
-                             .format(item.name))
+    for collection in collections:
+        if collection_name is None:
+            collection_name = collection.name
+            start = end = ()
+            if collection_name in wrap_items_with:
+                start = (u'BEGIN:{0}'.format(collection_name),)
+                end = (u'END:{0}'.format(collection_name),)
 
-    for main in _Component.parse(text, multiple=True):
-        inner(main, main)
+        elif collection.name != collection_name:
+            raise ValueError('Different types of components at top-level. '
+                             'Expected {0}, got {1}.'
+                             .format(collection_name, collection.name))
 
-    for item in items:
-        item.subcomponents.extend(inline)
-        yield u'\r\n'.join(item.dump_lines())
+        inlined_items, normal_items = split_sequence(
+            collection.subcomponents,
+            lambda item: item.name in inline
+        )
+        inlined_lines = list(chain(*(inlined_item.dump_lines()
+                                     for inlined_item in inlined_items)))
+
+        for item in normal_items:
+            lines = chain(start, inlined_lines, item.dump_lines(), end)
+            yield u''.join(line + u'\r\n' for line in lines if line)
+
 
 _default_join_wrappers = {
     u'VCALENDAR': u'VCALENDAR',
@@ -146,36 +150,22 @@ def join_collection(items, wrappers=_default_join_wrappers):
     items1, items2 = tee((_Component.parse(x)
                           for x in items), 2)
     item_type, wrapper_type = _get_item_type(items1, wrappers)
-    wrapper_props = []
 
     def _get_item_components(x):
-        if x.name == wrapper_type:
-            wrapper_props.extend(x.props)
-            return x.subcomponents
-        else:
-            return [x]
+        return x.name == wrapper_type and x.subcomponents or [x]
 
     components = chain(*(_get_item_components(x) for x in items2))
     lines = chain(*uniq(tuple(x.dump_lines()) for x in components))
 
     if wrapper_type is not None:
-        lines = chain(*(
-            [u'BEGIN:{}'.format(wrapper_type)],
-            # XXX: wrapper_props is a list of lines (with line-wrapping), so
-            # filtering out duplicate lines will almost certainly break
-            # multiline-values.  Since the only props we usually need to
-            # support are PRODID and VERSION, I don't care.
-            uniq(wrapper_props),
-            lines,
-            [u'END:{}'.format(wrapper_type)]
-        ))
+        start = [u'BEGIN:{0}'.format(wrapper_type)]
+        end = [u'END:{0}'.format(wrapper_type)]
+        lines = chain(start, lines, end)
     return u''.join(line + u'\r\n' for line in lines)
 
 
 def _get_item_type(components, wrappers):
-    i = 0
     for component in components:
-        i += 1
         try:
             item_type = component.name
             wrapper_type = wrappers[item_type]
@@ -183,11 +173,7 @@ def _get_item_type(components, wrappers):
             pass
         else:
             return item_type, wrapper_type
-
-    if not i:
-        return None, None
-    else:
-        raise ValueError('Not sure how to join components.')
+    return None, None
 
 
 class _Component(object):
@@ -216,7 +202,7 @@ class _Component(object):
         :param subcomponents: List of components.
         '''
         self.name = name
-        self.props = lines
+        self.lines = lines
         self.subcomponents = subcomponents
 
     @classmethod
@@ -240,29 +226,29 @@ class _Component(object):
                     rv.append(component)
             else:
                 if line.strip():
-                    stack[-1].props.append(line)
+                    stack[-1].lines.append(line)
 
         if multiple:
             return rv
         elif len(rv) != 1:
-            raise ValueError('Found {} components, expected one.'
+            raise ValueError('Found {0} components, expected one.'
                              .format(len(rv)))
         else:
             return rv[0]
 
     def dump_lines(self):
-        yield u'BEGIN:{}'.format(self.name)
-        for line in self.props:
+        yield u'BEGIN:{0}'.format(self.name)
+        for line in self.lines:
             yield line
         for c in self.subcomponents:
             for line in c.dump_lines():
                 yield line
-        yield u'END:{}'.format(self.name)
+        yield u'END:{0}'.format(self.name)
 
     def __delitem__(self, key):
-        prefix = u'{}:'.format(key)
+        prefix = u'{0}:'.format(key)
         new_lines = []
-        lineiter = iter(self.props)
+        lineiter = iter(self.lines)
         for line in lineiter:
             if line.startswith(prefix):
                 break
@@ -275,16 +261,16 @@ class _Component(object):
                 break
 
         new_lines.extend(lineiter)
-        self.props = new_lines
+        self.lines = new_lines
 
     def __setitem__(self, key, val):
         del self[key]
-        line = u'{}:{}'.format(key, val)
-        self.props.append(line)
+        line = u'{0}:{1}'.format(key, val)
+        self.lines.append(line)
 
     def __getitem__(self, key):
-        prefix = u'{}:'.format(key)
-        iterlines = iter(self.props)
+        prefix = u'{0}:'.format(key)
+        iterlines = iter(self.lines)
         for line in iterlines:
             if line.startswith(prefix):
                 rv = line[len(prefix):]

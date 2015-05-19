@@ -4,11 +4,6 @@ import sys
 
 PY2 = sys.version_info[0] == 2
 
-if sys.version_info < (3, 3) and sys.version_info[:2] != (2, 7):
-    raise RuntimeError(
-        'vdirsyncer only works on Python versions 2.7.x and 3.3+'
-    )
-
 
 if PY2:  # pragma: no cover
     import urlparse

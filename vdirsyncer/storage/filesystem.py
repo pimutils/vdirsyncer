@@ -24,9 +24,8 @@ class FilesystemStorage(Storage):
     Can be used with `khal <http://lostpackets.de/khal/>`_. See :doc:`vdir` for
     a more formal description of the format.
 
-    :param path: Absolute path to a vdir/collection. If this is used in
-        combination with the ``collections`` parameter in a pair-section, this
-        should point to a directory of vdirs instead.
+    :param path: Absolute path to a vdir or collection, depending on the
+        collection parameter (see :py:class:`vdirsyncer.storage.base.Storage`).
     :param fileext: The file extension to use (e.g. ``.txt``). Contained in the
         href, so if you change the file extension after a sync, this will
         trigger a re-download of everything (but *should* not cause data-loss

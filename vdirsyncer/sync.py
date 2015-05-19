@@ -76,7 +76,7 @@ class BothReadOnly(SyncError):
     '''
 
 
-class StorageSyncer(object):
+class StorageInfo(object):
     '''A wrapper class that holds prefetched items, the status and other
     things.'''
     def __init__(self, storage, status):
@@ -122,10 +122,6 @@ class StorageSyncer(object):
             if props.setdefault('etag', etag) != etag:
                 raise SyncError('Etag changed during sync.')
 
-    def is_changed(self, ident):
-        _, status_etag = self.status.get(ident, (None, None))
-        return self.idents[ident]['etag'] != status_etag
-
 
 def sync(storage_a, storage_b, status, conflict_resolution=None,
          force_delete=False):
@@ -150,11 +146,11 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
     if storage_a.read_only and storage_b.read_only:
         raise BothReadOnly()
 
-    a_info = storage_a.syncer_class(storage_a, dict(
+    a_info = StorageInfo(storage_a, dict(
         (ident, (href_a, etag_a))
         for ident, (href_a, etag_a, href_b, etag_b) in iteritems(status)
     ))
-    b_info = storage_b.syncer_class(storage_b, dict(
+    b_info = StorageInfo(storage_b, dict(
         (ident, (href_b, etag_b))
         for ident, (href_a, etag_a, href_b, etag_b) in iteritems(status)
     ))
@@ -184,7 +180,7 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
 def _action_upload(ident, source, dest):
 
     def inner(a, b, conflict_resolution):
-        sync_logger.info('Copying (uploading) item {} to {}'
+        sync_logger.info('Copying (uploading) item {0} to {1}'
                          .format(ident, dest.storage))
         source_meta = source.idents[ident]
 
@@ -205,7 +201,7 @@ def _action_upload(ident, source, dest):
 def _action_update(ident, source, dest):
 
     def inner(a, b, conflict_resolution):
-        sync_logger.info('Copying (updating) item {} to {}'
+        sync_logger.info('Copying (updating) item {0} to {1}'
                          .format(ident, dest.storage))
         source_meta = source.idents[ident]
 
@@ -231,9 +227,9 @@ def _action_delete(ident, info):
     idents = info.idents
 
     def inner(a, b, conflict_resolution):
-        sync_logger.info('Deleting item {} from {}'.format(ident, storage))
+        sync_logger.info('Deleting item {0} from {1}'.format(ident, storage))
         if storage.read_only:
-            sync_logger.warning('{} is read-only, skipping deletion...'
+            sync_logger.warning('{0} is read-only, skipping deletion...'
                                 .format(storage))
         else:
             meta = idents[ident]
@@ -249,7 +245,7 @@ def _action_delete(ident, info):
 
 def _action_delete_status(ident):
     def inner(a, b, conflict_resolution):
-        sync_logger.info('Deleting status info for nonexisting item {}'
+        sync_logger.info('Deleting status info for nonexisting item {0}'
                          .format(ident))
         del a.status[ident]
         del b.status[ident]
@@ -259,7 +255,7 @@ def _action_delete_status(ident):
 
 def _action_conflict_resolve(ident):
     def inner(a, b, conflict_resolution):
-        sync_logger.info('Doing conflict resolution for item {}...'
+        sync_logger.info('Doing conflict resolution for item {0}...'
                          .format(ident))
         meta_a = a.idents[ident]
         meta_b = b.idents[ident]
@@ -272,14 +268,14 @@ def _action_conflict_resolve(ident):
             raise SyncConflict(ident=ident, href_a=meta_a['href'],
                                href_b=meta_b['href'])
         elif conflict_resolution == 'a wins':
-            sync_logger.info('...{} wins.'.format(a.storage))
+            sync_logger.info('...{0} wins.'.format(a.storage))
             _action_update(ident, a, b)(a, b, conflict_resolution)
         elif conflict_resolution == 'b wins':
-            sync_logger.info('...{} wins.'.format(b.storage))
+            sync_logger.info('...{0} wins.'.format(b.storage))
             _action_update(ident, b, a)(a, b, conflict_resolution)
         else:
-            raise exceptions.UserError('Invalid conflict resolution mode: {}'
-                                       .format(conflict_resolution))
+            raise ValueError('Invalid conflict resolution mode: {0}'
+                             .format(conflict_resolution))
 
     return inner
 
@@ -287,24 +283,27 @@ def _action_conflict_resolve(ident):
 def _get_actions(a_info, b_info):
     for ident in uniq(itertools.chain(a_info.idents, b_info.idents,
                                       a_info.status)):
-        a = ident in a_info.idents  # item exists in a
-        b = ident in b_info.idents  # item exists in b
+        a = a_info.idents.get(ident, None)
+        b = b_info.idents.get(ident, None)
+        assert not a or a['etag'] is not None
+        assert not b or b['etag'] is not None
+
+        _, status_etag_a = a_info.status.get(ident, (None, None))
+        _, status_etag_b = b_info.status.get(ident, (None, None))
 
         if a and b:
-            a_changed = a_info.is_changed(ident)
-            b_changed = b_info.is_changed(ident)
-            if a_changed and b_changed:
+            if a['etag'] != status_etag_a and b['etag'] != status_etag_b:
                 # item was modified on both sides
                 # OR: missing status
                 yield _action_conflict_resolve(ident)
-            elif a_changed and not b_changed:
+            elif a['etag'] != status_etag_a:
                 # item was only modified in a
                 yield _action_update(ident, a_info, b_info)
-            elif not a_changed and b_changed:
+            elif b['etag'] != status_etag_b:
                 # item was only modified in b
                 yield _action_update(ident, b_info, a_info)
         elif a and not b:
-            if a_info.is_changed(ident):
+            if a['etag'] != status_etag_a:
                 # was deleted from b but modified on a
                 # OR: new item was created in a
                 yield _action_upload(ident, a_info, b_info)
@@ -312,7 +311,7 @@ def _get_actions(a_info, b_info):
                 # was deleted from b and not modified on a
                 yield _action_delete(ident, a_info)
         elif not a and b:
-            if b_info.is_changed(ident):
+            if b['etag'] != status_etag_b:
                 # was deleted from a but modified on b
                 # OR: new item was created in b
                 yield _action_upload(ident, b_info, a_info)

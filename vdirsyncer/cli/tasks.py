@@ -14,22 +14,15 @@ def sync_pair(wq, pair_name, collections_to_sync, general, all_pairs,
               all_storages, force_delete):
     key = ('prepare', pair_name)
     if key in wq.handled_jobs:
-        cli_logger.warning('Already prepared {}, skipping'.format(pair_name))
+        cli_logger.warning('Already prepared {0}, skipping'.format(pair_name))
         return
     wq.handled_jobs.add(key)
 
     a_name, b_name, pair_options = all_pairs[pair_name]
 
-    try:
-        config_a, config_b = all_storages[a_name], all_storages[b_name]
-    except KeyError as e:
-        raise CliError('Pair {}: Storage {} not found. These are the '
-                       'configured storages: {}'
-                       .format(pair_name, str(e), list(all_storages)))
-
     all_collections = dict(collections_for_pair(
         general['status_path'], a_name, b_name, pair_name,
-        config_a, config_b, pair_options
+        all_storages[a_name], all_storages[b_name], pair_options
     ))
 
     # spawn one worker less because we can reuse the current one
@@ -38,8 +31,8 @@ def sync_pair(wq, pair_name, collections_to_sync, general, all_pairs,
         try:
             config_a, config_b = all_collections[collection]
         except KeyError:
-            raise CliError('Pair {}: Collection {} not found. These are the '
-                           'configured collections:\n{}'.format(
+            raise CliError('Pair {0}: Collection {1} not found. These are the '
+                           'configured collections:\n{2}'.format(
                                pair_name, collection, list(all_collections)))
         new_workers += 1
         wq.put(functools.partial(
@@ -58,16 +51,16 @@ def sync_collection(wq, pair_name, collection, config_a, config_b,
 
     key = ('sync', pair_name, collection)
     if key in wq.handled_jobs:
-        cli_logger.warning('Already syncing {}, skipping'.format(status_name))
+        cli_logger.warning('Already syncing {0}, skipping'.format(status_name))
         return
     wq.handled_jobs.add(key)
 
     try:
-        cli_logger.info('Syncing {}'.format(status_name))
+        cli_logger.info('Syncing {0}'.format(status_name))
 
         status = load_status(general['status_path'], pair_name,
                              collection, data_type='items') or {}
-        cli_logger.debug('Loaded status for {}'.format(status_name))
+        cli_logger.debug('Loaded status for {0}'.format(status_name))
 
         a = storage_instance_from_config(config_a)
         b = storage_instance_from_config(config_b)
@@ -89,7 +82,7 @@ def discover_collections(wq, pair_name, **kwargs):
     collections = list(c for c, (a, b) in rv)
     if collections == [None]:
         collections = None
-    cli_logger.info('Saved for {}: collections = {}'
+    cli_logger.info('Saved for {0}: collections = {1}'
                     .format(pair_name, json.dumps(collections)))
 
 
@@ -108,12 +101,12 @@ def repair_collection(general, all_pairs, all_storages, collection):
             if config['collection'] == collection:
                 break
         else:
-            raise CliError('Couldn\'t find collection {} for storage {}.'
+            raise CliError('Couldn\'t find collection {0} for storage {1}.'
                            .format(collection, storage_name))
 
     config['type'] = storage_type
     storage = storage_instance_from_config(config)
 
-    cli_logger.info('Repairing {}/{}'.format(storage_name, collection))
+    cli_logger.info('Repairing {0}/{1}'.format(storage_name, collection))
     cli_logger.warning('Make sure no other program is talking to the server.')
     repair_storage(storage)

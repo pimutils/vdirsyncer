@@ -19,7 +19,7 @@ class ColorFormatter(logging.Formatter):
         if not record.exc_info:
             level = record.levelname.lower()
             if level in self.colors:
-                prefix = click.style('{}: '.format(level),
+                prefix = click.style('{0}: '.format(level),
                                      **self.colors[level])
                 record.msg = '\n'.join(prefix + x
                                        for x in str(record.msg).splitlines())

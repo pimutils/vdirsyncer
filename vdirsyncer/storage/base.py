@@ -3,7 +3,7 @@
 import contextlib
 import functools
 
-from .. import exceptions, sync
+from .. import exceptions
 from ..utils import uniq
 from ..utils.compat import with_metaclass
 from ..utils.vobject import Item  # noqa
@@ -48,8 +48,6 @@ class Storage(with_metaclass(StorageMeta)):
 
     fileext = '.txt'
 
-    syncer_class = sync.StorageSyncer
-
     # The string used in the config to denote the type of storage. Should be
     # overridden by subclasses.
     storage_name = None
@@ -77,11 +75,11 @@ class Storage(with_metaclass(StorageMeta)):
         if read_only is None:
             read_only = self.read_only
         if self.read_only and not read_only:
-            raise exceptions.UserError('This storage can only be read-only.')
+            raise ValueError('This storage can only be read-only.')
         self.read_only = bool(read_only)
 
         if collection and instance_name:
-            instance_name = '{}/{}'.format(instance_name, collection)
+            instance_name = '{0}/{1}'.format(instance_name, collection)
         self.instance_name = instance_name
         self.collection = collection
         self.collection_human = collection_human

@@ -4,7 +4,7 @@ import datetime
 
 from lxml import etree
 
-import requests
+from requests import session as requests_session
 from requests.exceptions import HTTPError
 
 from .base import Item, Storage
@@ -24,8 +24,8 @@ def _normalize_href(base, href):
     schema.'''
     if not href:
         raise ValueError(href)
-    x = utils.compat.urlparse.urljoin(base, href)
-    x = utils.compat.urlparse.urlsplit(x).path
+    x = utils.urlparse.urljoin(base, href)
+    x = utils.urlparse.urlsplit(x).path
     return x
 
 
@@ -45,7 +45,7 @@ def _parse_xml(content):
     try:
         return etree.XML(content)
     except etree.Error as e:
-        raise InvalidXMLResponse('Invalid XML encountered: {}\n'
+        raise InvalidXMLResponse('Invalid XML encountered: {0}\n'
                                  'Double-check the URLs in your config.'
                                  .format(e))
 
@@ -94,10 +94,8 @@ class Discover(object):
 
     def find_dav(self):
         try:
-            response = self.session.request(
-                'GET', self._well_known_uri, allow_redirects=False,
-                headers=self.session.get_default_headers()
-            )
+            response = self.session.request('GET', self._well_known_uri,
+                                            allow_redirects=False)
             return response.headers.get('Location', '')
         except (HTTPError, exceptions.Error):
             # The user might not have well-known URLs set up and instead points
@@ -123,7 +121,7 @@ class Discover(object):
         rv = root.find('.//{DAV:}current-user-principal/{DAV:}href')
         if rv is None:
             raise InvalidXMLResponse()
-        return utils.compat.urlparse.urljoin(response.url, rv.text)
+        return utils.urlparse.urljoin(response.url, rv.text)
 
     def find_home(self, url=None):
         if url is None:
@@ -139,7 +137,7 @@ class Discover(object):
         rv = root.find('.//' + self._homeset_tag + '/{*}href')
         if rv is None:
             raise InvalidXMLResponse()
-        return utils.compat.urlparse.urljoin(response.url, rv.text)
+        return utils.urlparse.urljoin(response.url, rv.text)
 
     def find_collections(self, url=None):
         if url is None:
@@ -159,7 +157,7 @@ class Discover(object):
             href = response.find('{*}href')
             if href is None:
                 raise InvalidXMLResponse()
-            href = utils.compat.urlparse.urljoin(r.url, href.text)
+            href = utils.urlparse.urljoin(r.url, href.text)
             if href not in done:
                 done.add(href)
                 yield {'href': href, 'displayname': displayname}
@@ -213,30 +211,29 @@ class DavSession(object):
                  useragent=USERAGENT, verify_fingerprint=None,
                  auth_cert=None):
         if username and not password:
-            from ..utils.password import get_password
-            password = get_password(username, url)
+            password = utils.get_password(username, url)
 
         self._settings = {
+            'verify': prepare_verify(verify),
             'auth': prepare_auth(auth, username, password),
+            'verify_fingerprint': verify_fingerprint,
             'cert': prepare_client_cert(auth_cert),
         }
-        self._settings.update(prepare_verify(verify, verify_fingerprint))
-
         self.useragent = useragent
         self.url = url.rstrip('/') + '/'
-        self.parsed_url = utils.compat.urlparse.urlparse(self.url)
+        self.parsed_url = utils.urlparse.urlparse(self.url)
         self._session = None
 
     def request(self, method, path, **kwargs):
         url = self.url
         if path:
-            url = utils.compat.urlparse.urljoin(self.url, path)
+            url = utils.urlparse.urljoin(self.url, path)
         if self._session is None:
-            self._session = requests.session()
+            self._session = requests_session()
 
         more = dict(self._settings)
         more.update(kwargs)
-        return utils.http.request(method, url, session=self._session, **more)
+        return utils.request(method, url, session=self._session, **more)
 
     def get_default_headers(self):
         return {
@@ -322,40 +319,33 @@ class DavStorage(Storage):
                 return c
 
         home = d.find_home()
-        url = '{}/{}'.format(home.rstrip('/'), collection)
+        collection_url = '{0}/{1}'.format(home.rstrip('/'), collection)
+
+        data = '''<?xml version="1.0" encoding="utf-8" ?>
+        <D:mkcol xmlns:D="DAV:" xmlns:C="{0}">
+            <D:set>
+                <D:prop>
+                    <D:resourcetype>
+                        <D:collection/>
+                        <C:{1}/>
+                    </D:resourcetype>
+                </D:prop>
+            </D:set>
+        </D:mkcol>
+        '''.format(cls._dav_namespace, cls._dav_resourcetype)
+
+        headers = d.session.get_default_headers()
 
         try:
-            url = cls._create_collection_impl(d, url, kwargs)
+            response = d.session.request('MKCOL', collection_url, data=data,
+                                         headers=headers)
         except HTTPError as e:
             raise NotImplementedError(e)
         else:
             rv = dict(kwargs)
             rv['collection'] = collection
-            rv['url'] = url
+            rv['url'] = response.url
             return rv
-
-    @classmethod
-    def _create_collection_impl(cls, d, url, kwargs):
-        data = '''<?xml version="1.0" encoding="utf-8" ?>
-            <D:mkcol xmlns:D="DAV:" xmlns:C="{}">
-                <D:set>
-                    <D:prop>
-                        <D:resourcetype>
-                            <D:collection/>
-                            <C:{}/>
-                        </D:resourcetype>
-                    </D:prop>
-                </D:set>
-            </D:mkcol>
-        '''.format(cls._dav_namespace, cls._dav_resourcetype)
-
-        response = d.session.request(
-            'MKCOL',
-            url,
-            data=data,
-            headers=d.session.get_default_headers(),
-        )
-        return response.url
 
     def _normalize_href(self, *args, **kwargs):
         return _normalize_href(self.session.url, *args, **kwargs)
@@ -380,7 +370,7 @@ class DavStorage(Storage):
         for href in hrefs:
             if href != self._normalize_href(href):
                 raise exceptions.NotFoundError(href)
-            href_xml.append('<D:href>{}</D:href>'.format(_encode_href(href)))
+            href_xml.append('<D:href>{0}</D:href>'.format(_encode_href(href)))
         if not href_xml:
             return ()
 
@@ -397,25 +387,24 @@ class DavStorage(Storage):
         for href, etag, prop in self._parse_prop_responses(root):
             raw = prop.find(self.get_multi_data_query)
             if raw is None:
-                dav_logger.warning('Skipping {}, the item content is missing.'
+                dav_logger.warning('Skipping {0}, the item content is missing.'
                                    .format(href))
                 continue
-
-            raw = raw.text or u''
-
-            if isinstance(raw, bytes):
-                raw = raw.decode(response.encoding)
-            if isinstance(etag, bytes):
-                etag = etag.decode(response.encoding)
+            else:
+                raw = raw.text
+                if isinstance(raw, bytes):
+                    raw = raw.decode(response.encoding)
+                if isinstance(etag, bytes):
+                    etag = etag.decode(response.encoding)
 
             try:
                 hrefs_left.remove(href)
             except KeyError:
                 if href in hrefs:
-                    dav_logger.warning('Server sent item twice: {}'
+                    dav_logger.warning('Server sent item twice: {0}'
                                        .format(href))
                 else:
-                    dav_logger.warning('Server sent unsolicited item: {}'
+                    dav_logger.warning('Server sent unsolicited item: {0}'
                                        .format(href))
             else:
                 rv.append((href, Item(raw), etag))
@@ -438,7 +427,7 @@ class DavStorage(Storage):
             headers=headers
         )
         etag = response.headers.get('etag', None)
-        href = self._normalize_href(_decode_href(response.url))
+        href = self._normalize_href(response.url)
         if not etag:
             item2, etag = self.get(href)
             assert item2.uid == item.uid
@@ -485,63 +474,37 @@ class DavStorage(Storage):
                 #   https://github.com/untitaker/vdirsyncer/issues/88
                 # - Davmail
                 #   https://github.com/untitaker/vdirsyncer/issues/144
-                dav_logger.warning('Skipping identical href: {!r}'
+                dav_logger.warning('Skipping identical href: {0!r}'
                                    .format(href))
                 continue
 
             props = response.findall('{DAV:}propstat/{DAV:}prop')
             if not props:
-                dav_logger.warning('Skipping {!r}, properties are missing.'
+                dav_logger.warning('Skipping {0!r}, properties are missing.'
                                    .format(href))
                 continue
             else:
                 props = _merge_xml(props)
 
             if props.find('{DAV:}resourcetype/{DAV:}collection') is not None:
-                dav_logger.debug('Skipping {!r}, is collection.'.format(href))
+		dav_logger.debug('Skipping {0!r}, is collection.'.format(href))
                 continue
 
             etag = getattr(props.find('{DAV:}getetag'), 'text', '')
             if not etag:
-                dav_logger.warning('Skipping {!r}, etag property is missing.'
+                dav_logger.warning('Skipping {0!r}, etag property is missing.'
                                    .format(href))
 
             contenttype = getattr(props.find('{DAV:}getcontenttype'),
                                   'text', None)
             if not self._is_item_mimetype(contenttype):
-                dav_logger.debug('Skipping {!r}, {!r} != {!r}.'
+                dav_logger.debug('Skipping {0!r}, {1!r} != {2!r}.'
                                  .format(href, contenttype,
                                          self.item_mimetype))
                 continue
 
             hrefs.add(href)
             yield href, etag, props
-
-    def list(self):
-        headers = self.session.get_default_headers()
-        headers['Depth'] = 1
-
-        data = '''<?xml version="1.0" encoding="utf-8" ?>
-            <D:propfind xmlns:D="DAV:">
-                <D:prop>
-                    <D:resourcetype/>
-                    <D:getcontenttype/>
-                    <D:getetag/>
-                </D:prop>
-            </D:propfind>
-            '''
-
-        # We use a PROPFIND request instead of addressbook-query due to issues
-        # with Zimbra. See https://github.com/untitaker/vdirsyncer/issues/83
-        response = self.session.request('PROPFIND', '', data=data,
-                                        headers=headers)
-        root = _parse_xml(response.content)
-
-        # Decode twice because ownCloud encodes twice.
-        # See https://github.com/owncloud/contacts/issues/581
-        rv = self._parse_prop_responses(root, decoding_rounds=2)
-        for href, etag, prop in rv:
-            yield href, etag
 
 
 class CaldavStorage(DavStorage):
@@ -601,12 +564,12 @@ class CaldavStorage(DavStorage):
                  item_types=(), **kwargs):
         super(CaldavStorage, self).__init__(**kwargs)
         if not isinstance(item_types, (list, tuple)):
-            raise exceptions.UserError('item_types must be a list.')
+            raise ValueError('item_types must be a list.')
 
         self.item_types = tuple(item_types)
         if (start_date is None) != (end_date is None):
-            raise exceptions.UserError('If start_date is given, '
-                                       'end_date has to be given too.')
+            raise ValueError('If start_date is given, '
+                             'end_date has to be given too.')
         elif start_date is not None and end_date is not None:
             namespace = dict(datetime.__dict__)
             namespace['start_date'] = self.start_date = \
@@ -620,6 +583,7 @@ class CaldavStorage(DavStorage):
 
     @staticmethod
     def _get_list_filters(components, start, end):
+
         if components:
             caldavfilter = '''
                 <C:comp-filter name="VCALENDAR">
@@ -646,24 +610,10 @@ class CaldavStorage(DavStorage):
                 for x in CaldavStorage._get_list_filters(('VTODO', 'VEVENT'),
                                                          start, end):
                     yield x
+            else:
+                yield '<C:comp-filter name="VCALENDAR"/>'
 
     def list(self):
-        caldavfilters = list(self._get_list_filters(
-            self.item_types,
-            self.start_date,
-            self.end_date
-        ))
-        if not caldavfilters:
-            # If we don't have any filters (which is the default), taking the
-            # risk of sending a calendar-query is not necessary. There doesn't
-            # seem to be a widely-usable way to send calendar-queries with the
-            # same semantics as a PROPFIND request... so why not use PROPFIND
-            # instead?
-            #
-            # See https://github.com/dmfs/tasks/issues/118 for backstory.
-            for x in DavStorage.list(self):
-                yield x
-
         data = '''<?xml version="1.0" encoding="utf-8" ?>
             <C:calendar-query xmlns:D="DAV:"
                 xmlns:C="urn:ietf:params:xml:ns:caldav">
@@ -682,6 +632,9 @@ class CaldavStorage(DavStorage):
         # an explicit value of 1 for querying items. it is extremely unclear in
         # the spec which values from WebDAV are actually allowed.
         headers['Depth'] = 1
+
+        caldavfilters = self._get_list_filters(self.item_types,
+                                               self.start_date, self.end_date)
 
         for caldavfilter in caldavfilters:
             xml = data.format(caldavfilter=caldavfilter)
@@ -717,3 +670,29 @@ class CarddavStorage(DavStorage):
     _dav_namespace = 'urn:ietf:params:xml:ns:carddav'
     _dav_resourcetype = 'addressbook'
     get_multi_data_query = '{urn:ietf:params:xml:ns:carddav}address-data'
+
+    def list(self):
+        headers = self.session.get_default_headers()
+        headers['Depth'] = 1
+
+        data = '''<?xml version="1.0" encoding="utf-8" ?>
+            <D:propfind xmlns:D="DAV:">
+                <D:prop>
+                    <D:resourcetype/>
+                    <D:getcontenttype/>
+                    <D:getetag/>
+                </D:prop>
+            </D:propfind>
+            '''
+
+        # We use a PROPFIND request instead of addressbook-query due to issues
+        # with Zimbra. See https://github.com/untitaker/vdirsyncer/issues/83
+        response = self.session.request('PROPFIND', '', data=data,
+                                        headers=headers)
+        root = _parse_xml(response.content)
+
+        # Decode twice because ownCloud encodes twice.
+        # See https://github.com/owncloud/contacts/issues/581
+        rv = self._parse_prop_responses(root, decoding_rounds=2)
+        for href, etag, prop in rv:
+            yield href, etag
