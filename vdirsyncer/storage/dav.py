@@ -322,33 +322,40 @@ class DavStorage(Storage):
                 return c
 
         home = d.find_home()
-        collection_url = '{}/{}'.format(home.rstrip('/'), collection)
-
-        data = '''<?xml version="1.0" encoding="utf-8" ?>
-        <D:mkcol xmlns:D="DAV:" xmlns:C="{}">
-            <D:set>
-                <D:prop>
-                    <D:resourcetype>
-                        <D:collection/>
-                        <C:{}/>
-                    </D:resourcetype>
-                </D:prop>
-            </D:set>
-        </D:mkcol>
-        '''.format(cls._dav_namespace, cls._dav_resourcetype)
-
-        headers = d.session.get_default_headers()
+        url = '{}/{}'.format(home.rstrip('/'), collection)
 
         try:
-            response = d.session.request('MKCOL', collection_url, data=data,
-                                         headers=headers)
+            url = cls._create_collection_impl(d, url, kwargs)
         except HTTPError as e:
             raise NotImplementedError(e)
         else:
             rv = dict(kwargs)
             rv['collection'] = collection
-            rv['url'] = response.url
+            rv['url'] = url
             return rv
+
+    @classmethod
+    def _create_collection_impl(cls, d, url, kwargs):
+        data = '''<?xml version="1.0" encoding="utf-8" ?>
+            <D:mkcol xmlns:D="DAV:" xmlns:C="{}">
+                <D:set>
+                    <D:prop>
+                        <D:resourcetype>
+                            <D:collection/>
+                            <C:{}/>
+                        </D:resourcetype>
+                    </D:prop>
+                </D:set>
+            </D:mkcol>
+        '''.format(cls._dav_namespace, cls._dav_resourcetype)
+
+        response = d.session.request(
+            'MKCOL',
+            url,
+            data=data,
+            headers=d.session.get_default_headers(),
+        )
+        return response.url
 
     def _normalize_href(self, *args, **kwargs):
         return _normalize_href(self.session.url, *args, **kwargs)
