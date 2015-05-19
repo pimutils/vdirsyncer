@@ -2,12 +2,27 @@
 
 import os
 import sys
+import threading
 
-from .compat import iteritems
-from .. import exceptions
+import requests
+from requests.packages.urllib3.poolmanager import PoolManager
+
+from .compat import iteritems, urlparse
+from .. import exceptions, log
+from ..doubleclick import click, ctx
 
 
+logger = log.get(__name__)
 _missing = object()
+
+
+try:
+    import keyring
+except ImportError:
+    keyring = None
+
+
+password_key_prefix = 'vdirsyncer:'
 
 
 def expand_path(p):
@@ -46,13 +61,208 @@ def uniq(s):
             yield x
 
 
+def get_password(username, resource, _lock=threading.Lock()):
+    """tries to access saved password or asks user for it
+
+    will try the following in this order:
+        1. read password from netrc (and only the password, username
+           in netrc will be ignored)
+        2. read password from keyring (keyring needs to be installed)
+        3. read password from the command passed as password_command in the
+           general config section with username and host as parameters
+        4a ask user for the password
+         b save in keyring if installed and user agrees
+
+    :param username: user's name on the server
+    :type username: str/unicode
+    :param resource: a resource to which the user has access via password,
+                     it will be shortened to just the hostname. It is assumed
+                     that each unique username/hostname combination only ever
+                     uses the same password.
+    :type resource: str/unicode
+    :return: password
+    :rtype: str/unicode
+
+
+    """
+    if ctx:
+        password_cache = ctx.obj.setdefault('passwords', {})
+
+    with _lock:
+        host = urlparse.urlsplit(resource).hostname
+        for func in (_password_from_command, _password_from_cache,
+                     _password_from_netrc, _password_from_keyring):
+            password = func(username, host)
+            if password is not None:
+                logger.debug('Got password for {0} from {1}'
+                             .format(username, func.__doc__))
+                return password
+
+        prompt = ('Server password for {0} at host {1}'.format(username, host))
+        password = click.prompt(prompt, hide_input=True)
+
+        if ctx and func is not _password_from_cache:
+            password_cache[(username, host)] = password
+            if keyring is not None and \
+               click.confirm('Save this password in the keyring?',
+                             default=False):
+                keyring.set_password(password_key_prefix + host,
+                                     username, password)
+
+        return password
+
+
+def _password_from_cache(username, host):
+    '''internal cache'''
+    if ctx:
+        return ctx.obj['passwords'].get((username, host), None)
+
+
+def _password_from_netrc(username, host):
+    '''.netrc'''
+    from netrc import netrc
+
+    try:
+        netrc_user, account, password = \
+            netrc().authenticators(host) or (None, None, None)
+        if netrc_user == username:
+            return password
+    except IOError:
+        pass
+
+
+def _password_from_keyring(username, host):
+    '''system keyring'''
+    if keyring is None:
+        return None
+
+    return keyring.get_password(password_key_prefix + host, username)
+
+
+def _password_from_command(username, host):
+    '''command'''
+    import subprocess
+
+    if not ctx:
+        return None
+
+    try:
+        general, _, _ = ctx.obj['config']
+        command = general['password_command'].split()
+    except KeyError:
+        return None
+
+    if not command:
+        return None
+
+    command[0] = expand_path(command[0])
+
+    try:
+        stdout = subprocess.check_output(command + [username, host],
+                                         universal_newlines=True)
+        return stdout.strip()
+    except OSError as e:
+        logger.warning('Failed to execute command: {0}\n{}'.
+                       format(' '.join(command), str(e)))
+
+
+class _FingerprintAdapter(requests.adapters.HTTPAdapter):
+    def __init__(self, fingerprint=None, **kwargs):
+        self.fingerprint = str(fingerprint)
+        super(_FingerprintAdapter, self).__init__(**kwargs)
+
+    def init_poolmanager(self, connections, maxsize, block=False):
+        self.poolmanager = PoolManager(num_pools=connections,
+                                       maxsize=maxsize,
+                                       block=block,
+                                       assert_fingerprint=self.fingerprint)
+
+
+def _verify_fingerprint_works():
+    try:
+        import requests
+        from pkg_resources import parse_version as ver
+
+        return ver(requests.__version__) >= ver('2.4.1')
+    except Exception:
+        return False
+
+# https://github.com/shazow/urllib3/pull/444
+# We check this here instead of setup.py, because:
+# - This is critical to security of `verify_fingerprint`, and Python's
+#   packaging stuff doesn't check installed versions.
+# - The people who don't use `verify_fingerprint` wouldn't care.
+VERIFY_FINGERPRINT_WORKS = _verify_fingerprint_works()
+del _verify_fingerprint_works
+
+
+def request(method, url, session=None, latin1_fallback=True,
+            verify_fingerprint=None, **kwargs):
+    '''
+    Wrapper method for requests, to ease logging and mocking. Parameters should
+    be the same as for ``requests.request``, except:
+
+    :param session: A requests session object to use.
+    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
+        expected server certificate.
+    :param latin1_fallback: RFC-2616 specifies the default Content-Type of
+        text/* to be latin1, which is not always correct, but exactly what
+        requests is doing. Setting this parameter to False will use charset
+        autodetection (usually ending up with utf8) instead of plainly falling
+        back to this silly default. See
+        https://github.com/kennethreitz/requests/issues/2042
+    '''
+
+    if session is None:
+        session = requests.Session()
+
+    if verify_fingerprint is not None:
+        if not VERIFY_FINGERPRINT_WORKS:
+            raise ValueError('`verify_fingerprint` can only be used with '
+                             'requests versions >= 2.4.1')
+        kwargs['verify'] = False
+        https_prefix = 'https://'
+
+        if not isinstance(session.adapters[https_prefix], _FingerprintAdapter):
+            fingerprint_adapter = _FingerprintAdapter(verify_fingerprint)
+            session.mount(https_prefix, fingerprint_adapter)
+
+    func = session.request
+
+    logger.debug(u'{0} {1}'.format(method, url))
+    logger.debug(kwargs.get('headers', {}))
+    logger.debug(kwargs.get('data', None))
+    logger.debug('Sending request...')
+    r = func(method, url, **kwargs)
+
+    # See https://github.com/kennethreitz/requests/issues/2042
+    content_type = r.headers.get('Content-Type', '')
+    if not latin1_fallback and \
+       'charset' not in content_type and \
+       content_type.startswith('text/'):
+        logger.debug('Removing latin1 fallback')
+        r.encoding = None
+
+    logger.debug(r.status_code)
+    logger.debug(r.headers)
+    logger.debug(r.content)
+
+    if r.status_code == 412:
+        raise exceptions.PreconditionFailed(r.reason)
+    if r.status_code == 404:
+        raise exceptions.NotFoundError(r.reason)
+
+    r.raise_for_status()
+    return r
+
+
 def get_etag_from_file(fpath):
     '''Get mtime-based etag from a filepath.'''
     stat = os.stat(fpath)
     mtime = getattr(stat, 'st_mtime_ns', None)
     if mtime is None:
         mtime = stat.st_mtime
-    return '{:.9f}'.format(mtime)
+    return '{0:.9f}'.format(mtime)
 
 
 def get_etag_from_fileobject(f):
@@ -114,11 +324,11 @@ def checkdir(path, create=False, mode=0o750):
 
     if not os.path.isdir(path):
         if os.path.exists(path):
-            raise IOError('{} is not a directory.'.format(path))
+            raise IOError('{0} is not a directory.'.format(path))
         if create:
             os.makedirs(path, mode)
         else:
-            raise exceptions.CollectionNotFound('Directory {} does not exist.'
+            raise exceptions.CollectionNotFound('Directory {0} does not exist.'
                                                 .format(path))
 
 
@@ -132,12 +342,12 @@ def checkfile(path, create=False):
     checkdir(os.path.dirname(path), create=create)
     if not os.path.isfile(path):
         if os.path.exists(path):
-            raise IOError('{} is not a file.'.format(path))
+            raise IOError('{0} is not a file.'.format(path))
         if create:
             with open(path, 'wb'):
                 pass
         else:
-            raise exceptions.CollectionNotFound('File {} does not exist.'
+            raise exceptions.CollectionNotFound('File {0} does not exist.'
                                                 .format(path))
 
 

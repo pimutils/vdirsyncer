@@ -2,7 +2,6 @@
 
 import errno
 import hashlib
-import importlib
 import json
 import os
 import string
@@ -15,6 +14,7 @@ from atomicwrites import atomic_write
 
 from .. import DOCS_HOME, PROJECT_HOME, exceptions, log
 from ..doubleclick import click
+from ..storage import storage_names
 from ..sync import IdentConflict, StorageEmpty, SyncConflict
 from ..utils import expand_path, get_class_init_args
 from ..utils.compat import text_type
@@ -30,32 +30,6 @@ try:
     import Queue as queue
 except ImportError:
     import queue
-
-
-class _StorageIndex(object):
-    def __init__(self):
-        self._storages = dict(
-            caldav='vdirsyncer.storage.dav.CaldavStorage',
-            carddav='vdirsyncer.storage.dav.CarddavStorage',
-            filesystem='vdirsyncer.storage.filesystem.FilesystemStorage',
-            http='vdirsyncer.storage.http.HttpStorage',
-            singlefile='vdirsyncer.storage.singlefile.SingleFileStorage',
-        )
-
-    def __getitem__(self, name):
-        item = self._storages[name]
-        if not isinstance(item, str):
-            return item
-
-        modname, clsname = item.rsplit('.', 1)
-        mod = importlib.import_module(modname)
-        self._storages[name] = rv = getattr(mod, clsname)
-        assert rv.storage_name == name
-        return rv
-
-
-storage_names = _StorageIndex()
-del _StorageIndex
 
 
 cli_logger = log.get(__name__)
@@ -76,7 +50,7 @@ class CliError(RuntimeError):
         if self.problems:
             msg += u':'
             if len(self.problems) == 1:
-                msg += u' {}'.format(self.problems[0])
+                msg += u' {0}'.format(self.problems[0])
             else:
                 msg += u'\n' + u'\n  - '.join(self.problems) + u'\n\n'
 
@@ -138,7 +112,7 @@ def handle_cli_error(status_name=None):
         pass
     except Exception as e:
         if status_name:
-            msg = 'Unhandled exception occured for {}.'.format(status_name)
+            msg = 'Unhandled exception occured for {0}.'.format(status_name)
         else:
             msg = 'Unhandled exception occured.'
 
@@ -149,9 +123,9 @@ def validate_section_name(name, section_type):
     invalid = set(name) - SECTION_NAME_CHARS
     if invalid:
         chars_display = ''.join(sorted(SECTION_NAME_CHARS))
-        raise CliError('The {}-section "{}" contains invalid characters. Only '
+        raise CliError('The {0}-section "{1}" contains invalid characters. Only '
                        'the following characters are allowed for storage and '
-                       'pair names:\n{}'.format(section_type, name,
+                       'pair names:\n{2}'.format(section_type, name,
                                                 chars_display))
 
 
@@ -195,9 +169,9 @@ def collections_for_pair(status_path, name_a, name_b, pair_name, config_a,
             return rv.get('collections', rv)
         elif rv:
             cli_logger.info('Detected change in config file, discovering '
-                            'collections for {}'.format(pair_name))
+                            'collections for {0}'.format(pair_name))
 
-    cli_logger.info('Discovering collections for pair {}'
+    cli_logger.info('Discovering collections for pair {0}'
                     .format(pair_name))
 
     # We have to use a list here because the special None/null value would get
@@ -229,8 +203,8 @@ def _discover_from_config(config):
 def _handle_collection_not_found(config, collection, e=None):
     storage_name = config.get('instance_name', None)
 
-    cli_logger.error('{}No collection {} found for storage {}.'
-                     .format('{}\n'.format(e) if e else '',
+    cli_logger.error('{0}No collection {1} found for storage {2}.'
+                     .format('{0}\n'.format(e) if e else '',
                              collection, storage_name))
 
     if click.confirm('Should vdirsyncer attempt to create it?'):
@@ -293,16 +267,16 @@ def _validate_general_section(general_config):
     problems = []
 
     if invalid:
-        problems.append(u'general section doesn\'t take the parameters: {}'
+        problems.append(u'general section doesn\'t take the parameters: {0}'
                         .format(u', '.join(invalid)))
 
     if missing:
-        problems.append(u'general section is missing the parameters: {}'
+        problems.append(u'general section is missing the parameters: {0}'
                         .format(u', '.join(missing)))
 
     if problems:
         raise CliError(u'Invalid general section. You should copy the example '
-                       u'config from the repository and edit it: {}\n'
+                       u'config from the repository and edit it: {0}\n'
                        .format(PROJECT_HOME), problems=problems)
 
 
@@ -318,19 +292,17 @@ def _validate_pair_section(pair_config):
 
 
 def load_config():
-    fname = os.environ.get('VDIRSYNCER_CONFIG', None)
-    if not fname:
-        fname = expand_path('~/.vdirsyncer/config')
-        if not os.path.exists(fname):
-            xdg_config_dir = os.environ.get('XDG_CONFIG_HOME',
-                                            expand_path('~/.config/'))
-            fname = os.path.join(xdg_config_dir, 'vdirsyncer/config')
-
+    fname = expand_path(os.environ.get('VDIRSYNCER_CONFIG',
+                                       '~/.vdirsyncer/config'))
+    if not os.path.exists(fname):
+        xdg_config_dir = os.environ.get('XDG_CONFIG_HOME',
+                                        expand_path('~/.config/'))
+        fname = os.path.join(xdg_config_dir, 'vdirsyncer/config')
     try:
         with open(fname) as f:
             general, pairs, storages = read_config(f)
     except Exception as e:
-        raise CliError('Error during reading config {}: {}'
+        raise CliError('Error during reading config {0}: {1}'
                        .format(fname, e))
 
     return general, pairs, storages
@@ -362,7 +334,7 @@ def read_config(f):
         general.update(options)
 
     def bad_section(name, options):
-        cli_logger.error('Unknown section: {}'.format(name))
+        cli_logger.error('Unknown section: {0}'.format(name))
 
     handlers = {'storage': handle_storage, 'pair': handle_pair, 'general':
                 handle_general}
@@ -378,7 +350,7 @@ def read_config(f):
             f = handlers.get(section_type, bad_section)
             f(name, get_options(section))
         except ValueError as e:
-            raise CliError('Section `{}`: {}'.format(section, str(e)))
+            raise CliError('Section `{0}`: {1}'.format(section, str(e)))
 
     _validate_general_section(general)
     if getattr(f, 'name', None):
@@ -395,7 +367,7 @@ def load_status(base_path, pair, collection=None, data_type=None):
     path = expand_path(os.path.join(base_path, status_name))
     if os.path.isfile(path) and data_type == 'items':
         new_path = path + '.items'
-        cli_logger.warning('Migrating statuses: Renaming {} to {}'
+        cli_logger.warning('Migrating statuses: Renaming {0} to {1}'
                            .format(path, new_path))
         os.rename(path, new_path)
 
@@ -426,10 +398,10 @@ def save_status(base_path, pair, collection=None, data_type=None, data=None):
     base_path = os.path.dirname(path)
 
     if collection is not None and os.path.isfile(base_path):
-        raise CliError('{} is probably a legacy file and could be removed '
+        raise CliError('{0} is probably a legacy file and could be removed '
                        'automatically, but this choice is left to the '
                        'user. If you think this is an error, please file '
-                       'a bug at {}'.format(base_path, PROJECT_HOME))
+                       'a bug at {1}'.format(base_path, PROJECT_HOME))
 
     try:
         os.makedirs(base_path, 0o750)
@@ -444,10 +416,9 @@ def save_status(base_path, pair, collection=None, data_type=None, data=None):
 def storage_class_from_config(config):
     config = dict(config)
     storage_name = config.pop('type')
-    try:
-        cls = storage_names[storage_name]
-    except KeyError:
-        raise CliError('Unknown storage type: {}'.format(storage_name))
+    cls = storage_names.get(storage_name, None)
+    if cls is None:
+        raise CliError('Unknown storage type: {0}'.format(storage_name))
     return cls, config
 
 
@@ -486,20 +457,19 @@ def handle_storage_init_error(cls, config):
 
     if missing:
         cli_logger.critical(
-            u'{} storage requires the parameters: {}'
+            u'{0} storage requires the parameters: {1}'
             .format(cls.storage_name, u', '.join(missing)))
 
     if invalid:
         cli_logger.critical(
-            u'{} storage doesn\'t take the parameters: {}'
+            u'{0} storage doesn\'t take the parameters: {1}'
             .format(cls.storage_name, u', '.join(invalid)))
 
     if not problems:
-        if not isinstance(e, exceptions.UserError):
-            cli_logger.exception('')
-        problems.append(str(e))
+        cli_logger.exception('')
+        problems.append('Internal error, see above.')
 
-    raise CliError(u'Failed to initialize {}'.format(config['instance_name']),
+    raise CliError(u'Failed to initialize {0}'.format(config['instance_name']),
                    problems=problems)
 
 
@@ -515,8 +485,8 @@ def parse_pairs_args(pairs_args, all_pairs):
             pair, collection = pair.split('/')
 
         if pair not in all_pairs:
-            raise CliError('Pair not found: {}\n'
-                           'These are the pairs found: {}'
+            raise CliError('Pair not found: {0}\n'
+                           'These are the pairs found: {1}'
                            .format(pair, list(all_pairs)))
 
         collections = rv.setdefault(pair, set())
@@ -590,12 +560,12 @@ def parse_config_value(value):
         (('none',), 'null')
     ]:
         if value.lower() in wrong + (right,):
-            cli_logger.warning('You probably meant {} instead of "{}", which '
+            cli_logger.warning('You probably meant {0} instead of "{1}", which '
                                'will now be interpreted as a literal string.'
                                .format(right, value))
 
     if '#' in value:
-        raise ValueError('Invalid value:{}\n'
+        raise ValueError('Invalid value:{0}\n'
                          'Use double quotes (") if you want to use hashes in '
                          'your value.')
 
@@ -606,7 +576,7 @@ def parse_config_value(value):
         #
         # foo = bar
         #  # my comment
-        raise ValueError('No multiline-values allowed:\n{}'.format(value))
+        raise ValueError('No multiline-values allowed:\n{0}'.format(value))
 
     return value
 
@@ -616,14 +586,13 @@ def parse_options(items, section=None):
         try:
             yield key, parse_config_value(value)
         except ValueError as e:
-            raise ValueError('Section "{}", option "{}": {}'
+            raise ValueError('Section "{0}", option "{1}": {2}'
                              .format(section, key, e))
 
 
 def format_storage_config(cls, header=True):
     if header is True:
-        yield '[storage example_for_{}]'.format(cls.storage_name)
-    yield 'type = {}'.format(cls.storage_name)
+        yield '[storage {0}]'.format(cls.storage_name)
 
     from ..storage.base import Storage
     from ..utils import get_class_init_specs
@@ -637,7 +606,7 @@ def format_storage_config(cls, header=True):
 
             comment = '' if key not in defaults else '#'
             value = defaults.get(key, '...')
-            yield '{}{} = {}'.format(comment, key, json.dumps(value))
+            yield '{0}{1} = {2}'.format(comment, key, json.dumps(value))
 
 
 def repair_storage(storage):
@@ -645,13 +614,13 @@ def repair_storage(storage):
     all_hrefs = list(storage.list())
     for i, (href, _) in enumerate(all_hrefs):
         item, etag = storage.get(href)
-        cli_logger.info('[{}/{}] Processing {}'
+        cli_logger.info('[{0}/{1}] Processing {2}'
                         .format(i, len(all_hrefs), href))
 
         parsed = item.parsed
         changed = False
         if parsed is None:
-            cli_logger.warning('Item {} can\'t be parsed, skipping.'
+            cli_logger.warning('Item {0} can\'t be parsed, skipping.'
                                .format(href))
             continue
 

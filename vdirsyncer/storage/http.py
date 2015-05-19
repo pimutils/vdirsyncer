@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from .base import Item, Storage
-from .. import exceptions
-from ..utils import expand_path
+from ..exceptions import NotFoundError
+from ..utils import expand_path, get_password, request
 from ..utils.compat import iteritems, text_type, urlparse
-from ..utils.http import request
-from ..utils.password import get_password
 from ..utils.vobject import split_collection
 
 USERAGENT = 'vdirsyncer'
@@ -19,49 +17,24 @@ def prepare_auth(auth, username, password):
             from requests.auth import HTTPDigestAuth
             return HTTPDigestAuth(username, password)
         elif auth == 'guess' or auth is None:
-            try:
-                from requests_toolbelt.auth.guess import GuessAuth
-            except ImportError:
-                raise exceptions.UserError(
-                    'Your version of requests_toolbelt is too '
-                    'old for `guess` authentication. At least '
-                    'version 0.4.0 is required.'
-                )
-            else:
-                return GuessAuth(username, password)
+            import requests_toolbelt
+            if not hasattr(requests_toolbelt, 'GuessAuth'):
+                raise RuntimeError('Your version of requests_toolbelt is too '
+                                   'old.')
+            return requests_toolbelt.GuessAuth(username, password)
         else:
-            raise exceptions.UserError('Unknown authentication method: {}'
-                                       .format(auth))
+            raise ValueError('Unknown authentication method: {}'.format(auth))
     elif auth:
-        raise exceptions.UserError('You need to specify username and password '
-                                   'for {} authentication.'.format(auth))
+        raise ValueError('For {} authentication, you need to specify username '
+                         'and password.'.format(auth))
     else:
         return None
 
 
-def prepare_verify(verify, verify_fingerprint):
+def prepare_verify(verify):
     if isinstance(verify, (text_type, bytes)):
-        verify = expand_path(verify)
-    elif not isinstance(verify, bool):
-        raise exceptions.UserError('Invalid value for verify ({}), '
-                                   'must be a path to a PEM-file or boolean.'
-                                   .format(verify))
-
-    if verify_fingerprint is not None:
-        if not isinstance(verify_fingerprint, (bytes, text_type)):
-            raise exceptions.UserError('Invalid value for verify_fingerprint '
-                                       '({}), must be a string or null.'
-                                       .format(verify_fingerprint))
-        verify = False
-    elif not verify:
-        raise exceptions.UserError('verify = false is forbidden. Consider '
-                                   'setting verify_fingerprint instead, which '
-                                   'also disables validation against CAs.')
-
-    return {
-        'verify': verify,
-        'verify_fingerprint': verify_fingerprint,
-    }
+        return expand_path(verify)
+    return verify
 
 
 def prepare_client_cert(cert):
@@ -127,12 +100,12 @@ class HttpStorage(Storage):
             password = get_password(username, url)
 
         self._settings = {
+            'verify': prepare_verify(verify),
+            'verify_fingerprint': verify_fingerprint,
             'auth': prepare_auth(auth, username, password),
             'cert': prepare_client_cert(auth_cert),
             'latin1_fallback': False,
         }
-        self._settings.update(prepare_verify(verify, verify_fingerprint))
-
         self.username, self.password = username, password
         self.useragent = useragent
 
@@ -164,4 +137,4 @@ class HttpStorage(Storage):
         try:
             return self._items[href]
         except KeyError:
-            raise exceptions.NotFoundError(href)
+            raise NotFoundError(href)

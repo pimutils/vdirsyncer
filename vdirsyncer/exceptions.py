@@ -11,15 +11,10 @@ class Error(Exception):
     def __init__(self, *args, **kwargs):
         for key, value in kwargs.items():
             if getattr(self, key, object()) is not None:
-                raise TypeError('Invalid argument: {}'.format(key))
+                raise TypeError('Invalid argument: {0}'.format(key))
             setattr(self, key, value)
 
         super(Error, self).__init__(*args)
-
-
-class UserError(Error, ValueError):
-    '''Wrapper exception to be used to signify the traceback should not be
-    shown to the user.'''
 
 
 class CollectionNotFound(Error):

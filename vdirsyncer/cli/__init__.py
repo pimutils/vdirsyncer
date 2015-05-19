@@ -25,7 +25,7 @@ def catch_errors(f):
 def validate_verbosity(ctx, param, value):
     x = getattr(log.logging, value.upper(), None)
     if x is None:
-        raise click.BadParameter('Invalid verbosity value {}. Must be '
+        raise click.BadParameter('Invalid verbosity value {0}. Must be '
                                  'CRITICAL, ERROR, WARNING, INFO or DEBUG'
                                  .format(value))
     return x
@@ -48,26 +48,14 @@ def app(ctx, verbosity):
     if ctx.obj is None:
         ctx.obj = {}
 
-    ctx.obj['verbosity'] = verbosity
-
     if 'config' not in ctx.obj:
         ctx.obj['config'] = load_config()
 
 main = app
 
-
-def max_workers_callback(ctx, param, value):
-    if value == 0 and ctx.obj['verbosity'] == log.logging.DEBUG:
-        return 1
-    return value
-
-
 max_workers_option = click.option(
     '--max-workers', default=0, type=click.IntRange(min=0, max=None),
-    callback=max_workers_callback,
-    help=('Use at most this many connections. With debug messages enabled, '
-          'the default is 1, otherwise one connection per collection is '
-          'opened.')
+    help=('Use at most this many connections, 0 means unlimited.')
 )
 
 
@@ -93,7 +81,7 @@ def sync(ctx, pairs, force_delete, max_workers):
     '''
     general, all_pairs, all_storages = ctx.obj['config']
 
-    cli_logger.debug('Using {} maximal workers.'.format(max_workers))
+    cli_logger.debug('Using {0} maximal workers.'.format(max_workers))
     wq = WorkerQueue(max_workers)
     wq.handled_jobs = set()
 
@@ -118,15 +106,15 @@ def discover(ctx, pairs, max_workers):
     Refresh collection cache for the given pairs.
     '''
     general, all_pairs, all_storages = ctx.obj['config']
-    cli_logger.debug('Using {} maximal workers.'.format(max_workers))
+    cli_logger.debug('Using {0} maximal workers.'.format(max_workers))
     wq = WorkerQueue(max_workers)
 
     for pair in (pairs or all_pairs):
         try:
             name_a, name_b, pair_options = all_pairs[pair]
         except KeyError:
-            raise CliError('Pair not found: {}\n'
-                           'These are the pairs found: {}'
+            raise CliError('Pair not found: {0}\n'
+                           'These are the pairs found: {1}'
                            .format(pair, list(all_pairs)))
 
         wq.spawn_worker()
