@@ -52,11 +52,10 @@ class DavStorageTests(ServerMixin, StorageTests):
 class TestCaldavStorage(DavStorageTests):
     storage_class = CaldavStorage
 
-    @pytest.fixture(params=[EVENT_TEMPLATE, TASK_TEMPLATE])
-    def item_template(self, request):
+    @pytest.fixture(params=['VTODO', 'VEVENT'])
+    def item_type(self, request):
         return request.param
 
-    @pytest.mark.parametrize('item_type', ['VTODO', 'VEVENT'])
     def test_doesnt_accept_vcard(self, item_type, get_storage_args):
         s = self.storage_class(item_types=(item_type,), **get_storage_args())
 
@@ -66,16 +65,18 @@ class TestCaldavStorage(DavStorageTests):
             pass
         assert not list(s.list())
 
-    @pytest.mark.parametrize('item_types,calls_num', [
+    # The `arg` param is not named `item_types` because that would hit
+    # https://bitbucket.org/pytest-dev/pytest/issue/745/
+    @pytest.mark.parametrize('arg,calls_num', [
         (('VTODO',), 1),
         (('VEVENT',), 1),
         (('VTODO', 'VEVENT'), 2),
         (('VTODO', 'VEVENT', 'VJOURNAL'), 3),
         ((), 1)
     ])
-    def test_item_types_performance(self, get_storage_args, item_types,
-                                    calls_num, monkeypatch, get_item):
-        s = self.storage_class(item_types=item_types, **get_storage_args())
+    def test_item_types_performance(self, get_storage_args, arg, calls_num,
+                                    monkeypatch):
+        s = self.storage_class(item_types=arg, **get_storage_args())
         old_parse = s._parse_prop_responses
         calls = []
 
@@ -163,7 +164,7 @@ class TestCaldavStorage(DavStorageTests):
             list(s.list())
         assert len(calls) == 1
 
-    def test_item_types(self, s):
+    def test_item_types_general(self, s):
         event = s.upload(format_item(EVENT_TEMPLATE))
         task = s.upload(format_item(TASK_TEMPLATE))
         s.item_types = ('VTODO', 'VEVENT')
@@ -179,6 +180,6 @@ class TestCaldavStorage(DavStorageTests):
 class TestCarddavStorage(DavStorageTests):
     storage_class = CarddavStorage
 
-    @pytest.fixture
-    def item_template(self):
-        return VCARD_TEMPLATE
+    @pytest.fixture(params=['VCARD'])
+    def item_type(self, request):
+        return request.param

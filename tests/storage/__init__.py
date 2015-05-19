@@ -19,6 +19,14 @@ def format_item(item_template, uid=None):
 
 
 class StorageTests(object):
+    storage_class = None
+    supports_collections = True
+
+    @pytest.fixture(params=['VEVENT', 'VTODO', 'VCARD'])
+    def item_type(self, request):
+        '''Parametrize with all supported item types.'''
+        return request.param
+
     @pytest.fixture
     def get_storage_args(self):
         '''
@@ -32,17 +40,19 @@ class StorageTests(object):
     def s(self, get_storage_args):
         return self.storage_class(**get_storage_args())
 
-    @pytest.fixture(params=[EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE])
-    def item_template(self, request):
-        return request.param
-
     @pytest.fixture
-    def get_item(self, item_template):
-        return lambda **kw: format_item(item_template, **kw)
+    def get_item(self, item_type):
+        template = {
+            'VEVENT': EVENT_TEMPLATE,
+            'VTODO': TASK_TEMPLATE,
+            'VCARD': VCARD_TEMPLATE,
+        }[item_type]
+
+        return lambda **kw: format_item(template, **kw)
 
     @pytest.fixture
     def requires_collections(self):
-        if not getattr(self, 'supports_collections', True):
+        if not self.supports_collections:
             pytest.skip('This storage does not support collections.')
 
     def test_generic(self, s, get_item):
