@@ -13,7 +13,7 @@ from tests import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE
 
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
-from vdirsyncer.storage.dav import CaldavStorage, CarddavStorage
+from vdirsyncer.storage.dav import CaldavStorage, CarddavStorage, _parse_xml
 
 from .. import StorageTests, format_item
 
@@ -183,3 +183,10 @@ class TestCarddavStorage(DavStorageTests):
     @pytest.fixture(params=['VCARD'])
     def item_type(self, request):
         return request.param
+
+
+def test_broken_xml(capsys):
+    rv = _parse_xml(b'<h1>\x10haha</h1>')
+    assert rv.text == 'haha'
+    warnings = capsys.readouterr()[1]
+    assert 'partially invalid xml' in warnings.lower()
