@@ -65,7 +65,7 @@ class _Stack(object):
 
 class _StackProxy(object):
     def __init__(self, stack):
-        self._doubleclick_stack = stack
+        object.__setattr__(self, '_doubleclick_stack', stack)
 
     def __bool__(self):
         try:
@@ -77,8 +77,8 @@ class _StackProxy(object):
 
     __nonzero__ = __bool__
 
-    def __getattr__(self, name):
-        return getattr(self._doubleclick_stack.top, name)
+    __getattr__ = lambda s, n: getattr(s._doubleclick_stack.top, n)
+    __setattr__ = lambda s, n, v: setattr(s._doubleclick_stack.top, n, v)
 
 
 _ctx_stack = _Stack()

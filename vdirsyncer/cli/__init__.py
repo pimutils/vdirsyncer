@@ -7,7 +7,7 @@ from .tasks import discover_collections, repair_collection, sync_pair
 from .utils import CliError, WorkerQueue, cli_logger, handle_cli_error, \
     load_config, parse_pairs_args
 from .. import __version__, log
-from ..doubleclick import click
+from ..doubleclick import click, ctx
 
 
 def catch_errors(f):
@@ -36,9 +36,8 @@ def validate_verbosity(ctx, param, value):
               callback=validate_verbosity,
               help='Either CRITICAL, ERROR, WARNING, INFO or DEBUG')
 @click.version_option(version=__version__)
-@click.pass_context
 @catch_errors
-def app(ctx, verbosity):
+def app(verbosity):
     '''
     vdirsyncer -- synchronize calendars and contacts
     '''
@@ -77,12 +76,11 @@ max_workers_option = click.option(
               help=('Do/Don\'t abort synchronization when all items are about '
                     'to be deleted from both sides.'))
 @max_workers_option
-@click.pass_context
 @catch_errors
-def sync(ctx, pairs, force_delete, max_workers):
+def sync(pairs, force_delete, max_workers):
     '''
-    Synchronize the given collections or pairs. If no arguments are given,
-    all will be synchronized.
+    Synchronize the given pairs. If no arguments are given, all will be
+    synchronized.
 
     `vdirsyncer sync` will sync everything configured.
 
@@ -111,9 +109,8 @@ def sync(ctx, pairs, force_delete, max_workers):
 @app.command()
 @click.argument('pairs', nargs=-1)
 @max_workers_option
-@click.pass_context
 @catch_errors
-def discover(ctx, pairs, max_workers):
+def discover(pairs, max_workers):
     '''
     Refresh collection cache for the given pairs.
     '''
@@ -143,9 +140,8 @@ def discover(ctx, pairs, max_workers):
 
 @app.command()
 @click.argument('collection')
-@click.pass_context
 @catch_errors
-def repair(ctx, collection):
+def repair(collection):
     '''
     Repair a given collection.
 
