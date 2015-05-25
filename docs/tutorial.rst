@@ -40,8 +40,7 @@ locations:
 - The file pointed to by the ``VDIRSYNCER_CONFIG`` environment variable.
 - ``~/.vdirsyncer/config``.
 - ``$XDG_CONFIG_HOME/vdirsyncer/config``, which is normally
-  ``~/.config/vdirsyncer/config``. This is XDG-Basedir_ compliant, and should
-  help keep your ``$HOME`` clean.
+  ``~/.config/vdirsyncer/config``. See the XDG-Basedir_ specification.
 
 .. _XDG-Basedir: http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html#variables
 
