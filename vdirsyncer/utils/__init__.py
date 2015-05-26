@@ -147,7 +147,7 @@ class cached_property(object):
     '''
     def __init__(self, fget, doc=None):
         self.__name__ = fget.__name__
-        self.__module__ = func.__module__
+        self.__module__ = fget.__module__
         self.__doc__ = doc or fget.__doc__
         self.fget = fget
 
