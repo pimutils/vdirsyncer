@@ -142,22 +142,17 @@ def checkfile(path, create=False):
 
 
 class cached_property(object):
+    '''A read-only @property that is only evaluated once. Only usable on class
+    instances' methods.
     '''
-    Copied from Werkzeug.
-    Copyright 2007-2014 Armin Ronacher
-    '''
-
-    def __init__(self, func, name=None, doc=None):
-        self.__name__ = name or func.__name__
+    def __init__(self, fget, doc=None):
+        self.__name__ = fget.__name__
         self.__module__ = func.__module__
-        self.__doc__ = doc or func.__doc__
-        self.func = func
+        self.__doc__ = doc or fget.__doc__
+        self.fget = fget
 
-    def __get__(self, obj, type=None):
-        if obj is None:
+    def __get__(self, obj, cls):
+        if obj is None:  # pragma: no cover
             return self
-        value = obj.__dict__.get(self.__name__, _missing)
-        if value is _missing:
-            value = self.func(obj)
-            obj.__dict__[self.__name__] = value
-        return value
+        obj.__dict__[self.__name__] = result = self.fget(obj)
+        return result
