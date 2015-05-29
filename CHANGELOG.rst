@@ -9,11 +9,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/untitaker/vdirsyncer/tags.atom>`_.
 
-Version 0.5.0
+Version 0.5.1
 =============
 
-*yet to be released*
+*released on 29 May 2015*
 
+- **N.b.: The PyPI upload of 0.5.0 is completely broken.**
 - Raise version of required requests-toolbelt to ``0.4.0``.
 - Command line should be a lot faster when no work is done, e.g. for help
   output.
