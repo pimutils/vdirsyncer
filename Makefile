@@ -27,4 +27,7 @@ linkcheck:
 install:
 	$(error Take a look at https://vdirsyncer.readthedocs.org/en/stable/tutorial.html#installation)
 
+release:
+	python setup.py sdist bdist_wheel upload
+
 .DEFAULT_GOAL := install
