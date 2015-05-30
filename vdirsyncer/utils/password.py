@@ -45,7 +45,7 @@ def get_password(username, resource, _lock=threading.Lock()):
 
     with _lock:
         host = urlparse.urlsplit(resource).hostname
-        for func in (_password_from_command, _password_from_cache,
+        for func in (_password_from_cache, _password_from_command,
                      _password_from_netrc, _password_from_keyring):
             password = func(username, host)
             if password is not None:
