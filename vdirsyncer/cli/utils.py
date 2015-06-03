@@ -13,7 +13,8 @@ from itertools import chain
 
 from atomicwrites import atomic_write
 
-from .. import DOCS_HOME, PROJECT_HOME, exceptions, log
+from . import cli_logger, CliError
+from .. import DOCS_HOME, PROJECT_HOME, exceptions
 from ..doubleclick import click
 from ..sync import IdentConflict, StorageEmpty, SyncConflict
 from ..utils import expand_path, get_class_init_args
@@ -58,29 +59,9 @@ storage_names = _StorageIndex()
 del _StorageIndex
 
 
-cli_logger = log.get(__name__)
-
 GENERAL_ALL = frozenset(['status_path', 'password_command'])
 GENERAL_REQUIRED = frozenset(['status_path'])
 SECTION_NAME_CHARS = frozenset(chain(string.ascii_letters, string.digits, '_'))
-
-
-class CliError(RuntimeError):
-    def __init__(self, msg, problems=None):
-        self.msg = msg
-        self.problems = problems
-        RuntimeError.__init__(self, msg)
-
-    def format_cli(self):
-        msg = self.msg.rstrip(u'.:')
-        if self.problems:
-            msg += u':'
-            if len(self.problems) == 1:
-                msg += u' {}'.format(self.problems[0])
-            else:
-                msg += u'\n' + u'\n  - '.join(self.problems) + u'\n\n'
-
-        return msg
 
 
 class JobFailed(RuntimeError):

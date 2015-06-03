@@ -60,8 +60,7 @@ def test_storage_instance_from_config(monkeypatch):
         assert kw == {'foo': 'bar', 'baz': 1}
         return 'OK'
 
-    import vdirsyncer.storage
-    monkeypatch.setitem(vdirsyncer.cli.utils.storage_names._storages,
+    monkeypatch.setitem(cli.utils.storage_names._storages,
                         'lol', lol)
     config = {'type': 'lol', 'foo': 'bar', 'baz': 1}
     assert cli.utils.storage_instance_from_config(config) == 'OK'
@@ -75,7 +74,7 @@ def test_parse_pairs_args():
         'eins': ('zwei', 'drei', {'ha': True}, {})
     }
     assert sorted(
-        cli.parse_pairs_args(['foo/foocoll', 'one', 'eins'], pairs)
+        cli.utils.parse_pairs_args(['foo/foocoll', 'one', 'eins'], pairs)
     ) == [
         ('eins', set()),
         ('foo', {'foocoll'}),

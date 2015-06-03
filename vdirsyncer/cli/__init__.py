@@ -3,11 +3,29 @@
 import functools
 import sys
 
-from .tasks import discover_collections, repair_collection, sync_pair
-from .utils import CliError, WorkerQueue, cli_logger, handle_cli_error, \
-    load_config, parse_pairs_args
 from .. import __version__, log
 from ..doubleclick import click, ctx
+
+
+cli_logger = log.get(__name__)
+
+
+class CliError(RuntimeError):
+    def __init__(self, msg, problems=None):
+        self.msg = msg
+        self.problems = problems
+        RuntimeError.__init__(self, msg)
+
+    def format_cli(self):
+        msg = self.msg.rstrip(u'.:')
+        if self.problems:
+            msg += u':'
+            if len(self.problems) == 1:
+                msg += u' {}'.format(self.problems[0])
+            else:
+                msg += u'\n' + u'\n  - '.join(self.problems) + u'\n\n'
+
+        return msg
 
 
 def catch_errors(f):
@@ -16,6 +34,7 @@ def catch_errors(f):
         try:
             f(*a, **kw)
         except:
+            from .utils import handle_cli_error
             handle_cli_error()
             sys.exit(1)
 
@@ -41,6 +60,7 @@ def app(verbosity):
     '''
     vdirsyncer -- synchronize calendars and contacts
     '''
+    from .utils import load_config
     log.add_handler(log.stdout_handler)
     log.set_level(verbosity)
 
@@ -89,6 +109,8 @@ def sync(pairs, force_delete, max_workers):
     `vdirsyncer sync bob/first_collection` will sync "first_collection" from
     the pair "bob".
     '''
+    from .tasks import sync_pair
+    from .utils import parse_pairs_args, WorkerQueue
     general, all_pairs, all_storages = ctx.obj['config']
 
     cli_logger.debug('Using {} maximal workers.'.format(max_workers))
@@ -114,6 +136,8 @@ def discover(pairs, max_workers):
     '''
     Refresh collection cache for the given pairs.
     '''
+    from .tasks import discover_collections
+    from .utils import WorkerQueue
     general, all_pairs, all_storages = ctx.obj['config']
     cli_logger.debug('Using {} maximal workers.'.format(max_workers))
     wq = WorkerQueue(max_workers)
@@ -151,5 +175,6 @@ def repair(collection):
     Example: `vdirsyncer repair calendars_local/foo` repairs the `foo`
     collection of the `calendars_local` storage.
     '''
+    from .tasks import repair_collection
     general, all_pairs, all_storages = ctx.obj['config']
     repair_collection(general, all_pairs, all_storages, collection)
