@@ -77,7 +77,9 @@ main = app
 
 def max_workers_callback(ctx, param, value):
     if value == 0 and ctx.obj['verbosity'] == log.logging.DEBUG:
-        return 1
+        value = 1
+
+    cli_logger.debug('Using {} maximal workers.'.format(value))
     return value
 
 
@@ -113,7 +115,6 @@ def sync(pairs, force_delete, max_workers):
     from .utils import parse_pairs_args, WorkerQueue
     general, all_pairs, all_storages = ctx.obj['config']
 
-    cli_logger.debug('Using {} maximal workers.'.format(max_workers))
     wq = WorkerQueue(max_workers)
     wq.handled_jobs = set()
 
@@ -139,7 +140,6 @@ def discover(pairs, max_workers):
     from .tasks import discover_collections
     from .utils import WorkerQueue
     general, all_pairs, all_storages = ctx.obj['config']
-    cli_logger.debug('Using {} maximal workers.'.format(max_workers))
     wq = WorkerQueue(max_workers)
 
     for pair in (pairs or all_pairs):
