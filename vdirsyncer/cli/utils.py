@@ -13,7 +13,7 @@ from itertools import chain
 
 from atomicwrites import atomic_write
 
-from . import cli_logger, CliError
+from . import CliError, cli_logger
 from .. import DOCS_HOME, PROJECT_HOME, exceptions
 from ..doubleclick import click
 from ..sync import IdentConflict, StorageEmpty, SyncConflict
