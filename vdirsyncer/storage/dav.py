@@ -446,6 +446,9 @@ class DavStorage(Storage):
         etag = response.headers.get('etag', None)
         href = self._normalize_href(_decode_href(response.url))
         if not etag:
+            dav_logger.warning('Race condition detected with server {}, '
+                               'consider using an alternative.'
+                               .format(self.session.parsed_url.netloc))
             item2, etag = self.get(href)
             assert item2.uid == item.uid
         return href, etag
