@@ -134,7 +134,7 @@ class SingleFileStorage(Storage):
     def upload(self, item):
         href = item.ident
         if href in self._items:
-            raise exceptions.AlreadyExistingError(href)
+            raise exceptions.AlreadyExistingError(existing_href=href)
 
         self._items[href] = item, item.hash
         return href, item.hash

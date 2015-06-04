@@ -41,7 +41,7 @@ class MemoryStorage(Storage):
     def upload(self, item):
         href = self._get_href(item)
         if href in self.items:
-            raise exceptions.AlreadyExistingError(item)
+            raise exceptions.AlreadyExistingError(existing_href=href)
         etag = _random_string()
         self.items[href] = (etag, item)
         return href, etag

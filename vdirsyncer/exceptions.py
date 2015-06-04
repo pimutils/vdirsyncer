@@ -42,7 +42,8 @@ class NotFoundError(PreconditionFailed):
 
 
 class AlreadyExistingError(PreconditionFailed):
-    '''Item already exists'''
+    '''Item already exists.'''
+    existing_href = None
 
 
 class WrongEtagError(PreconditionFailed):

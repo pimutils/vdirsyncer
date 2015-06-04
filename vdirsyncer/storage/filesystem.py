@@ -138,7 +138,7 @@ class FilesystemStorage(Storage):
                 return fpath, get_etag_from_fileobject(f)
         except OSError as e:
             if e.errno == errno.EEXIST:
-                raise exceptions.AlreadyExistingError(item)
+                raise exceptions.AlreadyExistingError(existing_href=href)
             else:
                 raise
 
