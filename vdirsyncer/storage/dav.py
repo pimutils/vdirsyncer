@@ -82,6 +82,7 @@ def _get_collection_from_url(url):
 
 
 class Discover(object):
+    _namespace = None
     _resourcetype = None
     _homeset_xml = None
     _homeset_tag = None
@@ -95,8 +96,17 @@ class Discover(object):
     </d:propfind>
     """
 
-    def __init__(self, session):
-        self.session = session
+    def __init__(self, **kwargs):
+        if kwargs.pop('collection', None) is not None:
+            raise TypeError('collection argument must not be given.')
+
+        discover_args, _ = utils.split_dict(kwargs, lambda key: key in (
+            'url', 'username', 'password', 'verify', 'auth', 'useragent',
+            'verify_fingerprint', 'auth_cert',
+        ))
+
+        self.session = DavSession(**discover_args)
+        self.kwargs = kwargs
 
     def find_dav(self):
         try:
@@ -113,7 +123,11 @@ class Discover(object):
 
     def find_principal(self, url=None):
         if url is None:
-            url = self.find_dav()
+            try:
+                return self.find_principal('')
+            except (HTTPError, exceptions.Error):
+                return self.find_principal(self.find_dav())
+
         headers = self.session.get_default_headers()
         headers['Depth'] = 0
         body = """
@@ -171,20 +185,60 @@ class Discover(object):
                 yield {'href': href, 'displayname': displayname}
 
     def discover(self):
-        for x in self.find_collections():
-            yield x
+        for c in self.find_collections():
+            url = c['href']
+            collection = _get_collection_from_url(url)
+            storage_args = dict(self.kwargs)
+            storage_args.update({'url': url, 'collection': collection,
+                                 'collection_human': c['displayname']})
+            yield storage_args
 
-        # Another one of Radicale's specialties: Discovery is broken (returning
-        # completely wrong URLs at every stage) as of version 0.9.
-        # https://github.com/Kozea/Radicale/issues/196
+    def create(self, collection):
+        if collection is None:
+            collection = _get_collection_from_url(self.kwargs['url'])
+
+        for c in self.discover():
+            if c['collection'] == collection:
+                return c
+
+        home = self.find_home()
+        url = '{}/{}'.format(home.rstrip('/'), collection)
+
         try:
-            for x in self.find_collections(''):
-                yield x
-        except (InvalidXMLResponse, HTTPError, exceptions.Error):
-            pass
+            url = self._create_collection_impl(url)
+        except HTTPError as e:
+            raise NotImplementedError(e)
+        else:
+            rv = dict(self.kwargs)
+            rv['collection'] = collection
+            rv['url'] = url
+            return rv
+
+    def _create_collection_impl(self, url):
+        data = '''<?xml version="1.0" encoding="utf-8" ?>
+            <D:mkcol xmlns:D="DAV:" xmlns:C="{}">
+                <D:set>
+                    <D:prop>
+                        <D:resourcetype>
+                            <D:collection/>
+                            <C:{}/>
+                        </D:resourcetype>
+                    </D:prop>
+                </D:set>
+            </D:mkcol>
+        '''.format(self._namespace, self._resourcetype)
+
+        response = self.session.request(
+            'MKCOL',
+            url,
+            data=data,
+            headers=self.session.get_default_headers(),
+        )
+        return response.url
 
 
 class CalDiscover(Discover):
+    _namespace = 'urn:ietf:params:xml:ns:caldav'
     _resourcetype = 'calendar'
     _homeset_xml = """
     <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
@@ -198,6 +252,7 @@ class CalDiscover(Discover):
 
 
 class CardDiscover(Discover):
+    _namespace = 'urn:ietf:params:xml:ns:carddav'
     _resourcetype = 'addressbook'
     _homeset_xml = """
     <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:carddav">
@@ -295,73 +350,14 @@ class DavStorage(Storage):
         self.url = url
 
     @classmethod
-    def _get_session(cls, **kwargs):
-        discover_args, _ = utils.split_dict(kwargs, lambda key: key in (
-            'url', 'username', 'password', 'verify', 'auth', 'useragent',
-            'verify_fingerprint', 'auth_cert',
-        ))
-        return DavSession(**discover_args)
-
-    @classmethod
     def discover(cls, **kwargs):
-        if kwargs.pop('collection', None) is not None:
-            raise TypeError('collection argument must not be given.')
-
-        d = cls.discovery_class(cls._get_session(**kwargs))
-        for c in d.discover():
-            url = c['href']
-            collection = _get_collection_from_url(url)
-            storage_args = dict(kwargs)
-            storage_args.update({'url': url, 'collection': collection,
-                                 'collection_human': c['displayname']})
-            yield storage_args
+        d = cls.discovery_class(**kwargs)
+        return d.discover()
 
     @classmethod
     def create_collection(cls, collection, **kwargs):
-        if collection is None:
-            collection = _get_collection_from_url(kwargs['url'])
-        session = cls._get_session(**kwargs)
-        d = cls.discovery_class(session)
-
-        for c in cls.discover(**kwargs):
-            if c['collection'] == collection:
-                return c
-
-        home = d.find_home()
-        url = '{}/{}'.format(home.rstrip('/'), collection)
-
-        try:
-            url = cls._create_collection_impl(d, url, kwargs)
-        except HTTPError as e:
-            raise NotImplementedError(e)
-        else:
-            rv = dict(kwargs)
-            rv['collection'] = collection
-            rv['url'] = url
-            return rv
-
-    @classmethod
-    def _create_collection_impl(cls, d, url, kwargs):
-        data = '''<?xml version="1.0" encoding="utf-8" ?>
-            <D:mkcol xmlns:D="DAV:" xmlns:C="{}">
-                <D:set>
-                    <D:prop>
-                        <D:resourcetype>
-                            <D:collection/>
-                            <C:{}/>
-                        </D:resourcetype>
-                    </D:prop>
-                </D:set>
-            </D:mkcol>
-        '''.format(cls._dav_namespace, cls._dav_resourcetype)
-
-        response = d.session.request(
-            'MKCOL',
-            url,
-            data=data,
-            headers=d.session.get_default_headers(),
-        )
-        return response.url
+        d = cls.discovery_class(**kwargs)
+        return d.create(collection)
 
     def _normalize_href(self, *args, **kwargs):
         return _normalize_href(self.session.url, *args, **kwargs)
@@ -588,8 +584,6 @@ class CaldavStorage(DavStorage):
     fileext = '.ics'
     item_mimetype = 'text/calendar'
     discovery_class = CalDiscover
-    _dav_namespace = 'urn:ietf:params:xml:ns:caldav'
-    _dav_resourcetype = 'calendar'
 
     start_date = None
     end_date = None
@@ -723,6 +717,4 @@ class CarddavStorage(DavStorage):
                 {hrefs}
             </C:addressbook-multiget>'''
 
-    _dav_namespace = 'urn:ietf:params:xml:ns:carddav'
-    _dav_resourcetype = 'addressbook'
     get_multi_data_query = '{urn:ietf:params:xml:ns:carddav}address-data'

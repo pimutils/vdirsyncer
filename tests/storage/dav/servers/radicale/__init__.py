@@ -116,9 +116,6 @@ class ServerMixin(object):
                   'collection': collection, 'unsafe_href_chars': ''}
 
             if collection is not None:
-                if storage_backend != 'multifilesystem':
-                    # XXX: https://github.com/Kozea/Radicale/pull/236
-                    rv = self.storage_class.create_collection(**rv)
                 s = self.storage_class(**rv)
                 s.delete(*s.upload(get_item()))
 
