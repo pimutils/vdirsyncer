@@ -12,8 +12,8 @@ synchronization* for synchronizing your data between multiple computers, such
 as:
 
 * `Syncthing <https://syncthing.net/>`_
-* `Dropbox <http://dropbox.com/>`_ or one of the gajillion services like it
-* `unison <http://www.cis.upenn.edu/~bcpierce/unison/>`_
+* `Dropbox <https://dropbox.com/>`_ or one of the gajillion services like it
+* `unison <https://www.cis.upenn.edu/~bcpierce/unison/>`_
 
 If you only need to synchronize things between several desktop machines (and
 not e.g. smartphones), using any of those to sync your vdirs will probably fit
