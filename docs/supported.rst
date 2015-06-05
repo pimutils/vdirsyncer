@@ -98,6 +98,9 @@ latest PyPI release of Radicale_.
 
 .. _Radicale: http://radicale.org/
 
+
+.. _owncloud_setup:
+
 ownCloud
 --------
 
@@ -132,6 +135,8 @@ the settings to use::
 
 .. _FastMail: https://www.fastmail.com/
 
+.. _icloud_setup:
+
 iCloud
 ------
 
@@ -157,6 +162,8 @@ Problems:
 - Vdirsyncer can't create collections on iCloud.
 
 .. _iCloud: https://www.icloud.com/
+
+.. _davmail_setup:
 
 DavMail (Exchange, Outlook)
 ---------------------------

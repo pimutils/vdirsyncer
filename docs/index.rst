@@ -20,6 +20,7 @@ Table of Contents
 .. toctree::
    :maxdepth: 1
 
+   when
    tutorial
    ssl-tutorial
    keyring

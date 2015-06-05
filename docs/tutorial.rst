@@ -2,6 +2,9 @@
 Tutorial
 ========
 
+Before starting, :doc:`consider if you actually need vdirsyncer <when>`. There
+are better alternatives available for particular usecases.
+
 Installation
 ============
 
@@ -92,6 +95,8 @@ further reference, it uses the storages
 
 More Configuration
 ==================
+
+.. _conflict_resolution:
 
 Conflict resolution
 -------------------
