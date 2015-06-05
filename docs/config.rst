@@ -35,9 +35,6 @@ General Section
   been added on one side or deleted on the other. Relative paths will be
   interpreted as relative to the configuration file's directory.
 
-  The directory will contain files with very confidential information:
-  Usernames, passwords and listings of collection items may be contained in it.
-
 - ``password_command`` specifies a command to query for server passwords. The
   command will be called with the username as the first argument, and the
   hostname as the second.

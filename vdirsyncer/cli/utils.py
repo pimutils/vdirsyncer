@@ -33,6 +33,10 @@ except ImportError:
     import queue
 
 
+STATUS_PERMISSIONS = 0o600
+STATUS_DIR_PERMISSIONS = 0o700
+
+
 class _StorageIndex(object):
     def __init__(self):
         self._storages = dict(
@@ -173,7 +177,9 @@ def collections_for_pair(status_path, name_a, name_b, pair_name, config_a,
     cache_key = _get_collections_cache_key(pair_options, config_a, config_b)
     if rv and not skip_cache:
         if rv.get('cache_key', None) == cache_key:
-            return rv.get('collections', rv)
+            return list(_expand_collections_cache(
+                rv['collections'], config_a, config_b
+            ))
         elif rv:
             cli_logger.info('Detected change in config file, discovering '
                             'collections for {}'.format(pair_name))
@@ -186,9 +192,39 @@ def collections_for_pair(status_path, name_a, name_b, pair_name, config_a,
     rv = list(_collections_for_pair_impl(status_path, name_a, name_b,
                                          pair_name, config_a, config_b,
                                          pair_options))
+
     save_status(status_path, pair_name, data_type='collections',
-                data={'collections': rv, 'cache_key': cache_key})
+                data={
+                    'collections': list(
+                        _compress_collections_cache(rv, config_a, config_b)
+                    ),
+                    'cache_key': cache_key
+                })
     return rv
+
+
+def _compress_collections_cache(collections, config_a, config_b):
+    def deduplicate(x, y):
+        rv = {}
+        for key, value in x.items():
+            if key not in y or y[key] != value:
+                rv[key] = value
+
+        return rv
+
+    for name, (a, b) in collections:
+        yield name, (deduplicate(a, config_a), deduplicate(b, config_b))
+
+
+def _expand_collections_cache(collections, config_a, config_b):
+    for name, (a_delta, b_delta) in collections:
+        a = dict(config_a)
+        a.update(a_delta)
+
+        b = dict(config_b)
+        b.update(b_delta)
+
+        yield name, (a, b)
 
 
 def _discover_from_config(config):
@@ -384,6 +420,8 @@ def load_status(base_path, pair, collection=None, data_type=None):
     if not os.path.exists(path):
         return None
 
+    assert_permissions(path, STATUS_PERMISSIONS)
+
     with open(path) as f:
         try:
             return dict(json.load(f))
@@ -404,22 +442,24 @@ def save_status(base_path, pair, collection=None, data_type=None, data=None):
     assert data is not None
     status_name = get_status_name(pair, collection)
     path = expand_path(os.path.join(base_path, status_name)) + '.' + data_type
-    base_path = os.path.dirname(path)
+    dirname = os.path.dirname(path)
 
-    if collection is not None and os.path.isfile(base_path):
+    if collection is not None and os.path.isfile(dirname):
         raise CliError('{} is probably a legacy file and could be removed '
                        'automatically, but this choice is left to the '
                        'user. If you think this is an error, please file '
-                       'a bug at {}'.format(base_path, PROJECT_HOME))
+                       'a bug at {}'.format(dirname, PROJECT_HOME))
 
     try:
-        os.makedirs(base_path, 0o750)
+        os.makedirs(dirname, STATUS_DIR_PERMISSIONS)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
 
     with atomic_write(path, mode='w', overwrite=True) as f:
         json.dump(data, f)
+
+    os.chmod(path, STATUS_PERMISSIONS)
 
 
 def storage_class_from_config(config):
@@ -657,3 +697,11 @@ def repair_storage(storage):
         seen_uids.add(new_item.uid)
         if changed:
             storage.update(href, new_item, etag)
+
+
+def assert_permissions(path, wanted):
+    permissions = os.stat(path).st_mode & 0o777
+    if permissions > wanted:
+        cli_logger.warning('Correcting permissions of {} from {:o} to {:o}'
+                           .format(path, permissions, wanted))
+        os.chmod(path, wanted)

@@ -53,3 +53,10 @@ def test_discover_command(tmpdir, runner):
     assert 'Syncing foobar/b' in lines
     assert 'Syncing foobar/c' in lines
     assert 'Syncing foobar/d' in result.output
+
+    # Check for redundant data that is already in the config. This avoids
+    # copying passwords from the config too.
+    assert 'fileext' not in tmpdir \
+            .join('status') \
+            .join('foobar.collections') \
+            .read()
