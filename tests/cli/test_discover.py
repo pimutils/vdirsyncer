@@ -57,6 +57,6 @@ def test_discover_command(tmpdir, runner):
     # Check for redundant data that is already in the config. This avoids
     # copying passwords from the config too.
     assert 'fileext' not in tmpdir \
-            .join('status') \
-            .join('foobar.collections') \
-            .read()
+        .join('status') \
+        .join('foobar.collections') \
+        .read()
