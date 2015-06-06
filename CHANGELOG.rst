@@ -13,6 +13,7 @@ Version 0.5.2
 =============
 
 - Vdirsyncer now checks and corrects the permissions of status files.
+- Vdirsyncer is now more robust towards changing UIDs inside items.
 
 Version 0.5.1
 =============

@@ -92,35 +92,35 @@ class StorageSyncer(object):
                               for ident, (href, etag)
                               in iteritems(self.status))
 
-        hrefs_to_download = []
+        prefetch = {}
         self.idents = {}
 
         for href, etag in self.storage.list():
-            if href in href_to_status:
-                ident, old_etag = href_to_status[href]
-                self.idents[ident] = {
-                    'etag': etag,
-                    'href': href,
-                    'ident': ident
-                }
-
-                if etag != old_etag and not other_read_only:
-                    hrefs_to_download.append(href)
+            props = {'href': href, 'etag': etag}
+            ident, old_etag = href_to_status.get(href, (None, None))
+            assert etag is not None
+            if etag != old_etag and not other_read_only:
+                # Either the item is completely new, or updated
+                # In both cases we should prefetch
+                prefetch[href] = props
             else:
-                hrefs_to_download.append(href)
+                self.idents[ident] = props
 
         # Prefetch items
-        for href, item, etag in (self.storage.get_multi(hrefs_to_download) if
-                                 hrefs_to_download else ()):
-            props = self.idents.setdefault(item.ident, {})
-            props['item'] = item
-            props['ident'] = item.ident
+        for href, item, etag in (self.storage.get_multi(prefetch)
+                                 if prefetch else ()):
+            props = prefetch[href]
 
-            if props.setdefault('href', href) != href:
-                raise IdentConflict(storage=self.storage,
-                                    hrefs=[props['href'], href])
+            assert props['href'] == href
             if props.setdefault('etag', etag) != etag:
                 raise SyncError('Etag changed during sync.')
+            props['item'] = item
+            props['ident'] = ident = item.ident
+
+            if self.idents.setdefault(ident, props) is not props:
+                raise IdentConflict(storage=self.storage,
+                                    hrefs=[self.idents[ident]['href'],
+                                           href])
 
     def is_changed(self, ident):
         _, status_etag = self.status.get(ident, (None, None))

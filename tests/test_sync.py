@@ -189,6 +189,7 @@ def test_uses_get_multi(monkeypatch):
     old_get = MemoryStorage.get
 
     def get_multi(self, hrefs):
+        hrefs = list(hrefs)
         get_multi_calls.append(hrefs)
         for href in hrefs:
             item, etag = old_get(self, href)
@@ -232,6 +233,18 @@ def test_no_uids():
     b_items = set(b.get(href)[0].raw for href, etag in b.list())
 
     assert a_items == b_items == {u'ASDF', u'FOOBAR'}
+
+
+def test_changed_uids():
+    a = MemoryStorage()
+    b = MemoryStorage()
+    href_a, etag_a = a.upload(Item(u'UID:A-ONE'))
+    href_b, etag_b = b.upload(Item(u'UID:B-ONE'))
+    status = {}
+    sync(a, b, status)
+
+    a.update(href_a, Item(u'UID:A-TWO'), etag_a)
+    sync(a, b, status)
 
 
 def test_both_readonly():
