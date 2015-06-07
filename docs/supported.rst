@@ -164,8 +164,12 @@ Problems:
 DavMail (Exchange, Outlook)
 ---------------------------
 
-Using vdirsyncer with DavMail_ is possible, but make sure you use the latest
-versions::
+Using vdirsyncer with DavMail_ is possible, but you might get confronted with
+weird errors coming from old Exchange servers, malformed calendar entries with
+special characters and/or using an old DavMail version. If you encounter such
+problems, do report them to me, but it's probably not vdirsyncer's fault.
+
+**Make absolutely sure you use the latest DavMail**::
 
     [storage outlook]
     type = caldav
