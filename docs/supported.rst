@@ -166,8 +166,7 @@ DavMail (Exchange, Outlook)
 
 Using vdirsyncer with DavMail_ is possible, but you might get confronted with
 weird errors coming from old Exchange servers, malformed calendar entries with
-special characters and/or using an old DavMail version. If you encounter such
-problems, do report them to me, but it's probably not vdirsyncer's fault.
+special characters and/or using an old DavMail version.
 
 **Make absolutely sure you use the latest DavMail**::
 
@@ -178,6 +177,13 @@ problems, do report them to me, but it's probably not vdirsyncer's fault.
     password = ...
 
 - Older versions of DavMail handle URLs case-insensitively. See :gh:`144`.
+- DavMail is handling old broken events very poorly. In such cases the
+  `Calendar Checking Tool for Outlook
+  <https://www.microsoft.com/en-us/download/details.aspx?id=28786>`_ might
+  help.
+
+If you encounter any problems, do report them to me, but it's probably not
+vdirsyncer's fault.
 
 .. _DavMail: http://davmail.sourceforge.net/
 
