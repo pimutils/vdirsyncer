@@ -2,8 +2,9 @@
 
 import os
 import sys
+import uuid
 
-from .compat import iteritems
+from .compat import iteritems, to_unicode
 from .. import exceptions
 
 
@@ -156,3 +157,12 @@ class cached_property(object):
             return self
         obj.__dict__[self.__name__] = result = self.fget(obj)
         return result
+
+
+def generate_href(ident=None, unsafe=''):
+    if ident and \
+       ident.encode('ascii', 'ignore').decode('ascii') == ident:
+        for char in unsafe:
+            ident = ident.replace(char, '_')
+        return ident
+    return to_unicode(uuid.uuid4().hex)

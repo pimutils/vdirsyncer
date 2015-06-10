@@ -3,13 +3,12 @@
 import errno
 import os
 import subprocess
-import uuid
 
 from atomicwrites import atomic_write
 
 from .base import Item, Storage
 from .. import exceptions, log
-from ..utils import checkdir, expand_path, get_etag_from_file, \
+from ..utils import checkdir, expand_path, generate_href, get_etag_from_file, \
     get_etag_from_fileobject
 from ..utils.compat import text_type
 
@@ -81,13 +80,10 @@ class FilesystemStorage(Storage):
     def _get_filepath(self, href):
         return os.path.join(self.path, href)
 
-    def _deterministic_href(self, item):
+    def _get_href(self, ident):
         # XXX: POSIX only defines / and \0 as invalid chars, but we should make
         # this work crossplatform.
-        return item.ident.replace('/', '_') + self.fileext
-
-    def _random_href(self):
-        return str(uuid.uuid4()) + self.fileext
+        return generate_href(ident, '/') + self.fileext
 
     def list(self):
         for fname in os.listdir(self.path):
@@ -112,7 +108,7 @@ class FilesystemStorage(Storage):
             raise TypeError('item.raw must be a unicode string.')
 
         try:
-            href = self._deterministic_href(item)
+            href = self._get_href(item.ident)
             fpath, etag = self._upload_impl(item, href)
         except OSError as e:
             if e.errno in (
@@ -121,7 +117,8 @@ class FilesystemStorage(Storage):
             ):
                 logger.debug('UID as filename rejected, trying with random '
                              'one.')
-                href = self._random_href()
+                # random href instead of UID-based
+                href = self._get_href(None)
                 fpath, etag = self._upload_impl(item, href)
             else:
                 raise

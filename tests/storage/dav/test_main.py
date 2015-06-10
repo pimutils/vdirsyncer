@@ -9,7 +9,8 @@ import pytest
 import requests
 import requests.exceptions
 
-from tests import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE
+from tests import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
+    assert_item_equals
 
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
@@ -47,6 +48,16 @@ class DavStorageTests(ServerMixin, StorageTests):
         monkeypatch.setattr('requests.sessions.Session.request', breakdown)
 
         assert list(s.get_multi([])) == []
+
+    def test_dav_unicode_href(self, s, get_item, monkeypatch):
+        if self.dav_server != 'radicale':
+            # Radicale is unable to deal with unicode hrefs
+            monkeypatch.setattr(s, '_get_href',
+                                lambda item: item.ident + s.fileext)
+        item = get_item(uid=u'lolätvdirsynceröü град сатану')
+        href, etag = s.upload(item)
+        item2, etag2 = s.get(href)
+        assert_item_equals(item, item2)
 
 
 class TestCaldavStorage(DavStorageTests):
