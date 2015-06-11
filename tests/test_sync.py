@@ -311,3 +311,11 @@ def test_moved_href():
     assert len(status) == 1
     assert len(list(a.list())) == len(list(b.list())) == 1
     assert status['haha'][2] == 'haha'
+
+
+def test_unicode_hrefs():
+    a = MemoryStorage()
+    b = MemoryStorage()
+    status = {}
+    href, etag = a.upload(Item(u'UID:äää'))
+    sync(a, b, status)

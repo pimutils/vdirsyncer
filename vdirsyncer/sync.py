@@ -184,7 +184,7 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
 def _action_upload(ident, source, dest):
 
     def inner(a, b, conflict_resolution):
-        sync_logger.info('Copying (uploading) item {} to {}'
+        sync_logger.info(u'Copying (uploading) item {} to {}'
                          .format(ident, dest.storage))
         source_meta = source.idents[ident]
 
@@ -205,12 +205,12 @@ def _action_upload(ident, source, dest):
 def _action_update(ident, source, dest):
 
     def inner(a, b, conflict_resolution):
-        sync_logger.info('Copying (updating) item {} to {}'
+        sync_logger.info(u'Copying (updating) item {} to {}'
                          .format(ident, dest.storage))
         source_meta = source.idents[ident]
 
         if dest.storage.read_only:
-            sync_logger.info('{dest} is read-only. Skipping update...'
+            sync_logger.info(u'{dest} is read-only. Skipping update...'
                              .format(dest=dest.storage))
             dest_href = dest_etag = None
         else:
@@ -231,7 +231,7 @@ def _action_delete(ident, info):
     idents = info.idents
 
     def inner(a, b, conflict_resolution):
-        sync_logger.info('Deleting item {} from {}'.format(ident, storage))
+        sync_logger.info(u'Deleting item {} from {}'.format(ident, storage))
         if storage.read_only:
             sync_logger.warning('{} is read-only, skipping deletion...'
                                 .format(storage))
@@ -249,7 +249,7 @@ def _action_delete(ident, info):
 
 def _action_delete_status(ident):
     def inner(a, b, conflict_resolution):
-        sync_logger.info('Deleting status info for nonexisting item {}'
+        sync_logger.info(u'Deleting status info for nonexisting item {}'
                          .format(ident))
         del a.status[ident]
         del b.status[ident]
@@ -259,23 +259,23 @@ def _action_delete_status(ident):
 
 def _action_conflict_resolve(ident):
     def inner(a, b, conflict_resolution):
-        sync_logger.info('Doing conflict resolution for item {}...'
+        sync_logger.info(u'Doing conflict resolution for item {}...'
                          .format(ident))
         meta_a = a.idents[ident]
         meta_b = b.idents[ident]
 
         if meta_a['item'].raw == meta_b['item'].raw:
-            sync_logger.info('...same content on both sides.')
+            sync_logger.info(u'...same content on both sides.')
             a.status[ident] = meta_a['href'], meta_a['etag']
             b.status[ident] = meta_b['href'], meta_b['etag']
         elif conflict_resolution is None:
             raise SyncConflict(ident=ident, href_a=meta_a['href'],
                                href_b=meta_b['href'])
         elif conflict_resolution == 'a wins':
-            sync_logger.info('...{} wins.'.format(a.storage))
+            sync_logger.info(u'...{} wins.'.format(a.storage))
             _action_update(ident, a, b)(a, b, conflict_resolution)
         elif conflict_resolution == 'b wins':
-            sync_logger.info('...{} wins.'.format(b.storage))
+            sync_logger.info(u'...{} wins.'.format(b.storage))
             _action_update(ident, b, a)(a, b, conflict_resolution)
         else:
             raise exceptions.UserError('Invalid conflict resolution mode: {}'
