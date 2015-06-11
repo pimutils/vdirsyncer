@@ -29,11 +29,11 @@ def _normalize_href(base, href):
     return x
 
 
-def _encode_href(x):
+def _encode_url(x):
     return utils.compat.urlquote(x, '/@')
 
 
-def _decode_href(x):
+def _decode_url(x):
     return utils.compat.urlunquote(x)
 
 
@@ -382,7 +382,7 @@ class DavStorage(Storage):
         for href in hrefs:
             if href != self._normalize_href(href):
                 raise exceptions.NotFoundError(href)
-            href_xml.append('<D:href>{}</D:href>'.format(_encode_href(href)))
+            href_xml.append('<D:href>{}</D:href>'.format(_encode_url(href)))
         if not href_xml:
             return ()
 
@@ -435,12 +435,12 @@ class DavStorage(Storage):
 
         response = self.session.request(
             'PUT',
-            _encode_href(href),
+            _encode_url(href),
             data=item.raw.encode('utf-8'),
             headers=headers
         )
         etag = response.headers.get('etag', None)
-        href = self._normalize_href(_decode_href(response.url))
+        href = self._normalize_href(_decode_url(response.url))
         if not etag:
             dav_logger.warning('Race condition detected with server {}, '
                                'consider using an alternative.'
@@ -468,7 +468,7 @@ class DavStorage(Storage):
 
         self.session.request(
             'DELETE',
-            _encode_href(href),
+            _encode_url(href),
             headers=headers
         )
 
@@ -482,7 +482,7 @@ class DavStorage(Storage):
 
             href = self._normalize_href(href.text)
             for i in range(decoding_rounds):
-                href = _decode_href(href)
+                href = _decode_url(href)
 
             if href in hrefs:
                 # Servers that send duplicate hrefs:
