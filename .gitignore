@@ -6,6 +6,7 @@ build
 env
 *.egg-info
 .cache
+.eggs
 .xprocess
 dist
 tests/storage/dav/servers/*

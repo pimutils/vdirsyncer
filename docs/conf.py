@@ -2,9 +2,6 @@
 
 import datetime
 import os
-import sys
-
-import pkg_resources
 
 from sphinx.ext import autodoc
 
@@ -19,15 +16,8 @@ project = u'vdirsyncer'
 copyright = (u'2014-{}, Markus Unterwaditzer & contributors'
              .format(datetime.date.today().strftime('%Y')))
 
-try:
-    # The full version, including alpha/beta/rc tags.
-    release = pkg_resources.require('vdirsyncer')[0].version
-except pkg_resources.DistributionNotFound:
-    print('To build the documentation, the distribution information of '
-          'vdirsyncer has to be available. Run "setup.py develop" to do '
-          'this.')
-    sys.exit(1)
-
+import vdirsyncer
+release = vdirsyncer.__version__
 version = '.'.join(release.split('.')[:2])  # The short X.Y version.
 
 exclude_patterns = ['_build']
