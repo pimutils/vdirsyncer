@@ -14,6 +14,8 @@ Version 0.5.2
 
 - Vdirsyncer now checks and corrects the permissions of status files.
 - Vdirsyncer is now more robust towards changing UIDs inside items.
+- Vdirsyncer is now handling unicode hrefs and UIDs correctly. Software that
+  produces non-ASCII UIDs is broken, but apparently it exists.
 
 Version 0.5.1
 =============
