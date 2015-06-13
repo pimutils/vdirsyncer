@@ -11,7 +11,7 @@ from .base import Item, Storage
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
 from .. import exceptions, log, utils
-from ..utils.compat import text_type
+from ..utils.compat import text_type, to_native
 
 
 dav_logger = log.get(__name__)
@@ -22,6 +22,8 @@ CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
 def _normalize_href(base, href):
     '''Normalize the href to be a path only relative to hostname and
     schema.'''
+    base = to_native(base, 'utf-8')
+    href = to_native(href, 'utf-8')
     if not href:
         raise ValueError(href)
     x = utils.compat.urlparse.urljoin(base, href)
@@ -363,9 +365,7 @@ class DavStorage(Storage):
         return _normalize_href(self.session.url, *args, **kwargs)
 
     def _get_href(self, item):
-        href = item.ident
-        for char in self.unsafe_href_chars:
-            href = href.replace(char, '_')
+        href = utils.generate_href(item.ident, unsafe=self.unsafe_href_chars)
         return self._normalize_href(href + self.fileext)
 
     def _is_item_mimetype(self, mimetype):
@@ -440,7 +440,7 @@ class DavStorage(Storage):
             headers=headers
         )
         etag = response.headers.get('etag', None)
-        href = self._normalize_href(_decode_url(response.url))
+        href = _decode_url(self._normalize_href(response.url))
         if not etag:
             dav_logger.warning('Race condition detected with server {}, '
                                'consider using an alternative.'
