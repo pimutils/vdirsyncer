@@ -7,9 +7,9 @@ When do I need Vdirsyncer?
 Why not Dropbox? (or anything like it)
 ======================================
 
-Since vdirs are just a bunch of files, it is obvious to try *file
-synchronization* for synchronizing your data between multiple computers, such
-as:
+Since :doc:`vdirs <vdir>` are just a bunch of files, it is obvious to try
+*file synchronization* for synchronizing your data between multiple computers,
+such as:
 
 * `Syncthing <https://syncthing.net/>`_
 * `Dropbox <https://dropbox.com/>`_ or one of the gajillion services like it

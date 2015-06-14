@@ -37,8 +37,9 @@ class SingleFileStorage(Storage):
 
     .. note::
         This storage is very slow, and that is unlikely to change. You should
-        consider using :py:class:`vdirsyncer.storage.FilesystemStorage` if it
-        fits your usecase.
+        consider using
+        :py:class:`vdirsyncer.storage.filesystem.FilesystemStorage` if it fits
+        your usecase.
 
     :param path: The filepath to the file to be written to.
     :param encoding: Which encoding the file should use. Defaults to UTF-8.

@@ -5,6 +5,11 @@ The Vdir Storage Format
 This document describes a standard for storing calendars and contacts on a
 filesystem, with the main goal of being easy to implement.
 
+Vdirsyncer synchronizes to vdirs via
+:py:class:`vdirsyncer.storage.filesystem.FilesystemStorage`. Each vdir
+(basically just a directory with some files in it) represents a calendar or
+addressbook.
+
 Basic Structure
 ===============
 
