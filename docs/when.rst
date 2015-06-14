@@ -2,10 +2,39 @@
 When do I need Vdirsyncer?
 ==========================
 
-*TL;DR: Only if you want to sync with a smartphone.*
+Why vdir?
+=========
 
-Why not Dropbox? (or anything like it)
-======================================
+:doc:`vdir` is a compromise to maintain some compatibility with the CalDAV and
+CardDAV protocols, which are supported by :ref:`ownCloud <owncloud_setup>`,
+:ref:`Exchange <davmail_setup>`, :ref:`iCloud <icloud_setup>` and many other
+services.
+
+If you don't care about that, you don't need vdirsyncer. However, consider the
+following before writing everything into a single text file:
+
+Why not a simple text file? (todo.txt)
+--------------------------------------
+
+Projects like `todo.txt <http://todotxt.com/>`_ criticize the complexity of
+modern productivity apps, and that rightfully. However, when they're faced with
+the question how to synchronize that data across multiple devices, they seemed
+to have reached the dead end with their novel idea: "Let's just use Dropbox".
+
+What does file sync software do if both files have changed since the last sync?
+The answer is to ignore the question, just sync as often as possible, and hope
+for the best. Because if it comes to a sync conflict, most sync services are
+not daring to merge files, and create two copies on each computer instead.
+Merging the two task lists is left to the user.
+
+A better idea would've been to use ``git`` to synchronize the ``todo.txt``
+file, which is at least able to resolve some basic conflicts.
+
+Why vdirsyncer?
+===============
+
+Why not Dropbox?
+----------------
 
 Since :doc:`vdirs <vdir>` are just a bunch of files, it is obvious to try
 *file synchronization* for synchronizing your data between multiple computers,
@@ -19,21 +48,18 @@ If you only need to synchronize things between several desktop machines (and
 not e.g. smartphones), using any of those to sync your vdirs will probably fit
 your usecase.
 
-**However**, be aware that none of those services are capable of solving
-synchronization conflicts properly if you have all of your data in a single
-file. Projects like `todo.txt <http://todotxt.com/>`_ get bitten by this
-because they have all data in a single file: This means that if you change
-*anything in your task list on two devices*, you have to merge those lists
-manually. At least this is the case with Dropbox, which will create two
-``todo.txt`` files in such situations.
+Since each contact/task/event is contained in its own file, the
+chance of sync conflicts is relatively small, but those still happen.
+Vdirsyncer doesn't do anything smart if two items have conflicting changes
+either, but it could in the future.
 
 Why not git?
-============
+------------
 
-If file synchronization software is so dumb about sync conflicts, why not use
-git then? Why not put your vdirs into a repo, and just ``git commit``, ``git
-push`` and ``git pull``? It has **many advantages over both Vdirsyncer and
-Dropbox**:
+If file synchronization software and vdirsyncer are so dumb about sync
+conflicts, why not use git then? Why not put your vdirs into a repo, and just
+``git commit``, ``git push`` and ``git pull``? It has **many advantages over
+both Vdirsyncer and Dropbox**:
 
 * **Full change history:** If some stupid software deletes all your data, just
   revert the commit!
@@ -59,14 +85,6 @@ Dropbox**:
 Many other CLI programs that need to sync data are based on git, for example
 pass_ or ppl_. Those usually hide git behind a convenient CLI interface that at
 least autocommits.
-
-Given that, **the only reason why you should choose vdirsyncer over git is its
-compatibility with existing services**: Git can't sync with your :ref:`iCloud
-<icloud_setup>`, :ref:`Exchange server <davmail_setup>` or :ref:`ownCloud
-<owncloud_setup>`. And not with your smartphone.
-
-You can also employ a mixture of vdirsyncer and git to enjoy the advantages of
-both. This is the approach I am currently using.
 
 .. _pass: http://passwordstore.org/
 .. _ppl: http://ppladdressbook.org/
