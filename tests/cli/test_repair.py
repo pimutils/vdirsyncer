@@ -23,6 +23,16 @@ def test_repair_uids():
     assert uid1 != uid2
 
 
+def test_repair_nonascii_uids():
+    s = MemoryStorage()
+    href, etag = s.upload(Item(u'BEGIN:VCARD\nUID:äää\nEND:VCARD'))
+    assert s.get(href)[0].uid == u'äää'
+    repair_storage(s)
+    newuid = s.get(href)[0].uid
+    assert newuid != u'äää'
+    assert newuid.encode('ascii', 'ignore').decode('ascii') == newuid
+
+
 def test_full(tmpdir, runner):
     runner.write_with_general(dedent('''
         [storage foo]
