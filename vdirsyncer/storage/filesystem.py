@@ -10,7 +10,7 @@ from .base import Item, Storage
 from .. import exceptions, log
 from ..utils import checkdir, expand_path, generate_href, get_etag_from_file, \
     get_etag_from_fileobject
-from ..utils.compat import text_type
+from ..utils.compat import text_type, to_native
 
 logger = log.get(__name__)
 
@@ -30,7 +30,7 @@ class FilesystemStorage(Storage):
         href, so if you change the file extension after a sync, this will
         trigger a re-download of everything (but *should* not cause data-loss
         of any kind).
-    :param encoding: File encoding for items.
+    :param encoding: File encoding for items, both content and filename.
     :param post_hook: A command to call for each item creation and
         modification. The command will be called with the path of the
         new/updated file.
@@ -42,7 +42,7 @@ class FilesystemStorage(Storage):
     def __init__(self, path, fileext, encoding='utf-8', post_hook=None,
                  **kwargs):
         super(FilesystemStorage, self).__init__(**kwargs)
-        path = expand_path(path)
+        path = expand_path(to_native(path, encoding))
         checkdir(path, create=False)
         self.path = path
         self.encoding = encoding
@@ -70,15 +70,21 @@ class FilesystemStorage(Storage):
     @classmethod
     def create_collection(cls, collection, **kwargs):
         kwargs = dict(kwargs)
+        encoding = kwargs.get('encoding', 'utf-8')
+        path = to_native(kwargs['path'], encoding)
 
         if collection is not None:
-            kwargs['path'] = os.path.join(kwargs['path'], collection)
-        checkdir(expand_path(kwargs['path']), create=True)
+            collection = to_native(collection, encoding)
+            path = os.path.join(path, collection)
+
+        checkdir(expand_path(path), create=True)
+
+        kwargs['path'] = path
         kwargs['collection'] = collection
         return kwargs
 
     def _get_filepath(self, href):
-        return os.path.join(self.path, href)
+        return os.path.join(self.path, to_native(href, self.encoding))
 
     def _get_href(self, ident):
         # XXX: POSIX only defines / and \0 as invalid chars, but we should make

@@ -22,21 +22,21 @@ CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
 def _normalize_href(base, href):
     '''Normalize the href to be a path only relative to hostname and
     schema.'''
+    orig_href = href
     base = to_native(base, 'utf-8')
     href = to_native(href, 'utf-8')
     if not href:
         raise ValueError(href)
+
     x = utils.compat.urlparse.urljoin(base, href)
     x = utils.compat.urlparse.urlsplit(x).path
+
+    x = utils.compat.urlunquote(x)
+    x = utils.compat.urlquote(x, '/@%')
+
+    dav_logger.debug('Normalized URL from {!r} to {!r}'.format(orig_href, x))
+
     return x
-
-
-def _encode_url(x):
-    return utils.compat.urlquote(x, '/@')
-
-
-def _decode_url(x):
-    return utils.compat.urlunquote(x)
 
 
 class InvalidXMLResponse(exceptions.InvalidResponse):
@@ -80,7 +80,7 @@ def _fuzzy_matches_mimetype(strict, weak):
 
 def _get_collection_from_url(url):
     _, collection = url.rstrip('/').rsplit('/', 1)
-    return collection
+    return utils.compat.urlunquote(collection)
 
 
 class Discover(object):
@@ -204,7 +204,10 @@ class Discover(object):
                 return c
 
         home = self.find_home()
-        url = '{}/{}'.format(home.rstrip('/'), collection)
+        url = utils.compat.urlparse.urljoin(
+            home,
+            utils.compat.urlquote(collection, '/@')
+        )
 
         try:
             url = self._create_collection_impl(url)
@@ -382,7 +385,7 @@ class DavStorage(Storage):
         for href in hrefs:
             if href != self._normalize_href(href):
                 raise exceptions.NotFoundError(href)
-            href_xml.append('<D:href>{}</D:href>'.format(_encode_url(href)))
+            href_xml.append('<D:href>{}</D:href>'.format(href))
         if not href_xml:
             return ()
 
@@ -435,12 +438,12 @@ class DavStorage(Storage):
 
         response = self.session.request(
             'PUT',
-            _encode_url(href),
+            href,
             data=item.raw.encode('utf-8'),
             headers=headers
         )
         etag = response.headers.get('etag', None)
-        href = _decode_url(self._normalize_href(response.url))
+        href = self._normalize_href(response.url)
         if not etag:
             dav_logger.warning('Race condition detected with server {}, '
                                'consider using an alternative.'
@@ -468,11 +471,11 @@ class DavStorage(Storage):
 
         self.session.request(
             'DELETE',
-            _encode_url(href),
+            href,
             headers=headers
         )
 
-    def _parse_prop_responses(self, root, decoding_rounds=1):
+    def _parse_prop_responses(self, root):
         hrefs = set()
         for response in root.iter('{DAV:}response'):
             href = response.find('{DAV:}href')
@@ -481,8 +484,6 @@ class DavStorage(Storage):
                 continue
 
             href = self._normalize_href(href.text)
-            for i in range(decoding_rounds):
-                href = _decode_url(href)
 
             if href in hrefs:
                 # Servers that send duplicate hrefs:
@@ -544,9 +545,9 @@ class DavStorage(Storage):
 
         # Decode twice because ownCloud encodes twice.
         # See https://github.com/owncloud/contacts/issues/581
-        rv = self._parse_prop_responses(root, decoding_rounds=2)
+        rv = self._parse_prop_responses(root)
         for href, etag, prop in rv:
-            yield href, etag
+            yield utils.compat.urlunquote(href), etag
 
 
 class CaldavStorage(DavStorage):

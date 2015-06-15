@@ -6,7 +6,7 @@ import pytest
 
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
-from vdirsyncer.utils.compat import iteritems, text_type
+from vdirsyncer.utils.compat import PY2, iteritems, text_type
 
 from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
     assert_item_equals
@@ -215,3 +215,15 @@ class StorageTests(object):
         items = list(href for href, etag in s.list())
         assert len(items) == 2
         assert len(set(items)) == 2
+
+    @pytest.mark.parametrize('collname', [
+        'test@foo',
+        'testätfoo',
+    ])
+    def test_specialchar_collection(self, requires_collections,
+                                    get_storage_args, get_item, collname):
+        if getattr(self, 'dav_server', '') == 'radicale' and PY2:
+            pytest.skip('Radicale is broken on Python 2.')
+        s = self.storage_class(**get_storage_args(collection=collname))
+        href, etag = s.upload(get_item())
+        s.get(href)
