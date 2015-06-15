@@ -683,7 +683,7 @@ def repair_storage(storage):
             cli_logger.warning('Duplicate UID, assigning random one.')
             changed = reroll_uid(parsed) or changed
         elif item.uid.encode('ascii', 'ignore').decode('ascii') != item.uid:
-            cli_logger.warning('UID is non-ascii, assigning, random one.')
+            cli_logger.warning('UID is non-ascii, assigning random one.')
             changed = reroll_uid(parsed) or changed
 
         new_item = Item(u'\r\n'.join(parsed.dump_lines()))
