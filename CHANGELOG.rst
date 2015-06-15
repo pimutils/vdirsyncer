@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.5.2
 =============
 
+*released on 15 June 2015*
+
 - Vdirsyncer now checks and corrects the permissions of status files.
 - Vdirsyncer is now more robust towards changing UIDs inside items.
 - Vdirsyncer is now handling unicode hrefs and UIDs correctly. Software that
