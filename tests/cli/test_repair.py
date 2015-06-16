@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 from textwrap import dedent
 
 from vdirsyncer.cli.utils import repair_storage

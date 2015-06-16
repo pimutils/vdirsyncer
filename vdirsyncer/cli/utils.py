@@ -666,7 +666,7 @@ def repair_storage(storage):
     all_hrefs = list(storage.list())
     for i, (href, _) in enumerate(all_hrefs):
         item, etag = storage.get(href)
-        cli_logger.info('[{}/{}] Processing {}'
+        cli_logger.info(u'[{}/{}] Processing {}'
                         .format(i, len(all_hrefs), href))
 
         parsed = item.parsed
