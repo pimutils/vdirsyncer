@@ -36,13 +36,7 @@ support synchronizing tasks, vdirsyncer does too.
   Its interface is similar to the ones of Taskwarrior or the todo.txt CLI app
   and should be intuitively usable.
 
-- watdo_, another CLI task manager supporting :doc:`vdir <vdir>`.
-
-  It opens a specially formatted textfile in your ``$EDITOR`` and writes your
-  changes back to disk when the editor closes.
-
 .. _todoman: https://hugo.barrera.io/journal/2015/03/30/introducing-todoman/
-.. _watdo: https://github.com/untitaker/watdo
 
 
 Contacts
