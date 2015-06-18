@@ -130,8 +130,7 @@ the settings to use::
 iCloud
 ------
 
-Vdirsyncer is irregularly tested against iCloud_. There are no known issues
-with it.
+Vdirsyncer is irregularly tested against iCloud_.
 
 ::
 
