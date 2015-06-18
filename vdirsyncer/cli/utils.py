@@ -447,12 +447,6 @@ def save_status(base_path, pair, collection=None, data_type=None, data=None):
     path = expand_path(os.path.join(base_path, status_name)) + '.' + data_type
     dirname = os.path.dirname(path)
 
-    if collection is not None and os.path.isfile(dirname):
-        raise CliError('{} is probably a legacy file and could be removed '
-                       'automatically, but this choice is left to the '
-                       'user. If you think this is an error, please file '
-                       'a bug at {}'.format(dirname, PROJECT_HOME))
-
     try:
         os.makedirs(dirname, STATUS_DIR_PERMISSIONS)
     except OSError as e:
