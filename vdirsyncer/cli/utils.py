@@ -428,6 +428,9 @@ def load_status(base_path, pair, collection=None, data_type=None):
         except ValueError:
             pass
 
+        # XXX: Deprecate
+        # Old status format, deprecated as of 0.4.0
+        # See commit 06a701bc10dac16ff0ff304eb7cb9f502b71cf95
         f.seek(0)
         try:
             return dict(json.loads(line) for line in f)
