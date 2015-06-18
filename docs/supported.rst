@@ -149,6 +149,9 @@ with it.
 
 Problems:
 
+- Vdirsyncer can't do two-factor auth with iCloud (there doesn't seem to be a
+  way to do two-factor auth over the DAV APIs) You'll need to use `app-specific
+  passwords <https://support.apple.com/en-us/HT204397>`_ instead.
 - Vdirsyncer can't create collections on iCloud.
 
 .. _iCloud: https://www.icloud.com/
