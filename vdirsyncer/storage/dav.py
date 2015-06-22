@@ -32,7 +32,7 @@ def _normalize_href(base, href):
     x = utils.compat.urlparse.urlsplit(x).path
 
     x = utils.compat.urlunquote(x)
-    x = utils.compat.urlquote(x, '/@%')
+    x = utils.compat.urlquote(x, '/@%:')
 
     dav_logger.debug('Normalized URL from {!r} to {!r}'.format(orig_href, x))
 
