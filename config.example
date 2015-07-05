@@ -1,5 +1,8 @@
 # An example configuration for vdirsyncer.
-
+#
+# Move it to ~/.vdirsyncer/config or ~/.config/vdirsyncer/config and edit it.
+# Run `vdirsyncer --help` for CLI usage.
+#
 # Optional parameters are commented out.
 # This file doesn't document all available parameters, see
 # http://vdirsyncer.readthedocs.org/ for the rest of them.
@@ -27,6 +30,9 @@ b = bob_contacts_remote
 
 collections = ["from b"]
 
+# Synchronize the "display name" property into a local file (~/.contacts/displayname).
+metadata = ["displayname"]
+
 # To resolve a conflict the following values are possible:
 #   `null` - abort when collisions occur (default)
 #   `"a wins"` - assume a's items to be more up-to-date
@@ -53,6 +59,9 @@ url = https://owncloud.example.com/remote.php/carddav/
 a = bob_calendar_local
 b = bob_calendar_remote
 collections = ["private", "work"]
+
+# Calendars also have a color property
+metadata = ["displayname", "color"]
 
 [storage bob_calendar_local]
 type = filesystem

@@ -105,14 +105,19 @@ def sync(pairs, force_delete, max_workers):
     Synchronize the given pairs. If no arguments are given, all will be
     synchronized.
 
-    `vdirsyncer sync` will sync everything configured.
+    This command will not synchronize metadata, use `vdirsyncer metasync` for
+    that.
 
-    `vdirsyncer sync bob frank` will sync the pairs "bob" and "frank".
+    Examples:
 
-    `vdirsyncer sync bob/first_collection` will sync "first_collection" from
-    the pair "bob".
+        `vdirsyncer sync` will sync everything configured.
+
+        `vdirsyncer sync bob frank` will sync the pairs "bob" and "frank".
+
+        `vdirsyncer sync bob/first_collection` will sync "first_collection"
+        from the pair "bob".
     '''
-    from .tasks import sync_pair
+    from .tasks import prepare_pair, sync_collection
     from .utils import parse_pairs_args, WorkerQueue
     general, all_pairs, all_storages = ctx.obj['config']
 
@@ -120,11 +125,39 @@ def sync(pairs, force_delete, max_workers):
 
     for pair_name, collections in parse_pairs_args(pairs, all_pairs):
         wq.spawn_worker()
-        wq.put(functools.partial(sync_pair, pair_name=pair_name,
-                                 collections_to_sync=collections,
+        wq.put(functools.partial(prepare_pair, pair_name=pair_name,
+                                 collections=collections,
                                  general=general, all_pairs=all_pairs,
                                  all_storages=all_storages,
-                                 force_delete=force_delete))
+                                 force_delete=force_delete,
+                                 callback=sync_collection))
+
+    wq.join()
+
+
+@app.command()
+@click.argument('pairs', nargs=-1)
+@max_workers_option
+@catch_errors
+def metasync(pairs, max_workers):
+    '''
+    Synchronize metadata of the given pairs.
+
+    See the `sync` command regarding the PAIRS argument.
+    '''
+    from .tasks import prepare_pair, metasync_collection
+    from .utils import parse_pairs_args, WorkerQueue
+    general, all_pairs, all_storages = ctx.obj['config']
+
+    wq = WorkerQueue(max_workers)
+
+    for pair_name, collections in parse_pairs_args(pairs, all_pairs):
+        wq.spawn_worker()
+        wq.put(functools.partial(prepare_pair, pair_name=pair_name,
+                                 collections=collections,
+                                 general=general, all_pairs=all_pairs,
+                                 all_storages=all_storages,
+                                 callback=metasync_collection))
 
     wq.join()
 

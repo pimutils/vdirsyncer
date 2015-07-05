@@ -62,10 +62,11 @@ Pair Section
 
 - ``a`` and ``b`` reference the storages to sync by their names.
 
-- ``collections``: Optional, a list of collections to synchronize. If this
-  parameter is omitted, it is assumed the storages are already directly
-  pointing to one collection each. Specifying a collection multiple times won't
-  make vdirsyncer sync that collection more than once.
+- ``collections``: Optional, a list of collections to synchronize when
+  ``vdirsyncer sync`` is executed. If this parameter is omitted, it is assumed
+  the storages are already directly pointing to one collection each. Specifying
+  a collection multiple times won't make vdirsyncer sync that collection more
+  than once.
 
   Furthermore, there are the special values ``"from a"`` and ``"from b"``,
   which tell vdirsyncer to try autodiscovery on a specific storage.
@@ -87,6 +88,14 @@ Pair Section
   - ``"a wins"`` and ``"b wins"``, where the whole item is taken from one side.
     Vdirsyncer will not attempt to merge the two items.
   - ``null``, the default, where an error is shown and no changes are done.
+
+- ``metadata``: Metadata keys that should be synchronized when ``vdirsyncer
+  metasync`` is executed. Example::
+
+      metadata = ["color", "displayname"]
+
+   This synchronizes the ``color`` and the ``displayname`` properties. The
+   ``conflict_resolution`` parameter applies here as well.
 
 .. _storage_config:
 

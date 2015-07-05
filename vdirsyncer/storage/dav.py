@@ -607,7 +607,11 @@ class DavStorage(Storage):
             data=data, headers=self.session.get_default_headers()
         )
 
-        # FIXME: Deal with response
+        # XXX: Response content is currently ignored. Though exceptions are
+        # raised for HTTP errors, a multistatus with errorcodes inside is not
+        # parsed yet. Not sure how common those are, or how they look like. It
+        # might be easier (and safer in case of a stupid server) to just issue
+        # a PROPFIND to see if the value got actually set.
 
 
 class CaldavStorage(DavStorage):
