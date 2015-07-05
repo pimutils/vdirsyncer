@@ -12,12 +12,6 @@ from ..sync import sync
 
 def sync_pair(wq, pair_name, collections_to_sync, general, all_pairs,
               all_storages, force_delete):
-    key = ('prepare', pair_name)
-    if key in wq.handled_jobs:
-        cli_logger.warning('Already prepared {}, skipping'.format(pair_name))
-        return
-    wq.handled_jobs.add(key)
-
     a_name, b_name, pair_options = all_pairs[pair_name]
 
     try:
@@ -55,12 +49,6 @@ def sync_pair(wq, pair_name, collections_to_sync, general, all_pairs,
 def sync_collection(wq, pair_name, collection, config_a, config_b,
                     pair_options, general, force_delete):
     status_name = get_status_name(pair_name, collection)
-
-    key = ('sync', pair_name, collection)
-    if key in wq.handled_jobs:
-        cli_logger.warning('Already syncing {}, skipping'.format(status_name))
-        return
-    wq.handled_jobs.add(key)
 
     try:
         cli_logger.info('Syncing {}'.format(status_name))

@@ -116,7 +116,6 @@ def sync(pairs, force_delete, max_workers):
     general, all_pairs, all_storages = ctx.obj['config']
 
     wq = WorkerQueue(max_workers)
-    wq.handled_jobs = set()
 
     for pair_name, collections in parse_pairs_args(pairs, all_pairs):
         wq.spawn_worker()
