@@ -3,7 +3,7 @@ from textwrap import dedent
 
 import pytest
 
-import vdirsyncer.cli.utils
+import vdirsyncer.cli.utils  # noqa
 from vdirsyncer import cli
 
 
