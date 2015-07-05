@@ -688,7 +688,11 @@ def repair_storage(storage):
         seen_uids.add(new_item.uid)
         if changed:
             try:
-                storage.update(href, new_item, etag)
+                if new_item.uid != item.uid:
+                    storage.upload(new_item)
+                    storage.delete(href, etag)
+                else:
+                    storage.update(href, new_item, etag)
             except Exception:
                 cli_logger.exception('Server rejected new item.')
 

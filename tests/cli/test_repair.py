@@ -9,12 +9,10 @@ from vdirsyncer.utils.vobject import Item
 
 def test_repair_uids():
     s = MemoryStorage()
-    s.upload(Item(u'BEGIN:VCARD\nEND:VCARD'))
-
-    repair_storage(s)
-
-    uid, = [s.get(href)[0].uid for href, etag in s.list()]
-    s.upload(Item(u'BEGIN:VCARD\nUID:{}\nEND:VCARD'.format(uid)))
+    s.items = {
+        'one': ('asdf', Item(u'BEGIN:VCARD\nFN:Hans\nUID:asdf\nEND:VCARD')),
+        'two': ('asdf', Item(u'BEGIN:VCARD\nFN:Peppi\nUID:asdf\nEND:VCARD'))
+    }
 
     uid1, uid2 = [s.get(href)[0].uid for href, etag in s.list()]
     assert uid1 == uid2
@@ -30,7 +28,8 @@ def test_repair_nonascii_uids():
     href, etag = s.upload(Item(u'BEGIN:VCARD\nUID:äää\nEND:VCARD'))
     assert s.get(href)[0].uid == u'äää'
     repair_storage(s)
-    newuid = s.get(href)[0].uid
+    new_href = list(s.list())[0][0]
+    newuid = s.get(new_href)[0].uid
     assert newuid != u'äää'
     assert newuid.encode('ascii', 'ignore').decode('ascii') == newuid
 
@@ -56,4 +55,5 @@ def test_full(tmpdir, runner):
     assert 'No UID' in result.output
     assert 'warning: Item toobroken.txt can\'t be parsed, skipping' \
         in result.output
-    assert 'UID:' in foo.join('item.txt').read()
+    new_fname, = [x for x in foo.listdir() if 'toobroken' not in str(x)]
+    assert 'UID:' in new_fname.read()
