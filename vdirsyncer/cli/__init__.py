@@ -44,9 +44,10 @@ def catch_errors(f):
 def validate_verbosity(ctx, param, value):
     x = getattr(log.logging, value.upper(), None)
     if x is None:
-        raise click.BadParameter('Invalid verbosity value {}. Must be '
-                                 'CRITICAL, ERROR, WARNING, INFO or DEBUG'
-                                 .format(value))
+        raise click.BadParameter(
+            'Must be CRITICAL, ERROR, WARNING, INFO or DEBUG, not {}'
+            .format(value)
+        )
     return x
 
 
