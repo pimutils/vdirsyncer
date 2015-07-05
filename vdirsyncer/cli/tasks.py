@@ -4,8 +4,8 @@ import functools
 import json
 
 from .utils import CliError, JobFailed, cli_logger, collections_for_pair, \
-    get_status_name, handle_cli_error, load_status, repair_storage, \
-    save_status, storage_class_from_config, storage_instance_from_config
+    get_status_name, handle_cli_error, load_status, save_status, \
+    storage_class_from_config, storage_instance_from_config
 
 from ..sync import sync
 
@@ -94,6 +94,8 @@ def discover_collections(wq, pair_name, **kwargs):
 
 
 def repair_collection(general, all_pairs, all_storages, collection):
+    from ..repair import repair_storage
+
     storage_name, collection = collection, None
     if '/' in storage_name:
         storage_name, collection = storage_name.split('/')

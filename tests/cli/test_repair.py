@@ -2,7 +2,7 @@
 
 from textwrap import dedent
 
-from vdirsyncer.cli.utils import repair_storage
+from vdirsyncer.repair import repair_storage
 from vdirsyncer.storage.memory import MemoryStorage
 from vdirsyncer.utils.vobject import Item
 

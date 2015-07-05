@@ -8,7 +8,6 @@ import os
 import string
 import sys
 import threading
-import uuid
 from itertools import chain
 
 from atomicwrites import atomic_write
@@ -19,7 +18,6 @@ from ..doubleclick import click
 from ..sync import IdentConflict, StorageEmpty, SyncConflict
 from ..utils import expand_path, get_class_init_args
 from ..utils.compat import text_type
-from ..utils.vobject import Item
 
 
 try:
@@ -656,59 +654,6 @@ def format_storage_config(cls, header=True):
             comment = '' if key not in defaults else '#'
             value = defaults.get(key, '...')
             yield '{}{} = {}'.format(comment, key, json.dumps(value))
-
-
-def repair_storage(storage):
-    seen_uids = set()
-    all_hrefs = list(storage.list())
-    for i, (href, _) in enumerate(all_hrefs):
-        item, etag = storage.get(href)
-        cli_logger.info(u'[{}/{}] Processing {}'
-                        .format(i, len(all_hrefs), href))
-
-        parsed = item.parsed
-        changed = False
-        if parsed is None:
-            cli_logger.warning('Item {} can\'t be parsed, skipping.'
-                               .format(href))
-            continue
-
-        if item.uid is None:
-            cli_logger.warning('No UID, assigning random one.')
-            changed = reroll_uid(parsed) or changed
-        elif item.uid in seen_uids:
-            cli_logger.warning('Duplicate UID, assigning random one.')
-            changed = reroll_uid(parsed) or changed
-        elif item.uid.encode('ascii', 'ignore').decode('ascii') != item.uid:
-            cli_logger.warning('UID is non-ascii, assigning random one.')
-            changed = reroll_uid(parsed) or changed
-
-        new_item = Item(u'\r\n'.join(parsed.dump_lines()))
-        assert new_item.uid
-        seen_uids.add(new_item.uid)
-        if changed:
-            try:
-                if new_item.uid != item.uid:
-                    storage.upload(new_item)
-                    storage.delete(href, etag)
-                else:
-                    storage.update(href, new_item, etag)
-            except Exception:
-                cli_logger.exception('Server rejected new item.')
-
-
-def reroll_uid(component):
-    new_uid = uuid.uuid4()
-    stack = [component]
-    changed = False
-    while stack:
-        component = stack.pop()
-        if component.name in ('VEVENT', 'VTODO', 'VJOURNAL', 'VCARD'):
-            component['UID'] = new_uid
-            changed = True
-        else:
-            stack.extend(component.subcomponents)
-    return changed
 
 
 def assert_permissions(path, wanted):
