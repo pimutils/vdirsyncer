@@ -145,10 +145,13 @@ def get_status_name(pair, collection):
 
 
 def _get_collections_cache_key(pair_options, config_a, config_b):
+    from vdirsyncer import discovery_cache_version
     m = hashlib.sha256()
     j = json.dumps([
+        discovery_cache_version,
         pair_options.get('collections', None),
-        config_a, config_b
+        config_a,
+        config_b
     ], sort_keys=True)
     m.update(j.encode('utf-8'))
     return m.hexdigest()
