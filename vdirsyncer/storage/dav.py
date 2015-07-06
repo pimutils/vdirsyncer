@@ -93,7 +93,6 @@ class Discover(object):
     <d:propfind xmlns:d="DAV:">
         <d:prop>
             <d:resourcetype />
-            <d:displayname />
         </d:prop>
     </d:propfind>
     """
@@ -177,22 +176,20 @@ class Discover(object):
             if props.find('{*}resourcetype/{*}' + self._resourcetype) is None:
                 continue
 
-            displayname = getattr(props.find('{*}displayname'), 'text', '')
             href = response.find('{*}href')
             if href is None:
                 raise InvalidXMLResponse()
             href = utils.compat.urlparse.urljoin(r.url, href.text)
             if href not in done:
                 done.add(href)
-                yield {'href': href, 'displayname': displayname}
+                yield {'href': href}
 
     def discover(self):
         for c in self.find_collections():
             url = c['href']
             collection = _get_collection_from_url(url)
             storage_args = dict(self.kwargs)
-            storage_args.update({'url': url, 'collection': collection,
-                                 'collection_human': c['displayname']})
+            storage_args.update({'url': url, 'collection': collection})
             yield storage_args
 
     def create(self, collection):

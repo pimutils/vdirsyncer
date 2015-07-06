@@ -61,9 +61,6 @@ class Storage(with_metaclass(StorageMeta)):
     # The machine-readable name of this collection.
     collection = None
 
-    # The human-readable name of this collection.
-    collection_human = None
-
     # A value of True means the storage does not support write-methods such as
     # upload, update and delete.  A value of False means the storage does
     # support those methods.
@@ -72,8 +69,7 @@ class Storage(with_metaclass(StorageMeta)):
     # The attribute values to show in the representation of the storage.
     _repr_attributes = ()
 
-    def __init__(self, instance_name=None, read_only=None, collection=None,
-                 collection_human=None):
+    def __init__(self, instance_name=None, read_only=None, collection=None):
         if read_only is None:
             read_only = self.read_only
         if self.read_only and not read_only:
@@ -84,7 +80,6 @@ class Storage(with_metaclass(StorageMeta)):
             instance_name = '{}/{}'.format(instance_name, collection)
         self.instance_name = instance_name
         self.collection = collection
-        self.collection_human = collection_human
 
     @classmethod
     def discover(cls, **kwargs):
