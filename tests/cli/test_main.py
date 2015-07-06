@@ -110,7 +110,7 @@ def test_verbosity(tmpdir):
         env={'VDIRSYNCER_CONFIG': str(config_file)}
     )
     assert result.exception
-    assert 'invalid verbosity value' in result.output.lower()
+    assert 'invalid value for "--verbosity"' in result.output.lower()
 
 
 def test_deprecated_item_status(tmpdir):
