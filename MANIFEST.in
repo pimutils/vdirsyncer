@@ -1,7 +1,7 @@
 include AUTHORS.rst
 include CHANGELOG.rst
 include LICENSE
-include example.cfg
+include config.example
 include build.sh
 
 recursive-include docs *
