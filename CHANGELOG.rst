@@ -9,11 +9,13 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/untitaker/vdirsyncer/tags.atom>`_.
 
-Version 0.5.3
+Version 0.6.0
 =============
 
 - ``password_command`` invocations with non-zero exit code are now fatal (and
   will abort synchronization) instead of just producing a warning.
+- Vdirsyncer is now able to synchronize metadata of collections. Set ``metadata
+  = ["displayname"]`` and run ``vdirsyncer metasync``.
 
 Version 0.5.2
 =============
