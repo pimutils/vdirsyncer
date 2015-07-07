@@ -11,7 +11,7 @@ class MetaSyncConflict(MetaSyncError):
     key = None
 
 
-def metasync(storage_a, storage_b, status, keys, conflict_resolution):
+def metasync(storage_a, storage_b, status, keys, conflict_resolution=None):
     def _a_to_b():
         logger.info(u'Copying {} to {}'.format(key, storage_b))
         storage_b.set_meta(key, a)
@@ -24,7 +24,7 @@ def metasync(storage_a, storage_b, status, keys, conflict_resolution):
 
     def _resolve_conflict():
         if a == b:
-            pass
+            status[key] = a
         elif conflict_resolution is None:
             raise MetaSyncConflict(key=key)
         elif conflict_resolution == 'a wins':

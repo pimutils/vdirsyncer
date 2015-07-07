@@ -185,7 +185,7 @@ class FilesystemStorage(Storage):
         fpath = os.path.join(self.path, key)
         try:
             with open(fpath, 'rb') as f:
-                return f.read().decode(self.encoding)
+                return f.read().decode(self.encoding) or None
         except IOError as e:
             if e.errno == errno.ENOENT:
                 return None
@@ -193,6 +193,7 @@ class FilesystemStorage(Storage):
                 raise
 
     def set_meta(self, key, value):
+        value = value or u''
         assert isinstance(value, text_type)
         fpath = os.path.join(self.path, key)
         with atomic_write(fpath, mode='wb', overwrite=True) as f:

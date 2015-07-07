@@ -236,6 +236,8 @@ class StorageTests(object):
 
     def test_metadata(self, requires_metadata, s):
         try:
+            s.set_meta('color', None)
+            assert s.get_meta('color') is None
             s.set_meta('color', u'#ff0000')
             assert s.get_meta('color') == u'#ff0000'
         except exceptions.UnsupportedMetadataError:

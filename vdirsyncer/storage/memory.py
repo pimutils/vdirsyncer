@@ -66,7 +66,7 @@ class MemoryStorage(Storage):
         del self.items[href]
 
     def get_meta(self, key):
-        return self.metadata[key]
+        return self.metadata.get(key)
 
     def set_meta(self, key, value):
         self.metadata[key] = value
