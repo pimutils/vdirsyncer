@@ -21,6 +21,7 @@ def format_item(item_template, uid=None):
 class StorageTests(object):
     storage_class = None
     supports_collections = True
+    supports_metadata = True
 
     @pytest.fixture(params=['VEVENT', 'VTODO', 'VCARD'])
     def item_type(self, request):
@@ -54,6 +55,11 @@ class StorageTests(object):
     def requires_collections(self):
         if not self.supports_collections:
             pytest.skip('This storage does not support collections.')
+
+    @pytest.fixture
+    def requires_metadata(self):
+        if not self.supports_metadata:
+            pytest.skip('This storage does not support metadata.')
 
     def test_generic(self, s, get_item):
         items = [get_item() for i in range(1, 10)]
@@ -227,3 +233,15 @@ class StorageTests(object):
         s = self.storage_class(**get_storage_args(collection=collname))
         href, etag = s.upload(get_item())
         s.get(href)
+
+    def test_metadata(self, requires_metadata, s):
+        try:
+            s.set_meta('color', None)
+            assert s.get_meta('color') is None
+            s.set_meta('color', u'#ff0000')
+            assert s.get_meta('color') == u'#ff0000'
+        except exceptions.UnsupportedMetadataError:
+            pass
+
+        s.set_meta('displayname', u'hello world')
+        assert s.get_meta('displayname') == u'hello world'

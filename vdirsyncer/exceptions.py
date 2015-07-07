@@ -56,3 +56,7 @@ class ReadOnlyError(Error):
 
 class InvalidResponse(Error, ValueError):
     '''The backend returned an invalid result.'''
+
+
+class UnsupportedMetadataError(Error, NotImplementedError):
+    '''The storage doesn't support this type of metadata.'''

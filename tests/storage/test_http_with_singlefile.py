@@ -43,6 +43,7 @@ class CombinedStorage(Storage):
 class TestHttpStorage(StorageTests):
     storage_class = CombinedStorage
     supports_collections = False
+    supports_metadata = False
 
     @pytest.fixture(autouse=True)
     def setup_tmpdir(self, tmpdir, monkeypatch):

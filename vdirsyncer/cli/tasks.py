@@ -10,8 +10,8 @@ from .utils import CliError, JobFailed, cli_logger, collections_for_pair, \
 from ..sync import sync
 
 
-def sync_pair(wq, pair_name, collections_to_sync, general, all_pairs,
-              all_storages, force_delete):
+def prepare_pair(wq, pair_name, collections, general, all_pairs, all_storages,
+                 callback, **kwargs):
     a_name, b_name, pair_options = all_pairs[pair_name]
 
     try:
@@ -28,7 +28,7 @@ def sync_pair(wq, pair_name, collections_to_sync, general, all_pairs,
 
     # spawn one worker less because we can reuse the current one
     new_workers = -1
-    for collection in (collections_to_sync or all_collections):
+    for collection in (collections or all_collections):
         try:
             config_a, config_b = all_collections[collection]
         except KeyError:
@@ -37,9 +37,9 @@ def sync_pair(wq, pair_name, collections_to_sync, general, all_pairs,
                                pair_name, collection, list(all_collections)))
         new_workers += 1
         wq.put(functools.partial(
-            sync_collection, pair_name=pair_name, collection=collection,
+            callback, pair_name=pair_name, collection=collection,
             config_a=config_a, config_b=config_b, pair_options=pair_options,
-            general=general, force_delete=force_delete
+            general=general, **kwargs
         ))
 
     for i in range(new_workers):
@@ -107,3 +107,30 @@ def repair_collection(general, all_pairs, all_storages, collection):
     cli_logger.info('Repairing {}/{}'.format(storage_name, collection))
     cli_logger.warning('Make sure no other program is talking to the server.')
     repair_storage(storage)
+
+
+def metasync_collection(wq, pair_name, collection, config_a, config_b,
+                        pair_options, general):
+    from ..metasync import metasync
+    status_name = get_status_name(pair_name, collection)
+
+    try:
+        cli_logger.info('Metasyncing {}'.format(status_name))
+
+        status = load_status(general['status_path'], pair_name,
+                             collection, data_type='metadata') or {}
+
+        a = storage_instance_from_config(config_a)
+        b = storage_instance_from_config(config_b)
+
+        metasync(
+            a, b, status,
+            conflict_resolution=pair_options.get('conflict_resolution', None),
+            keys=pair_options.get('metadata', None) or ()
+        )
+    except:
+        handle_cli_error(status_name)
+        raise JobFailed()
+
+    save_status(general['status_path'], pair_name, collection,
+                data_type='metadata', data=status)

@@ -21,6 +21,7 @@ class MemoryStorage(Storage):
             raise exceptions.UserError('MemoryStorage does not support '
                                        'collections.')
         self.items = {}  # href => (etag, item)
+        self.metadata = {}
         self.fileext = fileext
         super(MemoryStorage, self).__init__(**kwargs)
 
@@ -63,3 +64,9 @@ class MemoryStorage(Storage):
         if etag != self.items[href][0]:
             raise exceptions.WrongEtagError(etag)
         del self.items[href]
+
+    def get_meta(self, key):
+        return self.metadata.get(key)
+
+    def set_meta(self, key, value):
+        self.metadata[key] = value
