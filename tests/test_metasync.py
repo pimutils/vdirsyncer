@@ -2,12 +2,9 @@
 
 import pytest
 
-import vdirsyncer.exceptions as exceptions
-from vdirsyncer.storage.base import Item
+from vdirsyncer.metasync import MetaSyncConflict, metasync
 from vdirsyncer.storage.memory import MemoryStorage
-from vdirsyncer.metasync import metasync, MetaSyncConflict
 
-from . import assert_item_equals, blow_up, normalize_item
 
 def test_irrelevant_status():
     a = MemoryStorage()
@@ -16,6 +13,7 @@ def test_irrelevant_status():
 
     metasync(a, b, status, keys=())
     assert not status
+
 
 def test_basic():
     a = MemoryStorage()
