@@ -53,9 +53,10 @@ def reroll_uid(component):
     changed = False
     while stack:
         component = stack.pop()
+        stack.extend(component.subcomponents)
+
         if component.name in ('VEVENT', 'VTODO', 'VJOURNAL', 'VCARD'):
             component['UID'] = new_uid
             changed = True
-        else:
-            stack.extend(component.subcomponents)
+
     return changed
