@@ -4,7 +4,7 @@ import threading
 
 from . import expand_path
 from .compat import urlparse
-from .. import log
+from .. import exceptions, log
 from ..doubleclick import click, ctx
 
 logger = log.get(__name__)
@@ -115,7 +115,7 @@ def _password_from_command(username, host):
     try:
         stdout = subprocess.check_output(command + [username, host],
                                          universal_newlines=True)
-        return stdout.strip()
+        return stdout.strip('\n') or None
     except OSError as e:
-        logger.warning('Failed to execute command: {}\n{}'.
-                       format(' '.join(command), str(e)))
+        raise exceptions.UserError('Failed to execute command: {}\n{}'.
+                                   format(' '.join(command), str(e)))

@@ -9,6 +9,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/untitaker/vdirsyncer/tags.atom>`_.
 
+Version 0.5.3
+=============
+
+- ``password_command`` invocations with non-zero exit code are now fatal (and
+  will abort synchronization) instead of just producing a warning.
+
 Version 0.5.2
 =============
 
