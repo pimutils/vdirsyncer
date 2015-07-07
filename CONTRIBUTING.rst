@@ -40,8 +40,7 @@ virtualenv_ and run this inside of it::
     make install-test
     make install-style
 
-This will install all dependencies required for the integration tests against
-the latest release of Radicale (a CalDAV server). Then you can run::
+Then you can run::
 
     make test
     make style  # Stylechecker
