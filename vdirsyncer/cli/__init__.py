@@ -211,3 +211,12 @@ def repair(collection):
     from .tasks import repair_collection
     general, all_pairs, all_storages = ctx.obj['config']
     repair_collection(general, all_pairs, all_storages, collection)
+
+try:
+    import click_repl
+    click_repl.register_repl(app)
+except ImportError:
+    @app.command()
+    def repl():
+        click.echo('You need click-repl installed.')
+        ctx.exit(1)
