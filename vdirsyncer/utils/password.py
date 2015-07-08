@@ -42,35 +42,38 @@ def get_password(username, resource, _lock=threading.Lock()):
     """
     if ctx:
         password_cache = ctx.obj.setdefault('passwords', {})
+    else:
+        password_cache = {}  # discard passwords
+
+    def _password_from_cache(username, host):
+        '''internal cache'''
+        return password_cache.get((username, host), None)
 
     with _lock:
         host = urlparse.urlsplit(resource).hostname
         for func in (_password_from_cache, _password_from_command,
-                     _password_from_netrc, _password_from_keyring):
+                     _password_from_netrc, _password_from_keyring,
+                     _password_from_prompt):
             password = func(username, host)
             if password is not None:
                 logger.debug('Got password for {} from {}'
                              .format(username, func.__doc__))
-                return password
+                break
 
-        prompt = ('Server password for {} at host {}'.format(username, host))
-        password = click.prompt(prompt, hide_input=True)
-
-        if ctx and func is not _password_from_cache:
-            password_cache[(username, host)] = password
-            if keyring is not None and \
-               click.confirm('Save this password in the keyring?',
-                             default=False):
-                keyring.set_password(password_key_prefix + host,
-                                     username, password)
-
+        password_cache[(username, host)] = password
         return password
 
 
-def _password_from_cache(username, host):
-    '''internal cache'''
-    if ctx:
-        return ctx.obj['passwords'].get((username, host), None)
+def _password_from_prompt(username, host):
+    '''prompt'''
+    prompt = ('Server password for {} at host {}'.format(username, host))
+    password = click.prompt(prompt, hide_input=True)
+    if keyring is not None and \
+       click.confirm('Save this password in the keyring?',
+                     default=False):
+        keyring.set_password(password_key_prefix + host,
+                             username, password)
+    return password
 
 
 def _password_from_netrc(username, host):

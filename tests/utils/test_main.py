@@ -10,7 +10,7 @@ import pytest
 
 import requests
 
-from vdirsyncer import doubleclick, utils
+from vdirsyncer import doubleclick, log, utils
 
 # These modules might be uninitialized and unavailable if not explicitly
 # imported
@@ -39,6 +39,16 @@ class EmptyKeyring(object):
 def empty_password_storages(monkeypatch):
     monkeypatch.setattr('netrc.netrc', EmptyNetrc)
     monkeypatch.setattr(utils.password, 'keyring', EmptyKeyring())
+
+
+@pytest.fixture(autouse=True)
+def no_debug_output(request):
+    old = log._level
+    log.set_level(log.logging.WARNING)
+    def teardown():
+        log.set_level(old)
+
+    request.addfinalizer(teardown)
 
 
 def test_get_password_from_netrc(monkeypatch):
@@ -124,9 +134,11 @@ def test_get_password_from_prompt():
     result = runner.invoke(fake_app, input='my_password\n\n')
     assert not result.exception
     assert result.output.splitlines() == [
-        'Server password for {} at host {}: '.format(user, 'example.com'),
-        'Password is my_password'
+        'Server password for my_user at host example.com: ',
+        'Save this password in the keyring? [y/N]: ',
+        'Password is my_password',
     ]
+
 
 
 def test_set_keyring_password(monkeypatch):
@@ -185,7 +197,6 @@ def test_get_password_from_cache(monkeypatch):
         'Server password for {} at host {}: '.format(user, 'example.com'),
         'Save this password in the keyring? [y/N]: ',
         'Password is my_password',
-        'debug: Got password for my_user from internal cache',
         'Password is my_password'
     ]
 
