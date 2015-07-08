@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import platform
 import stat
 
 import click
@@ -228,7 +229,18 @@ def test_request_ssl(httpsserver):
     with pytest.raises(requests.exceptions.SSLError) as excinfo:
         utils.http.request('GET', httpsserver.url)
     assert 'certificate verify failed' in str(excinfo.value)
+
     utils.http.request('GET', httpsserver.url, verify=False)
+
+    # https://github.com/shazow/urllib3/issues/529
+    from pkg_resources import parse_version as ver
+    tolerant_python = (
+        utils.compat.PY2 and platform.python_implementation() != 'PyPy'
+    )
+    broken_urllib3 = ver(requests.__version__) <= ver('2.5.1')
+    if broken_urllib3 and not tolerant_python:
+        return
+
     utils.http.request('GET', httpsserver.url,
                        verify_fingerprint=sha1)
     utils.http.request('GET', httpsserver.url, verify_fingerprint=md5)
