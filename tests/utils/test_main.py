@@ -45,6 +45,7 @@ def empty_password_storages(monkeypatch):
 def no_debug_output(request):
     old = log._level
     log.set_level(log.logging.WARNING)
+
     def teardown():
         log.set_level(old)
 
@@ -138,7 +139,6 @@ def test_get_password_from_prompt():
         'Save this password in the keyring? [y/N]: ',
         'Password is my_password',
     ]
-
 
 
 def test_set_keyring_password(monkeypatch):
