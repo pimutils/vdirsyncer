@@ -87,6 +87,14 @@ ctx = _StackProxy(_ctx_stack)
 
 def _ctx_pushing_class(cls):
     class ContextPusher(cls):
+        def command(self, *args, **kwargs):
+            # Also wrap commands created with @group.command()
+            def decorator(f):
+                cmd = click.command(*args, **kwargs)(f)
+                self.add_command(cmd)
+                return cmd
+            return decorator
+
         def invoke(self, ctx):
             _ctx_stack.push(ctx)
             try:
