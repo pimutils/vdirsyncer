@@ -124,13 +124,13 @@ def sync(pairs, force_delete, max_workers):
     wq = WorkerQueue(max_workers)
 
     for pair_name, collections in parse_pairs_args(pairs, all_pairs):
-        wq.spawn_worker()
         wq.put(functools.partial(prepare_pair, pair_name=pair_name,
                                  collections=collections,
                                  general=general, all_pairs=all_pairs,
                                  all_storages=all_storages,
                                  force_delete=force_delete,
                                  callback=sync_collection))
+        wq.spawn_worker()
 
     wq.join()
 
@@ -152,12 +152,12 @@ def metasync(pairs, max_workers):
     wq = WorkerQueue(max_workers)
 
     for pair_name, collections in parse_pairs_args(pairs, all_pairs):
-        wq.spawn_worker()
         wq.put(functools.partial(prepare_pair, pair_name=pair_name,
                                  collections=collections,
                                  general=general, all_pairs=all_pairs,
                                  all_storages=all_storages,
                                  callback=metasync_collection))
+        wq.spawn_worker()
 
     wq.join()
 
@@ -183,7 +183,6 @@ def discover(pairs, max_workers):
                            'These are the pairs found: {}'
                            .format(pair, list(all_pairs)))
 
-        wq.spawn_worker()
         wq.put(functools.partial(
             discover_collections,
             status_path=general['status_path'], name_a=name_a, name_b=name_b,
@@ -191,6 +190,7 @@ def discover(pairs, max_workers):
             config_b=all_storages[name_b], pair_options=pair_options,
             skip_cache=True
         ))
+        wq.spawn_worker()
 
     wq.join()
 

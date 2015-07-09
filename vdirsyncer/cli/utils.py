@@ -546,6 +546,12 @@ def parse_pairs_args(pairs_args, all_pairs):
 
 
 class WorkerQueue(object):
+    '''
+    A simple worker-queue setup.
+
+    Note that workers quit if queue is empty. That means you have to first put
+    things into the queue before spawning the worker!
+    '''
     def __init__(self, max_workers):
         self._queue = queue.Queue()
         self._workers = []
@@ -562,7 +568,7 @@ class WorkerQueue(object):
 
         while True:
             try:
-                func = self._queue.get()
+                func = self._queue.get(False)
             except (_TypeError, _Empty):
                 # Any kind of error might be raised if vdirsyncer just finished
                 # processing all items and the interpreter is shutting down,
@@ -589,6 +595,7 @@ class WorkerQueue(object):
         self._workers.append(t)
 
     def join(self):
+        assert self._workers or self._queue.empty()
         self._queue.join()
         if self._exceptions:
             sys.exit(1)
