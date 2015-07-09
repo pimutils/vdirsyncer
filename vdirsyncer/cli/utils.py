@@ -34,6 +34,10 @@ except ImportError:
 STATUS_PERMISSIONS = 0o600
 STATUS_DIR_PERMISSIONS = 0o700
 
+# Increase whenever upgrade potentially breaks discovery cache and collections
+# should be re-discovered
+DISCOVERY_CACHE_VERSION = 1
+
 
 class _StorageIndex(object):
     def __init__(self):
@@ -145,10 +149,9 @@ def get_status_name(pair, collection):
 
 
 def _get_collections_cache_key(pair_options, config_a, config_b):
-    from vdirsyncer import discovery_cache_version
     m = hashlib.sha256()
     j = json.dumps([
-        discovery_cache_version,
+        DISCOVERY_CACHE_VERSION,
         pair_options.get('collections', None),
         config_a,
         config_b

@@ -8,7 +8,3 @@ __version__ = pkg_resources.get_distribution('vdirsyncer').version
 
 PROJECT_HOME = 'https://github.com/untitaker/vdirsyncer'
 DOCS_HOME = 'https://vdirsyncer.readthedocs.org/en/latest'
-
-# Increase whenever upgrade potentially breaks discovery cache and collections
-# should be re-discovered
-discovery_cache_version = 1
