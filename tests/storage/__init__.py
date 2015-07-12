@@ -14,7 +14,7 @@ from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
 
 def format_item(item_template, uid=None):
     # assert that special chars are handled correctly.
-    r = '{}@vdirsyncer'.format(random.random())
+    r = random.random()
     return Item(item_template.format(r=r, uid=uid or r))
 
 

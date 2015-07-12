@@ -8,6 +8,11 @@ from .compat import iteritems, to_unicode
 from .. import exceptions
 
 
+SAFE_UID_CHARS = ('abcdefghijklmnopqrstuvwxyz'
+                  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+                  '0123456789_.-+')
+
+
 _missing = object()
 
 
@@ -159,10 +164,8 @@ class cached_property(object):
         return result
 
 
-def generate_href(ident=None, unsafe=''):
-    if ident and \
-       ident.encode('ascii', 'ignore').decode('ascii') == ident:
-        for char in unsafe:
-            ident = ident.replace(char, '_')
+def generate_href(ident=None, safe=SAFE_UID_CHARS):
+    if not ident or set(ident) - set(safe):
+        return to_unicode(uuid.uuid4().hex)
+    else:
         return ident
-    return to_unicode(uuid.uuid4().hex)
