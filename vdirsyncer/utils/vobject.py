@@ -25,7 +25,11 @@ IGNORE_PROPS = _process_properties(
     'X-RADICALE-NAME',
     # REV is from the VCARD specification and is supposed to change when the
     # item does -- however, we can determine that ourselves
-    'REV'
+    'REV',
+    # Some iCalendar HTTP calendars (Google's read-only calendar links)
+    # generate the DTSTAMP at request time, so this property always changes
+    # when the rest of the item didn't.
+    'DTSTAMP',
 )
 del _process_properties
 
