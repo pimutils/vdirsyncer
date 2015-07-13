@@ -20,7 +20,7 @@ It aims to be for CalDAV and CardDAV what `OfflineIMAP
     :target: https://travis-ci.org/untitaker/vdirsyncer
 
 .. image:: https://coveralls.io/repos/untitaker/vdirsyncer/badge.png?branch=master
-    :target: https://coveralls.io/r/untitaker/vdirsyncer?branch=master
+    :target: https://coveralls.io/github/untitaker/vdirsyncer?branch=master
 
 Installation and usage
 ======================
