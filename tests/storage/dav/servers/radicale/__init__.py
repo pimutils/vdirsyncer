@@ -113,7 +113,7 @@ class ServerMixin(object):
                 url = url.rstrip('/') + '/' + collection
 
             rv = {'url': url, 'username': 'bob', 'password': 'bob',
-                  'collection': collection, 'unsafe_href_chars': ''}
+                  'collection': collection}
 
             if collection is not None:
                 s = self.storage_class(**rv)

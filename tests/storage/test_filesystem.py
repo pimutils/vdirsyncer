@@ -44,7 +44,7 @@ class TestFilesystemStorage(StorageTests):
         s = self.storage_class(str(tmpdir), '.txt')
         s.upload(Item(u'UID:a/b/c'))
         item_file, = tmpdir.listdir()
-        assert str(item_file).endswith('a_b_c.txt')
+        assert '/' not in item_file.basename and item_file.isfile()
 
     def test_too_long_uid(self, tmpdir):
         s = self.storage_class(str(tmpdir), '.txt')

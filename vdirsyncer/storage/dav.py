@@ -341,15 +341,14 @@ class DavStorage(Storage):
     }
 
     def __init__(self, url, username='', password='', verify=True, auth=None,
-                 useragent=USERAGENT, unsafe_href_chars='@',
-                 verify_fingerprint=None, auth_cert=None, **kwargs):
+                 useragent=USERAGENT, verify_fingerprint=None, auth_cert=None,
+                 **kwargs):
         super(DavStorage, self).__init__(**kwargs)
 
         url = url.rstrip('/') + '/'
         self.session = DavSession(url, username, password, verify, auth,
                                   useragent, verify_fingerprint,
                                   auth_cert)
-        self.unsafe_href_chars = unsafe_href_chars
 
         # defined for _repr_attributes
         self.username = username
@@ -369,7 +368,7 @@ class DavStorage(Storage):
         return _normalize_href(self.session.url, *args, **kwargs)
 
     def _get_href(self, item):
-        href = utils.generate_href(item.ident, unsafe=self.unsafe_href_chars)
+        href = utils.generate_href(item.ident)
         return self._normalize_href(href + self.fileext)
 
     def _is_item_mimetype(self, mimetype):
