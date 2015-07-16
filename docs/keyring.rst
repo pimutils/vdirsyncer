@@ -15,6 +15,10 @@ Custom command
 A custom command/binary can be specified to retrieve the password for a
 username/hostname combination. See :ref:`general_config`.
 
+.. versionchanged:: 0.6.0
+
+    Setting a custom command now disables all other methods.
+
 netrc
 =====
 

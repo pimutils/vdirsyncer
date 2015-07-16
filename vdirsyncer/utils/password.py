@@ -118,7 +118,7 @@ def _password_from_command(username, host):
     try:
         stdout = subprocess.check_output(command + [username, host],
                                          universal_newlines=True)
-        return stdout.strip('\n') or None
+        return stdout.strip('\n')
     except OSError as e:
         raise exceptions.UserError('Failed to execute command: {}\n{}'.
                                    format(' '.join(command), str(e)))
