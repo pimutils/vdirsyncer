@@ -2,15 +2,14 @@
 '''
 General-purpose fixtures for vdirsyncer's testsuite.
 '''
-import pytest
+import click_log
 
-import vdirsyncer.log
+import pytest
 
 
 @pytest.fixture(autouse=True)
 def setup_logging():
-    vdirsyncer.log.set_level(vdirsyncer.log.logging.DEBUG)
-    vdirsyncer.log.add_handler(vdirsyncer.log.stdout_handler)
+    click_log.basic_config('vdirsyncer')
 
 
 try:

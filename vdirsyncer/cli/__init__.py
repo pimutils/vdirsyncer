@@ -3,11 +3,24 @@
 import functools
 import sys
 
+import click
+
+import click_log
+
 from .. import __version__, log
-from ..doubleclick import click, ctx
 
 
 cli_logger = log.get(__name__)
+
+
+class AppContext(object):
+    def __init__(self):
+        self.config = None
+        self.passwords = {}
+        self.logger = None
+
+
+pass_context = click.make_pass_decorator(AppContext, ensure=True)
 
 
 class CliError(RuntimeError):
@@ -52,32 +65,25 @@ def validate_verbosity(ctx, param, value):
 
 
 @click.group()
-@click.option('--verbosity', '-v', default='INFO',
-              callback=validate_verbosity,
-              help='Either CRITICAL, ERROR, WARNING, INFO or DEBUG')
+@click_log.init('vdirsyncer')
+@click_log.simple_verbosity_option()
 @click.version_option(version=__version__)
+@pass_context
 @catch_errors
-def app(verbosity):
+def app(ctx):
     '''
     vdirsyncer -- synchronize calendars and contacts
     '''
     from .utils import load_config
-    log.add_handler(log.stdout_handler)
-    log.set_level(verbosity)
 
-    if ctx.obj is None:
-        ctx.obj = {}
-
-    ctx.obj['verbosity'] = verbosity
-
-    if 'config' not in ctx.obj:
-        ctx.obj['config'] = load_config()
+    if not ctx.config:
+        ctx.config = load_config()
 
 main = app
 
 
 def max_workers_callback(ctx, param, value):
-    if value == 0 and ctx.obj['verbosity'] == log.logging.DEBUG:
+    if value == 0 and click_log.get_level() == log.logging.DEBUG:
         value = 1
 
     cli_logger.debug('Using {} maximal workers.'.format(value))
@@ -99,8 +105,9 @@ max_workers_option = click.option(
               help=('Do/Don\'t abort synchronization when all items are about '
                     'to be deleted from both sides.'))
 @max_workers_option
+@pass_context
 @catch_errors
-def sync(pairs, force_delete, max_workers):
+def sync(ctx, pairs, force_delete, max_workers):
     '''
     Synchronize the given pairs. If no arguments are given, all will be
     synchronized.
@@ -119,27 +126,27 @@ def sync(pairs, force_delete, max_workers):
     '''
     from .tasks import prepare_pair, sync_collection
     from .utils import parse_pairs_args, WorkerQueue
-    general, all_pairs, all_storages = ctx.obj['config']
+    general, all_pairs, all_storages = ctx.config
 
     wq = WorkerQueue(max_workers)
 
-    for pair_name, collections in parse_pairs_args(pairs, all_pairs):
-        wq.put(functools.partial(prepare_pair, pair_name=pair_name,
-                                 collections=collections,
-                                 general=general, all_pairs=all_pairs,
-                                 all_storages=all_storages,
-                                 force_delete=force_delete,
-                                 callback=sync_collection))
-        wq.spawn_worker()
-
-    wq.join()
+    with wq.join():
+        for pair_name, collections in parse_pairs_args(pairs, all_pairs):
+            wq.put(functools.partial(prepare_pair, pair_name=pair_name,
+                                     collections=collections,
+                                     general=general, all_pairs=all_pairs,
+                                     all_storages=all_storages,
+                                     force_delete=force_delete,
+                                     callback=sync_collection))
+            wq.spawn_worker()
 
 
 @app.command()
 @click.argument('pairs', nargs=-1)
 @max_workers_option
+@pass_context
 @catch_errors
-def metasync(pairs, max_workers):
+def metasync(ctx, pairs, max_workers):
     '''
     Synchronize metadata of the given pairs.
 
@@ -147,58 +154,57 @@ def metasync(pairs, max_workers):
     '''
     from .tasks import prepare_pair, metasync_collection
     from .utils import parse_pairs_args, WorkerQueue
-    general, all_pairs, all_storages = ctx.obj['config']
+    general, all_pairs, all_storages = ctx.config
 
     wq = WorkerQueue(max_workers)
 
-    for pair_name, collections in parse_pairs_args(pairs, all_pairs):
-        wq.put(functools.partial(prepare_pair, pair_name=pair_name,
-                                 collections=collections,
-                                 general=general, all_pairs=all_pairs,
-                                 all_storages=all_storages,
-                                 callback=metasync_collection))
-        wq.spawn_worker()
-
-    wq.join()
+    with wq.join():
+        for pair_name, collections in parse_pairs_args(pairs, all_pairs):
+            wq.put(functools.partial(prepare_pair, pair_name=pair_name,
+                                     collections=collections,
+                                     general=general, all_pairs=all_pairs,
+                                     all_storages=all_storages,
+                                     callback=metasync_collection))
+            wq.spawn_worker()
 
 
 @app.command()
 @click.argument('pairs', nargs=-1)
 @max_workers_option
+@pass_context
 @catch_errors
-def discover(pairs, max_workers):
+def discover(ctx, pairs, max_workers):
     '''
     Refresh collection cache for the given pairs.
     '''
     from .tasks import discover_collections
     from .utils import WorkerQueue
-    general, all_pairs, all_storages = ctx.obj['config']
+    general, all_pairs, all_storages = ctx.config
     wq = WorkerQueue(max_workers)
 
-    for pair in (pairs or all_pairs):
-        try:
-            name_a, name_b, pair_options = all_pairs[pair]
-        except KeyError:
-            raise CliError('Pair not found: {}\n'
-                           'These are the pairs found: {}'
-                           .format(pair, list(all_pairs)))
+    with wq.join():
+        for pair in (pairs or all_pairs):
+            try:
+                name_a, name_b, pair_options = all_pairs[pair]
+            except KeyError:
+                raise CliError('Pair not found: {}\n'
+                               'These are the pairs found: {}'
+                               .format(pair, list(all_pairs)))
 
-        wq.put(functools.partial(
-            discover_collections,
-            status_path=general['status_path'], name_a=name_a, name_b=name_b,
-            pair_name=pair, config_a=all_storages[name_a],
-            config_b=all_storages[name_b], pair_options=pair_options,
-            skip_cache=True
-        ))
-        wq.spawn_worker()
-
-    wq.join()
+            wq.put(functools.partial(
+                discover_collections, status_path=general['status_path'],
+                name_a=name_a, name_b=name_b, pair_name=pair,
+                config_a=all_storages[name_a], config_b=all_storages[name_b],
+                pair_options=pair_options, skip_cache=True
+            ))
+            wq.spawn_worker()
 
 
 @app.command()
 @click.argument('collection')
+@pass_context
 @catch_errors
-def repair(collection):
+def repair(ctx, collection):
     '''
     Repair a given collection.
 
@@ -211,7 +217,7 @@ def repair(collection):
     collection of the `calendars_local` storage.
     '''
     from .tasks import repair_collection
-    general, all_pairs, all_storages = ctx.obj['config']
+    general, all_pairs, all_storages = ctx.config
 
     cli_logger.warning('This operation will take a very long time.')
     cli_logger.warning('It\'s recommended to turn off other client\'s '
