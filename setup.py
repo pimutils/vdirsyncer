@@ -3,13 +3,23 @@
 Vdirsyncer is a synchronization tool for vdir. See the README for more details.
 '''
 
+import ast
+import re
+
 from setuptools import find_packages, setup
+
+
+_version_re = re.compile(r'__version__\s+=\s+(.*)')
+
+
+with open('vdirsyncer/__init__.py', 'rb') as f:
+    version = str(ast.literal_eval(_version_re.search(
+        f.read().decode('utf-8')).group(1)))
 
 
 setup(
     name='vdirsyncer',
-    use_scm_version=True,
-    setup_requires=['setuptools_scm'],
+    version=version,
     author='Markus Unterwaditzer',
     author_email='markus@unterwaditzer.net',
     url='https://github.com/untitaker/vdirsyncer',
