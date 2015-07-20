@@ -8,7 +8,9 @@ from setuptools import find_packages, setup
 
 setup(
     name='vdirsyncer',
-    use_scm_version=True,
+    use_scm_version={
+        'write_to': 'vdirsyncer/version.py',
+    },
     setup_requires=['setuptools_scm'],
     author='Markus Unterwaditzer',
     author_email='markus@unterwaditzer.net',

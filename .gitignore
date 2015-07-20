@@ -13,3 +13,4 @@ tests/storage/dav/servers/*
 !tests/storage/dav/servers/__init__.py
 !tests/storage/dav/servers/radicale
 docs/_build/
+vdirsyncer/version.py
