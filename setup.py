@@ -3,6 +3,13 @@
 Vdirsyncer is a synchronization tool for vdir. See the README for more details.
 '''
 
+# Packagers: Vdirsyncer's version is automatically detected using
+# setuptools-scm, but that one is not a runtime dependency.
+#
+# Do NOT use the GitHub's tarballs, those don't contain any version information
+# detectable for setuptools-scm. Rather use the PyPI ones.
+
+
 from setuptools import find_packages, setup
 
 
