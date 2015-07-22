@@ -18,6 +18,17 @@ dav_logger = log.get(__name__)
 
 CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
 
+_path_reserved_chars = frozenset(utils.compat.urlquote(x, '')
+                                 for x in "/?#[]!$&'()*+,;=")
+
+
+def _contains_quoted_reserved_chars(x):
+    for y in _path_reserved_chars:
+        if y in x:
+            dav_logger.debug('Unsafe character: {!r}'.format(y))
+            return True
+    return False
+
 
 def _normalize_href(base, href):
     '''Normalize the href to be a path only relative to hostname and
@@ -31,10 +42,21 @@ def _normalize_href(base, href):
     x = utils.compat.urlparse.urljoin(base, href)
     x = utils.compat.urlparse.urlsplit(x).path
 
-    x = utils.compat.urlunquote(x)
+    # https://github.com/owncloud/contacts/issues/581
+    old_x = None
+    while old_x is None or x != old_x:
+        if _contains_quoted_reserved_chars(x):
+            break
+        old_x = x
+        x = utils.compat.urlunquote(x)
+
     x = utils.compat.urlquote(x, '/@%:')
 
-    dav_logger.debug('Normalized URL from {!r} to {!r}'.format(orig_href, x))
+    if orig_href == x:
+        dav_logger.debug('Already normalized: {!r}'.format(x))
+    else:
+        dav_logger.debug('Normalized URL from {!r} to {!r}'
+                         .format(orig_href, x))
 
     return x
 
@@ -555,11 +577,9 @@ class DavStorage(Storage):
                                         headers=headers)
         root = _parse_xml(response.content)
 
-        # Decode twice because ownCloud encodes twice.
-        # See https://github.com/owncloud/contacts/issues/581
         rv = self._parse_prop_responses(root)
         for href, etag, prop in rv:
-            yield utils.compat.urlunquote(href), etag
+            yield href, etag
 
     def get_meta(self, key):
         try:

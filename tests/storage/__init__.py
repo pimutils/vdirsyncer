@@ -6,7 +6,7 @@ import pytest
 
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
-from vdirsyncer.utils.compat import PY2, iteritems, text_type
+from vdirsyncer.utils.compat import iteritems, text_type, urlquote, urlunquote
 
 from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
     assert_item_equals
@@ -222,17 +222,37 @@ class StorageTests(object):
         assert len(items) == 2
         assert len(set(items)) == 2
 
-    @pytest.mark.parametrize('collname', [
-        'test@foo',
-        'testätfoo',
-    ])
-    def test_specialchar_collection(self, requires_collections,
-                                    get_storage_args, get_item, collname):
-        if getattr(self, 'dav_server', '') == 'radicale' and PY2:
-            pytest.skip('Radicale is broken on Python 2.')
-        s = self.storage_class(**get_storage_args(collection=collname))
-        href, etag = s.upload(get_item())
-        s.get(href)
+    def test_specialchars(self, monkeypatch, requires_collections,
+                          get_storage_args, get_item):
+        if getattr(self, 'dav_server', '') == 'radicale':
+            pytest.skip('Radicale is fundamentally broken.')
+
+        monkeypatch.setattr('vdirsyncer.utils.generate_href', lambda x: x)
+
+        uid = u'test @ foo ät bar град сатану'
+        collection = 'test @ foo ät bar'
+
+        s = self.storage_class(**get_storage_args(collection=collection))
+        item = get_item(uid=uid)
+
+        href, etag = s.upload(item)
+        item2, etag2 = s.get(href)
+        assert etag2 == etag
+        assert_item_equals(item2, item)
+
+        (href2, etag2), = s.list()
+        assert etag2 == etag
+
+        # https://github.com/owncloud/contacts/issues/581
+        assert href2.replace('%2B', '%20') == href
+
+        item2, etag2 = s.get(href)
+        assert etag2 == etag
+        assert_item_equals(item2, item)
+
+        assert collection in urlunquote(s.collection)
+        if self.storage_class.storage_name.endswith('dav'):
+            assert urlquote(uid, '/@:') in href
 
     def test_metadata(self, requires_metadata, s):
         try:

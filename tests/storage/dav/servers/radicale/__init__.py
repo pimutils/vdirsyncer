@@ -5,6 +5,8 @@ import sys
 
 import pytest
 
+from vdirsyncer.utils.compat import urlquote
+
 import wsgi_intercept
 import wsgi_intercept.requests_intercept
 
@@ -110,7 +112,7 @@ class ServerMixin(object):
             url = 'http://127.0.0.1/bob/'
             if collection is not None:
                 collection += self.storage_class.fileext
-                url = url.rstrip('/') + '/' + collection
+                url = url.rstrip('/') + '/' + urlquote(collection)
 
             rv = {'url': url, 'username': 'bob', 'password': 'bob',
                   'collection': collection}

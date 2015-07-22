@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import functools
 import sys
 
 PY2 = sys.version_info[0] == 2
@@ -22,18 +23,23 @@ def to_bytes(x, encoding='ascii'):
     return x
 
 
+def _wrap_native(f, encoding='utf-8'):
+    @functools.wraps(f)
+    def wrapper(x, *a, **kw):
+        to_orig = to_unicode if isinstance(x, text_type) else to_bytes
+        return to_orig(f(to_native(x, encoding), *a, **kw))
+    return wrapper
+
+
 if PY2:  # pragma: no cover
     import urlparse
     import urllib as _urllib
 
     # Horrible hack to make urllib play nice with u'...' urls from requests
-    def urlquote(x, *a, **kw):
-        return _urllib.quote(to_native(x, 'utf-8'), *a, **kw)
+    urlquote = _wrap_native(_urllib.quote)
+    urlunquote = _wrap_native(_urllib.unquote)
 
-    def urlunquote(x, *a, **kw):
-        return _urllib.unquote(to_native(x, 'utf-8'), *a, **kw)
-
-    text_type = unicode  # flake8: noqa
+    text_type = unicode  # noqa
     iteritems = lambda x: x.iteritems()
     itervalues = lambda x: x.itervalues()
     to_native = to_bytes
