@@ -454,11 +454,13 @@ class DavStorage(Storage):
         etag = response.headers.get('etag', None)
         href = self._normalize_href(response.url)
         if not etag:
-            dav_logger.warning('Race condition detected with server {}, '
-                               'consider using an alternative.'
-                               .format(self.session.parsed_url.netloc))
+            # The server violated the RFC and didn't send an etag.
+            # ownCloud: https://github.com/owncloud/contacts/issues/920
+            dav_logger.debug('Server did not send etag, fetching {!r}'
+                             .format(href))
             item2, etag = self.get(href)
-            assert item2.uid == item.uid
+            if item2.raw != item.raw:
+                raise exceptions.WrongEtagError(href)
         return href, etag
 
     def update(self, href, item, etag):
