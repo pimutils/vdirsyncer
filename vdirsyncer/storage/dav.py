@@ -445,13 +445,23 @@ class DavStorage(Storage):
         etag = response.headers.get('etag', None)
         href = self._normalize_href(response.url)
         if not etag:
-            # The server violated the RFC and didn't send an etag.
+            # The server violated the RFC and didn't send an etag. This is
+            # technically a race-condition, but too many popular servers do it.
+            #
             # ownCloud: https://github.com/owncloud/contacts/issues/920
             dav_logger.debug('Server did not send etag, fetching {!r}'
                              .format(href))
             item2, etag = self.get(href)
-            if item2.raw != item.raw:
-                raise exceptions.WrongEtagError(href)
+
+            # We don't have the old etag, but we can sloppily compare item
+            # contents to see if the values changed.
+            if item2.hash != item.hash:
+                dav_logger.debug('Old content: {!r}'.format(item.raw))
+                dav_logger.debug('New content: {!r}'.format(item2.raw))
+                raise exceptions.WrongEtagError(
+                    'While requesting the etag for {!r}, '
+                    'the item content changed.'
+                )
         return href, etag
 
     def update(self, href, item, etag):
