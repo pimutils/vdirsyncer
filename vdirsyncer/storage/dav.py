@@ -18,6 +18,8 @@ dav_logger = log.get(__name__)
 
 CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
 
+_path_reserved_chars = frozenset(utils.compat.urlquote(x)
+                                 for x in "/?#[]!$&'()*+,;=")
 
 def _normalize_href(base, href):
     '''Normalize the href to be a path only relative to hostname and
@@ -34,6 +36,8 @@ def _normalize_href(base, href):
     # https://github.com/owncloud/contacts/issues/581
     old_x = None
     while old_x is None or x != old_x:
+        if any(y in x for y in _path_reserved_chars):
+            break
         old_x = x
         x = utils.compat.urlunquote(x)
 
