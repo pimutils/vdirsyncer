@@ -38,7 +38,7 @@ test:
 		py.test; \
 	fi
 
-install-style: install-vdirsyncer
+install-style:
 	pip install flake8 flake8-import-order sphinx
 	
 style:
