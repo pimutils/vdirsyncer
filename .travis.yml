@@ -28,6 +28,7 @@ env:
 install:
     - "pip install -U pip"
     - "pip install wheel"
+    - "pip install -e ."
     - "make -e install-$BUILD"
     - '[ -z "$PKGS" ] || pip install $PKGS'
 script:

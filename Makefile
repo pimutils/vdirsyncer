@@ -1,9 +1,9 @@
 # Packagers who want to run the testsuite against an installed vdirsyncer:
 #
 # - Create a virtualenv
+# - Inside the virtualenv: `make install-test test`
 # - Somehow link your installation of vdirsyncer into the virtualenv, e.g. by
 #   using --system-site-packages when creating the virtualenv
-# - Inside the virtualenv: `make install-test test`
 #
 # The `install-test` target requires internet access. Be aware that vdirsyncer
 # requires very recent versions of Radicale for the tests to run successfully.
@@ -29,7 +29,6 @@ install-davserver:
 install-test: install-davserver
 	$(PIP_INSTALL) pytest pytest-xprocess pytest-localserver
 	[ $(TRAVIS) != "true" ] || $(PIP_INSTALL) coverage coveralls
-	$(PIP_INSTALL) -e .
 
 test:
 	if [ "$(TRAVIS)" = "true" ]; then \
@@ -39,9 +38,8 @@ test:
 		py.test; \
 	fi
 
-install-style:
+install-style: install-vdirsyncer
 	pip install flake8 flake8-import-order sphinx
-	pip install -e .
 	
 style:
 	flake8
@@ -50,7 +48,6 @@ style:
 
 install-docs:
 	pip install sphinx sphinx_rtd_theme
-	pip install -e .
 
 docs:
 	cd docs
