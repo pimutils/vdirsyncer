@@ -16,6 +16,9 @@ Version 0.6.0
   will abort synchronization) instead of just producing a warning.
 - Vdirsyncer is now able to synchronize metadata of collections. Set ``metadata
   = ["displayname"]`` and run ``vdirsyncer metasync``.
+- **Packagers:** Don't use the GitHub tarballs, but the PyPI ones.
+- **Packagers:** ``build.sh`` is gone, and ``Makefile`` is included in
+  tarballs. See the content of ``Makefile`` on how to run tests post-packaging.
 
 Version 0.5.2
 =============
