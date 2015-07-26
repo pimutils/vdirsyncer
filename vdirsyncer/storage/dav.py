@@ -42,7 +42,9 @@ def _normalize_href(base, href):
     x = utils.compat.urlparse.urljoin(base, href)
     x = utils.compat.urlparse.urlsplit(x).path
 
-    # https://github.com/owncloud/contacts/issues/581
+    # Encoding issues:
+    # - https://github.com/owncloud/contacts/issues/581
+    # - https://github.com/Kozea/Radicale/issues/298
     old_x = None
     while old_x is None or x != old_x:
         if _contains_quoted_reserved_chars(x):
