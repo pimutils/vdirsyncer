@@ -2,8 +2,11 @@
 
 from textwrap import dedent
 
+import pytest
+
 from vdirsyncer.repair import repair_storage
 from vdirsyncer.storage.memory import MemoryStorage
+from vdirsyncer.utils import href_safe
 from vdirsyncer.utils.vobject import Item
 
 
@@ -23,15 +26,24 @@ def test_repair_uids():
     assert uid1 != uid2
 
 
-def test_repair_nonascii_uids():
+@pytest.mark.parametrize('uid', [
+    u'äää',
+    u'test@foo',
+    u'test foo',
+])
+def test_repair_unsafe_uids(uid):
+    assert not href_safe(uid)
+
     s = MemoryStorage()
-    href, etag = s.upload(Item(u'BEGIN:VCARD\nUID:äää\nEND:VCARD'))
-    assert s.get(href)[0].uid == u'äää'
+    href, etag = s.upload(Item(u'BEGIN:VCARD\nUID:{}\nEND:VCARD'.format(uid)))
+    assert s.get(href)[0].uid == uid
+
     repair_storage(s)
+
     new_href = list(s.list())[0][0]
+    assert href_safe(new_href)
     newuid = s.get(new_href)[0].uid
-    assert newuid != u'äää'
-    assert newuid.encode('ascii', 'ignore').decode('ascii') == newuid
+    assert href_safe(newuid)
 
 
 def test_full(tmpdir, runner):

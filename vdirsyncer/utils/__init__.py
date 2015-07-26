@@ -164,8 +164,18 @@ class cached_property(object):
         return result
 
 
+def href_safe(ident, safe=SAFE_UID_CHARS):
+    return not bool(set(ident) - set(safe))
+
+
 def generate_href(ident=None, safe=SAFE_UID_CHARS):
-    if not ident or set(ident) - set(safe):
+    '''
+    Generate a safe identifier, suitable for URLs, storage hrefs or UIDs.
+
+    If the given ident string is safe, it will be returned, otherwise a random
+    UUID.
+    '''
+    if not ident or not href_safe(ident, safe):
         return to_unicode(uuid.uuid4().hex)
     else:
         return ident

@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import uuid
+from os.path import basename
+
 
 from . import log
+from .utils import generate_href, href_safe
 from .utils.vobject import Item
 
 logger = log.get(__name__)
@@ -16,24 +18,23 @@ def repair_storage(storage):
         logger.info(u'[{}/{}] Processing {}'
                     .format(i, len(all_hrefs), href))
 
-        parsed = item.parsed
         changed = False
-        if parsed is None:
+        if item.parsed is None:
             logger.warning('Item {} can\'t be parsed, skipping.'
                            .format(href))
             continue
 
-        if item.uid is None:
+        if not item.uid:
             logger.warning('No UID, assigning random one.')
-            changed = reroll_uid(parsed) or changed
+            changed = change_uid(item, generate_href()) or changed
         elif item.uid in seen_uids:
             logger.warning('Duplicate UID, assigning random one.')
-            changed = reroll_uid(parsed) or changed
-        elif item.uid.encode('ascii', 'ignore').decode('ascii') != item.uid:
-            logger.warning('UID is non-ascii, assigning random one.')
-            changed = reroll_uid(parsed) or changed
+            changed = change_uid(item, generate_href()) or changed
+        elif not href_safe(item.uid) or not href_safe(basename(href)):
+            logger.warning('UID or href is unsafe, assigning random UID.')
+            changed = change_uid(item, generate_href(item.uid)) or changed
 
-        new_item = Item(u'\r\n'.join(parsed.dump_lines()))
+        new_item = Item(u'\r\n'.join(item.parsed.dump_lines()))
         assert new_item.uid
         seen_uids.add(new_item.uid)
         if changed:
@@ -47,9 +48,8 @@ def repair_storage(storage):
                 logger.exception('Server rejected new item.')
 
 
-def reroll_uid(component):
-    new_uid = uuid.uuid4()
-    stack = [component]
+def change_uid(item, new_uid):
+    stack = [item.parsed]
     changed = False
     while stack:
         component = stack.pop()
