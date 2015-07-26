@@ -26,7 +26,9 @@ env:
       # flake8 with plugins
 
 install:
-    - "make install-$BUILD"
+    - "pip install -U pip"
+    - "pip install wheel"
+    - "make -e install-$BUILD"
     - '[ -z "$PKGS" ] || pip install $PKGS'
 script:
-    - "make $BUILD"
+    - "make -e $BUILD"
