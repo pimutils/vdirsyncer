@@ -202,14 +202,21 @@ def repair(collection):
     '''
     Repair a given collection.
 
-    Downloads all items and repairs some properties if necessary. Currently
-    this only fixes absent or duplicate UIDs.
+    Runs a few checks on the collection and applies some fixes to individual
+    items that may improve general stability, also with other CalDAV/CardDAV
+    clients. In particular, if you encounter URL-encoding-related issues with
+    other clients, this command might help.
 
     Example: `vdirsyncer repair calendars_local/foo` repairs the `foo`
     collection of the `calendars_local` storage.
     '''
     from .tasks import repair_collection
     general, all_pairs, all_storages = ctx.obj['config']
+
+    cli_logger.warning('This operation will take a very long time.')
+    cli_logger.warning('It\'s recommended to turn off other client\'s '
+                       'synchronization features.')
+    click.confirm('Do you want to continue?', abort=True)
     repair_collection(general, all_pairs, all_storages, collection)
 
 # Not sure if useful. I originally wanted it because:
