@@ -484,7 +484,7 @@ class DavStorage(Storage):
                 dav_logger.debug('New content: {!r}'.format(item2.raw))
                 raise exceptions.WrongEtagError(
                     'While requesting the etag for {!r}, '
-                    'the item content changed.'
+                    'the item content changed.'.format(href)
                 )
         return href, etag
 
