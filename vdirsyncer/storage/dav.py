@@ -476,16 +476,6 @@ class DavStorage(Storage):
             dav_logger.debug('Server did not send etag, fetching {!r}'
                              .format(href))
             item2, etag = self.get(href)
-
-            # We don't have the old etag, but we can sloppily compare item
-            # contents to see if the values changed.
-            if item2.hash != item.hash:
-                dav_logger.debug('Old content: {!r}'.format(item.raw))
-                dav_logger.debug('New content: {!r}'.format(item2.raw))
-                raise exceptions.WrongEtagError(
-                    'While requesting the etag for {!r}, '
-                    'the item content changed.'.format(href)
-                )
         return href, etag
 
     def update(self, href, item, etag):
