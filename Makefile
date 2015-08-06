@@ -18,6 +18,7 @@ TRAVIS = false
 PIP_INSTALL = pip install
 
 install-davserver:
+	set -e; \
 	if [ ! -d "$(TESTSERVER_BASE)$(DAV_SERVER)/" ]; then \
 		git clone --depth=1 \
 			https://github.com/vdirsyncer/$(DAV_SERVER)-testserver.git \
@@ -31,6 +32,7 @@ install-test: install-davserver
 	[ $(TRAVIS) != "true" ] || $(PIP_INSTALL) coverage coveralls
 
 test:
+	set -e; \
 	if [ "$(TRAVIS)" = "true" ]; then \
 		coverage run --source=vdirsyncer/ --module pytest; \
 		coveralls; \
