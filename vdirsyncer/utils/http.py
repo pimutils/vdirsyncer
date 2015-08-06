@@ -69,7 +69,6 @@ def request(method, url, session=None, latin1_fallback=True,
             raise RuntimeError('`verify_fingerprint` can only be used with '
                                'requests versions >= 2.4.1')
         _install_fingerprint_adapter(session, verify_fingerprint)
-        kwargs['verify'] = False
 
     func = session.request
 
