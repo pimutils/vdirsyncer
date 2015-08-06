@@ -55,8 +55,7 @@ def prepare_verify(verify, verify_fingerprint):
     elif not verify:
         raise exceptions.UserError(
             'Disabling all SSL validation is forbidden. Consider setting '
-            'verify_fingerprint instead, which also disables validation '
-            'against CAs.'
+            'verify_fingerprint if you have a broken or self-signed cert.'
         )
 
     return {
