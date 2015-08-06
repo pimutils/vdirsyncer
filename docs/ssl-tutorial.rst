@@ -15,9 +15,7 @@ To pin the certificate by SHA1- or MD5-fingerprint::
     type = caldav
     ...
     verify_fingerprint = "94:FD:7A:CB:50:75:A4:69:82:0A:F8:23:DF:07:FC:69:3E:CD:90:CA"
-
-This disables :ref:`validation against root CAs <ssl-cas>`, since
-``verify_fingerprint`` is much stricter anyway.
+    #verify = false  # Optional: Disable CA validation, useful for self-signed certs
 
 .. _ssl-cas:
 

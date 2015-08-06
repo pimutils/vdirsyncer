@@ -19,6 +19,7 @@ Version 0.6.0
 - **Packagers:** Don't use the GitHub tarballs, but the PyPI ones.
 - **Packagers:** ``build.sh`` is gone, and ``Makefile`` is included in
   tarballs. See the content of ``Makefile`` on how to run tests post-packaging.
+- ``verify_fingerprint`` doesn't automatically disable ``verify`` anymore.
 
 Version 0.5.2
 =============

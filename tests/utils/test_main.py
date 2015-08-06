@@ -221,9 +221,6 @@ def test_get_class_init_args_on_storage():
 
 
 def test_request_ssl(httpsserver):
-    sha1 = '94:FD:7A:CB:50:75:A4:69:82:0A:F8:23:DF:07:FC:69:3E:CD:90:CA'
-    md5 = '19:90:F7:23:94:F2:EF:AB:2B:64:2D:57:3D:25:95:2D'
-
     httpsserver.serve_content('')  # we need to serve something
 
     with pytest.raises(requests.exceptions.SSLError) as excinfo:
@@ -232,19 +229,32 @@ def test_request_ssl(httpsserver):
 
     utils.http.request('GET', httpsserver.url, verify=False)
 
-    # https://github.com/shazow/urllib3/issues/529
+
+def _fingerprints_broken():
     from pkg_resources import parse_version as ver
     tolerant_python = (
         utils.compat.PY2 and platform.python_implementation() != 'PyPy'
     )
     broken_urllib3 = ver(requests.__version__) <= ver('2.5.1')
-    if broken_urllib3 and not tolerant_python:
-        return
+    return broken_urllib3 and not tolerant_python
 
-    utils.http.request('GET', httpsserver.url,
-                       verify_fingerprint=sha1)
-    utils.http.request('GET', httpsserver.url, verify_fingerprint=md5)
+
+@pytest.mark.skipif(_fingerprints_broken(),
+                    reason='https://github.com/shazow/urllib3/issues/529')
+@pytest.mark.parametrize('fingerprint', [
+    '94:FD:7A:CB:50:75:A4:69:82:0A:F8:23:DF:07:FC:69:3E:CD:90:CA',
+    '19:90:F7:23:94:F2:EF:AB:2B:64:2D:57:3D:25:95:2D'
+])
+def test_request_ssl_fingerprints(httpsserver, fingerprint):
+    httpsserver.serve_content('')  # we need to serve something
+
+    utils.http.request('GET', httpsserver.url, verify=False,
+                       verify_fingerprint=fingerprint)
     with pytest.raises(requests.exceptions.SSLError) as excinfo:
         utils.http.request('GET', httpsserver.url,
-                           verify_fingerprint=''.join(reversed(sha1)))
+                           verify_fingerprint=fingerprint)
+
+    with pytest.raises(requests.exceptions.SSLError) as excinfo:
+        utils.http.request('GET', httpsserver.url, verify=False,
+                           verify_fingerprint=''.join(reversed(fingerprint)))
     assert 'Fingerprints did not match' in str(excinfo.value)

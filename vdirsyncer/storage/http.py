@@ -52,11 +52,12 @@ def prepare_verify(verify, verify_fingerprint):
             raise exceptions.UserError('Invalid value for verify_fingerprint '
                                        '({}), must be a string or null.'
                                        .format(verify_fingerprint))
-        verify = False
     elif not verify:
-        raise exceptions.UserError('verify = false is forbidden. Consider '
-                                   'setting verify_fingerprint instead, which '
-                                   'also disables validation against CAs.')
+        raise exceptions.UserError(
+            'Disabling all SSL validation is forbidden. Consider setting '
+            'verify_fingerprint instead, which also disables validation '
+            'against CAs.'
+        )
 
     return {
         'verify': verify,
