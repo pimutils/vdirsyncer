@@ -56,13 +56,13 @@ def test_full(tmpdir, runner):
 
     foo = tmpdir.mkdir('foo')
 
-    result = runner.invoke(['repair', 'foo'])
+    result = runner.invoke(['repair', 'foo'], input='y')
     assert not result.exception
 
     foo.join('item.txt').write('BEGIN:VCARD\nEND:VCARD')
     foo.join('toobroken.txt').write('')
 
-    result = runner.invoke(['repair', 'foo'])
+    result = runner.invoke(['repair', 'foo'], input='y')
     assert not result.exception
     assert 'No UID' in result.output
     assert 'warning: Item toobroken.txt can\'t be parsed, skipping' \
