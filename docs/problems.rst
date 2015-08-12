@@ -49,6 +49,11 @@ way to do this, for example, using Ubuntu::
 
     sudo apt-get install libxml2 libxslt1.1 zlib1g python
 
+Then you have several options:
+
+The dirty, easy way
+~~~~~~~~~~~~~~~~~~~
+
 The easiest way to install vdirsyncer at this point would be to run::
 
     pip install --user vdirsyncer
@@ -60,7 +65,10 @@ installed as dependencies of vdirsyncer and which ones were not, should you
 decide to uninstall it. In other words, using pip that way would pollute your
 home directory.
 
-But there is a way to install Python software without scattering stuff across
+The clean but hard way
+~~~~~~~~~~~~~~~~~~~~~~
+
+There is a way to install Python software without scattering stuff across
 your filesystem: virtualenv_. There are a lot of resources on how to use it,
 the simplest possible way would look something like::
 
@@ -77,4 +85,22 @@ This method has two advantages:
   distro-specific issues.
 - You can delete ``~/vdirsyncer_env/`` to uninstall vdirsyncer entirely.
 
+The new, perfect way
+~~~~~~~~~~~~~~~~~~~~
+
+pipsi_ is a new package manager for Python-based software that automatically
+sets up a virtualenv for each program you install. Assuming you have it
+installed on your operating system, you can do::
+
+    pipsi install vdirsyncer
+
+and ``.local/bin/vdirsyncer`` will be your new vdirsyncer installation.
+
+If you're done with vdirsyncer, you can do::
+
+    pipsi uninstall vdirsyncer
+
+and vdirsyncer will be uninstalled, including its dependencies.
+
 .. _virtualenv: https://virtualenv.readthedocs.org/
+.. _pipsi: https://github.com/mitsuhiko/pipsi
