@@ -90,6 +90,7 @@ def test_empty_storage(tmpdir, runner):
 
     tmpdir.join('path_a/haha.txt').write('UID:haha')
     result = runner.invoke(['sync'])
+    assert not result.exception
     tmpdir.join('path_b/haha.txt').remove()
     result = runner.invoke(['sync'])
     lines = result.output.splitlines()

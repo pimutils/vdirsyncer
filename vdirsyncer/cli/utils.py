@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import contextlib
 import errno
 import hashlib
 import importlib
@@ -7,14 +8,16 @@ import json
 import os
 import string
 import sys
-import threading
 from itertools import chain
 
 from atomicwrites import atomic_write
 
+import click
+
+import click_threading
+
 from . import CliError, cli_logger
 from .. import DOCS_HOME, PROJECT_HOME, exceptions
-from ..doubleclick import click
 from ..sync import IdentConflict, StorageEmpty, SyncConflict
 from ..utils import expand_path, get_class_init_args
 from ..utils.compat import text_type
@@ -560,46 +563,52 @@ class WorkerQueue(object):
         self._workers = []
         self._exceptions = []
         self._max_workers = max_workers
+        self._shutdown_handlers = []
+
+    def shutdown(self):
+        if not self._queue.unfinished_tasks:
+            for handler in self._shutdown_handlers:
+                try:
+                    handler()
+                except Exception:
+                    pass
 
     def _worker(self):
-        # This is a daemon thread. Since the global namespace is going to
-        # vanish on interpreter shutdown, redefine everything from the global
-        # namespace here.
-        _TypeError = TypeError
-        _Empty = queue.Empty
-        _handle_cli_error = handle_cli_error
-
         while True:
             try:
                 func = self._queue.get(False)
-            except (_TypeError, _Empty):
-                # Any kind of error might be raised if vdirsyncer just finished
-                # processing all items and the interpreter is shutting down,
-                # yet the workers try to get new tasks.
-                # https://github.com/untitaker/vdirsyncer/issues/167
-                # http://bugs.python.org/issue14623
+            except queue.Empty:
                 break
 
             try:
                 func(wq=self)
             except Exception as e:
-                _handle_cli_error()
+                handle_cli_error()
                 self._exceptions.append(e)
             finally:
                 self._queue.task_done()
+                if not self._queue.unfinished_tasks:
+                    self.shutdown()
 
     def spawn_worker(self):
         if self._max_workers and len(self._workers) >= self._max_workers:
             return
 
-        t = threading.Thread(target=self._worker)
+        t = click_threading.Thread(target=self._worker)
         t.daemon = True
         t.start()
         self._workers.append(t)
 
+    @contextlib.contextmanager
     def join(self):
-        assert self._workers or self._queue.empty()
-        self._queue.join()
+        assert self._workers or not self._queue.unfinished_tasks
+        ui_worker = click_threading.UiWorker()
+        self._shutdown_handlers.append(ui_worker.shutdown)
+        with ui_worker.patch_click():
+            yield
+            ui_worker.run()
+            self._queue.join()
+
         if self._exceptions:
             sys.exit(1)
 

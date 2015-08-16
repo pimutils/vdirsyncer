@@ -2,10 +2,12 @@
 
 import threading
 
+import click
+
 from . import expand_path
 from .compat import urlparse
 from .. import exceptions, log
-from ..doubleclick import click, ctx
+from ..cli import AppContext
 
 logger = log.get(__name__)
 password_key_prefix = 'vdirsyncer:'
@@ -40,28 +42,40 @@ def get_password(username, resource, _lock=threading.Lock()):
 
 
     """
-    if ctx:
-        password_cache = ctx.obj.setdefault('passwords', {})
-    else:
-        password_cache = {}  # discard passwords
+    # If no app is running, Click will automatically create an empty cache for
+    # us and discard it.
+    try:
+        ctx = click.get_current_context().find_object(AppContext)
+        if ctx is None:
+            raise RuntimeError()
+        password_cache = ctx.passwords
+    except RuntimeError:
+        password_cache = {}
 
     def _password_from_cache(username, host):
         '''internal cache'''
-        return password_cache.get((username, host), None)
+        rv = password_cache.get((username, host), None)
+        if isinstance(rv, BaseException):
+            raise rv
+        return rv
 
     with _lock:
-        host = urlparse.urlsplit(resource).hostname
-        for func in (_password_from_cache, _password_from_command,
-                     _password_from_netrc, _password_from_keyring,
-                     _password_from_prompt):
-            password = func(username, host)
-            if password is not None:
-                logger.debug('Got password for {} from {}'
-                             .format(username, func.__doc__))
-                break
-
-        password_cache[(username, host)] = password
-        return password
+        try:
+            host = urlparse.urlsplit(resource).hostname
+            for func in (_password_from_cache, _password_from_command,
+                         _password_from_netrc, _password_from_keyring,
+                         _password_from_prompt):
+                password = func(username, host)
+                if password is not None:
+                    logger.debug('Got password for {} from {}'
+                                 .format(username, func.__doc__))
+                    break
+        except (click.Abort, KeyboardInterrupt) as e:
+            password_cache[(username, host)] = e
+            raise
+        else:
+            password_cache[(username, host)] = password
+            return password
 
 
 def _password_from_prompt(username, host):
@@ -101,11 +115,17 @@ def _password_from_command(username, host):
     '''command'''
     import subprocess
 
-    if not ctx:
+    try:
+        ctx = click.get_current_context()
+    except RuntimeError:
+        return None
+
+    ctx = ctx.find_object(AppContext)
+    if ctx is None or not ctx.config:
         return None
 
     try:
-        general, _, _ = ctx.obj['config']
+        general, _, _ = ctx.config
         command = general['password_command'].split()
     except KeyError:
         return None
