@@ -54,21 +54,28 @@ def get_password(username, resource, _lock=threading.Lock()):
 
     def _password_from_cache(username, host):
         '''internal cache'''
-        return password_cache.get((username, host), None)
+        rv = password_cache.get((username, host), None)
+        if isinstance(rv, BaseException):
+            raise rv
+        return rv
 
     with _lock:
-        host = urlparse.urlsplit(resource).hostname
-        for func in (_password_from_cache, _password_from_command,
-                     _password_from_netrc, _password_from_keyring,
-                     _password_from_prompt):
-            password = func(username, host)
-            if password is not None:
-                logger.debug('Got password for {} from {}'
-                             .format(username, func.__doc__))
-                break
-
-        password_cache[(username, host)] = password
-        return password
+        try:
+            host = urlparse.urlsplit(resource).hostname
+            for func in (_password_from_cache, _password_from_command,
+                         _password_from_netrc, _password_from_keyring,
+                         _password_from_prompt):
+                password = func(username, host)
+                if password is not None:
+                    logger.debug('Got password for {} from {}'
+                                 .format(username, func.__doc__))
+                    break
+        except (click.Abort, KeyboardInterrupt) as e:
+            password_cache[(username, host)] = e
+            raise
+        else:
+            password_cache[(username, host)] = password
+            return password
 
 
 def _password_from_prompt(username, host):
