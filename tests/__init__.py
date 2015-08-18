@@ -17,7 +17,7 @@ def assert_item_equals(a, b):
 VCARD_TEMPLATE = u'''BEGIN:VCARD
 VERSION:3.0
 FN:Cyrus Daboo
-N:Daboo;Cyrus
+N:Daboo;Cyrus;;;
 ADR;TYPE=POSTAL:;2822 Email HQ;Suite 2821;RFCVille;PA;15213;USA
 EMAIL;TYPE=PREF:cyrus@example.com
 NICKNAME:me
