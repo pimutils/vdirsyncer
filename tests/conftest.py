@@ -2,6 +2,8 @@
 '''
 General-purpose fixtures for vdirsyncer's testsuite.
 '''
+import logging
+
 import click_log
 
 import pytest
@@ -9,7 +11,7 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def setup_logging():
-    click_log.basic_config('vdirsyncer')
+    click_log.basic_config('vdirsyncer').setLevel(logging.DEBUG)
 
 
 try:
