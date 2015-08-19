@@ -120,13 +120,27 @@ These storages generally support reading and changing of their items. Their
 default value for ``read_only`` is ``false``, but can be set to ``true`` if
 wished.
 
+CalDAV and CardDAV
+++++++++++++++++++
+
 .. autostorage:: vdirsyncer.storage.dav.CaldavStorage
 
 .. autostorage:: vdirsyncer.storage.dav.CarddavStorage
 
+remoteStorage
++++++++++++++
+
+.. autostorage:: vdirsyncer.storage.remotestorage.RemoteStorageContacts
+
+.. autostorage:: vdirsyncer.storage.remotestorage.RemoteStorageCalendars
+
+Local
++++++
+
 .. autostorage:: vdirsyncer.storage.filesystem.FilesystemStorage
 
 .. autostorage:: vdirsyncer.storage.singlefile.SingleFileStorage
+
 
 Read-only storages
 ~~~~~~~~~~~~~~~~~~
