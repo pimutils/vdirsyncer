@@ -99,7 +99,7 @@ max_workers_option = click.option(
 )
 
 
-def pairs_arg_callback(ctx, param, value):
+def collections_arg_callback(ctx, param, value):
     '''
     Expand the various CLI shortforms ("pair, pair/collection") to an iterable
     of (pair, collections).
@@ -119,21 +119,22 @@ def pairs_arg_callback(ctx, param, value):
     return rv.items()
 
 
-pairs_arg = click.argument('pairs', nargs=-1, callback=pairs_arg_callback)
+collections_arg = click.argument('collections', nargs=-1,
+                                 callback=collections_arg_callback)
 
 
 @app.command()
-@pairs_arg
+@collections_arg
 @click.option('--force-delete/--no-force-delete',
               help=('Do/Don\'t abort synchronization when all items are about '
                     'to be deleted from both sides.'))
 @max_workers_option
 @pass_context
 @catch_errors
-def sync(ctx, pairs, force_delete, max_workers):
+def sync(ctx, collections, force_delete, max_workers):
     '''
-    Synchronize the given pairs. If no arguments are given, all will be
-    synchronized.
+    Synchronize the given collections or pairs. If no arguments are given, all
+    will be synchronized.
 
     This command will not synchronize metadata, use `vdirsyncer metasync` for
     that.
@@ -153,7 +154,7 @@ def sync(ctx, pairs, force_delete, max_workers):
     wq = WorkerQueue(max_workers)
 
     with wq.join():
-        for pair_name, collections in pairs:
+        for pair_name, collections in collections:
             wq.put(functools.partial(prepare_pair, pair_name=pair_name,
                                      collections=collections,
                                      config=ctx.config,
@@ -163,13 +164,13 @@ def sync(ctx, pairs, force_delete, max_workers):
 
 
 @app.command()
-@pairs_arg
+@collections_arg
 @max_workers_option
 @pass_context
 @catch_errors
-def metasync(ctx, pairs, max_workers):
+def metasync(ctx, collections, max_workers):
     '''
-    Synchronize metadata of the given pairs.
+    Synchronize metadata of the given collections or pairs.
 
     See the `sync` command regarding the PAIRS argument.
     '''
@@ -179,7 +180,7 @@ def metasync(ctx, pairs, max_workers):
     wq = WorkerQueue(max_workers)
 
     with wq.join():
-        for pair_name, collections in pairs:
+        for pair_name, collections in collections:
             wq.put(functools.partial(prepare_pair, pair_name=pair_name,
                                      collections=collections,
                                      config=ctx.config,
