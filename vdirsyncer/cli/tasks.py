@@ -13,16 +13,12 @@ from ..sync import sync
 def prepare_pair(wq, pair_name, collections, config, callback, **kwargs):
     a_name, b_name, pair_options = config.pairs[pair_name]
 
-    try:
-        config_a, config_b = config.storages[a_name], config.storages[b_name]
-    except KeyError as e:
-        raise CliError('Pair {}: Storage {} not found. These are the '
-                       'configured storages: {}'
-                       .format(pair_name, str(e), list(config.storages)))
+    config_a = config.get_storage_args(a_name)
+    config_b = config.get_storage_args(b_name)
 
     all_collections = dict(collections_for_pair(
-        config.general['status_path'], a_name, b_name, pair_name,
-        config_a, config_b, pair_options
+        status_path=config.general['status_path'], pair_name=pair_name,
+        config_a=config_a, config_b=config_b, pair_options=pair_options
     ))
 
     # spawn one worker less because we can reuse the current one
@@ -87,7 +83,7 @@ def repair_collection(config, collection):
     if '/' in storage_name:
         storage_name, collection = storage_name.split('/')
 
-    config = config.storages[storage_name]
+    config = config.get_storage_args(storage_name)
     storage_type = config['type']
 
     if collection is not None:

@@ -182,3 +182,12 @@ class Config(object):
         self.general = general
         self.pairs = pairs
         self.storages = storages
+
+    def get_storage_args(self, storage_name):
+        try:
+            return self.storages[storage_name]
+        except KeyError:
+            raise CliError(
+                'Storage {!r} not found. These are the configured storages: {}'
+                .format(storage_name, list(self.storages))
+            )

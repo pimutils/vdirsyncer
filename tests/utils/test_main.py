@@ -16,6 +16,7 @@ import requests
 
 from vdirsyncer import utils
 from vdirsyncer.cli import pass_context
+from vdirsyncer.cli.config import Config
 
 # These modules might be uninitialized and unavailable if not explicitly
 # imported
@@ -119,7 +120,7 @@ def test_get_password_from_command(tmpdir):
     @click.command()
     @pass_context
     def fake_app(ctx):
-        ctx.config = {'password_command': filepath}, {}, {}
+        ctx.config = Config({'password_command': filepath}, {}, {})
         _password = utils.password.get_password(username, resource)
         assert _password == password
 

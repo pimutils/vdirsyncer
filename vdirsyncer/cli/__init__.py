@@ -191,11 +191,9 @@ def discover(ctx, pairs, max_workers):
             wq.put(functools.partial(
                 discover_collections,
                 status_path=config.general['status_path'],
-                name_a=name_a,
-                name_b=name_b,
                 pair_name=pair,
-                config_a=config.storages[name_a],
-                config_b=config.storages[name_b],
+                config_a=config.get_storage_args(name_a),
+                config_b=config.get_storage_args(name_b),
                 pair_options=pair_options,
                 skip_cache=True,
             ))

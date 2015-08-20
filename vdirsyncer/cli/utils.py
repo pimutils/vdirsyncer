@@ -139,14 +139,12 @@ def _get_collections_cache_key(pair_options, config_a, config_b):
     return m.hexdigest()
 
 
-def collections_for_pair(status_path, name_a, name_b, pair_name, config_a,
+def collections_for_pair(status_path, pair_name, config_a,
                          config_b, pair_options, skip_cache=False):
     '''Determine all configured collections for a given pair. Takes care of
     shortcut expansion and result caching.
 
     :param status_path: The path to the status directory.
-    :param name_a: The config name of storage A.
-    :param name_b: The config name of storage B.
     :param pair_name: The config name of the pair.
     :param config_a: The configuration for storage A.
     :param config_b: The configuration for storage B.
@@ -172,9 +170,8 @@ def collections_for_pair(status_path, name_a, name_b, pair_name, config_a,
 
     # We have to use a list here because the special None/null value would get
     # mangled to string (because JSON objects always have string keys).
-    rv = list(_collections_for_pair_impl(status_path, name_a, name_b,
-                                         pair_name, config_a, config_b,
-                                         pair_options))
+    rv = list(_collections_for_pair_impl(status_path, pair_name, config_a,
+                                         config_b, pair_options))
 
     save_status(status_path, pair_name, data_type='collections',
                 data={
@@ -250,8 +247,8 @@ def _handle_collection_not_found(config, collection, e=None):
                                       storage=storage_name))
 
 
-def _collections_for_pair_impl(status_path, name_a, name_b, pair_name,
-                               config_a, config_b, pair_options):
+def _collections_for_pair_impl(status_path, pair_name, config_a, config_b,
+                               pair_options):
 
     shortcuts = set(pair_options.get('collections', ()))
     if not shortcuts:
