@@ -74,7 +74,7 @@ def app(ctx):
     '''
     vdirsyncer -- synchronize calendars and contacts
     '''
-    from .utils import load_config
+    from .config import load_config
 
     if not ctx.config:
         ctx.config = load_config()
