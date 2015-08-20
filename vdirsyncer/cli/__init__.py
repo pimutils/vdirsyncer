@@ -126,16 +126,15 @@ def sync(ctx, pairs, force_delete, max_workers):
     '''
     from .tasks import prepare_pair, sync_collection
     from .utils import parse_pairs_args, WorkerQueue
-    general, all_pairs, all_storages = ctx.config
+    config = ctx.config
 
     wq = WorkerQueue(max_workers)
 
     with wq.join():
-        for pair_name, collections in parse_pairs_args(pairs, all_pairs):
+        for pair_name, collections in parse_pairs_args(pairs, config.pairs):
             wq.put(functools.partial(prepare_pair, pair_name=pair_name,
                                      collections=collections,
-                                     general=general, all_pairs=all_pairs,
-                                     all_storages=all_storages,
+                                     config=config,
                                      force_delete=force_delete,
                                      callback=sync_collection))
             wq.spawn_worker()
@@ -154,16 +153,14 @@ def metasync(ctx, pairs, max_workers):
     '''
     from .tasks import prepare_pair, metasync_collection
     from .utils import parse_pairs_args, WorkerQueue
-    general, all_pairs, all_storages = ctx.config
+    config = ctx.config
 
     wq = WorkerQueue(max_workers)
 
     with wq.join():
-        for pair_name, collections in parse_pairs_args(pairs, all_pairs):
+        for pair_name, collections in parse_pairs_args(pairs, config.pairs):
             wq.put(functools.partial(prepare_pair, pair_name=pair_name,
-                                     collections=collections,
-                                     general=general, all_pairs=all_pairs,
-                                     all_storages=all_storages,
+                                     collections=collections, config=config,
                                      callback=metasync_collection))
             wq.spawn_worker()
 
@@ -179,23 +176,28 @@ def discover(ctx, pairs, max_workers):
     '''
     from .tasks import discover_collections
     from .utils import WorkerQueue
-    general, all_pairs, all_storages = ctx.config
+    config = ctx.config
     wq = WorkerQueue(max_workers)
 
     with wq.join():
-        for pair in (pairs or all_pairs):
+        for pair in (pairs or config.pairs):
             try:
-                name_a, name_b, pair_options = all_pairs[pair]
+                name_a, name_b, pair_options = config.pairs[pair]
             except KeyError:
                 raise CliError('Pair not found: {}\n'
                                'These are the pairs found: {}'
-                               .format(pair, list(all_pairs)))
+                               .format(pair, list(config.pairs)))
 
             wq.put(functools.partial(
-                discover_collections, status_path=general['status_path'],
-                name_a=name_a, name_b=name_b, pair_name=pair,
-                config_a=all_storages[name_a], config_b=all_storages[name_b],
-                pair_options=pair_options, skip_cache=True
+                discover_collections,
+                status_path=config.general['status_path'],
+                name_a=name_a,
+                name_b=name_b,
+                pair_name=pair,
+                config_a=config.storages[name_a],
+                config_b=config.storages[name_b],
+                pair_options=pair_options,
+                skip_cache=True,
             ))
             wq.spawn_worker()
 
@@ -217,13 +219,12 @@ def repair(ctx, collection):
     collection of the `calendars_local` storage.
     '''
     from .tasks import repair_collection
-    general, all_pairs, all_storages = ctx.config
 
     cli_logger.warning('This operation will take a very long time.')
     cli_logger.warning('It\'s recommended to turn off other client\'s '
                        'synchronization features.')
     click.confirm('Do you want to continue?', abort=True)
-    repair_collection(general, all_pairs, all_storages, collection)
+    repair_collection(ctx.config, collection)
 
 # Not sure if useful. I originally wanted it because:
 # * my password manager has a timeout for caching the master password

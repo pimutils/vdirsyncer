@@ -125,8 +125,7 @@ def _password_from_command(username, host):
         return None
 
     try:
-        general, _, _ = ctx.config
-        command = general['password_command'].split()
+        command = ctx.config.general['password_command'].split()
     except KeyError:
         return None
 

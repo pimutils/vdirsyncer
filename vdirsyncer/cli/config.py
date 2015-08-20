@@ -79,7 +79,7 @@ def load_config():
         raise CliError('Error during reading config {}: {}'
                        .format(fname, e))
 
-    return general, pairs, storages
+    return Config(general, pairs, storages)
 
 
 def read_config(f):
@@ -175,3 +175,10 @@ def parse_options(items, section=None):
         except ValueError as e:
             raise ValueError('Section "{}", option "{}": {}'
                              .format(section, key, e))
+
+
+class Config(object):
+    def __init__(self, general, pairs, storages):
+        self.general = general
+        self.pairs = pairs
+        self.storages = storages

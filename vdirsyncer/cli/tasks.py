@@ -10,19 +10,18 @@ from .utils import CliError, JobFailed, cli_logger, collections_for_pair, \
 from ..sync import sync
 
 
-def prepare_pair(wq, pair_name, collections, general, all_pairs, all_storages,
-                 callback, **kwargs):
-    a_name, b_name, pair_options = all_pairs[pair_name]
+def prepare_pair(wq, pair_name, collections, config, callback, **kwargs):
+    a_name, b_name, pair_options = config.pairs[pair_name]
 
     try:
-        config_a, config_b = all_storages[a_name], all_storages[b_name]
+        config_a, config_b = config.storages[a_name], config.storages[b_name]
     except KeyError as e:
         raise CliError('Pair {}: Storage {} not found. These are the '
                        'configured storages: {}'
-                       .format(pair_name, str(e), list(all_storages)))
+                       .format(pair_name, str(e), list(config.storages)))
 
     all_collections = dict(collections_for_pair(
-        general['status_path'], a_name, b_name, pair_name,
+        config.general['status_path'], a_name, b_name, pair_name,
         config_a, config_b, pair_options
     ))
 
@@ -39,7 +38,7 @@ def prepare_pair(wq, pair_name, collections, general, all_pairs, all_storages,
         wq.put(functools.partial(
             callback, pair_name=pair_name, collection=collection,
             config_a=config_a, config_b=config_b, pair_options=pair_options,
-            general=general, **kwargs
+            general=config.general, **kwargs
         ))
 
     for i in range(new_workers):
@@ -81,14 +80,14 @@ def discover_collections(wq, pair_name, **kwargs):
                     .format(pair_name, json.dumps(collections)))
 
 
-def repair_collection(general, all_pairs, all_storages, collection):
+def repair_collection(config, collection):
     from ..repair import repair_storage
 
     storage_name, collection = collection, None
     if '/' in storage_name:
         storage_name, collection = storage_name.split('/')
 
-    config = all_storages[storage_name]
+    config = config.storages[storage_name]
     storage_type = config['type']
 
     if collection is not None:
