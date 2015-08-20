@@ -99,8 +99,31 @@ max_workers_option = click.option(
 )
 
 
+def pairs_arg_callback(ctx, param, value):
+    '''
+    Expand the various CLI shortforms ("pair, pair/collection") to an iterable
+    of (pair, collections).
+    '''
+    # XXX: Ugly! pass_context should work everywhere.
+    config = ctx.find_object(AppContext).config
+    rv = {}
+    for pair_and_collection in (value or config.pairs):
+        pair, collection = pair_and_collection, None
+        if '/' in pair:
+            pair, collection = pair.split('/')
+
+        collections = rv.setdefault(pair, set())
+        if collection:
+            collections.add(collection)
+
+    return rv.items()
+
+
+pairs_arg = click.argument('pairs', nargs=-1, callback=pairs_arg_callback)
+
+
 @app.command()
-@click.argument('pairs', nargs=-1)
+@pairs_arg
 @click.option('--force-delete/--no-force-delete',
               help=('Do/Don\'t abort synchronization when all items are about '
                     'to be deleted from both sides.'))
@@ -125,23 +148,22 @@ def sync(ctx, pairs, force_delete, max_workers):
         from the pair "bob".
     '''
     from .tasks import prepare_pair, sync_collection
-    from .utils import parse_pairs_args, WorkerQueue
-    config = ctx.config
+    from .utils import WorkerQueue
 
     wq = WorkerQueue(max_workers)
 
     with wq.join():
-        for pair_name, collections in parse_pairs_args(pairs, config.pairs):
+        for pair_name, collections in pairs:
             wq.put(functools.partial(prepare_pair, pair_name=pair_name,
                                      collections=collections,
-                                     config=config,
+                                     config=ctx.config,
                                      force_delete=force_delete,
                                      callback=sync_collection))
             wq.spawn_worker()
 
 
 @app.command()
-@click.argument('pairs', nargs=-1)
+@pairs_arg
 @max_workers_option
 @pass_context
 @catch_errors
@@ -152,15 +174,15 @@ def metasync(ctx, pairs, max_workers):
     See the `sync` command regarding the PAIRS argument.
     '''
     from .tasks import prepare_pair, metasync_collection
-    from .utils import parse_pairs_args, WorkerQueue
-    config = ctx.config
+    from .utils import WorkerQueue
 
     wq = WorkerQueue(max_workers)
 
     with wq.join():
-        for pair_name, collections in parse_pairs_args(pairs, config.pairs):
+        for pair_name, collections in pairs:
             wq.put(functools.partial(prepare_pair, pair_name=pair_name,
-                                     collections=collections, config=config,
+                                     collections=collections,
+                                     config=ctx.config,
                                      callback=metasync_collection))
             wq.spawn_worker()
 

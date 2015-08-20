@@ -390,29 +390,6 @@ def handle_storage_init_error(cls, config):
                    problems=problems)
 
 
-def parse_pairs_args(pairs_args, all_pairs):
-    '''
-    Expand the various CLI shortforms ("pair, pair/collection") to an iterable
-    of (pair, collections).
-    '''
-    rv = {}
-    for pair_and_collection in (pairs_args or all_pairs):
-        pair, collection = pair_and_collection, None
-        if '/' in pair:
-            pair, collection = pair.split('/')
-
-        if pair not in all_pairs:
-            raise CliError('Pair not found: {}\n'
-                           'These are the pairs found: {}'
-                           .format(pair, list(all_pairs)))
-
-        collections = rv.setdefault(pair, set())
-        if collection:
-            collections.add(collection)
-
-    return rv.items()
-
-
 class WorkerQueue(object):
     '''
     A simple worker-queue setup.

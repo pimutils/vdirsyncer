@@ -69,22 +69,6 @@ def test_storage_instance_from_config(monkeypatch):
     assert cli.utils.storage_instance_from_config(config) == 'OK'
 
 
-def test_parse_pairs_args():
-    pairs = {
-        'foo': ('bar', 'baz', {'conflict_resolution': 'a wins'},
-                {'storage_option': True}),
-        'one': ('two', 'three', {'collections': 'a,b,c'}, {}),
-        'eins': ('zwei', 'drei', {'ha': True}, {})
-    }
-    assert sorted(
-        cli.utils.parse_pairs_args(['foo/foocoll', 'one', 'eins'], pairs)
-    ) == [
-        ('eins', set()),
-        ('foo', {'foocoll'}),
-        ('one', set()),
-    ]
-
-
 def test_missing_general_section(read_config):
     with pytest.raises(cli.CliError) as excinfo:
         read_config(u'''
