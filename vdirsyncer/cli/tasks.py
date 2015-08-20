@@ -3,6 +3,7 @@
 import functools
 import json
 
+from .config import CollectionConfig
 from .utils import CliError, JobFailed, cli_logger, collections_for_pair, \
     get_status_name, handle_cli_error, load_status, save_status, \
     storage_class_from_config, storage_instance_from_config
@@ -11,69 +12,66 @@ from ..sync import sync
 
 
 def prepare_pair(wq, pair_name, collections, config, callback, **kwargs):
-    a_name, b_name, pair_options = config.pairs[pair_name]
-
-    config_a = config.get_storage_args(a_name)
-    config_b = config.get_storage_args(b_name)
+    pair = config.get_pair(pair_name)
 
     all_collections = dict(collections_for_pair(
-        status_path=config.general['status_path'], pair_name=pair_name,
-        config_a=config_a, config_b=config_b, pair_options=pair_options
+        status_path=config.general['status_path'], pair=pair
     ))
 
     # spawn one worker less because we can reuse the current one
     new_workers = -1
-    for collection in (collections or all_collections):
+    for collection_name in (collections or all_collections):
         try:
-            config_a, config_b = all_collections[collection]
+            config_a, config_b = all_collections[collection_name]
         except KeyError:
             raise CliError('Pair {}: Collection {} not found. These are the '
-                           'configured collections:\n{}'.format(
-                               pair_name, collection, list(all_collections)))
+                           'configured collections:\n{}'
+                           .format(pair_name, collection_name,
+                                   list(all_collections)))
         new_workers += 1
-        wq.put(functools.partial(
-            callback, pair_name=pair_name, collection=collection,
-            config_a=config_a, config_b=config_b, pair_options=pair_options,
-            general=config.general, **kwargs
-        ))
+
+        collection = CollectionConfig(pair, collection_name, config_a,
+                                      config_b)
+        wq.put(functools.partial(callback, collection=collection,
+                                 general=config.general, **kwargs))
 
     for i in range(new_workers):
         wq.spawn_worker()
 
 
-def sync_collection(wq, pair_name, collection, config_a, config_b,
-                    pair_options, general, force_delete):
-    status_name = get_status_name(pair_name, collection)
+def sync_collection(wq, collection, general, force_delete):
+    pair = collection.pair
+    status_name = get_status_name(pair.name, collection.name)
 
     try:
         cli_logger.info('Syncing {}'.format(status_name))
 
-        status = load_status(general['status_path'], pair_name,
-                             collection, data_type='items') or {}
+        status = load_status(general['status_path'], pair.name,
+                             collection.name, data_type='items') or {}
         cli_logger.debug('Loaded status for {}'.format(status_name))
 
-        a = storage_instance_from_config(config_a)
-        b = storage_instance_from_config(config_b)
+        a = storage_instance_from_config(collection.config_a)
+        b = storage_instance_from_config(collection.config_b)
         sync(
             a, b, status,
-            conflict_resolution=pair_options.get('conflict_resolution', None),
+            conflict_resolution=pair.options.get('conflict_resolution', None),
             force_delete=force_delete
         )
     except:
         handle_cli_error(status_name)
         raise JobFailed()
 
-    save_status(general['status_path'], pair_name, collection,
+    save_status(general['status_path'], pair.name, collection.name,
                 data_type='items', data=status)
 
 
-def discover_collections(wq, pair_name, **kwargs):
-    rv = collections_for_pair(pair_name=pair_name, **kwargs)
+def discover_collections(wq, pair, **kwargs):
+    rv = collections_for_pair(pair=pair, **kwargs)
     collections = list(c for c, (a, b) in rv)
     if collections == [None]:
         collections = None
     cli_logger.info('Saved for {}: collections = {}'
-                    .format(pair_name, json.dumps(collections)))
+                    .format(pair.name, json.dumps(collections)))
 
 
 def repair_collection(config, collection):
@@ -104,28 +102,27 @@ def repair_collection(config, collection):
     repair_storage(storage)
 
 
-def metasync_collection(wq, pair_name, collection, config_a, config_b,
-                        pair_options, general):
+def metasync_collection(wq, pair, collection, general):
     from ..metasync import metasync
-    status_name = get_status_name(pair_name, collection)
+    status_name = get_status_name(pair.name, collection)
 
     try:
         cli_logger.info('Metasyncing {}'.format(status_name))
 
-        status = load_status(general['status_path'], pair_name,
+        status = load_status(general['status_path'], pair.name,
                              collection, data_type='metadata') or {}
 
-        a = storage_instance_from_config(config_a)
-        b = storage_instance_from_config(config_b)
+        a = storage_instance_from_config(pair.config_a)
+        b = storage_instance_from_config(pair.config_b)
 
         metasync(
             a, b, status,
-            conflict_resolution=pair_options.get('conflict_resolution', None),
-            keys=pair_options.get('metadata', None) or ()
+            conflict_resolution=pair.options.get('conflict_resolution', None),
+            keys=pair.options.get('metadata', None) or ()
         )
     except:
         handle_cli_error(status_name)
         raise JobFailed()
 
-    save_status(general['status_path'], pair_name, collection,
+    save_status(general['status_path'], pair.name, collection,
                 data_type='metadata', data=status)

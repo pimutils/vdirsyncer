@@ -183,11 +183,37 @@ class Config(object):
         self.pairs = pairs
         self.storages = storages
 
-    def get_storage_args(self, storage_name):
+    def get_storage_args(self, storage_name, pair_name=None):
         try:
             return self.storages[storage_name]
         except KeyError:
+            pair_pref = 'Pair {}: '.format(pair_name) if pair_name else ''
             raise CliError(
-                'Storage {!r} not found. These are the configured storages: {}'
-                .format(storage_name, list(self.storages))
+                '{}Storage {!r} not found. '
+                'These are the configured storages: {}'
+                .format(pair_pref, storage_name, list(self.storages))
             )
+
+    def get_pair(self, pair_name):
+        return PairConfig(self, pair_name, *self.pairs[pair_name])
+
+
+class PairConfig(object):
+    def __init__(self, config, name, name_a, name_b, pair_options):
+        self._config = config
+        self.name = name
+        self.name_a = name_a
+        self.name_a = name_b
+        self.options = pair_options
+
+        self.config_a = config.get_storage_args(name_a, pair_name=name)
+        self.config_b = config.get_storage_args(name_b, pair_name=name)
+
+
+class CollectionConfig(object):
+    def __init__(self, pair, name, config_a, config_b):
+        self.pair = pair
+        self._config = pair._config
+        self.name = name
+        self.config_a = config_a
+        self.config_b = config_b

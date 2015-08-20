@@ -180,21 +180,13 @@ def discover(ctx, pairs, max_workers):
     wq = WorkerQueue(max_workers)
 
     with wq.join():
-        for pair in (pairs or config.pairs):
-            try:
-                name_a, name_b, pair_options = config.pairs[pair]
-            except KeyError:
-                raise CliError('Pair not found: {}\n'
-                               'These are the pairs found: {}'
-                               .format(pair, list(config.pairs)))
+        for pair_name in (pairs or config.pairs):
+            pair = config.get_pair(pair_name)
 
             wq.put(functools.partial(
                 discover_collections,
                 status_path=config.general['status_path'],
-                pair_name=pair,
-                config_a=config.get_storage_args(name_a),
-                config_b=config.get_storage_args(name_b),
-                pair_options=pair_options,
+                pair=pair,
                 skip_cache=True,
             ))
             wq.spawn_worker()

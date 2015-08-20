@@ -127,56 +127,51 @@ def get_status_name(pair, collection):
     return pair + '/' + collection
 
 
-def _get_collections_cache_key(pair_options, config_a, config_b):
+def _get_collections_cache_key(pair):
     m = hashlib.sha256()
     j = json.dumps([
         DISCOVERY_CACHE_VERSION,
-        pair_options.get('collections', None),
-        config_a,
-        config_b
+        pair.options.get('collections', None),
+        pair.config_a,
+        pair.config_b,
     ], sort_keys=True)
     m.update(j.encode('utf-8'))
     return m.hexdigest()
 
 
-def collections_for_pair(status_path, pair_name, config_a,
-                         config_b, pair_options, skip_cache=False):
+def collections_for_pair(status_path, pair, skip_cache=False):
     '''Determine all configured collections for a given pair. Takes care of
     shortcut expansion and result caching.
 
     :param status_path: The path to the status directory.
-    :param pair_name: The config name of the pair.
-    :param config_a: The configuration for storage A.
-    :param config_b: The configuration for storage B.
-    :param pair_options: Pair-specific options.
     :param skip_cache: Whether to skip the cached data and always do discovery.
         Even with this option enabled, the new cache is written.
 
     :returns: iterable of (collection, (a_args, b_args))
     '''
-    rv = load_status(status_path, pair_name, data_type='collections')
-    cache_key = _get_collections_cache_key(pair_options, config_a, config_b)
+    rv = load_status(status_path, pair.name, data_type='collections')
+    cache_key = _get_collections_cache_key(pair)
     if rv and not skip_cache:
         if rv.get('cache_key', None) == cache_key:
             return list(_expand_collections_cache(
-                rv['collections'], config_a, config_b
+                rv['collections'], pair.config_a, pair.config_b
             ))
         elif rv:
             cli_logger.info('Detected change in config file, discovering '
-                            'collections for {}'.format(pair_name))
+                            'collections for {}'.format(pair.name))
 
     cli_logger.info('Discovering collections for pair {}'
-                    .format(pair_name))
+                    .format(pair.name))
 
     # We have to use a list here because the special None/null value would get
     # mangled to string (because JSON objects always have string keys).
-    rv = list(_collections_for_pair_impl(status_path, pair_name, config_a,
-                                         config_b, pair_options))
+    rv = list(_collections_for_pair_impl(status_path, pair))
 
-    save_status(status_path, pair_name, data_type='collections',
+    save_status(status_path, pair.name, data_type='collections',
                 data={
                     'collections': list(
-                        _compress_collections_cache(rv, config_a, config_b)
+                        _compress_collections_cache(rv, pair.config_a,
+                                                    pair.config_b)
                     ),
                     'cache_key': cache_key
                 })
@@ -247,15 +242,14 @@ def _handle_collection_not_found(config, collection, e=None):
                                       storage=storage_name))
 
 
-def _collections_for_pair_impl(status_path, pair_name, config_a, config_b,
-                               pair_options):
+def _collections_for_pair_impl(status_path, pair):
 
-    shortcuts = set(pair_options.get('collections', ()))
+    shortcuts = set(pair.options.get('collections', ()))
     if not shortcuts:
-        yield None, (config_a, config_b)
+        yield None, (pair.config_a, pair.config_b)
     else:
-        a_discovered = _discover_from_config(config_a)
-        b_discovered = _discover_from_config(config_b)
+        a_discovered = _discover_from_config(pair.config_a)
+        b_discovered = _discover_from_config(pair.config_b)
 
         for shortcut in shortcuts:
             if shortcut == 'from a':
@@ -269,12 +263,14 @@ def _collections_for_pair_impl(status_path, pair_name, config_a, config_b,
                 try:
                     a_args = a_discovered[collection]
                 except KeyError:
-                    a_args = _handle_collection_not_found(config_a, collection)
+                    a_args = _handle_collection_not_found(pair.config_a,
+                                                          collection)
 
                 try:
                     b_args = b_discovered[collection]
                 except KeyError:
-                    b_args = _handle_collection_not_found(config_b, collection)
+                    b_args = _handle_collection_not_found(pair.config_b,
+                                                          collection)
 
                 yield collection, (a_args, b_args)
 
