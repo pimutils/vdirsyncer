@@ -5,13 +5,15 @@ import pytest
 
 import vdirsyncer.cli.utils  # noqa
 from vdirsyncer import cli
+from vdirsyncer.cli.config import parse_config_value, \
+    read_config as _read_config
 
 
 @pytest.fixture
 def read_config(tmpdir):
     def inner(cfg):
         f = io.StringIO(dedent(cfg.format(base=str(tmpdir))))
-        return cli.utils.read_config(f)
+        return _read_config(f)
     return inner
 
 
@@ -127,7 +129,7 @@ def test_invalid_storage_name():
         '''))
 
     with pytest.raises(cli.CliError) as excinfo:
-        cli.utils.read_config(f)
+        _read_config(f)
 
     assert 'invalid characters' in str(excinfo.value).lower()
 
@@ -137,7 +139,7 @@ def test_parse_config_value(capsys):
 
     def x(s):
         try:
-            rv = cli.utils.parse_config_value(s)
+            rv = parse_config_value(s)
         except ValueError:
             return invalid
         else:
@@ -184,7 +186,7 @@ def test_invalid_collections_arg():
         '''))
 
     with pytest.raises(cli.utils.CliError) as excinfo:
-        cli.utils.read_config(f)
+        _read_config(f)
 
     assert (
         'Section `pair foobar`: `collections` parameter must be a list of '
