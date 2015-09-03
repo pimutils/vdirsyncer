@@ -102,18 +102,19 @@ def repair_collection(config, collection):
     repair_storage(storage)
 
 
-def metasync_collection(wq, pair, collection, general):
+def metasync_collection(wq, collection, general):
     from ..metasync import metasync
-    status_name = get_status_name(pair.name, collection)
+    pair = collection.pair
+    status_name = get_status_name(pair.name, collection.name)
 
     try:
         cli_logger.info('Metasyncing {}'.format(status_name))
 
         status = load_status(general['status_path'], pair.name,
-                             collection, data_type='metadata') or {}
+                             collection.name, data_type='metadata') or {}
 
-        a = storage_instance_from_config(pair.config_a)
-        b = storage_instance_from_config(pair.config_b)
+        a = storage_instance_from_config(collection.config_a)
+        b = storage_instance_from_config(collection.config_b)
 
         metasync(
             a, b, status,
@@ -124,5 +125,5 @@ def metasync_collection(wq, pair, collection, general):
         handle_cli_error(status_name)
         raise JobFailed()
 
-    save_status(general['status_path'], pair.name, collection,
+    save_status(general['status_path'], pair.name, collection.name,
                 data_type='metadata', data=status)
