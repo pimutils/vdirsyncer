@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import os
 import platform
-import stat
-
-import click
-from click.testing import CliRunner
 
 import click_log
 
@@ -15,16 +10,11 @@ import pytest
 import requests
 
 from vdirsyncer import utils
-from vdirsyncer.cli import pass_context
-from vdirsyncer.cli.config import Config
 
 # These modules might be uninitialized and unavailable if not explicitly
 # imported
 import vdirsyncer.utils.compat  # noqa
 import vdirsyncer.utils.http  # noqa
-
-
-from .. import blow_up
 
 
 @pytest.fixture(autouse=True)

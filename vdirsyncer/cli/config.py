@@ -6,7 +6,7 @@ from itertools import chain
 from . import CliError, cli_logger
 from .fetchparams import expand_fetch_params
 from .. import PROJECT_HOME
-from ..utils import expand_path, cached_property
+from ..utils import cached_property, expand_path
 from ..utils.compat import text_type
 
 try:
