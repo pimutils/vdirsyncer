@@ -15,7 +15,7 @@ Version 0.7.0
 - **Packagers:** New dependencies are ``click_threading``, ``click_log`` and
   ``click>=5.0``.
 - ``password_command`` is gone. Keyring support got completely overhauled. See
-  :ref:`keyring`.
+  :doc:`keyring`.
 
 Version 0.6.0
 =============
