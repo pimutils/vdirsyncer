@@ -299,10 +299,6 @@ class DavSession(object):
     def __init__(self, url, username='', password='', verify=True, auth=None,
                  useragent=USERAGENT, verify_fingerprint=None,
                  auth_cert=None):
-        if username and not password:
-            from ..utils.password import get_password
-            password = get_password(username, url)
-
         self._settings = {
             'auth': prepare_auth(auth, username, password),
             'cert': prepare_client_cert(auth_cert),

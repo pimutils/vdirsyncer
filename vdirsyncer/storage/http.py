@@ -5,7 +5,6 @@ from .. import exceptions
 from ..utils import expand_path
 from ..utils.compat import iteritems, text_type, urlparse
 from ..utils.http import request
-from ..utils.password import get_password
 from ..utils.vobject import split_collection
 
 USERAGENT = 'vdirsyncer'
@@ -122,9 +121,6 @@ class HttpStorage(Storage):
                  useragent=USERAGENT, verify_fingerprint=None, auth_cert=None,
                  **kwargs):
         super(HttpStorage, self).__init__(**kwargs)
-
-        if username and not password:
-            password = get_password(username, url)
 
         self._settings = {
             'auth': prepare_auth(auth, username, password),

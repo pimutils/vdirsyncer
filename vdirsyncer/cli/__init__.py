@@ -16,7 +16,7 @@ cli_logger = log.get(__name__)
 class AppContext(object):
     def __init__(self):
         self.config = None
-        self.passwords = {}
+        self.fetched_params = {}
         self.logger = None
 
 

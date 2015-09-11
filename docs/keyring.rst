@@ -1,54 +1,55 @@
-===============
-Keyring Support
-===============
+=================
+Storing passwords
+=================
 
-Vdirsyncer will try the following storages in that order if no password (but a
-username) is set in your config. If all of those methods fail, it will prompt
-for the password and store the password in the system keyring (if possible and
-wished).
+.. versionchanged:: 0.7.0
 
-Custom command
-==============
+   Password configuration got completely overhauled.
 
-.. versionadded:: 0.3.0
+Vdirsyncer can fetch passwords from a custom command or your system keyring if
+the keyring_ Python package is installed.
 
-A custom command/binary can be specified to retrieve the password for a
-username/hostname combination. See :ref:`general_config`.
+Command
+=======
 
-.. versionchanged:: 0.6.0
+Say you have the following configuration::
 
-    Setting a custom command now disables all other methods.
+    [storage foo]
+    type = caldav
+    url = ...
+    username = foo
+    password = bar
 
-netrc
-=====
+But it bugs you that the password is stored in cleartext in the config file.
+You can do this::
 
-Vdirsyncer can use ``~/.netrc`` for retrieving a password. An example
-``.netrc`` looks like this::
+    [storage foo]
+    type = caldav
+    url = ...
+    username = foo
+    password.fetch = ["command", "~/get-password.sh", "more", "args"]
 
-    machine owncloud.example.com
-    login foouser
-    password foopass
+You can fetch the username as well::
+
+    [storage foo]
+    type = caldav
+    url = ...
+    username.fetch = ["command", "~/get-username.sh"]
+    password.fetch = ["command", "~/get-password.sh"]
+
+Or really any kind of parameter in a storage section.
 
 System Keyring
 ==============
 
-Vdirsyncer can use your system's password storage, utilizing the keyring_
-library. Supported services include **OS X Keychain, Gnome Keyring, KDE Kwallet
-or the Windows Credential Vault**. For a full list see the library's
-documentation.
+While the command approach is quite flexible, it is often cumbersome to write a
+script fetching the system keyring.
 
-To use it, you must install the ``keyring`` Python package.
+Given that you have the keyring_ Python library installed, you can use::
 
-.. _keyring: https://bitbucket.org/kang/python-keyring-lib
+    [storage foo]
+    type = caldav
+    username = myusername
+    password.fetch = ["keyring", "myservicename", "myusername"]
 
-Storing the password
---------------------
-
-Vdirsyncer will use the hostname as key prefixed with ``vdirsyncer:``, e.g.
-``vdirsyncer:owncloud.example.com``.
-
-Changing the Password
----------------------
-
-If your password on the server changed or you misspelled it, you need to
-manually edit or delete the entry in your system keyring.
+.. _keyring: https://pypi.python.org/pypi/keyring

@@ -1,0 +1,90 @@
+# -*- coding: utf-8 -*-
+
+import click
+
+from . import AppContext
+from .. import exceptions, log
+from ..utils import expand_path
+
+SUFFIX = '.fetch'
+
+logger = log.get(__name__)
+
+try:
+    import keyring
+except ImportError:
+    keyring = None
+
+
+def expand_fetch_params(config):
+    config = dict(config)
+    for key in list(config):
+        if not key.endswith(SUFFIX):
+            continue
+
+        newkey = key[:-len(SUFFIX)]
+        if newkey in config:
+            raise ValueError('Can\'t set {} and {}.'.format(key, newkey))
+        config[newkey] = _fetch_value(config[key], key)
+        del config[key]
+
+    return config
+
+
+def _fetch_value(opts, key):
+    if not isinstance(opts, list):
+        raise ValueError('Invalid value for {}: Expected a list, found {!r}.'
+                         .format(key, opts))
+    if not opts:
+        raise ValueError('Expected list of length > 0.')
+
+    try:
+        ctx = click.get_current_context().find_object(AppContext)
+        if ctx is None:
+            raise RuntimeError()
+        password_cache = ctx.fetched_params
+    except RuntimeError:
+        password_cache = {}
+
+    cache_key = tuple(opts)
+    if cache_key in password_cache:
+        rv = password_cache[cache_key]
+        logger.debug('Found cached value for {!r}.'.format(opts))
+        if isinstance(rv, BaseException):
+            raise rv
+        return rv
+
+    strategy = opts[0]
+    logger.debug('Fetching value for {} with {} strategy.'
+                 .format(key, strategy))
+    try:
+        rv = STRATEGIES[strategy](*opts[1:])
+    except (click.Abort, KeyboardInterrupt) as e:
+        password_cache[cache_key] = e
+        raise
+    else:
+        password_cache[cache_key] = rv
+        return rv
+
+
+def _strategy_keyring(username, host):
+    if not keyring:
+        raise RuntimeError('Keyring package not available.')
+    return keyring.get_password(username, host)
+
+
+def _strategy_command(*command):
+    import subprocess
+    command = (expand_path(command[0]),) + command[1:]
+    try:
+        stdout = subprocess.check_output(command, universal_newlines=True)
+        return stdout.strip('\n')
+    except OSError as e:
+        raise exceptions.UserError('Failed to execute command: {}\n{}'
+                                   .format(' '.join(command), str(e)))
+
+
+STRATEGIES = {
+    'keyring': _strategy_keyring,
+    'command': _strategy_command
+}

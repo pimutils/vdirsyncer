@@ -4,8 +4,9 @@ import string
 from itertools import chain
 
 from . import CliError, cli_logger
+from .fetchparams import expand_fetch_params
 from .. import PROJECT_HOME
-from ..utils import expand_path
+from ..utils import expand_path, cached_property
 from ..utils.compat import text_type
 
 try:
@@ -13,7 +14,7 @@ try:
 except ImportError:
     from configparser import RawConfigParser
 
-GENERAL_ALL = frozenset(['status_path', 'password_command'])
+GENERAL_ALL = frozenset(['status_path'])
 GENERAL_REQUIRED = frozenset(['status_path'])
 SECTION_NAME_CHARS = frozenset(chain(string.ascii_letters, string.digits, '_'))
 
@@ -206,8 +207,16 @@ class PairConfig(object):
         self.name_a = name_b
         self.options = pair_options
 
-        self.config_a = config.get_storage_args(name_a, pair_name=name)
-        self.config_b = config.get_storage_args(name_b, pair_name=name)
+        self.raw_config_a = config.get_storage_args(name_a, pair_name=name)
+        self.raw_config_b = config.get_storage_args(name_b, pair_name=name)
+
+    @cached_property
+    def config_a(self):
+        return expand_fetch_params(self.raw_config_a)
+
+    @cached_property
+    def config_b(self):
+        return expand_fetch_params(self.raw_config_b)
 
 
 class CollectionConfig(object):

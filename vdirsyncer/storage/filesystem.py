@@ -63,6 +63,7 @@ class FilesystemStorage(Storage):
             for collection in collections:
                 collection_path = os.path.join(path, collection)
                 if os.path.isdir(collection_path):
+                    print("COLLECTION", collection_path)
                     args = dict(collection=collection, path=collection_path,
                                 **kwargs)
                     yield args
