@@ -8,7 +8,7 @@ from vdirsyncer.storage.memory import MemoryStorage
 from vdirsyncer.sync import BothReadOnly, IdentConflict, StorageEmpty, \
     SyncConflict, sync
 
-from . import assert_item_equals, blow_up, normalize_item
+from . import assert_item_equals, blow_up
 
 
 def empty_storage(x):
@@ -138,7 +138,7 @@ def test_conflict_resolution_both_etags_new(winning_storage):
     item_a, _ = a.get(href_a)
     item_b, _ = b.get(href_b)
     assert_item_equals(item_a, item_b)
-    n = normalize_item(item_a)
+    n = item_a.raw.splitlines()
     assert u'UID:1' in n
     assert u'item {}'.format(winning_storage) in n
 
