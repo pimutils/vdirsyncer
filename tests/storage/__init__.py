@@ -263,5 +263,8 @@ class StorageTests(object):
         except exceptions.UnsupportedMetadataError:
             pass
 
-        s.set_meta('displayname', u'hello world')
-        assert s.get_meta('displayname') == u'hello world'
+        for x in (u'hello world', u'hello wörld'):
+            s.set_meta('displayname', x)
+            rv = s.get_meta('displayname')
+            assert rv == x
+            assert isinstance(rv, text_type)
