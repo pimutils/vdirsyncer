@@ -11,7 +11,7 @@ from .base import Item, Storage
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
 from .. import exceptions, log, utils
-from ..utils.compat import text_type, to_native
+from ..utils.compat import text_type, to_native, to_unicode
 
 
 dav_logger = log.get(__name__)
@@ -599,7 +599,7 @@ class DavStorage(Storage):
         for prop in root.findall('.//' + lxml_selector):
             text = getattr(prop, 'text', None)
             if text:
-                return text
+                return to_unicode(text)
 
     def set_meta(self, key, value):
         try:
