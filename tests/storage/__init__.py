@@ -255,6 +255,10 @@ class StorageTests(object):
             assert urlquote(uid, '/@:') in href
 
     def test_metadata(self, requires_metadata, s):
+        # https://github.com/owncloud/core/issues/18409
+        if getattr(self, 'dav_server', '') == 'owncloud':
+            pytest.skip('ownCloud is fundamentally broken.')
+
         try:
             s.set_meta('color', None)
             assert s.get_meta('color') is None
