@@ -118,12 +118,12 @@ class StorageSyncer(object):
             props = prefetch[href]
 
             assert props['href'] == href
-            old_etag = props.setdefault('etag', etag)
-            if old_etag != etag:
-                raise SyncError(
-                    'Etag changed during sync: Expected {!r}, got {!r}'
-                    .format(old_etag, etag)
+            if props['etag'] != etag:
+                sync_logger.warning(
+                    'Etag of {!r} changed during sync from {!r} to {!r}'
+                    .format(href, props['etag'], etag)
                 )
+            props['etag'] = etag
             props['item'] = item
             props['ident'] = ident = item.ident
             _store_props(ident, props)
