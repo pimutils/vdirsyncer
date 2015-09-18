@@ -95,6 +95,12 @@ class StorageSyncer(object):
         prefetch = {}
         self.idents = {}
 
+        def _store_props(ident, props):
+            if self.idents.setdefault(ident, props) is not props:
+                raise IdentConflict(storage=self.storage,
+                                    hrefs=[self.idents[ident]['href'],
+                                           href])
+
         for href, etag in self.storage.list():
             props = {'href': href, 'etag': etag}
             ident, old_etag = href_to_status.get(href, (None, None))
@@ -104,7 +110,7 @@ class StorageSyncer(object):
                 # In both cases we should prefetch
                 prefetch[href] = props
             else:
-                self.idents[ident] = props
+                _store_props(ident, props)
 
         # Prefetch items
         for href, item, etag in (self.storage.get_multi(prefetch)
@@ -120,11 +126,7 @@ class StorageSyncer(object):
                 )
             props['item'] = item
             props['ident'] = ident = item.ident
-
-            if self.idents.setdefault(ident, props) is not props:
-                raise IdentConflict(storage=self.storage,
-                                    hrefs=[self.idents[ident]['href'],
-                                           href])
+            _store_props(ident, props)
 
     def is_changed(self, ident):
         _, status_etag = self.status.get(ident, (None, None))
