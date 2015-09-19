@@ -67,3 +67,4 @@ release:
 	python setup.py sdist bdist_wheel upload
 
 .DEFAULT_GOAL := install
+.PHONY: docs
