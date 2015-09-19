@@ -13,7 +13,7 @@ from vdirsyncer.storage.base import Item
 from .. import StorageTests
 
 
-dav_server = os.environ.get('DAV_SERVER', '').strip() or 'radicale'
+dav_server = os.environ['DAV_SERVER']
 
 
 def _get_server_mixin(server_name):

@@ -55,6 +55,9 @@ docs:
 	cd docs
 	make html
 
+sh:  # open subshell with default test config
+	$$SHELL;
+
 linkcheck:
 	sphinx-build -W -b linkcheck ./docs/ ./docs/_build/linkcheck/
 
