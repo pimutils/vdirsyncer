@@ -11,11 +11,11 @@
 # If you want to skip the DAV tests against Radicale, use:
 #     make DAV_SERVER=skip # ...
 
-DAV_SERVER = radicale
-REQUIREMENTS = release
-TESTSERVER_BASE = ./tests/storage/dav/servers/
-TRAVIS = false
-PIP_INSTALL = pip install
+export DAV_SERVER := radicale
+export RADICALE_BACKEND := filesystem
+export REQUIREMENTS := release
+export TESTSERVER_BASE := ./tests/storage/dav/servers/
+export TRAVIS := false
 
 install-davserver:
 	set -e; \
@@ -28,8 +28,8 @@ install-davserver:
 	cd $(TESTSERVER_BASE)$(DAV_SERVER) && sh install.sh
 
 install-test: install-davserver
-	$(PIP_INSTALL) pytest pytest-xprocess pytest-localserver
-	[ $(TRAVIS) != "true" ] || $(PIP_INSTALL) coverage coveralls
+	pip install pytest pytest-xprocess pytest-localserver
+	[ $(TRAVIS) != "true" ] || pip install coverage coveralls
 
 test:
 	set -e; \
@@ -60,11 +60,10 @@ sh:  # open subshell with default test config
 linkcheck:
 	sphinx-build -W -b linkcheck ./docs/ ./docs/_build/linkcheck/
 
-install:
+all:
 	$(error Take a look at https://vdirsyncer.readthedocs.org/en/stable/tutorial.html#installation)
 
 release:
 	python setup.py sdist bdist_wheel upload
 
-.DEFAULT_GOAL := install
 .PHONY: docs

@@ -1,7 +1,10 @@
 #!/bin/sh
 set -e
-[ -n "$REQUIREMENTS" ] || export REQUIREMENTS=release
-[ -n "$RADICALE_BACKEND" ] || export RADICALE_BACKEND=filesystem
+
+if [ -z "$RADICALE_BACKEND" ]; then
+    echo "Missing RADICALE_BACKEND"
+    false
+fi
 
 if [ "$REQUIREMENTS" = "release" ]; then
     radicale_pkg="radicale"
