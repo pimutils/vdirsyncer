@@ -52,8 +52,7 @@ install-docs:
 	pip install sphinx sphinx_rtd_theme
 
 docs:
-	cd docs
-	make html
+	cd docs && make html
 
 sh:  # open subshell with default test config
 	$$SHELL;
