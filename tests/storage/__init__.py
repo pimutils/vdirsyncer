@@ -146,6 +146,9 @@ class StorageTests(object):
         assert list(s.list()) == [(href, etag)]
 
     def test_has(self, s, get_item):
+        if getattr(self, 'dav_server', '') == 'owncloud':
+            # https://github.com/owncloud/calendar/issues/935
+            pytest.skip('ownCloud is buggy.')
         assert not s.has('asd')
         href, etag = s.upload(get_item())
         assert s.has(href)
