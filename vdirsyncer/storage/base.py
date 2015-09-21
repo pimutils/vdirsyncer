@@ -4,7 +4,6 @@ import contextlib
 import functools
 
 from .. import exceptions, sync
-from ..utils import uniq
 from ..utils.compat import with_metaclass
 from ..utils.vobject import Item  # noqa
 
@@ -139,14 +138,16 @@ class Storage(with_metaclass(StorageMeta)):
         Functionally similar to :py:meth:`get`, but might bring performance
         benefits on some storages when used cleverly.
 
+        There is no default implementation. The caller has to figure out
+        themselves how to map `get` over `hrefs`, which gives them the option
+        to parallelize the calls made.
+
         :param hrefs: list of hrefs to fetch
         :raises: :exc:`vdirsyncer.exceptions.PreconditionFailed` if one of the
             items couldn't be found.
         :returns: iterable of (href, item, etag)
         '''
-        for href in uniq(hrefs):
-            item, etag = self.get(href)
-            yield href, item, etag
+        raise NotImplementedError()
 
     def has(self, href):
         '''Check if an item exists by its href.

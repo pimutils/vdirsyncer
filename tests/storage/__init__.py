@@ -76,11 +76,17 @@ class StorageTests(object):
             assert etag == etag2
 
     def test_empty_get_multi(self, s):
-        assert list(s.get_multi([])) == []
+        try:
+            assert list(s.get_multi([])) == []
+        except NotImplementedError:
+            pass
 
     def test_get_multi_duplicates(self, s, get_item):
         href, etag = s.upload(get_item())
-        (href2, item, etag2), = s.get_multi([href] * 2)
+        try:
+            (href2, item, etag2), = s.get_multi([href] * 2)
+        except NotImplementedError:
+            return
         assert href2 == href
         assert etag2 == etag
 
@@ -158,16 +164,18 @@ class StorageTests(object):
 
     def test_update_others_stay_the_same(self, s, get_item):
         info = dict([
-            s.upload(get_item()),
-            s.upload(get_item()),
-            s.upload(get_item()),
-            s.upload(get_item())
+            s.upload(get_item()) for i in range(random.randint(1, 50))
         ])
+        hrefs = [href for href, etag in iteritems(info)]
+        try:
+            multi_result = dict((h, e) for h, i, e in s.get_multi(hrefs))
+        except NotImplementedError:
+            pass
+        else:
+            assert multi_result == info
 
-        assert dict(
-            (href, etag) for href, item, etag
-            in s.get_multi(href for href, etag in iteritems(info))
-        ) == info
+        result = dict((h, s.get(h)[1]) for h in hrefs)
+        assert result == info
 
     def test_repr(self, s, get_storage_args):
         assert self.storage_class.__name__ in repr(s)

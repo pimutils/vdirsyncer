@@ -2,6 +2,7 @@
 
 import functools
 import sys
+from multiprocessing import cpu_count
 
 import click
 
@@ -83,8 +84,11 @@ main = app
 
 
 def max_workers_callback(ctx, param, value):
-    if value == 0 and click_log.get_level() == log.logging.DEBUG:
-        value = 1
+    if value == 0:
+        if click_log.get_level() == log.logging.DEBUG:
+            value = 1
+        else:
+            value = cpu_count() * 5
 
     cli_logger.debug('Using {} maximal workers.'.format(value))
     return value
@@ -160,7 +164,6 @@ def sync(ctx, collections, force_delete, max_workers):
                                      config=ctx.config,
                                      force_delete=force_delete,
                                      callback=sync_collection))
-            wq.spawn_worker()
 
 
 @app.command()
@@ -185,7 +188,6 @@ def metasync(ctx, collections, max_workers):
                                      collections=collections,
                                      config=ctx.config,
                                      callback=metasync_collection))
-            wq.spawn_worker()
 
 
 @app.command()
@@ -212,7 +214,6 @@ def discover(ctx, pairs, max_workers):
                 pair=pair,
                 skip_cache=True,
             ))
-            wq.spawn_worker()
 
 
 @app.command()

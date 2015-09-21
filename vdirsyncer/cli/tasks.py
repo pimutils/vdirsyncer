@@ -18,8 +18,6 @@ def prepare_pair(wq, pair_name, collections, config, callback, **kwargs):
         status_path=config.general['status_path'], pair=pair
     ))
 
-    # spawn one worker less because we can reuse the current one
-    new_workers = -1
     for collection_name in (collections or all_collections):
         try:
             config_a, config_b = all_collections[collection_name]
@@ -28,15 +26,11 @@ def prepare_pair(wq, pair_name, collections, config, callback, **kwargs):
                            'configured collections:\n{}'
                            .format(pair_name, collection_name,
                                    list(all_collections)))
-        new_workers += 1
 
         collection = CollectionConfig(pair, collection_name, config_a,
                                       config_b)
         wq.put(functools.partial(callback, collection=collection,
                                  general=config.general, **kwargs))
-
-    for i in range(new_workers):
-        wq.spawn_worker()
 
 
 def sync_collection(wq, collection, general, force_delete):
@@ -52,10 +46,12 @@ def sync_collection(wq, collection, general, force_delete):
 
         a = storage_instance_from_config(collection.config_a)
         b = storage_instance_from_config(collection.config_b)
+
         sync(
             a, b, status,
             conflict_resolution=pair.options.get('conflict_resolution', None),
-            force_delete=force_delete
+            force_delete=force_delete,
+            map_func=wq.map
         )
     except:
         handle_cli_error(status_name)

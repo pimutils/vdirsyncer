@@ -2,11 +2,13 @@
 
 import contextlib
 import errno
+import functools
 import hashlib
 import importlib
 import json
 import os
 import sys
+import threading
 
 from atomicwrites import atomic_write
 
@@ -392,22 +394,41 @@ def handle_storage_init_error(cls, config):
 
 class WorkerQueue(object):
     '''
-    A simple worker-queue setup.
+    In which I reinvent concurrent.futures.ThreadPoolExecutor.
 
-    Note that workers quit if queue is empty. That means you have to first put
-    things into the queue before spawning the worker!
+    I can't just block the main thread to wait for my tasks to finish, I have
+    to run the UI worker on it.
+
+    Unfortunately ThreadPoolExecutor doesn't allow me to return early from
+    tasks and just quit when the queue is empty. This means that I e.g. have a
+    few threads that do nothing but waiting for other threads, and when I set
+    `max_workers=1`, I actually can't get any work done because the only worker
+    is waiting for other jobs to be finished.
+
+    This clone has the same problem at some places (like when the sync routine
+    waits for all actions until it writes the status), but at least not
+    everywhere. What I do in such situations is to just force-spawn a new
+    worker, which may cross the `max_workers`-limit, but oh well, so be it.
+
+    Note that workers quit if the queue is empty. That means you have to first
+    put things into the queue before spawning the worker!
     '''
     def __init__(self, max_workers):
+        assert max_workers > 0
         self._queue = queue.Queue()
         self._workers = []
         self._exceptions = []
-        self._max_workers = max_workers
+
+        # We need one additional worker because sync blocks until completion
+        # and doesn't do anything itself.
+        self._max_workers = max_workers + 1
         self._shutdown_handlers = []
 
     def shutdown(self):
         if not self._queue.unfinished_tasks:
-            for handler in self._shutdown_handlers:
+            while self._shutdown_handlers:
                 try:
+                    handler = self._shutdown_handlers.pop()
                     handler()
                 except Exception:
                     pass
@@ -417,7 +438,11 @@ class WorkerQueue(object):
             try:
                 func = self._queue.get(False)
             except queue.Empty:
-                break
+                if not self._queue.unfinished_tasks:
+                    self.shutdown()
+                    break
+                else:
+                    continue
 
             try:
                 func(wq=self)
@@ -426,17 +451,33 @@ class WorkerQueue(object):
                 self._exceptions.append(e)
             finally:
                 self._queue.task_done()
-                if not self._queue.unfinished_tasks:
-                    self.shutdown()
 
-    def spawn_worker(self):
-        if self._max_workers and len(self._workers) >= self._max_workers:
-            return
+    def map(self, function, items):
+        events = []
+        output = []
 
-        t = click_threading.Thread(target=self._worker)
-        t.daemon = True
-        t.start()
-        self._workers.append(t)
+        def _work(wq, i, item):
+            try:
+                output[i] = function(item)
+            except Exception as e:
+                output[i] = e
+                raise e
+            finally:
+                events[i].set()
+
+        for i, item in enumerate(items):
+            events.append(threading.Event())
+            output.append(None)
+            self.put(functools.partial(_work, i=i, item=item))
+
+        # This is necessary so map's return value doesn't need to be used in
+        # any way for the tasks to get enqueued.
+        def get_results():
+            for i, event in enumerate(events):
+                event.wait()
+                yield output[i]
+
+        return get_results()
 
     @contextlib.contextmanager
     def join(self):
@@ -452,7 +493,16 @@ class WorkerQueue(object):
             sys.exit(1)
 
     def put(self, f):
-        return self._queue.put(f)
+        self._queue.put(f)
+
+        if len(self._workers) < self._max_workers:
+            self.spawn_worker()
+
+    def spawn_worker(self):
+        t = click_threading.Thread(target=self._worker)
+        t.daemon = True
+        t.start()
+        self._workers.append(t)
 
 
 def format_storage_config(cls, header=True):

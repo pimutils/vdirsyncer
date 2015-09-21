@@ -87,7 +87,7 @@ class StorageSyncer(object):
         self.status = status
         self.idents = None
 
-    def prepare_idents(self, other_read_only):
+    def prepare_idents(self, other_read_only, map_func):
         href_to_status = dict((href, (ident, etag))
                               for ident, (href, etag)
                               in iteritems(self.status))
@@ -112,10 +112,18 @@ class StorageSyncer(object):
             else:
                 _store_props(ident, props)
 
+        try:
+            get_multi_rv = (self.storage.get_multi(list(prefetch))
+                            if prefetch else ())
+        except NotImplementedError:
+            get_multi_rv = map_func(
+                lambda href: (href,) + self.storage.get(href),
+                list(prefetch)
+            )
+
         # Prefetch items
-        for href, item, etag in (self.storage.get_multi(prefetch)
-                                 if prefetch else ()):
-            props = prefetch[href]
+        for href, item, etag in get_multi_rv:
+            props = prefetch.pop(href)
 
             assert props['href'] == href
             if props['etag'] != etag:
@@ -134,7 +142,7 @@ class StorageSyncer(object):
 
 
 def sync(storage_a, storage_b, status, conflict_resolution=None,
-         force_delete=False):
+         force_delete=False, map_func=map):
     '''Synchronizes two storages.
 
     :param storage_a: The first storage
@@ -165,8 +173,8 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
         for ident, (href_a, etag_a, href_b, etag_b) in iteritems(status)
     ))
 
-    a_info.prepare_idents(storage_b.read_only)
-    b_info.prepare_idents(storage_a.read_only)
+    a_info.prepare_idents(storage_b.read_only, map_func=map_func)
+    b_info.prepare_idents(storage_a.read_only, map_func=map_func)
 
     if bool(a_info.idents) != bool(b_info.idents) \
        and status and not force_delete:
@@ -177,8 +185,12 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
 
     with storage_a.at_once():
         with storage_b.at_once():
-            for action in actions:
-                action(a_info, b_info, conflict_resolution)
+            for result in map_func(
+                lambda f: f(a_info, b_info, conflict_resolution),
+                actions
+            ):
+                if isinstance(result, BaseException):
+                    raise SyncError('One or more operations failed.')
 
     status.clear()
     for ident in uniq(itertools.chain(a_info.status, b_info.status)):
