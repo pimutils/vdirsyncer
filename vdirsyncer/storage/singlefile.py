@@ -4,6 +4,7 @@ import collections
 import contextlib
 import functools
 import os
+import threading
 
 from atomicwrites import atomic_write
 
@@ -19,12 +20,13 @@ logger = log.get(__name__)
 def _writing_op(f):
     @functools.wraps(f)
     def inner(self, *args, **kwargs):
-        if self._items is None or not self._at_once:
-            self.list()
-        rv = f(self, *args, **kwargs)
-        if not self._at_once:
-            self._write()
-        return rv
+        with self._lock:
+            if self._items is None or not self._at_once:
+                self._list()
+            rv = f(self, *args, **kwargs)
+            if not self._at_once:
+                self._write()
+            return rv
     return inner
 
 
@@ -88,6 +90,7 @@ class SingleFileStorage(Storage):
         self.path = path
         self.encoding = encoding
         self._at_once = False
+        self._lock = threading.RLock()
 
     @classmethod
     def create_collection(cls, collection, **kwargs):
@@ -100,6 +103,10 @@ class SingleFileStorage(Storage):
         return kwargs
 
     def list(self):
+        with self._lock:
+            return self._list()
+
+    def _list(self):
         self._items = collections.OrderedDict()
 
         try:
@@ -123,21 +130,22 @@ class SingleFileStorage(Storage):
         return ((href, etag) for href, (item, etag) in iteritems(self._items))
 
     def get(self, href):
-        if self._items is None or not self._at_once:
-            self.list()
+        with self._lock:
+            if self._items is None or not self._at_once:
+                self._list()
 
-        try:
-            return self._items[href]
-        except KeyError:
-            raise exceptions.NotFoundError(href)
+            try:
+                return self._items[href]
+            except KeyError:
+                raise exceptions.NotFoundError(href)
 
     @_writing_op
     def upload(self, item):
         href = item.ident
-        if href in self._items:
+        content = item, item.hash
+        if self._items.setdefault(href, content) is not content:
             raise exceptions.AlreadyExistingError(existing_href=href)
 
-        self._items[href] = item, item.hash
         return href, item.hash
 
     @_writing_op
@@ -182,7 +190,7 @@ class SingleFileStorage(Storage):
 
     @contextlib.contextmanager
     def at_once(self):
-        self.list()
+        self._list()
         self._at_once = True
         try:
             yield self
