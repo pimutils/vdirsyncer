@@ -36,6 +36,9 @@ class FilesystemStorage(Storage):
         new/updated file.
     '''
 
+    # This storage is not 100% threadsafe.However, it isn't really race-free
+    # anyway when other applications are accessing the same storage.
+
     storage_name = 'filesystem'
     _repr_attributes = ('path',)
 
@@ -144,15 +147,16 @@ class FilesystemStorage(Storage):
                 raise
 
     def update(self, href, item, etag):
-        fpath = self._get_filepath(href)
-        if not os.path.exists(fpath):
-            raise exceptions.NotFoundError(item.uid)
-        actual_etag = get_etag_from_file(fpath)
-        if etag != actual_etag:
-            raise exceptions.WrongEtagError(etag, actual_etag)
-
         if not isinstance(item.raw, text_type):
             raise TypeError('item.raw must be a unicode string.')
+
+        fpath = self._get_filepath(href)
+        try:
+            actual_etag = get_etag_from_file(fpath)
+        except OSError:
+            raise exceptions.NotFoundError(item.uid)
+        if etag != actual_etag:
+            raise exceptions.WrongEtagError(etag, actual_etag)
 
         with atomic_write(fpath, mode='wb', overwrite=True) as f:
             f.write(item.raw.encode(self.encoding))
@@ -164,9 +168,11 @@ class FilesystemStorage(Storage):
 
     def delete(self, href, etag):
         fpath = self._get_filepath(href)
-        if not os.path.isfile(fpath):
+        try:
+            actual_etag = get_etag_from_file(fpath)
+        except OSError:
             raise exceptions.NotFoundError(href)
-        actual_etag = get_etag_from_file(fpath)
+
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
         os.remove(fpath)
