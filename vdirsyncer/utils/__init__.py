@@ -4,7 +4,7 @@ import os
 import sys
 import uuid
 
-from .compat import iteritems, to_unicode
+from .compat import getargspec_ish, iteritems, to_unicode
 from .. import exceptions
 
 
@@ -84,8 +84,7 @@ def get_etag_from_fileobject(f):
 def get_class_init_specs(cls, stop_at=object):
     if cls is stop_at:
         return ()
-    import inspect
-    spec = inspect.getfullargspec(cls.__init__)
+    spec = getargspec_ish(cls.__init__)
     supercls = next(getattr(x.__init__, '__objclass__', x)
                     for x in cls.__mro__[1:])
     return (spec,) + get_class_init_specs(supercls, stop_at=stop_at)
