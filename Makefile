@@ -1,9 +1,9 @@
 # Packagers who want to run the testsuite against an installed vdirsyncer:
 #
 # - Create a virtualenv
-# - Inside the virtualenv: `make install-test test`
 # - Somehow link your installation of vdirsyncer into the virtualenv, e.g. by
 #   using --system-site-packages when creating the virtualenv
+# - Inside the virtualenv: `make install-test test`
 #
 # The `install-test` target requires internet access. Be aware that vdirsyncer
 # requires very recent versions of Radicale for the tests to run successfully.
