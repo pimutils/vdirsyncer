@@ -85,7 +85,7 @@ def get_class_init_specs(cls, stop_at=object):
     if cls is stop_at:
         return ()
     import inspect
-    spec = inspect.getargspec(cls.__init__)
+    spec = inspect.getfullargspec(cls.__init__)
     supercls = next(getattr(x.__init__, '__objclass__', x)
                     for x in cls.__mro__[1:])
     return (spec,) + get_class_init_specs(supercls, stop_at=stop_at)
