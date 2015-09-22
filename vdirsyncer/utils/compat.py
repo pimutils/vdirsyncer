@@ -34,6 +34,7 @@ def _wrap_native(f, encoding='utf-8'):
 if PY2:  # pragma: no cover
     import urlparse
     import urllib as _urllib
+    from inspect import getargspec as getargspec_ish  # noqa
 
     # Horrible hack to make urllib play nice with u'...' urls from requests
     urlquote = _wrap_native(_urllib.quote)
@@ -46,6 +47,8 @@ if PY2:  # pragma: no cover
 
 else:  # pragma: no cover
     import urllib.parse as urlparse
+    from inspect import getfullargspec as getargspec_ish  # noqa
+
     urlquote = urlparse.quote
     urlunquote = urlparse.unquote
     text_type = str
