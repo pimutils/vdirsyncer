@@ -286,6 +286,8 @@ class _Component(object):
         self.props = new_lines
 
     def __setitem__(self, key, val):
+        assert isinstance(val, text_type)
+        assert u'\n' not in val
         del self[key]
         line = u'{}:{}'.format(key, val)
         self.props.append(line)
