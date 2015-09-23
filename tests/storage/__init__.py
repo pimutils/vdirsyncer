@@ -12,6 +12,12 @@ from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
     assert_item_equals
 
 
+def get_server_mixin(server_name):
+    from . import __name__ as base
+    x = __import__('{}.servers.{}'.format(base, server_name), fromlist=[''])
+    return x.ServerMixin
+
+
 def format_item(item_template, uid=None):
     # assert that special chars are handled correctly.
     r = random.random()

@@ -14,20 +14,22 @@
 export DAV_SERVER := radicale
 export RADICALE_BACKEND := filesystem
 export REQUIREMENTS := release
-export TESTSERVER_BASE := ./tests/storage/dav/servers/
+export TESTSERVER_BASE := ./tests/storage/servers/
 export TRAVIS := false
 
-install-davserver:
-	set -e; \
-	if [ ! -d "$(TESTSERVER_BASE)$(DAV_SERVER)/" ]; then \
-		git clone --depth=1 \
-			https://github.com/vdirsyncer/$(DAV_SERVER)-testserver.git \
-			/tmp/$(DAV_SERVER)-testserver; \
-		ln -s /tmp/$(DAV_SERVER)-testserver $(TESTSERVER_BASE)$(DAV_SERVER); \
-	fi
-	cd $(TESTSERVER_BASE)$(DAV_SERVER) && sh install.sh
+install-servers:
+	set -ex; \
+	for server in $(DAV_SERVER); do \
+		if [ ! -d "$(TESTSERVER_BASE)$$server/" ]; then \
+			git clone --depth=1 \
+				https://github.com/vdirsyncer/$$server-testserver.git \
+				/tmp/$$server-testserver; \
+			ln -s /tmp/$$server-testserver $(TESTSERVER_BASE)$$server; \
+		fi; \
+		cd $(TESTSERVER_BASE)$$server && sh install.sh; \
+	done
 
-install-test: install-davserver
+install-test: install-servers
 	pip install pytest pytest-xprocess pytest-localserver
 	[ $(TRAVIS) != "true" ] || pip install coverage coveralls
 

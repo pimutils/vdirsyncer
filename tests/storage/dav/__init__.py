@@ -10,18 +10,11 @@ from tests import assert_item_equals
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
 
-from .. import StorageTests
+from .. import StorageTests, get_server_mixin
 
 
 dav_server = os.environ['DAV_SERVER']
-
-
-def _get_server_mixin(server_name):
-    from . import __name__ as base
-    x = __import__('{}.servers.{}'.format(base, server_name), fromlist=[''])
-    return x.ServerMixin
-
-ServerMixin = _get_server_mixin(dav_server)
+ServerMixin = get_server_mixin(dav_server)
 
 
 class DavStorageTests(ServerMixin, StorageTests):
