@@ -26,7 +26,7 @@ install-servers:
 				/tmp/$$server-testserver; \
 			ln -s /tmp/$$server-testserver $(TESTSERVER_BASE)$$server; \
 		fi; \
-		cd $(TESTSERVER_BASE)$$server && sh install.sh; \
+		(cd $(TESTSERVER_BASE)$$server && sh install.sh); \
 	done
 
 install-test: install-servers
