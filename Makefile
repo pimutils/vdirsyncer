@@ -11,8 +11,8 @@
 # If you want to skip the DAV tests against Radicale, use:
 #     make DAV_SERVER=skip # ...
 
-export DAV_SERVER := radicale
-export REMOTESTORAGE_SERVER := restore
+export DAV_SERVER := skip
+export REMOTESTORAGE_SERVER := skip
 export RADICALE_BACKEND := filesystem
 export REQUIREMENTS := release
 export TESTSERVER_BASE := ./tests/storage/servers/
