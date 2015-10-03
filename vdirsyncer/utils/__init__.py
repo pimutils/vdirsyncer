@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import functools
 import os
 import sys
 import uuid
@@ -178,3 +179,17 @@ def generate_href(ident=None, safe=SAFE_UID_CHARS):
         return to_unicode(uuid.uuid4().hex)
     else:
         return ident
+
+
+def synchronized(lock=None):
+    if lock is None:
+        from threading import Lock
+        lock = Lock()
+
+    def inner(f):
+        @functools.wraps(f)
+        def wrapper(*args, **kwargs):
+            with lock:
+                return f(*args, **kwargs)
+        return wrapper
+    return inner

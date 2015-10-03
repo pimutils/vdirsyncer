@@ -4,7 +4,7 @@ import click
 
 from . import AppContext
 from .. import exceptions, log
-from ..utils import expand_path
+from ..utils import expand_path, synchronized
 
 SUFFIX = '.fetch'
 
@@ -31,6 +31,7 @@ def expand_fetch_params(config):
     return config
 
 
+@synchronized()
 def _fetch_value(opts, key):
     if not isinstance(opts, list):
         raise ValueError('Invalid value for {}: Expected a list, found {!r}.'
