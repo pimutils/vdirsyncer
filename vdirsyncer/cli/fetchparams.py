@@ -85,7 +85,12 @@ def _strategy_command(*command):
                                    .format(' '.join(command), str(e)))
 
 
+def _strategy_prompt(text):
+    return click.prompt(text, hide_input=True)
+
+
 STRATEGIES = {
     'keyring': _strategy_keyring,
-    'command': _strategy_command
+    'command': _strategy_command,
+    'prompt': _strategy_prompt,
 }

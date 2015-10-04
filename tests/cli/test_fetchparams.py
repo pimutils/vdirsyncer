@@ -30,7 +30,7 @@ def test_get_password_from_command(tmpdir, runner):
         [storage bar]
         type = filesystem
         path = {base}/bar/
-        fileext.fetch = ["command", "echo", ".asdf"]
+        fileext.fetch = ["prompt", "Fileext for bar"]
     '''.format(base=str(tmpdir))))
 
     foo = tmpdir.ensure('foo', dir=True)
@@ -42,7 +42,7 @@ def test_get_password_from_command(tmpdir, runner):
     bar.ensure('b', dir=True)
     bar.ensure('c', dir=True)
 
-    result = runner.invoke(['discover'])
+    result = runner.invoke(['discover'], input='.asdf\n')
     assert not result.exception
     status = tmpdir.join('status').join('foobar.collections').read()
     assert 'foo' in status
@@ -50,5 +50,7 @@ def test_get_password_from_command(tmpdir, runner):
     assert 'asdf' not in status
     assert 'txt' not in status
 
-    result = runner.invoke(['sync'])
+    foo.join('a').join('foo.txt').write('BEGIN:VCARD\nUID:foo\nEND:VCARD')
+    result = runner.invoke(['sync'], input='.asdf\n')
     assert not result.exception
+    assert [x.basename for x in bar.join('a').listdir()] == ['foo.asdf']

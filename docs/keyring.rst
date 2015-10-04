@@ -6,8 +6,7 @@ Storing passwords
 
    Password configuration got completely overhauled.
 
-Vdirsyncer can fetch passwords from a custom command or your system keyring if
-the keyring_ Python package is installed.
+Vdirsyncer can fetch passwords from several sources other than the config file.
 
 Command
 =======
@@ -53,3 +52,14 @@ Given that you have the keyring_ Python library installed, you can use::
     password.fetch = ["keyring", "myservicename", "myusername"]
 
 .. _keyring: https://pypi.python.org/pypi/keyring
+
+
+Password Prompt
+===============
+
+You can also simply prompt for the password::
+
+    [storage foo]
+    type = caldav
+    username = myusername
+    password.fetch = ["prompt", "Password for CalDAV"]
