@@ -35,16 +35,6 @@ General Section
   been added on one side or deleted on the other. Relative paths will be
   interpreted as relative to the configuration file's directory.
 
-- ``password_command`` specifies a command to query for server passwords. The
-  command will be called with the username as the first argument, and the
-  hostname as the second.
-
-.. versionadded:: 0.3.0
-   The ``passwordeval`` parameter.
-
-.. versionchanged:: 0.4.0
-   The ``passwordeval`` parameter has been renamed to ``password_command``.
-
 .. _pair_config:
 
 Pair Section
