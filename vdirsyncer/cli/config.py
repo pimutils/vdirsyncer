@@ -204,11 +204,16 @@ class PairConfig(object):
         self._config = config
         self.name = name
         self.name_a = name_a
-        self.name_a = name_b
+        self.name_b = name_b
         self.options = pair_options
 
-        self.config_a = config.get_storage_args(name_a, pair_name=name)
-        self.config_b = config.get_storage_args(name_b, pair_name=name)
+    @cached_property
+    def config_a(self):
+        return self._config.get_storage_args(self.name_a, pair_name=self.name)
+
+    @cached_property
+    def config_b(self):
+        return self._config.get_storage_args(self.name_b, pair_name=self.name)
 
 
 class CollectionConfig(object):
