@@ -186,7 +186,7 @@ class Config(object):
 
     def get_storage_args(self, storage_name, pair_name=None):
         try:
-            return self.storages[storage_name]
+            return expand_fetch_params(self.storages[storage_name])
         except KeyError:
             pair_pref = 'Pair {}: '.format(pair_name) if pair_name else ''
             raise CliError(
@@ -207,16 +207,8 @@ class PairConfig(object):
         self.name_a = name_b
         self.options = pair_options
 
-        self.raw_config_a = config.get_storage_args(name_a, pair_name=name)
-        self.raw_config_b = config.get_storage_args(name_b, pair_name=name)
-
-    @cached_property
-    def config_a(self):
-        return expand_fetch_params(self.raw_config_a)
-
-    @cached_property
-    def config_b(self):
-        return expand_fetch_params(self.raw_config_b)
+        self.config_a = config.get_storage_args(name_a, pair_name=name)
+        self.config_b = config.get_storage_args(name_b, pair_name=name)
 
 
 class CollectionConfig(object):
