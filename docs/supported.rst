@@ -94,7 +94,19 @@ latest PyPI release of Radicale.
 ownCloud
 --------
 
-Vdirsyncer is continuously tested against the latest version of ownCloud_.
+Vdirsyncer is continuously tested against the latest version of ownCloud_::
+
+    [storage cal]
+    type = caldav
+    url = https://example.com/owncloud/remote.php/caldav/
+    username = ...
+    password = ...
+
+    [storage card]
+    type = carddav
+    url = https://example.com/owncloud/remote.php/carddav/
+    username = ...
+    password = ...
 
 - *Versions older than 7.0.0:* ownCloud uses SabreDAV, which had problems
   detecting collisions and race-conditions. The problems were reported and are
