@@ -17,6 +17,10 @@ To pin the certificate by SHA1- or MD5-fingerprint::
     verify_fingerprint = "94:FD:7A:CB:50:75:A4:69:82:0A:F8:23:DF:07:FC:69:3E:CD:90:CA"
     #verify = false  # Optional: Disable CA validation, useful for self-signed certs
 
+You can use the following command for obtaining a SHA-1 fingerprint::
+
+    echo -n | openssl s_client -connect unterwaditzer.net:443 | openssl x509 -noout -fingerprint
+
 .. _ssl-cas:
 
 Custom root CAs
