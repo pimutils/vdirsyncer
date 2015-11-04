@@ -41,6 +41,10 @@ class _StorageIndex(object):
             filesystem='vdirsyncer.storage.filesystem.FilesystemStorage',
             http='vdirsyncer.storage.http.HttpStorage',
             singlefile='vdirsyncer.storage.singlefile.SingleFileStorage',
+            remotestorage_contacts=(
+                'vdirsyncer.storage.remotestorage.RemoteStorageContacts'),
+            remotestorage_calendars=(
+                'vdirsyncer.storage.remotestorage.RemoteStorageCalendars'),
         )
 
     def __getitem__(self, name):

@@ -11,7 +11,8 @@
 # If you want to skip the DAV tests against Radicale, use:
 #     make DAV_SERVER=skip # ...
 
-export DAV_SERVER := radicale
+export DAV_SERVER := skip
+export REMOTESTORAGE_SERVER := skip
 export RADICALE_BACKEND := filesystem
 export REQUIREMENTS := release
 export TESTSERVER_BASE := ./tests/storage/servers/
@@ -19,7 +20,7 @@ export TRAVIS := false
 
 install-servers:
 	set -ex; \
-	for server in $(DAV_SERVER); do \
+	for server in $(DAV_SERVER) $(REMOTESTORAGE_SERVER); do \
 		if [ ! -d "$(TESTSERVER_BASE)$$server/" ]; then \
 			git clone --depth=1 \
 				https://github.com/vdirsyncer/$$server-testserver.git \

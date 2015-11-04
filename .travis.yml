@@ -10,21 +10,33 @@ env:
     - BUILD=test
       # Default build, see Makefile
 
-    - BUILD=test DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=release
+    - BUILD=style
+      # flake8 with plugins
+
+    # REMOTESTORAGE TESTS
+
+  #  - BUILD=test REMOTESTORAGE_SERVER=restore
+      # Testing against reStore
+      # https://github.com/jcoglan/restore/issues/38
+      # https://github.com/jcoglan/restore/issues/37
+
+    # DAV TESTS
+
+    - BUILD=test DAV_SERVER=radicale RADICALE_BACKEND=filesystem
+      # Radicale-release with filesystem storage
+
+    - BUILD=test DAV_SERVER=radicale RADICALE_BACKEND=filesystem
       PKGS='lxml==3.0 requests==2.4.1 requests_toolbelt==0.4.0 click==5.0'
       # Minimal requirements
 
     - BUILD=test DAV_SERVER=radicale RADICALE_BACKEND=filesystem REQUIREMENTS=devel
-      # Radicale-git with filesystem storage (default)
+      # Radicale-git with filesystem storage
 
-    - BUILD=test DAV_SERVER=owncloud REQUIREMENTS=release
+    - BUILD=test DAV_SERVER=owncloud
       # Latest ownCloud release
 
-    - BUILD=test DAV_SERVER=baikal REQUIREMENTS=release
+    - BUILD=test DAV_SERVER=baikal
       # Latest Baikal release
-
-    - BUILD=style
-      # flake8 with plugins
 
 install:
     - "pip install -U pip"
