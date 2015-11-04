@@ -15,8 +15,10 @@ env:
 
     # REMOTESTORAGE TESTS
 
-    - BUILD=test REMOTESTORAGE_SERVER=restore
+  #  - BUILD=test REMOTESTORAGE_SERVER=restore
       # Testing against reStore
+      # https://github.com/jcoglan/restore/issues/38
+      # https://github.com/jcoglan/restore/issues/37
 
     # DAV TESTS
 
