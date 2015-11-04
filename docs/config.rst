@@ -130,6 +130,13 @@ CalDAV and CardDAV
 remoteStorage
 +++++++++++++
 
+`remoteStorage <https://remotestorage.io/>`_ is an open per-user data storage
+protocol. Vdirsyncer contains **highly experimental support** for it.
+
+.. note::
+
+    Do not use this storage if you're not prepared for data-loss and breakage.
+
 .. autostorage:: vdirsyncer.storage.remotestorage.RemoteStorageContacts
 
 .. autostorage:: vdirsyncer.storage.remotestorage.RemoteStorageCalendars
