@@ -20,7 +20,7 @@ We also use a custom ``data``-URI for the redirect in OAuth:
 import click
 
 from .base import Item, Storage
-from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_client_cert, \
+from .http import HTTP_STORAGE_PARAMETERS, prepare_client_cert, \
     prepare_verify
 from .. import exceptions, log, utils
 
