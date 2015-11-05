@@ -9,10 +9,17 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/untitaker/vdirsyncer/tags.atom>`_.
 
+Version 0.7.2
+=============
+
+*released on 05 November 2015*
+
+- Un-break testsuite.
+
 Version 0.7.1
 =============
 
-*released on 05 November 2015**
+*released on 05 November 2015*
 
 - **Packagers:** The setuptools extras ``keyring`` and ``remotestorage`` have
   been added. They're basically optional dependencies. See ``setup.py`` for
