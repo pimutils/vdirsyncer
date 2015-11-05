@@ -30,7 +30,7 @@ class CliError(RuntimeError):
         RuntimeError.__init__(self, msg)
 
     def __str__(self):
-        msg = self.msg.rstrip(u'.:')
+        msg = self.msg
         li = u'\n  - '
         for problem in self.problems or ():
             msg += u'{}{}'.format(li, problem)
