@@ -35,7 +35,12 @@ def repair_storage(storage):
             changed = change_uid(item, generate_href(item.uid)) or changed
 
         new_item = Item(u'\r\n'.join(item.parsed.dump_lines()))
-        assert new_item.uid
+        if not new_item.uid:
+            logger.error('Item {r!} is completely malformed. '
+                         'This is a serverside bug.'
+                         .format(href))
+            continue
+
         seen_uids.add(new_item.uid)
         if changed:
             try:
