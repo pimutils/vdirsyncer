@@ -9,6 +9,20 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/untitaker/vdirsyncer/tags.atom>`_.
 
+Version 0.7.1
+=============
+
+*released on 05 November 2015**
+
+- **Packagers:** The setuptools extras ``keyring`` and ``remotestorage`` have
+  been added. They're basically optional dependencies. See ``setup.py`` for
+  more details.
+
+- Highly experimental remoteStorage support has been added. It may be
+  completely overhauled or even removed in any version.
+
+- Removed mentions of old ``password_command`` in documentation.
+
 Version 0.7.0
 =============
 
