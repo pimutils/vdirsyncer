@@ -36,7 +36,6 @@ setup(
         'click-log',
         'click-threading',
         'requests',
-        'requests-oauthlib',
         'lxml>=3.0',
         # https://github.com/sigmavirus24/requests-toolbelt/pull/28
         'requests_toolbelt>=0.4.0',
