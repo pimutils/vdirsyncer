@@ -42,5 +42,8 @@ setup(
         'requests_toolbelt>=0.4.0',
         'atomicwrites'
     ],
-    extras_require={'keyring': ['keyring']}
+    extras_require={
+        'keyring': ['keyring'],
+        'remotestorage': ['requests-oauthlib']
+    }
 )

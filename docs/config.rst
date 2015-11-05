@@ -137,6 +137,10 @@ protocol. Vdirsyncer contains **highly experimental support** for it.
 
     Do not use this storage if you're not prepared for data-loss and breakage.
 
+To use them, you need to install some optional dependencies with::
+
+    pip install vdirsyncer[remotestorage]
+
 .. autostorage:: vdirsyncer.storage.remotestorage.RemoteStorageContacts
 
 .. autostorage:: vdirsyncer.storage.remotestorage.RemoteStorageCalendars

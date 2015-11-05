@@ -44,7 +44,13 @@ System Keyring
 While the command approach is quite flexible, it is often cumbersome to write a
 script fetching the system keyring.
 
-Given that you have the keyring_ Python library installed, you can use::
+Vdirsyncer can do this for you if you have the keyring_ package installed. How
+you would obtain this package depends on how you installed vdirsyncer. If you
+used pip, you can use the following command to also install keyring::
+
+    pip install vdirsyncer[keyring]
+
+Then you can use::
 
     [storage foo]
     type = caldav
