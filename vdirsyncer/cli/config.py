@@ -48,8 +48,8 @@ def _validate_general_section(general_config):
                         .format(u', '.join(missing)))
 
     if problems:
-        raise CliError(u'Invalid general section. You should copy the example '
-                       u'config from the repository and edit it: {}\n'
+        raise CliError(u'Invalid general section. Copy the example '
+                       u'config from the repository and edit it: {}'
                        .format(PROJECT_HOME), problems=problems)
 
 

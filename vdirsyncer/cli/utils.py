@@ -78,7 +78,7 @@ def handle_cli_error(status_name=None):
     try:
         raise
     except CliError as e:
-        cli_logger.critical(e.format_cli())
+        cli_logger.critical(e)
     except StorageEmpty as e:
         cli_logger.error(
             '{status_name}: Storage "{name}" was completely emptied. If you '

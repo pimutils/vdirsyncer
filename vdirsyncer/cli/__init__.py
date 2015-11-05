@@ -29,14 +29,11 @@ class CliError(RuntimeError):
         self.problems = problems
         RuntimeError.__init__(self, msg)
 
-    def format_cli(self):
+    def __str__(self):
         msg = self.msg.rstrip(u'.:')
-        if self.problems:
-            msg += u':'
-            if len(self.problems) == 1:
-                msg += u' {}'.format(self.problems[0])
-            else:
-                msg += u'\n' + u'\n  - '.join(self.problems) + u'\n\n'
+        li = u'\n  - '
+        for problem in self.problems or ():
+            msg += u'{}{}'.format(li, problem)
 
         return msg
 
