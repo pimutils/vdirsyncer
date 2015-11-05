@@ -36,9 +36,10 @@ def repair_storage(storage):
 
         new_item = Item(u'\r\n'.join(item.parsed.dump_lines()))
         if not new_item.uid:
-            logger.error('Item {r!} is completely malformed. '
+            logger.error('Item {!r} is malformed beyond repair. '
                          'This is a serverside bug.'
                          .format(href))
+            logger.error('Item content: {!r}'.format(item.raw))
             continue
 
         seen_uids.add(new_item.uid)
