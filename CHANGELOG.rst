@@ -9,6 +9,13 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/untitaker/vdirsyncer/tags.atom>`_.
 
+Version 0.7.3
+=============
+
+*released on 05 November 2015*
+
+- Make remotestorage-dependencies actually optional.
+
 Version 0.7.2
 =============
 
