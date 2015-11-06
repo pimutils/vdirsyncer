@@ -410,12 +410,11 @@ class WorkerQueue(object):
         self._shutdown_handlers = []
 
     def shutdown(self):
-        if not self._queue.unfinished_tasks:
-            for handler in self._shutdown_handlers:
-                try:
-                    handler()
-                except Exception:
-                    pass
+        while self._shutdown_handlers:
+            try:
+                self._shutdown_handlers.pop()()
+            except Exception:
+                pass
 
     def _worker(self):
         while True:
@@ -439,7 +438,6 @@ class WorkerQueue(object):
             return
 
         t = click_threading.Thread(target=self._worker)
-        t.daemon = True
         t.start()
         self._workers.append(t)
 
@@ -452,6 +450,8 @@ class WorkerQueue(object):
             yield
             ui_worker.run()
             self._queue.join()
+            for worker in self._workers:
+                worker.join()
 
         if self._exceptions:
             sys.exit(1)
