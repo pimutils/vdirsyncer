@@ -71,6 +71,7 @@ def test_read_only_and_prefetch():
 
     assert list(a.list()) == list(b.list()) == []
 
+
 def test_upload_and_update():
     a = MemoryStorage(fileext='.a')
     b = MemoryStorage(fileext='.b')
