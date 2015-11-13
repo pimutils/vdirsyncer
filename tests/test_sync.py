@@ -41,6 +41,7 @@ def test_missing_status():
 def test_missing_status_and_different_items():
     a = MemoryStorage()
     b = MemoryStorage()
+
     status = {}
     item1 = Item(u'UID:1\nhaha')
     item2 = Item(u'UID:1\nhoho')
@@ -53,6 +54,22 @@ def test_missing_status_and_different_items():
     assert_item_equals(item1, b.get('1')[0])
     assert_item_equals(item1, a.get('1')[0])
 
+
+def test_read_only_and_prefetch():
+    a = MemoryStorage()
+    b = MemoryStorage()
+    b.read_only = True
+
+    status = {}
+    item1 = Item(u'UID:1\nhaha')
+    item2 = Item(u'UID:2\nhoho')
+    a.upload(item1)
+    a.upload(item2)
+
+    sync(a, b, status, force_delete=True)
+    sync(a, b, status, force_delete=True)
+
+    assert list(a.list()) == list(b.list()) == []
 
 def test_upload_and_update():
     a = MemoryStorage(fileext='.a')

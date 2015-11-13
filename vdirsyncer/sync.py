@@ -87,7 +87,7 @@ class StorageSyncer(object):
         self.status = status
         self.idents = None
 
-    def prepare_idents(self, other_read_only):
+    def prepare_idents(self):
         href_to_status = dict((href, (ident, etag))
                               for ident, (href, etag)
                               in iteritems(self.status))
@@ -105,7 +105,7 @@ class StorageSyncer(object):
             props = {'href': href, 'etag': etag}
             ident, old_etag = href_to_status.get(href, (None, None))
             assert etag is not None
-            if etag != old_etag and not other_read_only:
+            if etag != old_etag:
                 # Either the item is completely new, or updated
                 # In both cases we should prefetch
                 prefetch[href] = props
@@ -165,8 +165,8 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
         for ident, (href_a, etag_a, href_b, etag_b) in iteritems(status)
     ))
 
-    a_info.prepare_idents(storage_b.read_only)
-    b_info.prepare_idents(storage_a.read_only)
+    a_info.prepare_idents()
+    b_info.prepare_idents()
 
     if bool(a_info.idents) != bool(b_info.idents) \
        and status and not force_delete:
