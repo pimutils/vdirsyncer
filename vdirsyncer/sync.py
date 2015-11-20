@@ -270,7 +270,7 @@ def _action_conflict_resolve(ident):
         meta_a = a.idents[ident]
         meta_b = b.idents[ident]
 
-        if meta_a['item'].raw == meta_b['item'].raw:
+        if meta_a['item'].hash == meta_b['item'].hash:
             sync_logger.info(u'...same content on both sides.')
             a.status[ident] = meta_a['href'], meta_a['etag']
             b.status[ident] = meta_b['href'], meta_b['etag']
