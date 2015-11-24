@@ -38,7 +38,7 @@ setup(
         'requests',
         'lxml>=3.0',
         # https://github.com/sigmavirus24/requests-toolbelt/pull/28
-        'requests_toolbelt>=0.4.0',
+        'requests_toolbelt>=0.5.0',
         'atomicwrites'
     ],
     extras_require={
