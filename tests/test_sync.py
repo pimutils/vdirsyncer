@@ -126,7 +126,7 @@ def test_already_synced():
     a.upload(item)
     b.upload(item)
     status = {
-        '1': ('1.a', a.get('1.a')[1], '1.b', b.get('1.b')[1])
+        '1': ({'href': '1.a', 'etag': a.get('1.a')[1]}, {'href': '1.b', 'etag': b.get('1.b')[1]})
     }
     old_status = dict(status)
     a.update = b.update = a.upload = b.upload = \
@@ -195,7 +195,13 @@ def test_conflict_resolution_new_etags_without_changes():
     href_b, etag_b = b.upload(item)
     status = {'1': (href_a, 'BOGUS_a', href_b, 'BOGUS_b')}
     sync(a, b, status)
-    assert status == {'1': (href_a, etag_a, href_b, etag_b)}
+    assert status == {'1': ({
+        'href': href_a,
+        'etag': etag_a,
+    }, {
+        'href': href_b,
+        'etag': etag_b
+    })}
 
 
 def test_uses_get_multi(monkeypatch):
@@ -328,7 +334,7 @@ def test_moved_href():
     sync(a, b, status)
     assert len(status) == 1
     assert len(list(a.list())) == len(list(b.list())) == 1
-    assert status['haha'][2] == 'haha'
+    assert status['haha'][1]['href'] == 'haha'
 
 
 def test_unicode_hrefs():

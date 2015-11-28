@@ -88,8 +88,8 @@ class StorageSyncer(object):
         self.idents = None
 
     def prepare_idents(self):
-        href_to_status = dict((href, (ident, etag))
-                              for ident, (href, etag)
+        href_to_status = dict((meta['href'], (ident, meta))
+                              for ident, meta
                               in iteritems(self.status))
 
         prefetch = {}
@@ -103,9 +103,9 @@ class StorageSyncer(object):
 
         for href, etag in self.storage.list():
             props = {'href': href, 'etag': etag}
-            ident, old_etag = href_to_status.get(href, (None, None))
+            ident, old_meta = href_to_status.get(href, (None, None))
             assert etag is not None
-            if etag != old_etag:
+            if old_meta is None or etag != old_meta['etag']:
                 # Either the item is completely new, or updated
                 # In both cases we should prefetch
                 prefetch[href] = props
@@ -129,9 +129,31 @@ class StorageSyncer(object):
             _store_props(ident, props)
 
     def is_changed(self, ident):
-        _, status_etag = self.status.get(ident, (None, None))
-        return self.idents[ident]['etag'] != status_etag
+        meta = self.status.get(ident, None)
+        return meta is None or self.idents[ident]['etag'] != meta['etag']
 
+
+def _status_migrate(status):
+    for ident in list(status):
+        value = status[ident]
+        if len(value) == 4:
+            href_a, etag_a, href_b, etag_b = value
+
+            status[ident] = ({
+                'href': href_a,
+                'etag': etag_a,
+            }, {
+                'href': href_b,
+                'etag': etag_b,
+            })
+
+def _compress_meta(meta):
+    '''Make in-memory metadata suitable for disk storage by removing fetched
+    item content'''
+    return {
+        'href': meta['href'],
+        'etag': meta['etag']
+    }
 
 def sync(storage_a, storage_b, status, conflict_resolution=None,
          force_delete=False):
@@ -156,13 +178,15 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
     if storage_a.read_only and storage_b.read_only:
         raise BothReadOnly()
 
+    _status_migrate(status)
+
     a_info = storage_a.syncer_class(storage_a, dict(
-        (ident, (href_a, etag_a))
-        for ident, (href_a, etag_a, href_b, etag_b) in iteritems(status)
+        (ident, meta_a)
+        for ident, (meta_a, meta_b) in iteritems(status)
     ))
     b_info = storage_b.syncer_class(storage_b, dict(
-        (ident, (href_b, etag_b))
-        for ident, (href_a, etag_a, href_b, etag_b) in iteritems(status)
+        (ident, meta_b)
+        for ident, (meta_a, meta_b) in iteritems(status)
     ))
 
     a_info.prepare_idents()
@@ -182,9 +206,7 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
 
     status.clear()
     for ident in uniq(itertools.chain(a_info.status, b_info.status)):
-        href_a, etag_a = a_info.status[ident]
-        href_b, etag_b = b_info.status[ident]
-        status[ident] = href_a, etag_a, href_b, etag_b
+        status[ident] = a_info.status[ident], b_info.status[ident]
 
 
 def _action_upload(ident, source, dest):
@@ -202,8 +224,8 @@ def _action_upload(ident, source, dest):
             item = source_meta['item']
             dest_href, dest_etag = dest.storage.upload(item)
 
-        source.status[ident] = source_meta['href'], source_meta['etag']
-        dest.status[ident] = dest_href, dest_etag
+        source.status[ident] = _compress_meta(source_meta)
+        dest.status[ident] = {'href': dest_href, 'etag': dest_etag}
 
     return inner
 
@@ -226,8 +248,8 @@ def _action_update(ident, source, dest):
                                             dest_meta['etag'])
             assert isinstance(dest_etag, (bytes, text_type))
 
-        source.status[ident] = source_meta['href'], source_meta['etag']
-        dest.status[ident] = dest_href, dest_etag
+        source.status[ident] = _compress_meta(source_meta)
+        dest.status[ident] = {'href': dest_href, 'etag': dest_etag}
 
     return inner
 
@@ -272,8 +294,8 @@ def _action_conflict_resolve(ident):
 
         if meta_a['item'].hash == meta_b['item'].hash:
             sync_logger.info(u'...same content on both sides.')
-            a.status[ident] = meta_a['href'], meta_a['etag']
-            b.status[ident] = meta_b['href'], meta_b['etag']
+            a.status[ident] = _compress_meta(meta_a)
+            b.status[ident] = _compress_meta(meta_b)
         elif conflict_resolution is None:
             raise SyncConflict(ident=ident, href_a=meta_a['href'],
                                href_b=meta_b['href'])
