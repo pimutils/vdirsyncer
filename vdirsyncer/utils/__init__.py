@@ -193,3 +193,28 @@ def synchronized(lock=None):
                 return f(*args, **kwargs)
         return wrapper
     return inner
+
+
+def open_graphical_browser(url, new=0, autoraise=True):
+    '''Open a graphical web browser.
+
+    This is basically like `webbrowser.open`, but without trying to launch CLI
+    browsers at all. We're excluding those since it's undesirable to launch
+    those when you're using vdirsyncer on a server. Rather copypaste the URL
+    into the local browser, or use the URL-yanking features of your terminal
+    emulator.
+    '''
+    import webbrowser
+    cli_names = set(['www-browser', 'links', 'links2', 'elinks', 'lynx',
+                     'w3m'])
+
+    for name in webbrowser._tryorder:
+        browser = webbrowser.get(name)
+        if browser in cli_names:
+            continue
+
+        if browser.open(url, new, autoraise):
+            return
+
+    raise RuntimeError('No graphical browser found. Please open the URL '
+                       'manually.')

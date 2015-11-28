@@ -98,8 +98,13 @@ class Session(object):
             self._session.authorization_url(self.endpoints['oauth'])
 
         click.echo('Opening {} ...'.format(authorization_url))
-        webbrowser.open(authorization_url)
+        try:
+            utils.open_graphical_browser(authorization_url)
+        except Exception as e:
+            logger.warning(str(e))
+
         click.echo('Follow the instructions on the page.')
+        webbrowser.open(authorization_url)
         raise exceptions.UserError('Aborted!')
 
     def _discover_endpoints(self, subpath):
