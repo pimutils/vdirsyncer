@@ -39,9 +39,6 @@ you just did, check out `the tutorial
 Donations
 =========
 
-.. image:: https://img.shields.io/gratipay/untitaker.svg
-   :target: https://gratipay.com/untitaker/
-
 .. image:: https://img.shields.io/bountysource/team/vdirsyncer/activity.svg
    :target: https://www.bountysource.com/teams/vdirsyncer
 
