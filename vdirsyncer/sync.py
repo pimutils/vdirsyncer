@@ -160,6 +160,7 @@ def _status_migrate(status):
                 'etag': etag_b,
             })
 
+
 def _compress_meta(meta):
     '''Make in-memory metadata suitable for disk storage by removing fetched
     item content'''
@@ -168,6 +169,7 @@ def _compress_meta(meta):
         'etag': meta['etag'],
         'hash': meta['item'].hash
     }
+
 
 def sync(storage_a, storage_b, status, conflict_resolution=None,
          force_delete=False):

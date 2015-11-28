@@ -126,7 +126,13 @@ def test_already_synced():
     a.upload(item)
     b.upload(item)
     status = {
-        '1': ({'href': '1.a', 'etag': a.get('1.a')[1]}, {'href': '1.b', 'etag': b.get('1.b')[1]})
+        '1': ({
+            'href': '1.a',
+            'etag': a.get('1.a')[1]
+        }, {
+            'href': '1.b',
+            'etag': b.get('1.b')[1]
+        })
     }
     old_status = dict(status)
     a.update = b.update = a.upload = b.upload = \
