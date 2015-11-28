@@ -129,8 +129,21 @@ class StorageSyncer(object):
             _store_props(ident, props)
 
     def is_changed(self, ident):
-        meta = self.status.get(ident, None)
-        return meta is None or self.idents[ident]['etag'] != meta['etag']
+        status = self.status.get(ident, None)
+        meta = self.idents[ident]
+
+        if status is None:  # new item
+            return True
+
+        if meta['etag'] != status['etag']:  # etag changed
+            old_hash = status.get('hash')
+            if old_hash is None or meta['item'].hash != old_hash:
+                # item actually changed
+                return True
+            else:
+                # only etag changed
+                status['etag'] = meta['etag']
+                return False
 
 
 def _status_migrate(status):
@@ -152,7 +165,8 @@ def _compress_meta(meta):
     item content'''
     return {
         'href': meta['href'],
-        'etag': meta['etag']
+        'etag': meta['etag'],
+        'hash': meta['item'].hash
     }
 
 def sync(storage_a, storage_b, status, conflict_resolution=None,
@@ -225,7 +239,11 @@ def _action_upload(ident, source, dest):
             dest_href, dest_etag = dest.storage.upload(item)
 
         source.status[ident] = _compress_meta(source_meta)
-        dest.status[ident] = {'href': dest_href, 'etag': dest_etag}
+        dest.status[ident] = {
+            'href': dest_href,
+            'hash': source_meta['item'].hash,
+            'etag': dest_etag
+        }
 
     return inner
 
@@ -249,7 +267,11 @@ def _action_update(ident, source, dest):
             assert isinstance(dest_etag, (bytes, text_type))
 
         source.status[ident] = _compress_meta(source_meta)
-        dest.status[ident] = {'href': dest_href, 'etag': dest_etag}
+        dest.status[ident] = {
+            'href': dest_href,
+            'hash': source_meta['item'].hash,
+            'etag': dest_etag
+        }
 
     return inner
 
