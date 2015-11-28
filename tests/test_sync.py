@@ -194,14 +194,15 @@ def test_conflict_resolution_new_etags_without_changes():
     href_a, etag_a = a.upload(item)
     href_b, etag_b = b.upload(item)
     status = {'1': (href_a, 'BOGUS_a', href_b, 'BOGUS_b')}
+
     sync(a, b, status)
-    assert status == {'1': ({
-        'href': href_a,
-        'etag': etag_a,
-    }, {
-        'href': href_b,
-        'etag': etag_b
-    })}
+
+    (ident, (status_a, status_b)), = status.items()
+    assert ident == '1'
+    assert status_a['href'] == href_a
+    assert status_a['etag'] == etag_a
+    assert status_b['href'] == href_b
+    assert status_b['etag'] == etag_b
 
 
 def test_uses_get_multi(monkeypatch):
