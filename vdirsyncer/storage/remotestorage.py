@@ -17,6 +17,8 @@ We also use a custom ``data``-URI for the redirect in OAuth:
 
 '''
 
+import webbrowser
+
 import click
 
 from .base import Item, Storage
@@ -95,7 +97,8 @@ class Session(object):
         authorization_url, state = \
             self._session.authorization_url(self.endpoints['oauth'])
 
-        click.echo('Go to {}'.format(authorization_url))
+        click.echo('Opening {} ...'.format(authorization_url))
+        webbrowser.open(authorization_url)
         click.echo('Follow the instructions on the page.')
         raise exceptions.UserError('Aborted!')
 
