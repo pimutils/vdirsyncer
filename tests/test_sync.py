@@ -337,6 +337,31 @@ def test_moved_href():
     assert status['haha'][1]['href'] == 'haha'
 
 
+def test_bogus_etag_change():
+    '''Assert that sync algorithm is resilient against etag changes if content
+    didn\'t change.
+
+    In this particular case we test a scenario where both etags have been
+    updated, but only one side actually changed its item content.
+    '''
+    a = MemoryStorage()
+    b = MemoryStorage()
+    status = {}
+    href_a, etag_a = a.upload(Item(u'UID:ASDASD'))
+    sync(a, b, status)
+    assert len(status) == len(list(a.list())) == len(list(b.list())) == 1
+
+    (href_b, etag_b), = b.list()
+    a.update(href_a, Item(u'UID:ASDASD'), etag_a)
+    b.update(href_b, Item(u'UID:ASDASD\nACTUALCHANGE:YES'), etag_b)
+
+    b.delete = b.update = b.upload = blow_up
+
+    sync(a, b, status)
+    assert len(status) == len(list(a.list())) == len(list(b.list())) == 1
+    assert a.get(href_a)[0].raw == u'UID:ASDASD\nACTUALCHANGE:YES'
+
+
 def test_unicode_hrefs():
     a = MemoryStorage()
     b = MemoryStorage()
