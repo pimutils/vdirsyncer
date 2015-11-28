@@ -36,7 +36,7 @@ setup(
         'click-log',
         'click-threading',
         'requests',
-        'lxml>=3.0',
+        'lxml >=3.0, <=3.4.4',
         # https://github.com/sigmavirus24/requests-toolbelt/pull/28
         'requests_toolbelt>=0.5.0',
         'atomicwrites'
