@@ -1,6 +1,9 @@
 Reporting bugs
 ==============
 
+* Make sure your problem isn't already listed in `Known Problems
+  <https://vdirsyncer.readthedocs.org/en/stable/problems.html>`_.
+
 * Make sure you have the latest version by executing ``pip install --user
   --upgrade vdirsyncer``.
 
