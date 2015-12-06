@@ -89,9 +89,8 @@ After running ``vdirsyncer sync``, ``~/.contacts/`` will contain a bunch of
 ``.vcf`` files which all contain a contact in ``VCARD`` format each. You can
 modify their content, add new ones and delete some [1]_, and your changes will be
 synchronized to the CalDAV server after you run ``vdirsyncer sync`` again. For
-further reference, it uses the storages
-:py:class:`vdirsyncer.storage.FilesystemStorage` and
-:py:class:`vdirsyncer.storage.CarddavStorage`.
+further reference, it uses the storages :storage:`filesystem` and
+:storage:`carddav`.
 
 .. [1] You'll want to :doc:`use a helper program for this <supported>`.
 

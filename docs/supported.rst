@@ -12,11 +12,11 @@ Calendars
 ---------
 
 - khal_, a CLI calendar application supporting :doc:`vdir <vdir>`. You can use
-  :py:class:`vdirsyncer.storage.FilesystemStorage` with it.
+  :storage:`filesystem` with it.
 
 - Many graphical calendar apps such as dayplanner_, Orage_ or rainlendar_ save
-  a calendar in a single ``.ics`` file. You can use
-  :py:class:`vdirsyncer.storage.SingleFileStorage` with those.
+  a calendar in a single ``.ics`` file. You can use :storage:`singlefile` with
+  those.
 
 .. _khal: http://lostpackets.de/khal/
 .. _dayplanner: http://www.day-planner.org/
@@ -31,7 +31,7 @@ with the same file extension as normal events: ``.ics``. All CalDAV servers
 support synchronizing tasks, vdirsyncer does too.
 
 - todoman_, a CLI task manager supporting :doc:`vdir <vdir>`.  You can use
-  :py:class:`vdirsyncer.storage.FilesystemStorage` with it.
+  :storage:`filesystem` with it.
 
   Its interface is similar to the ones of Taskwarrior or the todo.txt CLI app
   and should be intuitively usable.
@@ -43,7 +43,7 @@ Contacts
 --------
 
 - khard_, a commandline addressbook supporting :doc:`vdir <vdir>`.  You can use
-  :py:class:`vdirsyncer.storage.FilesystemStorage` with it.
+  :storage:`filesystem` with it.
 
 - contactquery.c_, a small program explicitly written for querying vdirs from
   mutt.
@@ -76,15 +76,14 @@ latest PyPI release of Radicale.
 - Vdirsyncer can't create collections on Radicale.
 - Radicale doesn't `support time ranges in the calendar-query of CalDAV
   <https://github.com/Kozea/Radicale/issues/146>`_, so setting ``start_date``
-  and ``end_date`` for :py:class:`vdirsyncer.storage.CaldavStorage` will have
-  no or unpredicted consequences.
+  and ``end_date`` for :storage:`caldav` will have no or unpredicted
+  consequences.
 
 - `Versions of Radicale older than 0.9b1 choke on RFC-conform queries for all
   items of a collection <https://github.com/Kozea/Radicale/issues/143>`_.
 
   You have to set ``item_types = ["VTODO", "VEVENT"]`` in
-  :py:class:`vdirsyncer.storage.CaldavStorage` for vdirsyncer to work with
-  those versions.
+  :storage:`caldav` for vdirsyncer to work with those versions.
 
 .. _Radicale: http://radicale.org/
 

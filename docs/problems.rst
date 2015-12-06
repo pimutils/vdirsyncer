@@ -19,10 +19,8 @@ Requests-related ImportErrors on Debian-based distributions
 Debian has had its problems in the past with the Python requests package, see
 :gh:`82` and :gh:`140`. You have several options for solving this problem:
 
-- Set the ``auth`` parameter of :py:class:`vdirsyncer.storage.CaldavStorage`,
-  :py:class:`vdirsyncer.storage.CarddavStorage`, and/or
-  :py:class:`vdirsyncer.storage.HttpStorage` to ``basic`` or ``digest`` (not
-  ``guess``).
+- Set the ``auth`` parameter of :storage:`caldav`, :storage:`carddav`, and/or
+  :storage:`http` to ``basic`` or ``digest`` (not ``guess``).
 
 - Upgrade your installation of the Debian requests package to at least version
   ``2.4.3-1``.

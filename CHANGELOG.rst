@@ -182,11 +182,10 @@ Version 0.3.3
   cause any problems.
 - Vdirsyncer is now more robust regarding invalid responses from CalDAV
   servers. This should help with future compatibility with Davmail/Outlook.
-- Fix a bug when specifying ``item_types`` of
-  :py:class:`vdirsyncer.storage.CaldavStorage` in the deprecated config format.
+- Fix a bug when specifying ``item_types`` of :storage:`caldav` in the
+  deprecated config format.
 - Fix a bug where vdirsyncer would ignore all but one character specified in
-  ``unsafe_href_chars`` of :py:class:`vdirsyncer.storage.CaldavStorage` and
-  :py:class:`vdirsyncer.storage.CarddavStorage`.
+  ``unsafe_href_chars`` of :storage:`caldav` and :storage:`carddav`.
 
 Version 0.3.2
 =============
@@ -219,11 +218,8 @@ Version 0.3.0
 
 *released on 20 September 2014*
 
-- Add ``verify_fingerprint`` parameter to
-  :py:class:`vdirsyncer.storage.HttpStorage`,
-  :py:class:`vdirsyncer.storage.CaldavStorage` and
-  :py:class:`vdirsyncer.storage.CarddavStorage`,
-  see :gh:`99` and :ghpr:`106`.
+- Add ``verify_fingerprint`` parameter to :storage:`http`, :storage:`caldav`
+  and :storage:`carddav`, see :gh:`99` and :ghpr:`106`.
 
 - Add ``passwordeval`` parameter to :ref:`general_config`, see :gh:`108` and
   :ghpr:`117`.
@@ -303,8 +299,7 @@ Version 0.2.0
   instead of the proper etag would have been returned from the upload method.
   vdirsyncer might do unnecessary copying when upgrading to this version.
 
-- Add the storage :py:class:`vdirsyncer.storage.SingleFileStorage`. See
-  :gh:`48`.
+- Add the storage :storage:`singlefile`. See :gh:`48`.
 
 - The ``collections`` parameter for pair sections now accepts the special
   values ``from a`` and ``from b`` for automatically discovering collections.

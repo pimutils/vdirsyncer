@@ -91,10 +91,23 @@ class StorageDocumenter(autodoc.ClassDocumenter):
     Sphinx' __init__ signature removed.'''
 
     objtype = 'storage'
-    directivetype = 'attribute'
+    domain = None
+    directivetype = 'storage'
+    option_spec = {}
+
+    @classmethod
+    def can_document_member(cls, member, membername, isattr, parent):
+        from vdirsyncer.storage.base import Storage
+        return isinstance(member, Storage)
 
     def format_signature(self):
         return ''
+
+    def add_directive_header(self, sig):
+        directive = getattr(self, 'directivetype', self.objtype)
+        name = self.object.storage_name
+        self.add_line(u'.. %s:: %s%s' % (directive, name, sig),
+                      '<autodoc>')
 
     def get_doc(self, encoding=None, ignore=1):
         from vdirsyncer.cli.utils import format_storage_config
@@ -105,6 +118,9 @@ class StorageDocumenter(autodoc.ClassDocumenter):
 
 
 def setup(app):
+    from sphinx.domains.python import PyObject
+    app.add_object_type('storage', 'storage', 'pair: %s; storage',
+                        doc_field_types=PyObject.doc_field_types)
     app.add_role('gh', github_issue_role)
     app.add_role('ghpr', github_issue_role)
     app.add_autodocumenter(StorageDocumenter)
