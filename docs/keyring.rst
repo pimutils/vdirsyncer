@@ -57,6 +57,17 @@ Then you can use::
     username = myusername
     password.fetch = ["keyring", "myservicename", "myusername"]
 
+
+The password can than be set like this (in a python interpreter)::
+
+   >>> import keyring
+   >>> keyring.set_password("myservicename", "myusername", "password")
+  
+To test if you got it right you can run::
+  
+   >>> keyring.get_password("myservicename", "myusername")
+   "password"
+  
 .. _keyring: https://pypi.python.org/pypi/keyring
 
 
