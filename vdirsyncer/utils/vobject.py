@@ -236,19 +236,23 @@ class _Component(object):
 
         stack = []
         rv = []
-        for line in lines:
-            if line.startswith(u'BEGIN:'):
-                c_name = line[len(u'BEGIN:'):].strip().upper()
-                stack.append(cls(c_name, [], []))
-            elif line.startswith(u'END:'):
-                component = stack.pop()
-                if stack:
-                    stack[-1].subcomponents.append(component)
+        try:
+            for i, line in enumerate(lines):
+                if line.startswith(u'BEGIN:'):
+                    c_name = line[len(u'BEGIN:'):].strip().upper()
+                    stack.append(cls(c_name, [], []))
+                elif line.startswith(u'END:'):
+                    component = stack.pop()
+                    if stack:
+                        stack[-1].subcomponents.append(component)
+                    else:
+                        rv.append(component)
                 else:
-                    rv.append(component)
-            else:
-                if line.strip():
-                    stack[-1].props.append(line)
+                    if line.strip():
+                        stack[-1].props.append(line)
+        except IndexError:
+            raise ValueError('Parsing error at line {}. Check the debug log '
+                             'for more information.'.format(i + 1))
 
         if multiple:
             return rv
