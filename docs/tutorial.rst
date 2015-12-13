@@ -126,7 +126,7 @@ by automatically downloading a list of the configured user's collections::
     [pair my_contacts]
     a = my_contacts_local
     b = my_contacts_remote
-    collections = from b
+    collections = ["from b"]
 
     [storage my_contacts_local]
     type = filesystem
