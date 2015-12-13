@@ -104,7 +104,6 @@ class Session(object):
             logger.warning(str(e))
 
         click.echo('Follow the instructions on the page.')
-        webbrowser.open(authorization_url)
         raise exceptions.UserError('Aborted!')
 
     def _discover_endpoints(self, subpath):
