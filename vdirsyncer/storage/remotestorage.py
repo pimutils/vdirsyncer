@@ -17,8 +17,6 @@ We also use a custom ``data``-URI for the redirect in OAuth:
 
 '''
 
-import webbrowser
-
 import click
 
 from .base import Item, Storage
