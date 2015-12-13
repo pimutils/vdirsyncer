@@ -258,8 +258,8 @@ def _action_update(ident, source, dest):
         source_meta = source.idents[ident]
 
         if dest.storage.read_only:
-            sync_logger.info(u'{dest} is read-only. Skipping update...'
-                             .format(dest=dest.storage))
+            sync_logger.warning(u'{dest} is read-only. Skipping update...'
+                                .format(dest=dest.storage))
             dest_href = dest_etag = None
         else:
             dest_meta = dest.idents[ident]
