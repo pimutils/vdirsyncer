@@ -50,6 +50,11 @@ style:
 	flake8
 	! grep -ri syncroniz */*
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
+	$(MAKE) travis-conf
+	git diff --exit-code
+
+travis-conf:
+	python3 scripts/make_travisconf.py > .travis.yml
 
 install-docs:
 	pip install sphinx sphinx_rtd_theme
@@ -68,5 +73,13 @@ all:
 
 release:
 	python setup.py sdist bdist_wheel upload
+
+install-dev:
+	pip install -e .
+	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
+	    pip install -U --force-reinstall git+https://github.com/kennethreitz/requests; \
+	elif [ "$$REQUIREMENTS" = "minimal" ]; then \
+		pip install -U --force-reinstall lxml==3.0 requests==2.4.1 requests_toolbelt==0.4.0 click==5.0; \
+	fi
 
 .PHONY: docs
