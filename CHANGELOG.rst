@@ -9,6 +9,21 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/untitaker/vdirsyncer/tags.atom>`_.
 
+Version 0.7.4
+=============
+
+*released on 16 December 2015*
+
+- Improved error messages instead of faulty server behavior, see :gh:`290` and
+  :gh:`300`.
+- Safer shutdown of threadpool, avoid exceptions, see :gh:`291`.
+- Fix a sync bug for read-only storages see commmit
+  `ed22764921b2e5bf6a934cf14aa9c5fede804d8e`.
+- Etag changes are no longer sufficient to trigger sync operations. An actual
+  content change is also necessary. See :gh:`257`.
+- :storage:`remotestorage` now automatically opens authentication dialogs in
+  your configured GUI browser.
+
 Version 0.7.3
 =============
 
