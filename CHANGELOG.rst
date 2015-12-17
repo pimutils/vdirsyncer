@@ -23,6 +23,7 @@ Version 0.7.4
   content change is also necessary. See :gh:`257`.
 - :storage:`remotestorage` now automatically opens authentication dialogs in
   your configured GUI browser.
+- **Packagers:** ``lxml>=3.1`` is now required (newer lower-bound version).
 
 Version 0.7.3
 =============

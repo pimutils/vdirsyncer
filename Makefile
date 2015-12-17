@@ -79,7 +79,7 @@ install-dev:
 	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
 	    pip install -U --force-reinstall git+https://github.com/kennethreitz/requests; \
 	elif [ "$$REQUIREMENTS" = "minimal" ]; then \
-		pip install -U --force-reinstall lxml==3.0 requests==2.4.1 requests_toolbelt==0.4.0 click==5.0; \
+		pip install -U --force-reinstall lxml==3.1 requests==2.4.1 requests_toolbelt==0.4.0 click==5.0; \
 	fi
 
 .PHONY: docs
