@@ -48,9 +48,6 @@ with section("matrix"):
                 dav_servers,
                 ("devel", "release", "minimal")
             ):
-                if dav_server == "radicale" and requirements == "minimal":
-                    # only the latest radicale is supported
-                    continue
                 h()
                 p("  env: BUILD=test DAV_SERVER={} REQUIREMENTS={}"
                   .format(dav_server, requirements))
