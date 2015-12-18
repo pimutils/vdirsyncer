@@ -27,7 +27,7 @@ def _wrap_native(f, encoding='utf-8'):
     @functools.wraps(f)
     def wrapper(x, *a, **kw):
         to_orig = to_unicode if isinstance(x, text_type) else to_bytes
-        return to_orig(f(to_native(x, encoding), *a, **kw))
+        return to_orig(f(to_native(x, encoding), *a, **kw), encoding)
     return wrapper
 
 
