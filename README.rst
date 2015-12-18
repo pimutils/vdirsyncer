@@ -19,8 +19,8 @@ It aims to be for CalDAV and CardDAV what `OfflineIMAP
 .. image:: https://travis-ci.org/untitaker/vdirsyncer.png?branch=master
     :target: https://travis-ci.org/untitaker/vdirsyncer
 
-.. image:: https://coveralls.io/repos/untitaker/vdirsyncer/badge.png?branch=master
-    :target: https://coveralls.io/github/untitaker/vdirsyncer?branch=master
+.. image:: https://codecov.io/github/untitaker/vdirsyncer/coverage.svg?branch=master
+    :target: https://codecov.io/github/untitaker/vdirsyncer?branch=master
 
 Installation and usage
 ======================
