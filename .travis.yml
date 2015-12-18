@@ -32,6 +32,12 @@ matrix:
           env: BUILD=test DAV_SERVER=baikal REQUIREMENTS=release
         - python: 2.7
           env: BUILD=test DAV_SERVER=baikal REQUIREMENTS=minimal
+        - python: 2.7
+          env: BUILD=test DAV_SERVER=davical REQUIREMENTS=devel
+        - python: 2.7
+          env: BUILD=test DAV_SERVER=davical REQUIREMENTS=release
+        - python: 2.7
+          env: BUILD=test DAV_SERVER=davical REQUIREMENTS=minimal
         - python: 3.3
           env: BUILD=style
         - python: 3.3
@@ -62,6 +68,12 @@ matrix:
           env: BUILD=test DAV_SERVER=baikal REQUIREMENTS=release
         - python: 3.5
           env: BUILD=test DAV_SERVER=baikal REQUIREMENTS=minimal
+        - python: 3.5
+          env: BUILD=test DAV_SERVER=davical REQUIREMENTS=devel
+        - python: 3.5
+          env: BUILD=test DAV_SERVER=davical REQUIREMENTS=release
+        - python: 3.5
+          env: BUILD=test DAV_SERVER=davical REQUIREMENTS=minimal
         - python: pypy
           env: BUILD=style
         - python: pypy

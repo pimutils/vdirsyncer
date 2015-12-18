@@ -40,7 +40,7 @@ with section("matrix"):
             p("  env: BUILD=style")
 
             if python in ("2.7", "3.5"):
-                dav_servers = ("radicale", "owncloud", "baikal")
+                dav_servers = ("radicale", "owncloud", "baikal", "davical")
             else:
                 dav_servers = ("radicale",)
 
