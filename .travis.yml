@@ -4,6 +4,16 @@ sudo: true
 language: python
 
 install:
+    - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then
+        git clone https://github.com/yyuu/pyenv.git ~/.pyenv;
+        PYENV_ROOT="$HOME/.pyenv";
+        PATH="$PYENV_ROOT/bin:$PATH";
+        eval "$(pyenv init -)";
+        pyenv install pypy-4.0.1;
+        pyenv global pypy-4.0.1;
+        python --version;
+        pip --version;
+      fi
     - "pip install -U pip"
     - "pip install wheel"
     - "make -e install-dev"
@@ -21,6 +31,8 @@ matrix:
         - python: 2.7
           env: BUILD=test DAV_SERVER=radicale REQUIREMENTS=release
         - python: 2.7
+          env: BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal
+        - python: 2.7
           env: BUILD=test DAV_SERVER=owncloud REQUIREMENTS=devel
         - python: 2.7
           env: BUILD=test DAV_SERVER=owncloud REQUIREMENTS=release
@@ -44,18 +56,24 @@ matrix:
           env: BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel
         - python: 3.3
           env: BUILD=test DAV_SERVER=radicale REQUIREMENTS=release
+        - python: 3.3
+          env: BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal
         - python: 3.4
           env: BUILD=style
         - python: 3.4
           env: BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel
         - python: 3.4
           env: BUILD=test DAV_SERVER=radicale REQUIREMENTS=release
+        - python: 3.4
+          env: BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal
         - python: 3.5
           env: BUILD=style
         - python: 3.5
           env: BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel
         - python: 3.5
           env: BUILD=test DAV_SERVER=radicale REQUIREMENTS=release
+        - python: 3.5
+          env: BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal
         - python: 3.5
           env: BUILD=test DAV_SERVER=owncloud REQUIREMENTS=devel
         - python: 3.5
@@ -80,5 +98,7 @@ matrix:
           env: BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel
         - python: pypy
           env: BUILD=test DAV_SERVER=radicale REQUIREMENTS=release
+        - python: pypy
+          env: BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal
 
 

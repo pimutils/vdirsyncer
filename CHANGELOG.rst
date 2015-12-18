@@ -12,8 +12,6 @@ may want to subscribe to `GitHub's tag feed
 Version 0.7.4
 =============
 
-*released on 16 December 2015*
-
 - Improved error messages instead of faulty server behavior, see :gh:`290` and
   :gh:`300`.
 - Safer shutdown of threadpool, avoid exceptions, see :gh:`291`.
@@ -23,6 +21,7 @@ Version 0.7.4
   content change is also necessary. See :gh:`257`.
 - :storage:`remotestorage` now automatically opens authentication dialogs in
   your configured GUI browser.
+- **Packagers:** ``lxml>=3.1`` is now required (newer lower-bound version).
 
 Version 0.7.3
 =============
