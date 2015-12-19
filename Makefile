@@ -32,13 +32,13 @@ install-servers:
 
 install-test: install-servers
 	pip install pytest pytest-xprocess pytest-localserver
-	[ $(TRAVIS) != "true" ] || pip install coverage coveralls
+	[ $(TRAVIS) != "true" ] || pip install coverage codecov
 
 test:
 	set -e; \
 	if [ "$(TRAVIS)" = "true" ]; then \
 		coverage run --source=vdirsyncer/ --module pytest; \
-		coveralls; \
+		codecov; \
 	else \
 		py.test; \
 	fi
