@@ -57,13 +57,23 @@ with section("matrix"):
 
             if python in ("2.7", "3.5"):
                 dav_servers = ("radicale", "owncloud", "baikal", "davical")
+                rs_servers = ("mysteryshack",)
             else:
                 dav_servers = ("radicale",)
+                rs_servers = ()
 
-            for dav_server, requirements in itertools.product(
-                dav_servers,
+            for (server_type, server), requirements in itertools.product(
+                itertools.chain(
+                    (("REMOTESTORAGE", x) for x in rs_servers),
+                    (("DAV", x) for x in dav_servers)
+                ),
                 ("devel", "release", "minimal")
             ):
                 h()
-                p("  env: BUILD=test DAV_SERVER={} REQUIREMENTS={}"
-                  .format(dav_server, requirements))
+                p("  env: "
+                  "BUILD=test "
+                  "{server_type}_SERVER={server} "
+                  "REQUIREMENTS={requirements}"
+                  .format(server_type=server_type,
+                          server=server,
+                          requirements=requirements))
