@@ -204,8 +204,6 @@ class RemoteStorage(Storage):
             data=item.raw.encode('utf-8'),
             headers=headers
         )
-        if not response.url.endswith('/' + href):
-            raise exceptions.InvalidResponse('spec doesn\'t allow redirects')
         return href, response.headers['etag']
 
     def update(self, href, item, etag):
@@ -214,8 +212,7 @@ class RemoteStorage(Storage):
         return etag
 
     def upload(self, item):
-        href = utils.generate_href(item.ident)
-        href = utils.compat.urlquote(href, '@') + self.fileext
+        href = utils.generate_href(item.ident) + self.fileext
         return self._put(href, item, None)
 
     def delete(self, href, etag):
