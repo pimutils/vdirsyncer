@@ -75,7 +75,11 @@ release:
 	python setup.py sdist bdist_wheel upload
 
 install-dev:
-	pip install -e .
+	set -xe && if [ "$$REMOTESTORAGE_SERVER" != "skip" ]; then \
+		pip install -e .[remotestorage]; \
+	else \
+		pip install -e .; \
+	fi
 	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
 	    pip install -U --force-reinstall git+https://github.com/kennethreitz/requests; \
 	elif [ "$$REQUIREMENTS" = "minimal" ]; then \
