@@ -35,10 +35,12 @@ setup(
         'click>=5.0',
         'click-log',
         'click-threading',
-        'requests != 2.9.0',
+        # https://github.com/kennethreitz/requests/issues/2930
+        'requests !=2.9.0',
+        # https://github.com/untitaker/vdirsyncer/issues/298
         'lxml >=3.1, <=3.4.4',
         # https://github.com/sigmavirus24/requests-toolbelt/pull/28
-        'requests_toolbelt>=0.5.0',
+        'requests_toolbelt >=0.5.0',
         'atomicwrites'
     ],
     extras_require={
