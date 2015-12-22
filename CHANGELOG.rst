@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.7.4
 =============
 
+*released on 22 December 2015*
+
 - Improved error messages instead of faulty server behavior, see :gh:`290` and
   :gh:`300`.
 - Safer shutdown of threadpool, avoid exceptions, see :gh:`291`.
