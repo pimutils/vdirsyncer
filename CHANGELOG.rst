@@ -9,6 +9,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/untitaker/vdirsyncer/tags.atom>`_.
 
+Version 0.7.5
+=============
+
+- Fixed a bug in :storage:`remotestorage` that would try to open a CLI browser
+  for OAuth.
+
 Version 0.7.4
 =============
 

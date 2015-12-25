@@ -209,10 +209,10 @@ def open_graphical_browser(url, new=0, autoraise=True):
                      'w3m'])
 
     for name in webbrowser._tryorder:
-        browser = webbrowser.get(name)
-        if browser in cli_names:
+        if name in cli_names:
             continue
 
+        browser = webbrowser.get(name)
         if browser.open(url, new, autoraise):
             return
 
