@@ -10,8 +10,9 @@ Vdirsyncer is a synchronization tool for vdir. See the README for more details.
 # detectable for setuptools-scm. Rather use the PyPI ones.
 
 
-from setuptools import find_packages, setup
 import platform
+
+from setuptools import find_packages, setup
 
 
 setup(
