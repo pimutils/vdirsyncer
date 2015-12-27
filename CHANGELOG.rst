@@ -14,6 +14,8 @@ Version 0.7.5
 
 - Fixed a bug in :storage:`remotestorage` that would try to open a CLI browser
   for OAuth.
+- Fix a packaging bug that would prevent vdirsyncer from working with newer
+  lxml versions.
 
 Version 0.7.4
 =============
