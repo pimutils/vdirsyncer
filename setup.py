@@ -11,6 +11,7 @@ Vdirsyncer is a synchronization tool for vdir. See the README for more details.
 
 
 from setuptools import find_packages, setup
+import platform
 
 
 setup(
@@ -37,8 +38,12 @@ setup(
         'click-threading',
         # https://github.com/kennethreitz/requests/issues/2930
         'requests !=2.9.0',
-        # https://github.com/untitaker/vdirsyncer/issues/298
-        'lxml >=3.1, <=3.4.4',
+        'lxml >=3.1' + (
+            # https://github.com/untitaker/vdirsyncer/issues/298
+            ', <=3.4.4'
+            if platform.python_implementation() == 'PyPy'
+            else ''
+        ),
         # https://github.com/sigmavirus24/requests-toolbelt/pull/28
         'requests_toolbelt >=0.5.0',
         'atomicwrites'
