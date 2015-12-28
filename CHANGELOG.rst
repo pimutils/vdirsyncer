@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.7.5
 =============
 
+*released on 23 December 2015*
+
 - Fixed a bug in :storage:`remotestorage` that would try to open a CLI browser
   for OAuth.
 - Fix a packaging bug that would prevent vdirsyncer from working with newer
