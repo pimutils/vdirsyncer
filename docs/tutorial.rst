@@ -62,13 +62,11 @@ might come.
 In vdirsyncer, synchronization is always done between two storages. Such
 storages are defined in :ref:`storage sections <storage_config>`, and which
 pairs of storages should actually be synchronized is defined in :ref:`pair
-section <pair_config>`.
+section <pair_config>`.  This format is copied from OfflineIMAP, where storages
+are called repositories and pairs are called accounts.
 
-This format is copied from OfflineIMAP, where storages are called
-repositories and pairs are called accounts.
-
-The following example synchronizes a single CardDAV-addressbook to
-``~/.contacts/``::
+The following example synchronizes ownCloud's
+default addressbook to ``~/.contacts/``::
 
     [pair my_contacts]
     a = my_contacts_local
@@ -84,6 +82,10 @@ The following example synchronizes a single CardDAV-addressbook to
     url = https://owncloud.example.com/remote.php/carddav/addressbooks/bob/default/
     username = bob
     password = asdf
+
+.. note::
+
+    Configuration for other servers can be found at :ref:`supported-servers`.
 
 After running ``vdirsyncer sync``, ``~/.contacts/`` will contain a bunch of
 ``.vcf`` files which all contain a contact in ``VCARD`` format each. You can
@@ -102,10 +104,10 @@ More Configuration
 Conflict resolution
 -------------------
 
-It almost seems like it could work. But what if the same item is changed on
-both sides? What should vdirsyncer do? By default, it will show an ugly error
-message, which is surely a way to avoid the problem. Another way to solve that
-ambiguity is to add another line to the *pair* section::
+What if the same item is changed on both sides? What should vdirsyncer do? By
+default, it will show an ugly error message, which is surely a way to avoid the
+problem. Another way to solve that ambiguity is to add another line to the
+*pair* section::
 
     [pair my_contacts]
     ...
