@@ -1,3 +1,7 @@
+tests/storage/servers/*
+!tests/storage/servers/__init__.py
+!tests/storage/servers/radicale
+!tests/storage/servers/skip
 *.pyc
 __pycache__
 htmlcov
@@ -10,9 +14,5 @@ env
 .egg
 .xprocess
 dist
-tests/storage/servers/*
-!tests/storage/servers/__init__.py
-!tests/storage/servers/radicale
-!tests/storage/servers/skip
 docs/_build/
 vdirsyncer/version.py
