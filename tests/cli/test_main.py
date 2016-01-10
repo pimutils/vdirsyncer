@@ -315,6 +315,11 @@ def test_create_collections(subtest, collections):
             set(x.basename for x in tmpdir.join('bar').listdir()) == \
             set(collections)
 
+        result = runner.invoke(
+            ['sync'] + ['foobar/' + x for x in collections]
+        )
+        assert not result.exception
+
 
 def test_ident_conflict(tmpdir, runner):
     runner.write_with_general(dedent('''
