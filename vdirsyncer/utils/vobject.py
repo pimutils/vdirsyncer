@@ -23,9 +23,14 @@ IGNORE_PROPS = _process_properties(
     # X-RADICALE-NAME is used by radicale, because hrefs don't really exist in
     # their filesystem backend
     'X-RADICALE-NAME',
+    # Apparently this is set by Horde?
+    # https://github.com/untitaker/vdirsyncer/issues/318
+    'X-WR-CALNAME',
     # REV is from the VCARD specification and is supposed to change when the
     # item does -- however, we can determine that ourselves
+    # Same with LAST-MODIFIED
     'REV',
+    'LAST-MODIFIED',
     # Added those because e.g. http://www.feiertage-oesterreich.at/ is
     # generating those randomly on every request.
     # Some iCalendar HTTP calendars (Google's read-only calendar links)
