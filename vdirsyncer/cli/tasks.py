@@ -9,6 +9,7 @@ from .utils import CliError, JobFailed, cli_logger, coerce_native, \
     save_status, storage_class_from_config, storage_instance_from_config
 
 from ..sync import sync
+from ..utils.compat import to_unicode
 
 
 def prepare_pair(wq, pair_name, collections, config, callback, **kwargs):
@@ -21,6 +22,9 @@ def prepare_pair(wq, pair_name, collections, config, callback, **kwargs):
     # spawn one worker less because we can reuse the current one
     new_workers = -1
     for collection_name in (collections or all_collections):
+        # XXX: PY2 hack
+        if collection_name is not None:
+            collection_name = to_unicode(collection_name, 'utf-8')
         try:
             config_a, config_b = all_collections[collection_name]
         except KeyError:

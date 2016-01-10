@@ -114,7 +114,13 @@ class Storage(with_metaclass(StorageMeta)):
         raise NotImplementedError()
 
     def __repr__(self):
-        return self.instance_name or '<{}(**{})>'.format(
+        try:
+            if self.instance_name:
+                return str(self.instance_name)
+        except ValueError:
+            pass
+
+        return '<{}(**{})>'.format(
             self.__class__.__name__,
             dict((x, getattr(self, x)) for x in self._repr_attributes)
         )
