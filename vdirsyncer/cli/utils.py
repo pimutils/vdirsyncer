@@ -120,7 +120,8 @@ def handle_cli_error(status_name=None):
         pass
     except Exception as e:
         if status_name:
-            msg = 'Unhandled exception occured for {!r}.'.format(status_name)
+            msg = 'Unhandled exception occured for {}.'.format(
+                coerce_native(status_name))
         else:
             msg = 'Unhandled exception occured.'
 
@@ -227,9 +228,9 @@ def _discover_from_config(config):
 def _handle_collection_not_found(config, collection, e=None):
     storage_name = config.get('instance_name', None)
 
-    cli_logger.error('{}No collection {!r} found for storage {}.'
+    cli_logger.error('{}No collection {} found for storage {}.'
                      .format('{}\n'.format(e) if e else '',
-                             collection, storage_name))
+                             coerce_native(collection), storage_name))
 
     if click.confirm('Should vdirsyncer attempt to create it?'):
         storage_type = config['type']
