@@ -4,9 +4,9 @@ import functools
 import json
 
 from .config import CollectionConfig
-from .utils import CliError, JobFailed, cli_logger, collections_for_pair, \
-    get_status_name, handle_cli_error, load_status, save_status, \
-    storage_class_from_config, storage_instance_from_config
+from .utils import CliError, JobFailed, cli_logger, coerce_native, \
+    collections_for_pair, get_status_name, handle_cli_error, load_status, \
+    save_status, storage_class_from_config, storage_instance_from_config
 
 from ..sync import sync
 
@@ -24,10 +24,12 @@ def prepare_pair(wq, pair_name, collections, config, callback, **kwargs):
         try:
             config_a, config_b = all_collections[collection_name]
         except KeyError:
-            raise CliError('Pair {}: Collection {} not found. These are the '
-                           'configured collections:\n{}'
-                           .format(pair_name, collection_name,
-                                   list(all_collections)))
+            raise CliError(
+                'Pair {}: Collection {} not found. These are the '
+                'configured collections:\n{}'
+                .format(pair_name,
+                        coerce_native(collection_name),
+                        list(all_collections)))
         new_workers += 1
 
         collection = CollectionConfig(pair, collection_name, config_a,
@@ -44,11 +46,12 @@ def sync_collection(wq, collection, general, force_delete):
     status_name = get_status_name(pair.name, collection.name)
 
     try:
-        cli_logger.info('Syncing {}'.format(status_name))
+        cli_logger.info('Syncing {}'.format(coerce_native(status_name)))
 
         status = load_status(general['status_path'], pair.name,
                              collection.name, data_type='items') or {}
-        cli_logger.debug('Loaded status for {}'.format(status_name))
+        cli_logger.debug('Loaded status for {}'
+                         .format(coerce_native(status_name)))
 
         a = storage_instance_from_config(collection.config_a)
         b = storage_instance_from_config(collection.config_b)

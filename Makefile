@@ -31,7 +31,7 @@ install-servers:
 	done
 
 install-test: install-servers
-	pip install pytest pytest-xprocess pytest-localserver
+	pip install pytest pytest-xprocess pytest-localserver hypothesis pytest-subtesthack
 	[ $(TRAVIS) != "true" ] || pip install coverage codecov
 
 test:

@@ -18,6 +18,7 @@ from . import CliError, cli_logger
 from .. import DOCS_HOME, exceptions
 from ..sync import IdentConflict, StorageEmpty, SyncConflict
 from ..utils import expand_path, get_class_init_args
+from ..utils.compat import to_native
 
 try:
     import Queue as queue
@@ -119,7 +120,7 @@ def handle_cli_error(status_name=None):
         pass
     except Exception as e:
         if status_name:
-            msg = 'Unhandled exception occured for {}.'.format(status_name)
+            msg = 'Unhandled exception occured for {!r}.'.format(status_name)
         else:
             msg = 'Unhandled exception occured.'
 
@@ -226,7 +227,7 @@ def _discover_from_config(config):
 def _handle_collection_not_found(config, collection, e=None):
     storage_name = config.get('instance_name', None)
 
-    cli_logger.error('{}No collection {} found for storage {}.'
+    cli_logger.error('{}No collection {!r} found for storage {}.'
                      .format('{}\n'.format(e) if e else '',
                              collection, storage_name))
 
@@ -487,3 +488,10 @@ def assert_permissions(path, wanted):
         cli_logger.warning('Correcting permissions of {} from {:o} to {:o}'
                            .format(path, permissions, wanted))
         os.chmod(path, wanted)
+
+
+def coerce_native(x, encoding='utf-8'):
+    try:
+        return to_native(x, encoding)
+    except UnicodeError:
+        return repr(x)

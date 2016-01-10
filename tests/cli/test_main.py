@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 
+import json
 from textwrap import dedent
 
 from click.testing import CliRunner
 
+from hypothesis import example, given
+import hypothesis.strategies as st
+
 import pytest
 
 import vdirsyncer.cli as cli
+from vdirsyncer.utils.compat import PY2, to_native
 
 
 def test_simple_run(tmpdir, runner):
@@ -257,35 +262,58 @@ def test_multiple_pairs(tmpdir, runner):
     ])
 
 
-def test_create_collections(tmpdir, runner):
-    runner.write_with_general(dedent('''
-    [pair foobar]
-    a = foo
-    b = bar
-    collections = ["a", "b", "c"]
+@given(collections=st.sets(
+    st.text(
+        st.characters(
+            blacklist_characters=set(
+                u'./\x00'  # Invalid chars on POSIX filesystems
+                + (u';' if PY2 else u'')  # https://bugs.python.org/issue16374
+            ),
+            # Surrogates can't be encoded to utf-8 in Python
+            blacklist_categories=set(['Cs'])
+        ),
+        min_size=1,
+        max_size=50
+    ),
+    min_size=1
+))
+@example(collections=[u'persönlich'])
+def test_create_collections(subtest, collections):
+    collections = set(to_native(x, 'utf-8') for x in collections)
 
-    [storage foo]
-    type = filesystem
-    path = {base}/foo/
-    fileext = .txt
+    @subtest
+    def test_inner(tmpdir, runner):
+        runner.write_with_general(dedent('''
+        [pair foobar]
+        a = foo
+        b = bar
+        collections = {colls}
 
-    [storage bar]
-    type = filesystem
-    path = {base}/bar/
-    fileext = .txt
-    '''.format(base=str(tmpdir))))
+        [storage foo]
+        type = filesystem
+        path = {base}/foo/
+        fileext = .txt
 
-    result = runner.invoke(['sync'])
-    assert result.exception
-    entries = set(x.basename for x in tmpdir.listdir())
-    assert 'foo' not in entries and 'bar' not in entries
+        [storage bar]
+        type = filesystem
+        path = {base}/bar/
+        fileext = .txt
+        '''.format(base=str(tmpdir), colls=json.dumps(list(collections)))))
 
-    result = runner.invoke(['sync'], input='y\n' * 6)
-    assert not result.exception
-    assert \
-        set(x.basename for x in tmpdir.join('foo').listdir()) == \
-        set(x.basename for x in tmpdir.join('bar').listdir()) == \
-        set('abc')
+        result = runner.invoke(['sync'])
+        assert result.exception
+        entries = set(x.basename for x in tmpdir.listdir())
+        assert 'foo' not in entries and 'bar' not in entries
+
+        result = runner.invoke(
+            ['sync'],
+            input='y\n' * 2 * (len(collections) + 1)
+        )
+        assert not result.exception
+        assert \
+            set(x.basename for x in tmpdir.join('foo').listdir()) == \
+            set(x.basename for x in tmpdir.join('bar').listdir()) == \
+            set(collections)
 
 
 def test_ident_conflict(tmpdir, runner):
