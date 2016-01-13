@@ -10,11 +10,6 @@ SUFFIX = '.fetch'
 
 logger = log.get(__name__)
 
-try:
-    import keyring
-except ImportError:
-    keyring = None
-
 
 def expand_fetch_params(config):
     config = dict(config)
@@ -72,12 +67,6 @@ def _fetch_value(opts, key):
         return rv
 
 
-def _strategy_keyring(username, host):
-    if not keyring:
-        raise RuntimeError('Keyring package not available.')
-    return keyring.get_password(username, host)
-
-
 def _strategy_command(*command):
     import subprocess
     command = (expand_path(command[0]),) + command[1:]
@@ -94,7 +83,6 @@ def _strategy_prompt(text):
 
 
 STRATEGIES = {
-    'keyring': _strategy_keyring,
     'command': _strategy_command,
     'prompt': _strategy_prompt,
 }

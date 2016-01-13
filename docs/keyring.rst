@@ -38,38 +38,23 @@ You can fetch the username as well::
 
 Or really any kind of parameter in a storage section.
 
-System Keyring
-==============
+Accessing the system keyring
+----------------------------
 
-While the command approach is quite flexible, it is often cumbersome to write a
-script fetching the system keyring.
+As shown above, you can use the ``command`` strategy to fetch your credentials
+from arbitrary sources. A very common usecase is to fetch your password from
+the system keyring.
 
-Vdirsyncer can do this for you if you have the keyring_ package installed. How
-you would obtain this package depends on how you installed vdirsyncer. If you
-used pip, you can use the following command to also install keyring::
+The keyring_ Python package contains a command-line utility for fetching
+passwords from the OS's password store. Installation::
 
-    pip install vdirsyncer[keyring]
+    pip install keyring
 
-Then you can use::
+Basic usage::
 
-    [storage foo]
-    type = caldav
-    username = myusername
-    password.fetch = ["keyring", "myservicename", "myusername"]
-
-
-The password can than be set like this (in a python interpreter)::
-
-   >>> import keyring
-   >>> keyring.set_password("myservicename", "myusername", "password")
-  
-To test if you got it right you can run::
-  
-   >>> keyring.get_password("myservicename", "myusername")
-   "password"
-  
-.. _keyring: https://pypi.python.org/pypi/keyring
-
+    password.fetch = ["command", "keyring", "get", "example.com", "foouser"]
+    
+.. _keyring: https://github.com/jaraco/keyring/
 
 Password Prompt
 ===============

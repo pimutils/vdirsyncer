@@ -2,18 +2,6 @@
 
 from textwrap import dedent
 
-import pytest
-
-
-class EmptyKeyring(object):
-    def get_password(self, *a, **kw):
-        return None
-
-
-@pytest.fixture(autouse=True)
-def empty_password_storages(monkeypatch):
-    monkeypatch.setattr('vdirsyncer.cli.fetchparams.keyring', EmptyKeyring())
-
 
 def test_get_password_from_command(tmpdir, runner):
     runner.write_with_general(dedent('''

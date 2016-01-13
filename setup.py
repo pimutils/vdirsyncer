@@ -50,7 +50,6 @@ setup(
         'atomicwrites'
     ],
     extras_require={
-        'keyring': ['keyring'],
         'remotestorage': ['requests-oauthlib']
     }
 )
