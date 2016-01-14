@@ -5,6 +5,8 @@ import os
 
 from sphinx.ext import autodoc
 
+import vdirsyncer
+
 extensions = ['sphinx.ext.autodoc']
 
 templates_path = ['_templates']
@@ -16,7 +18,6 @@ project = u'vdirsyncer'
 copyright = (u'2014-{}, Markus Unterwaditzer & contributors'
              .format(datetime.date.today().strftime('%Y')))
 
-import vdirsyncer
 release = vdirsyncer.__version__
 version = '.'.join(release.split('.')[:2])  # The short X.Y version.
 
