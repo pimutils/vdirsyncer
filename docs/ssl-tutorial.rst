@@ -9,13 +9,16 @@ All SSL configuration is done per-storage.
 Pinning by fingerprint
 ----------------------
 
-To pin the certificate by SHA1- or MD5-fingerprint::
+To pin the certificate by fingerprint::
 
     [storage foo]
     type = caldav
     ...
     verify_fingerprint = "94:FD:7A:CB:50:75:A4:69:82:0A:F8:23:DF:07:FC:69:3E:CD:90:CA"
     #verify = false  # Optional: Disable CA validation, useful for self-signed certs
+
+SHA1-, SHA256- or MD5-Fingerprints can be used. They're detected by their
+length.
 
 You can use the following command for obtaining a SHA-1 fingerprint::
 
