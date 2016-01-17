@@ -15,6 +15,7 @@ your distribution:
 - `pkgsrc <http://pkgsrc.se/time/py-vdirsyncer>`_
 - `Fedora <https://apps.fedoraproject.org/packages/vdirsyncer>`_
 - `nixpkg <https://github.com/NixOS/nixpkgs/tree/master/pkgs/tools/misc/vdirsyncer>`_
+- `GNU Guix <https://www.gnu.org/software/guix/package-list.html#vdirsyncer>`_
 - `homebrew <http://braumeister.org/formula/vdirsyncer>`_
 - Debian and Ubuntu don't have packages, but make a manual installation
   especially hard. See :ref:`debian-urllib3`.
