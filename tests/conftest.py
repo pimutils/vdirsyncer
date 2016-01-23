@@ -14,6 +14,11 @@ def setup_logging():
     click_log.basic_config('vdirsyncer').setLevel(logging.DEBUG)
 
 
+@pytest.fixture(autouse=True)
+def suppress_py2_warning(monkeypatch):
+    monkeypatch.setattr('vdirsyncer.cli._check_python2', lambda: None)
+
+
 try:
     import pytest_benchmark
 except ImportError:

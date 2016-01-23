@@ -8,6 +8,7 @@ import click
 import click_log
 
 from .. import __version__, log
+from ..utils.compat import PY2
 
 
 cli_logger = log.get(__name__)
@@ -61,6 +62,14 @@ def validate_verbosity(ctx, param, value):
     return x
 
 
+def _check_python2():
+    if PY2:
+        cli_logger.warning('Python 2 support will be dropped. Please switch '
+                           'to at least Python 3.3 as soon as possible. See '
+                           'https://github.com/untitaker/vdirsyncer/issues/219'
+                           ' for more information.')
+
+
 @click.group()
 @click_log.init('vdirsyncer')
 @click_log.simple_verbosity_option()
@@ -71,6 +80,7 @@ def app(ctx):
     '''
     vdirsyncer -- synchronize calendars and contacts
     '''
+    _check_python2()
     from .config import load_config
 
     if not ctx.config:
