@@ -34,7 +34,11 @@ class DavStorageTests(ServerMixin, StorageTests):
 
         monkeypatch.setattr('requests.sessions.Session.request', breakdown)
 
-        assert list(s.get_multi([])) == []
+        try:
+            assert list(s.get_multi([])) == []
+        finally:
+            # Make sure monkeypatch doesn't interfere with DAV server teardown
+            monkeypatch.undo()
 
     def test_dav_unicode_href(self, s, get_item, monkeypatch):
         if self.dav_server != 'radicale':
