@@ -19,6 +19,8 @@ Version 0.8.0
   "example.com", "myuser"]`` instead, which is more generic. See the
   documentation for details.
 
+- Now emitting a warning when running under Python 2. See :gh:`219`.
+
 Version 0.7.5
 =============
 
