@@ -31,12 +31,7 @@ install-servers:
 	done
 
 install-test: install-servers
-	pip install \
-		pytest==2.8.5 \
-		pytest-xprocess \
-		pytest-localserver \
-		hypothesis \
-		pytest-subtesthack
+	pip install pytest pytest-xprocess pytest-localserver hypothesis pytest-subtesthack
 	[ $(TRAVIS) != "true" ] || pip install coverage codecov
 
 test:
