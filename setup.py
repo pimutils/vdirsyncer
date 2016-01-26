@@ -40,7 +40,10 @@ setup(
         # https://github.com/kennethreitz/requests/issues/2930
         'requests !=2.9.0',
         'lxml >=3.1' + (
-            # https://github.com/untitaker/vdirsyncer/issues/298
+            # See https://github.com/untitaker/vdirsyncer/issues/298
+            # We pin some LXML version that is known to work with PyPy
+            # I assume nobody actually uses PyPy with vdirsyncer, so this is
+            # moot
             ', <=3.4.4'
             if platform.python_implementation() == 'PyPy'
             else ''
