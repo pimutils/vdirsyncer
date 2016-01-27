@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.8.0
 =============
 
+*released on 27 January 2016*
+
 - Keyring support has been removed, which means that ``password.fetch =
   ["keyring", "example.com", "myuser"]`` doesn't work anymore.
 
