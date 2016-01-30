@@ -78,7 +78,7 @@ def handle_cli_error(status_name=None):
 
     try:
         raise
-    except CliError as e:
+    except (CliError, exceptions.UserError) as e:
         cli_logger.critical(e)
     except StorageEmpty as e:
         cli_logger.error(
