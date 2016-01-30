@@ -186,7 +186,7 @@ class Config(object):
 
     def get_storage_args(self, storage_name, pair_name=None):
         try:
-            return expand_fetch_params(self.storages[storage_name])
+            args = self.storages[storage_name]
         except KeyError:
             pair_pref = 'Pair {}: '.format(pair_name) if pair_name else ''
             raise CliError(
@@ -194,6 +194,8 @@ class Config(object):
                 'These are the configured storages: {}'
                 .format(pair_pref, storage_name, list(self.storages))
             )
+        else:
+            return expand_fetch_params(args)
 
     def get_pair(self, pair_name):
         return PairConfig(self, pair_name, *self.pairs[pair_name])

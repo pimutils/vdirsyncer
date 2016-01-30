@@ -51,10 +51,19 @@ def _fetch_value(opts, key):
         return rv
 
     strategy = opts[0]
+    try:
+        strategy_fn = STRATEGIES[strategy]
+    except KeyError:
+        if strategy == 'keyring':
+            raise exceptions.UserError(
+                'Fetching passwords via keyring is deprecated. See the '
+                'changelog for migration paths.')
+        raise exceptions.UserError('Unknown strategy: {}'.format(strategy))
+
     logger.debug('Fetching value for {} with {} strategy.'
                  .format(key, strategy))
     try:
-        rv = STRATEGIES[strategy](*opts[1:])
+        rv = strategy_fn(*opts[1:])
     except (click.Abort, KeyboardInterrupt) as e:
         password_cache[cache_key] = e
         raise
