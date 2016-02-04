@@ -5,11 +5,7 @@
 #   using --system-site-packages when creating the virtualenv
 # - Inside the virtualenv: `make install-test test`
 #
-# The `install-test` target requires internet access. Be aware that vdirsyncer
-# requires very recent versions of Radicale for the tests to run successfully.
-#
-# If you want to skip the DAV tests against Radicale, use:
-#     make DAV_SERVER=skip # ...
+# The `install-test` target requires internet access.
 
 export DAV_SERVER := skip
 export REMOTESTORAGE_SERVER := skip
