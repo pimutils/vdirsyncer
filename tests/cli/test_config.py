@@ -4,7 +4,7 @@ from textwrap import dedent
 import pytest
 
 import vdirsyncer.cli.utils  # noqa
-from vdirsyncer import cli
+from vdirsyncer import cli, exceptions
 from vdirsyncer.cli.config import parse_config_value, \
     read_config as _read_config
 
@@ -70,7 +70,7 @@ def test_storage_instance_from_config(monkeypatch):
 
 
 def test_missing_general_section(read_config):
-    with pytest.raises(cli.CliError) as excinfo:
+    with pytest.raises(exceptions.UserError) as excinfo:
         read_config(u'''
             [pair my_pair]
             a = my_a
@@ -87,17 +87,17 @@ def test_missing_general_section(read_config):
             fileext = .txt
             ''')
 
-    assert 'Invalid general section.' in excinfo.value.msg
+    assert 'Invalid general section.' in str(excinfo.value)
 
 
 def test_wrong_general_section(read_config):
-    with pytest.raises(cli.CliError) as excinfo:
+    with pytest.raises(exceptions.UserError) as excinfo:
         read_config(u'''
             [general]
             wrong = true
             ''')
 
-    assert 'Invalid general section.' in excinfo.value.msg
+    assert 'Invalid general section.' in str(excinfo.value)
     assert excinfo.value.problems == [
         'general section doesn\'t take the parameters: wrong',
         'general section is missing the parameters: status_path'
@@ -112,7 +112,7 @@ def test_invalid_storage_name():
         [storage foo.bar]
         '''))
 
-    with pytest.raises(cli.CliError) as excinfo:
+    with pytest.raises(exceptions.UserError) as excinfo:
         _read_config(f)
 
     assert 'invalid characters' in str(excinfo.value).lower()
@@ -169,7 +169,7 @@ def test_invalid_collections_arg():
         fileext = .txt
         '''))
 
-    with pytest.raises(cli.utils.CliError) as excinfo:
+    with pytest.raises(exceptions.UserError) as excinfo:
         _read_config(f)
 
     assert (

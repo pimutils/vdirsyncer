@@ -14,7 +14,7 @@ import click
 
 import click_threading
 
-from . import CliError, cli_logger
+from . import cli_logger
 from .. import DOCS_HOME, exceptions
 from ..sync import IdentConflict, StorageEmpty, SyncConflict
 from ..utils import expand_path, get_class_init_args
@@ -78,7 +78,7 @@ def handle_cli_error(status_name=None):
 
     try:
         raise
-    except (CliError, exceptions.UserError) as e:
+    except exceptions.UserError as e:
         cli_logger.critical(e)
     except StorageEmpty as e:
         cli_logger.error(
@@ -243,10 +243,11 @@ def _handle_collection_not_found(config, collection, e=None):
         except NotImplementedError as e:
             cli_logger.error(e)
 
-    raise CliError('Unable to find or create collection "{collection}" for '
-                   'storage "{storage}". Please create the collection '
-                   'yourself.'.format(collection=collection,
-                                      storage=storage_name))
+    raise exceptions.UserError(
+        'Unable to find or create collection "{collection}" for '
+        'storage "{storage}". Please create the collection '
+        'yourself.'.format(collection=collection,
+                           storage=storage_name))
 
 
 def _collections_for_pair_impl(status_path, pair):
@@ -341,7 +342,8 @@ def storage_class_from_config(config):
     try:
         cls = storage_names[storage_name]
     except KeyError:
-        raise CliError('Unknown storage type: {}'.format(storage_name))
+        raise exceptions.UserError(
+            'Unknown storage type: {}'.format(storage_name))
     return cls, config
 
 
@@ -368,7 +370,7 @@ def storage_instance_from_config(config, create=True):
 
 def handle_storage_init_error(cls, config):
     e = sys.exc_info()[1]
-    if isinstance(e, (click.Abort, CliError, KeyboardInterrupt)):
+    if isinstance(e, (click.Abort, exceptions.UserError, KeyboardInterrupt)):
         raise
 
     all, required = get_class_init_args(cls)
@@ -393,8 +395,10 @@ def handle_storage_init_error(cls, config):
             cli_logger.exception('')
         problems.append(str(e))
 
-    raise CliError(u'Failed to initialize {}'.format(config['instance_name']),
-                   problems=problems)
+    raise exceptions.UserError(
+        u'Failed to initialize {}'.format(config['instance_name']),
+        problems=problems
+    )
 
 
 class WorkerQueue(object):

@@ -21,6 +21,15 @@ class UserError(Error, ValueError):
     '''Wrapper exception to be used to signify the traceback should not be
     shown to the user.'''
 
+    problems = None
+
+    def __str__(self):
+        msg = Error.__str__(self)
+        for problem in self.problems or ():
+            msg += u'\n  - {}'.format(problem)
+
+        return msg
+
 
 class CollectionNotFound(Error):
     '''Collection not found'''

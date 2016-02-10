@@ -24,21 +24,6 @@ class AppContext(object):
 pass_context = click.make_pass_decorator(AppContext, ensure=True)
 
 
-class CliError(RuntimeError):
-    def __init__(self, msg, problems=None):
-        self.msg = msg
-        self.problems = problems
-        RuntimeError.__init__(self, msg)
-
-    def __str__(self):
-        msg = self.msg
-        li = u'\n  - '
-        for problem in self.problems or ():
-            msg += u'{}{}'.format(li, problem)
-
-        return msg
-
-
 def catch_errors(f):
     @functools.wraps(f)
     def inner(*a, **kw):
