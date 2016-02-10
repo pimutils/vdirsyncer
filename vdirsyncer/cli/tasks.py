@@ -4,10 +4,11 @@ import functools
 import json
 
 from .config import CollectionConfig
-from .utils import CliError, JobFailed, cli_logger, coerce_native, \
+from .utils import JobFailed, cli_logger, coerce_native, \
     collections_for_pair, get_status_name, handle_cli_error, load_status, \
     save_status, storage_class_from_config, storage_instance_from_config
 
+from .. import exceptions
 from ..sync import sync
 from ..utils.compat import to_unicode
 
@@ -28,7 +29,7 @@ def prepare_pair(wq, pair_name, collections, config, callback, **kwargs):
         try:
             config_a, config_b = all_collections[collection_name]
         except KeyError:
-            raise CliError(
+            raise exceptions.UserError(
                 'Pair {}: Collection {} not found. These are the '
                 'configured collections:\n{}'
                 .format(pair_name,
@@ -98,8 +99,10 @@ def repair_collection(config, collection):
             if config['collection'] == collection:
                 break
         else:
-            raise CliError('Couldn\'t find collection {} for storage {}.'
-                           .format(collection, storage_name))
+            raise exceptions.UserError(
+                'Couldn\'t find collection {} for storage {}.'
+                .format(collection, storage_name)
+            )
 
     config['type'] = storage_type
     storage = storage_instance_from_config(config)

@@ -3,9 +3,9 @@ import os
 import string
 from itertools import chain
 
-from . import CliError, cli_logger
+from . import cli_logger
 from .fetchparams import expand_fetch_params
-from .. import PROJECT_HOME
+from .. import PROJECT_HOME, exceptions
 from ..utils import cached_property, expand_path
 from ..utils.compat import text_type
 
@@ -23,10 +23,10 @@ def validate_section_name(name, section_type):
     invalid = set(name) - SECTION_NAME_CHARS
     if invalid:
         chars_display = ''.join(sorted(SECTION_NAME_CHARS))
-        raise CliError('The {}-section "{}" contains invalid characters. Only '
-                       'the following characters are allowed for storage and '
-                       'pair names:\n{}'.format(section_type, name,
-                                                chars_display))
+        raise exceptions.UserError(
+            'The {}-section "{}" contains invalid characters. Only '
+            'the following characters are allowed for storage and '
+            'pair names:\n{}'.format(section_type, name, chars_display))
 
 
 def _validate_general_section(general_config):
@@ -48,9 +48,10 @@ def _validate_general_section(general_config):
                         .format(u', '.join(missing)))
 
     if problems:
-        raise CliError(u'Invalid general section. Copy the example '
-                       u'config from the repository and edit it: {}'
-                       .format(PROJECT_HOME), problems=problems)
+        raise exceptions.UserError(
+            u'Invalid general section. Copy the example '
+            u'config from the repository and edit it: {}'
+            .format(PROJECT_HOME), problems=problems)
 
 
 def _validate_pair_section(pair_config):
@@ -77,8 +78,10 @@ def load_config():
         with open(fname) as f:
             general, pairs, storages = read_config(f)
     except Exception as e:
-        raise CliError('Error during reading config {}: {}'
-                       .format(fname, e))
+        raise exceptions.UserError(
+            'Error during reading config {}: {}'
+            .format(fname, e)
+        )
 
     return Config(general, pairs, storages)
 
@@ -105,7 +108,8 @@ def read_config(f):
 
     def handle_general(_, options):
         if general:
-            raise CliError('More than one general section in config file.')
+            raise exceptions.UserError(
+                'More than one general section in config file.')
         general.update(options)
 
     def bad_section(name, options):
@@ -125,7 +129,8 @@ def read_config(f):
             f = handlers.get(section_type, bad_section)
             f(name, get_options(section))
         except ValueError as e:
-            raise CliError('Section `{}`: {}'.format(section, str(e)))
+            raise exceptions.UserError(
+                'Section `{}`: {}'.format(section, str(e)))
 
     _validate_general_section(general)
     if getattr(f, 'name', None):
@@ -189,7 +194,7 @@ class Config(object):
             args = self.storages[storage_name]
         except KeyError:
             pair_pref = 'Pair {}: '.format(pair_name) if pair_name else ''
-            raise CliError(
+            raise exceptions.UserError(
                 '{}Storage {!r} not found. '
                 'These are the configured storages: {}'
                 .format(pair_pref, storage_name, list(self.storages))
