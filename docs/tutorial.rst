@@ -72,6 +72,7 @@ default addressbook to ``~/.contacts/``::
     [pair my_contacts]
     a = my_contacts_local
     b = my_contacts_remote
+    collections = null
 
     [storage my_contacts_local]
     type = filesystem
@@ -122,14 +123,14 @@ value.
 Collection discovery
 --------------------
 
-Configuring each collection (=addressbook/calendar) becomes extremely
-repetitive if they are all on the same server. Vdirsyncer can do this for you
-by automatically downloading a list of the configured user's collections::
+The above configuration only syncs a single addressbook.  This is denoted by
+``collections = null`` (collection = addressbook/calendar). We can change this
+line to let vdirsyncer automatically sync all addressbooks it can find::
 
     [pair my_contacts]
     a = my_contacts_local
     b = my_contacts_remote
-    collections = ["from b"]
+    collections = ["from a", "from b"]  # changed from `null`
 
     [storage my_contacts_local]
     type = filesystem
@@ -138,6 +139,8 @@ by automatically downloading a list of the configured user's collections::
 
     [storage my_contacts_remote]
     type = carddav
+
+    # We can simplify this URL here as well. In theory it shouldn't matter.
     url = https://owncloud.example.com/remote.php/carddav/
     username = bob
     password = asdf

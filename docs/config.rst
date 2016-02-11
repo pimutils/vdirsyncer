@@ -52,14 +52,11 @@ Pair Section
 
 - ``a`` and ``b`` reference the storages to sync by their names.
 
-- ``collections``: Optional, a list of collections to synchronize when
-  ``vdirsyncer sync`` is executed. If this parameter is omitted, it is assumed
-  the storages are already directly pointing to one collection each. Specifying
-  a collection multiple times won't make vdirsyncer sync that collection more
-  than once.
+- ``collections``: A list of collections to synchronize when
+  ``vdirsyncer sync`` is executed.
 
-  Furthermore, there are the special values ``"from a"`` and ``"from b"``,
-  which tell vdirsyncer to try autodiscovery on a specific storage.
+  The special values ``"from a"`` and ``"from b"``, tell vdirsyncer to try
+  autodiscovery on a specific storage.
 
   Examples:
 

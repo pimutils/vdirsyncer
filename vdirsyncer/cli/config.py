@@ -55,14 +55,28 @@ def _validate_general_section(general_config):
 
 
 def _validate_pair_section(pair_config):
-    collections = pair_config.get('collections', None)
+    try:
+        collections = pair_config['collections']
+    except KeyError:
+        raise ValueError('collections parameter missing.\n\n'
+                         'As of 0.9.0 this parameter has no default anymore. '
+                         'Set `collections = null` explicitly in your pair '
+                         'config.')
+
     if collections is None:
         return
+
     e = ValueError('`collections` parameter must be a list of collection '
                    'names (strings!) or `null`.')
-    if not isinstance(collections, list) or \
-       any(not isinstance(x, (text_type, bytes)) for x in collections):
+
+    if not isinstance(collections, list):
         raise e
+
+    if any(not isinstance(x, (text_type, bytes)) for x in collections):
+        raise e
+
+    if len(set(collections)) != len(collections):
+        raise ValueError('Duplicate values in collections parameter.')
 
 
 def load_config():

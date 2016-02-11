@@ -19,16 +19,11 @@ status_path = ~/.vdirsyncer/status/
 a = bob_contacts_local
 b = bob_contacts_remote
 
-
-# Synchronize all collections available on "side B" (in this case the server).
+# Synchronize all collections that can be found.
 # You need to run `vdirsyncer discover` if new calendars/addressbooks are added
 # on the server.
 
-# Omitting this parameter implies that the given path and URL in the
-# corresponding `[storage <name>]` blocks are already directly pointing to a
-# collection each.
-
-collections = ["from b"]
+collections = ["from a", "from b"]
 
 # Synchronize the "display name" property into a local file (~/.contacts/displayname).
 metadata = ["displayname"]
@@ -58,7 +53,7 @@ url = https://owncloud.example.com/remote.php/carddav/
 [pair bob_calendar]
 a = bob_calendar_local
 b = bob_calendar_remote
-collections = ["private", "work"]
+collections = ["from a", "from b"]
 
 # Calendars also have a color property
 metadata = ["displayname", "color"]
