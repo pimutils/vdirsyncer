@@ -25,7 +25,7 @@ NOTE:Example VCard.
 ORG:Self Employed
 TEL;TYPE=VOICE:412 605 0499
 TEL;TYPE=FAX:412 605 0705
-URL:http://www.example.com
+URL;VALUE=URI:http://www.example.com
 X-SOMETHING:{r}
 UID:{uid}
 END:VCARD'''
