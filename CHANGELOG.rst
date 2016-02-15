@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.9.0
 =============
 
+*released on 15 February 2016*
+
 - The ``collections`` parameter is now required in pair configurations.
   Vdirsyncer will tell you what to do in its error message. See :gh:`328`.
 
