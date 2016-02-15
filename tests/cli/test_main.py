@@ -19,6 +19,7 @@ def test_simple_run(tmpdir, runner):
     [pair my_pair]
     a = my_a
     b = my_b
+    collections = null
 
     [storage my_a]
     type = filesystem
@@ -48,6 +49,7 @@ def test_debug_connections(tmpdir, runner):
     [pair my_pair]
     a = my_a
     b = my_b
+    collections = null
 
     [storage my_a]
     type = filesystem
@@ -75,6 +77,7 @@ def test_empty_storage(tmpdir, runner):
     [pair my_pair]
     a = my_a
     b = my_b
+    collections = null
 
     [storage my_a]
     type = filesystem
@@ -241,6 +244,7 @@ def test_multiple_pairs(tmpdir, runner):
             [pair {a}{b}]
             a = {a}
             b = {b}
+            collections = null
             ''').format(a=name_a, b=name_b)
 
             for name in name_a, name_b:
@@ -326,6 +330,7 @@ def test_ident_conflict(tmpdir, runner):
     [pair foobar]
     a = foo
     b = bar
+    collections = null
 
     [storage foo]
     type = filesystem
@@ -365,6 +370,7 @@ def test_unknown_storage(tmpdir, runner, existing, missing):
     [pair foobar]
     a = foo
     b = bar
+    collections = null
 
     [storage {existing}]
     type = filesystem

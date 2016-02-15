@@ -29,6 +29,7 @@ def test_read_config(read_config, monkeypatch):
         b = bob_b
         foo = bar
         bam = true
+        collections = null
 
         [storage bob_a]
         type = filesystem
@@ -45,7 +46,8 @@ def test_read_config(read_config, monkeypatch):
         ''')
 
     assert general == {'status_path': '/tmp/status/'}
-    assert pairs == {'bob': ('bob_a', 'bob_b', {'bam': True, 'foo': 'bar'})}
+    assert pairs == {'bob': ('bob_a', 'bob_b',
+                             {'collections': None, 'bam': True, 'foo': 'bar'})}
     assert storages == {
         'bob_a': {'type': 'filesystem', 'path': '/tmp/contacts/', 'fileext':
                   '.vcf', 'yesno': False, 'number': 42,
@@ -56,6 +58,30 @@ def test_read_config(read_config, monkeypatch):
     assert len(errors) == 1
     assert errors[0].startswith('Unknown section')
     assert 'bogus' in errors[0]
+
+
+def test_missing_collections_param(read_config, monkeypatch):
+    errorlog = []
+    monkeypatch.setattr('vdirsyncer.cli.cli_logger.error', errorlog.append)
+
+    with pytest.raises(exceptions.UserError) as excinfo:
+        read_config(u'''
+            [general]
+            status_path = /tmp/status/
+
+            [pair bob]
+            a = bob_a
+            b = bob_b
+
+            [storage bob_a]
+            type = lmao
+
+            [storage bob_b]
+            type = lmao
+            ''')
+
+    assert 'collections parameter missing' in str(excinfo.value)
+    assert not errorlog
 
 
 def test_storage_instance_from_config(monkeypatch):
@@ -75,6 +101,7 @@ def test_missing_general_section(read_config):
             [pair my_pair]
             a = my_a
             b = my_b
+            collections = null
 
             [storage my_a]
             type = filesystem

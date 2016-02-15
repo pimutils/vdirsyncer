@@ -9,6 +9,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/untitaker/vdirsyncer/tags.atom>`_.
 
+Version 0.9.0
+=============
+
+- The ``collections`` parameter is now required in pair configurations.
+  Vdirsyncer will tell you what to do in its error message. See :gh:`328`.
+
 Version 0.8.1
 =============
 

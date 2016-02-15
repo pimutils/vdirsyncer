@@ -252,14 +252,14 @@ def _handle_collection_not_found(config, collection, e=None):
 
 def _collections_for_pair_impl(status_path, pair):
 
-    shortcuts = set(pair.options.get('collections', ()))
-    if not shortcuts:
+    shortcuts = pair.options['collections']
+    if shortcuts is None:
         yield None, (pair.config_a, pair.config_b)
     else:
         a_discovered = _discover_from_config(pair.config_a)
         b_discovered = _discover_from_config(pair.config_b)
 
-        for shortcut in shortcuts:
+        for shortcut in set(shortcuts):
             if shortcut == 'from a':
                 collections = a_discovered
             elif shortcut == 'from b':
