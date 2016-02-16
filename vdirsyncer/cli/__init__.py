@@ -195,7 +195,6 @@ def discover(ctx, pairs, max_workers):
     wq = WorkerQueue(max_workers)
 
     with wq.join():
-        print("PAIRS", pairs)
         for pair_name in (pairs or config.pairs):
             pair = config.get_pair(pair_name)
 
