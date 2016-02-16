@@ -127,10 +127,21 @@ def test_split_collection_timezones():
     assert given == expected
 
 
+def test_split_contacts():
+    bare = '\r\n'.join([VCARD_TEMPLATE.format(r=x, uid=x) for x in range(4)])
+    with_wrapper = 'BEGIN:VADDRESSBOOK\r\n' + bare + '\nEND:VADDRESSBOOK\r\n'
+
+    for x in (bare, with_wrapper):
+        split = list(vobject.split_collection(bare))
+        assert len(split) == 4
+        assert vobject.join_collection(split).splitlines() == \
+            with_wrapper.splitlines()
+
+
 def test_hash_item():
     a = EVENT_TEMPLATE.format(r=1, uid=1)
     b = u'\n'.join(line for line in a.splitlines()
-                   if u'PRODID' not in line and u'VERSION' not in line)
+                   if u'PRODID' not in line)
     assert vobject.hash_item(a) == vobject.hash_item(b)
 
 

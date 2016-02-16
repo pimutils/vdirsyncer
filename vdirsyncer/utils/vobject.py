@@ -18,8 +18,6 @@ def _process_properties(*s):
 IGNORE_PROPS = _process_properties(
     # PRODID is changed by radicale for some reason after upload
     'PRODID',
-    # VERSION can get lost in singlefile storage
-    'VERSION',
     # X-RADICALE-NAME is used by radicale, because hrefs don't really exist in
     # their filesystem backend
     'X-RADICALE-NAME',
