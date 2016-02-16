@@ -2,6 +2,8 @@
 
 import pytest
 
+from copy import deepcopy
+
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.memory import MemoryStorage
@@ -336,12 +338,19 @@ def test_moved_href():
     sync(a, b, status)
 
     b.items['lol'] = b.items.pop('haha')
-    a.delete = a.update = a.upload = blow_up
+    a.delete = a.update = a.upload = b.delete = b.update = b.upload = blow_up
 
     sync(a, b, status)
     assert len(status) == 1
     assert len(list(a.list())) == len(list(b.list())) == 1
-    assert status['haha'][1]['href'] == 'haha'
+    assert status['haha'][1]['href'] == 'lol'
+    old_status = deepcopy(status)
+
+    # Further sync should be a noop
+    b.get_multi = blow_up
+    sync(a, b, status)
+    assert old_status == status
+    assert len(list(a.list())) == len(list(b.list())) == 1
 
 
 def test_bogus_etag_change():

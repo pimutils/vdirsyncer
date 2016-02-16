@@ -81,7 +81,7 @@ class StorageSyncer(object):
     things.'''
     def __init__(self, storage, status):
         '''
-        :param status: {ident: (href, etag)}
+        :param status: {ident: {'href': href, 'etag': etag}}
         '''
         self.storage = storage
         self.status = status
@@ -100,6 +100,11 @@ class StorageSyncer(object):
                 raise IdentConflict(storage=self.storage,
                                     hrefs=[self.idents[ident]['href'],
                                            href])
+
+            if ident in self.status:
+                # Necessary if item's href changes.
+                # Otherwise it's a no-op, like `a = a`.
+                self.status[ident]['href'] = props['href']
 
         for href, etag in self.storage.list():
             props = {'href': href, 'etag': etag}
