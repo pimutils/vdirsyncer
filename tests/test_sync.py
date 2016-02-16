@@ -338,6 +338,11 @@ def test_moved_href():
     sync(a, b, status)
 
     b.items['lol'] = b.items.pop('haha')
+
+    # The sync algorithm should prefetch `lol`, see that it's the same ident
+    # and not do anything else.
+    a.get_multi = blow_up  # Absolutely no prefetch on A
+    # No actual sync actions
     a.delete = a.update = a.upload = b.delete = b.update = b.upload = blow_up
 
     sync(a, b, status)
@@ -346,8 +351,9 @@ def test_moved_href():
     assert status['haha'][1]['href'] == 'lol'
     old_status = deepcopy(status)
 
-    # Further sync should be a noop
+    # Further sync should be a noop. Not even prefetching should occur.
     b.get_multi = blow_up
+
     sync(a, b, status)
     assert old_status == status
     assert len(list(a.list())) == len(list(b.list())) == 1
