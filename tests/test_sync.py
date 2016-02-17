@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import pytest
-
 from copy import deepcopy
+
+import pytest
 
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
