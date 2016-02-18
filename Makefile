@@ -28,6 +28,7 @@ install-servers:
 
 install-test: install-servers
 	pip install pytest pytest-xprocess pytest-localserver hypothesis pytest-subtesthack
+	(python --version | grep -vq 'Python 3.3') || pip install enum34
 	[ $(TRAVIS) != "true" ] || pip install coverage codecov
 
 test:
