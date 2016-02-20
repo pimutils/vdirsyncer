@@ -27,8 +27,15 @@ install-servers:
 	done
 
 install-test: install-servers
-	pip install pytest pytest-xprocess pytest-localserver hypothesis pytest-subtesthack
 	(python --version | grep -vq 'Python 3.3') || pip install enum34
+	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
+		pip install -U --force-reinstall \
+			git+https://github.com/DRMacIver/hypothesis \
+			git+https://github.com/pytest-dev/pytest; \
+	else
+		pip install pytest hypothesis
+	fi
+	pip install pytest-xprocess pytest-localserver pytest-subtesthack
 	[ $(TRAVIS) != "true" ] || pip install coverage codecov
 
 test:
