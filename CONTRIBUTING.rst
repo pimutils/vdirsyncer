@@ -1,3 +1,6 @@
+**Important:** Please read `CONTACT.rst <CONTACT.rst>`_ for questions and
+support requests.
+
 Reporting bugs
 ==============
 
