@@ -22,19 +22,14 @@ It aims to be for CalDAV and CardDAV what `OfflineIMAP
 .. image:: https://codecov.io/github/untitaker/vdirsyncer/coverage.svg?branch=master
     :target: https://codecov.io/github/untitaker/vdirsyncer?branch=master
 
-Installation and usage
-======================
+Links of interest
+=================
 
-If you already have it installed and want to quickly configure it, copy the
-``config.example`` to ``~/.vdirsyncer/config`` [1]_ and edit it. Then run
-``vdirsyncer sync``.
+* Check out `the tutorial
+  <https://vdirsyncer.readthedocs.org/en/stable/tutorial.html>`_ for basic
+  usage.
 
-If that method doesn't work for you or you want a deeper understanding of what
-you just did, check out `the tutorial
-<https://vdirsyncer.readthedocs.org/en/stable/tutorial.html>`_.
-
-.. [1] Or ``$XDG_CONFIG_HOME/vdirsyncer/config`` (normally
-   ``~/.config/vdirsyncer/config``) for XDG-Basedir spec compliance.
+* See `CONTACT.rst <CONTACT.rst>`_ for help and support.
 
 Donations
 =========
