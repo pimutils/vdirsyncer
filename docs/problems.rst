@@ -1,11 +1,8 @@
-==========================
-Support and Known Problems
-==========================
+==============
+Known Problems
+==============
 
-For any unanswered questions or problems, `open an issue on GitHub
-<https://github.com/untitaker/vdirsyncer/issues/new>`_ or `contact me directly
-<https://unterwaditzer.net>`_.
-
+For any unanswered questions or problems, see :doc:`contact`.
 
 .. _debian-urllib3:
 

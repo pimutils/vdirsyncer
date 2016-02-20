@@ -1,6 +1,6 @@
-=============
-Configuration
-=============
+=========================
+Full configuration manual
+=========================
 
 Vdirsyncer uses an ini-like format for storing its configuration. All values
 are JSON, invalid JSON will get interpreted as string::
