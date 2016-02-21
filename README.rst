@@ -34,14 +34,21 @@ Links of interest
 Donations
 =========
 
-- IBAN on request
+If you found my work useful, please consider donating. Thank you!
+
 - Bitcoin: ``16sSHxZm263WHR9P9PJjCxp64jp9ooXKVt``
-- Bountysource:
+
+- Bountysource is useful for funding work on a specific GitHub issue:
 
   .. image:: https://img.shields.io/bountysource/team/vdirsyncer/activity.svg
       :target: https://www.bountysource.com/teams/vdirsyncer
 
-- Flattr:
+  - There's also Bountysource `Salt
+    <https://salt.bountysource.com/teams/vdirsyncer>`_, for one-time and
+    recurring donations.
+
+
+- Flattr can be used for recurring donations:
 
   .. image:: https://api.flattr.com/button/flattr-badge-large.png
       :target: https://flattr.com/submit/auto?user_id=untitaker&url=https%3A%2F%2Fgithub.com%2Funtitaker%2Fvdirsyncer
