@@ -27,6 +27,7 @@ Table of Contents
    config
    supported
    problems
+   vdir
    changelog
    contact
    license
