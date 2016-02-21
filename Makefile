@@ -32,8 +32,8 @@ install-test: install-servers
 		pip install -U --force-reinstall \
 			git+https://github.com/DRMacIver/hypothesis \
 			git+https://github.com/pytest-dev/pytest; \
-	else
-		pip install pytest hypothesis
+	else \
+		pip install pytest hypothesis; \
 	fi
 	pip install pytest-xprocess pytest-localserver pytest-subtesthack
 	[ $(TRAVIS) != "true" ] || pip install coverage codecov
