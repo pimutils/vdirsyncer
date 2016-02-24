@@ -30,10 +30,16 @@ General Section
     #password_command =
 
 
-- ``status_path``: A directory where vdirsyncer will store metadata for the
-  next sync. The data is needed to determine whether a new item means it has
-  been added on one side or deleted on the other. Relative paths will be
-  interpreted as relative to the configuration file's directory.
+- ``status_path``: A directory where vdirsyncer will store some additional data
+  for the next sync.
+
+  The data is needed to determine whether a new item means it has been added on
+  one side or deleted on the other. Relative paths will be interpreted as
+  relative to the configuration file's directory.
+
+  See `A simple synchronization algorithm
+  <https://unterwaditzer.net/2016/sync-algorithm.html>`_ for what exactly is in
+  there.
 
 .. _pair_config:
 
