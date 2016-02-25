@@ -5,6 +5,8 @@ import pytest
 from vdirsyncer.metasync import MetaSyncConflict, metasync
 from vdirsyncer.storage.memory import MemoryStorage
 
+from . import blow_up
+
 
 def test_irrelevant_status():
     a = MemoryStorage()
@@ -15,7 +17,7 @@ def test_irrelevant_status():
     assert not status
 
 
-def test_basic():
+def test_basic(monkeypatch):
     a = MemoryStorage()
     b = MemoryStorage()
     status = {}
@@ -27,6 +29,13 @@ def test_basic():
     a.set_meta('foo', 'baz')
     metasync(a, b, status, keys=['foo'])
     assert a.get_meta('foo') == b.get_meta('foo') == 'baz'
+
+    monkeypatch.setattr(a, 'set_meta', blow_up)
+    monkeypatch.setattr(b, 'set_meta', blow_up)
+    metasync(a, b, status, keys=['foo'])
+    assert a.get_meta('foo') == b.get_meta('foo') == 'baz'
+    monkeypatch.undo()
+    monkeypatch.undo()
 
     b.set_meta('foo', None)
     metasync(a, b, status, keys=['foo'])
