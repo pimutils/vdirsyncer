@@ -10,9 +10,6 @@ Reporting bugs
 * Make sure you have the latest version by executing ``pip install --user
   --upgrade vdirsyncer``.
 
-* Include the Python version, your configuration, the commands you're
-  executing, and their output.
-
 * Use ``--verbosity=DEBUG`` when including output from vdirsyncer.
 
 Suggesting features
