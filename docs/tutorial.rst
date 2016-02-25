@@ -40,7 +40,7 @@ Configuration
     - Take a look at the :doc:`problems` page if anything doesn't work like
       planned.
 
-By default, *vdirsyncer* looks for its configuration file in the following
+By default, vdirsyncer looks for its configuration file in the following
 locations:
 
 - The file pointed to by the ``VDIRSYNCER_CONFIG`` environment variable.
@@ -109,7 +109,7 @@ Conflict resolution
 What if the same item is changed on both sides? What should vdirsyncer do? By
 default, it will show an ugly error message, which is surely a way to avoid the
 problem. Another way to solve that ambiguity is to add another line to the
-*pair* section::
+pair section::
 
     [pair my_contacts]
     ...
