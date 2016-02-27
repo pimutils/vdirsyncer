@@ -268,6 +268,10 @@ class StorageTests(object):
         if getattr(self, 'dav_server', '') == 'owncloud':
             pytest.skip('ownCloud is fundamentally broken.')
 
+        if not getattr(self, 'dav_server', ''):
+            assert s.get_meta('color') is None
+            assert s.get_meta('displayname') is None
+
         try:
             s.set_meta('color', None)
             assert s.get_meta('color') is None
