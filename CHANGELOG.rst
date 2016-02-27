@@ -9,6 +9,13 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/untitaker/vdirsyncer/tags.atom>`_.
 
+Version 0.9.1
+=============
+
+- Removed leftover debug print statement in ``vdirsyncer discover``, see commit
+  ``3d856749f37639821b148238ef35f1acba82db36``.
+
+
 Version 0.9.0
 =============
 
