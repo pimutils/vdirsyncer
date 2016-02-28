@@ -35,6 +35,12 @@ class CollectionNotFound(Error):
     '''Collection not found'''
 
 
+class PairNotFound(Error):
+    '''Pair not found'''
+
+    pair_name = None
+
+
 class PreconditionFailed(Error):
     '''
       - The item doesn't exist although it should
