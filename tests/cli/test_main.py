@@ -44,6 +44,13 @@ def test_simple_run(tmpdir, runner):
     assert tmpdir.join('path_b/haha.txt').read() == 'UID:haha'
 
 
+def test_sync_inexistant_pair(tmpdir, runner):
+    runner.write_with_general("")
+    result = runner.invoke(['sync', 'foo'])
+    assert result.exception
+    assert 'pair foo does not exist.' in result.output.lower()
+
+
 def test_debug_connections(tmpdir, runner):
     runner.write_with_general(dedent('''
     [pair my_pair]
