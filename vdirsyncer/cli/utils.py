@@ -68,6 +68,7 @@ class JobFailed(RuntimeError):
     pass
 
 
+# TODO: Making this a decorator would be nice
 def handle_cli_error(status_name=None):
     '''
     Print a useful error message for the current exception.
@@ -118,6 +119,12 @@ def handle_cli_error(status_name=None):
         )
     except (click.Abort, KeyboardInterrupt, JobFailed):
         pass
+    except exceptions.PairNotFound as e:
+        cli_logger.error(
+            'Pair {pair_name} does not exist. Please check your '
+            'configuration file and make sure you\'ve typed the pair name '
+            'correctly'.format(pair_name=e.pair_name)
+        )
     except Exception as e:
         if status_name:
             msg = 'Unhandled exception occured for {}.'.format(

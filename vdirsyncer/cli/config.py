@@ -217,7 +217,10 @@ class Config(object):
             return expand_fetch_params(args)
 
     def get_pair(self, pair_name):
-        return PairConfig(self, pair_name, *self.pairs[pair_name])
+        try:
+            return PairConfig(self, pair_name, *self.pairs[pair_name])
+        except KeyError as e:
+            raise exceptions.PairNotFound(e, pair_name=pair_name)
 
 
 class PairConfig(object):
