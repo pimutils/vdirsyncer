@@ -503,7 +503,15 @@ def assert_permissions(path, wanted):
 
 
 def coerce_native(x, encoding='utf-8'):
+    # XXX: Remove with Python 3 only
     try:
-        return to_native(x, encoding)
+        return str(x)
     except UnicodeError:
-        return repr(x)
+        pass
+
+    try:
+        return to_native(x, encoding=encoding)
+    except UnicodeError:
+        pass
+
+    return repr(x)
