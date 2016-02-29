@@ -31,6 +31,11 @@ Links of interest
 
 * See `CONTACT.rst <CONTACT.rst>`_ for help and support.
 
+License
+=======
+
+Licensed under the Expat/MIT license, see ``LICENSE``.
+
 Donations
 =========
 
