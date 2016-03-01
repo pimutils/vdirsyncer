@@ -5,6 +5,9 @@ vdirsyncer is a synchronization tool for vdir. See the README for more details.
 
 from __future__ import print_function
 
+PROJECT_HOME = 'https://github.com/untitaker/vdirsyncer'
+DOCS_HOME = 'https://vdirsyncer.readthedocs.org/en/stable'
+
 try:
     from .version import version as __version__  # noqa
 except ImportError:  # pragma: no cover
@@ -36,9 +39,4 @@ def _detect_faulty_requests():  # pragma: no cover
         print(text.format(e=str(e), d=DOCS_HOME), file=sys.stderr)
         sys.exit(1)
 
-
 _detect_faulty_requests()
-
-
-PROJECT_HOME = 'https://github.com/untitaker/vdirsyncer'
-DOCS_HOME = 'https://vdirsyncer.readthedocs.org/en/stable'
