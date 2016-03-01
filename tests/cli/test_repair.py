@@ -2,19 +2,33 @@
 
 from textwrap import dedent
 
-import pytest
+from hypothesis import given, settings
+import hypothesis.strategies as st
 
 from vdirsyncer.repair import repair_storage
 from vdirsyncer.storage.memory import MemoryStorage
 from vdirsyncer.utils import href_safe
 from vdirsyncer.utils.vobject import Item
 
+uid_strategy = st.text(st.characters(blacklist_categories=(
+    'Zs', 'Zl', 'Zp',
+    'Cc'
+)))
 
-def test_repair_uids():
+
+@given(uid=uid_strategy)
+@settings(perform_health_check=False)  # Using the random module for UIDs
+def test_repair_uids(uid):
     s = MemoryStorage()
     s.items = {
-        'one': ('asdf', Item(u'BEGIN:VCARD\nFN:Hans\nUID:asdf\nEND:VCARD')),
-        'two': ('asdf', Item(u'BEGIN:VCARD\nFN:Peppi\nUID:asdf\nEND:VCARD'))
+        'one': (
+            'asdf',
+            Item(u'BEGIN:VCARD\nFN:Hans\nUID:{}\nEND:VCARD'.format(uid))
+        ),
+        'two': (
+            'asdf',
+            Item(u'BEGIN:VCARD\nFN:Peppi\nUID:{}\nEND:VCARD'.format(uid))
+        )
     }
 
     uid1, uid2 = [s.get(href)[0].uid for href, etag in s.list()]
@@ -26,16 +40,16 @@ def test_repair_uids():
     assert uid1 != uid2
 
 
-@pytest.mark.parametrize('uid', [
-    u'äää',
-    u'test@foo',
-    u'test foo',
-])
+@given(uid=uid_strategy)
+@settings(perform_health_check=False)  # Using the random module for UIDs
 def test_repair_unsafe_uids(uid):
-    assert not href_safe(uid)
+    if href_safe(uid):
+        return
 
     s = MemoryStorage()
-    href, etag = s.upload(Item(u'BEGIN:VCARD\nUID:{}\nEND:VCARD'.format(uid)))
+    item = Item(u'BEGIN:VCARD\nUID:{}\nEND:VCARD'.format(uid))
+    print(repr(item.raw))
+    href, etag = s.upload(item)
     assert s.get(href)[0].uid == uid
 
     repair_storage(s)
