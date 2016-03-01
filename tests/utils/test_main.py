@@ -21,12 +21,6 @@ import vdirsyncer.utils.http  # noqa
 def no_debug_output(request):
     logger = click_log.basic_config('vdirsyncer')
     logger.setLevel(logging.WARNING)
-    old = logger.level
-
-    def teardown():
-        logger.setLevel(old)
-
-    request.addfinalizer(teardown)
 
 
 def test_get_class_init_args():
