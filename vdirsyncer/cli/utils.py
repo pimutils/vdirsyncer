@@ -97,7 +97,7 @@ def handle_cli_error(status_name=None):
             '{status_name}: One item changed on both sides. Resolve this '
             'conflict manually, or by setting the `conflict_resolution` '
             'parameter in your config file.\n'
-            'See also {docs}/api.html#pair-section\n'
+            'See also {docs}/config.html#pair-section\n'
             'Item ID: {e.ident}\n'
             'Item href on side A: {e.href_a}\n'
             'Item href on side B: {e.href_b}\n'
