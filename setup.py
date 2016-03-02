@@ -50,7 +50,7 @@ setup(
         ),
         # https://github.com/sigmavirus24/requests-toolbelt/pull/28
         'requests_toolbelt >=0.5.0',
-        'atomicwrites'
+        'atomicwrites>=0.1.6'
     ],
     extras_require={
         'remotestorage': ['requests-oauthlib']

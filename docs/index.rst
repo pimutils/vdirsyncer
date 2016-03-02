@@ -29,6 +29,7 @@ Table of Contents
    problems
    vdir
    contributing
+   packaging
    contact
    changelog
    license
