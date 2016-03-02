@@ -29,5 +29,6 @@ Table of Contents
    problems
    vdir
    changelog
+   packaging
    contact
    license
