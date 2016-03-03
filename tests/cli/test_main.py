@@ -8,10 +8,20 @@ from click.testing import CliRunner
 from hypothesis import example, given
 import hypothesis.strategies as st
 
+from pkg_resources import load_entry_point
+
 import pytest
 
 import vdirsyncer.cli as cli
 from vdirsyncer.utils.compat import PY2, to_native
+
+
+def test_entry_points(monkeypatch, capsys):
+    monkeypatch.setattr('sys.argv', ['--help'])
+    with pytest.raises(SystemExit) as excinfo:
+        load_entry_point('vdirsyncer', 'console_scripts', 'vdirsyncer')()
+
+    assert excinfo.value.code == 0
 
 
 def test_simple_run(tmpdir, runner):
