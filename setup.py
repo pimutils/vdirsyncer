@@ -79,6 +79,6 @@ setup(
         'remotestorage': ['requests-oauthlib']
     },
     cmdclass={
-        'requirements': PrintRequirements
+        'minimal_requirements': PrintRequirements
     }
 )
