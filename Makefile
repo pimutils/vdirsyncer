@@ -6,6 +6,8 @@ export RADICALE_BACKEND := filesystem
 export REQUIREMENTS := release
 export TESTSERVER_BASE := ./tests/storage/servers/
 export TRAVIS := false
+export CI := false
+export DETERMINISTIC_TESTS := false
 
 install-servers:
 	set -ex; \
