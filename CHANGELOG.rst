@@ -15,6 +15,8 @@ Version 0.9.1
 - Removed leftover debug print statement in ``vdirsyncer discover``, see commit
   ``3d856749f37639821b148238ef35f1acba82db36``.
 
+- ``metasync`` will now strip whitespace from the start and the end of the
+  values. See :gh:`358`.
 
 Version 0.9.0
 =============
