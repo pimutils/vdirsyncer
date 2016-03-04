@@ -52,10 +52,8 @@ class PrintRequirements(Command):
         pass
 
     def run(self):
-        [
+        for requirement in requirements:
             print(requirement.replace(">", "=").replace(" ", ""))
-            for requirement in requirements
-        ]
 
 setup(
     name='vdirsyncer',
