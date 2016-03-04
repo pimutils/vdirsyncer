@@ -35,10 +35,10 @@ setup(
     install_requires=[
         # https://github.com/mitsuhiko/click/issues/200
         'click>=5.0',
-        'click-log',
-        'click-threading',
+        'click-log>=0.1.3',
+        'click-threading>=0.1.2',
         # https://github.com/kennethreitz/requests/issues/2930
-        'requests !=2.9.0',
+        'requests >=2.0.1, !=2.9.0',
         'lxml >=3.1' + (
             # See https://github.com/untitaker/vdirsyncer/issues/298
             # We pin some LXML version that is known to work with PyPy
@@ -49,8 +49,9 @@ setup(
             else ''
         ),
         # https://github.com/sigmavirus24/requests-toolbelt/pull/28
-        'requests_toolbelt >=0.5.0',
-        'atomicwrites>=0.1.6'
+        'requests_toolbelt >=0.3.0',
+        # https://github.com/untitaker/python-atomicwrites/commit/4d12f23227b6a944ab1d99c507a69fdbc7c9ed6d  # noqa
+        'atomicwrites>=0.1.7'
     ],
     extras_require={
         'remotestorage': ['requests-oauthlib']
