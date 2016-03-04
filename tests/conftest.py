@@ -41,5 +41,5 @@ settings.register_profile("deterministic", settings(
 
 if os.getenv('DETERMINISTIC_TESTS').lower == 'true':
     settings.load_profile("deterministic")
-elif os.getenv('CI').lower == 'true':
+elif os.getenv('TRAVIS').lower == 'true':
     settings.load_profile("ci")
