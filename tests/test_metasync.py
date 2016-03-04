@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from hypothesis import given
+import hypothesis.strategies as st
+
 import pytest
 
 from vdirsyncer.metasync import MetaSyncConflict, metasync
@@ -82,3 +85,17 @@ def test_conflict_x_wins(wins):
     assert a.get_meta('foo') == b.get_meta('foo') == status['foo'] == (
         'bar' if wins == 'a' else 'baz'
     )
+
+
+@given(s=st.text().filter(lambda x: x.strip() == x), key=st.text())
+def test_trailing_newline(s, key):
+    a = MemoryStorage()
+    b = MemoryStorage()
+    status = {}
+    a.set_meta(key, s + u'\n')
+    b.set_meta(key, s)
+    a.set_meta = b.set_meta = blow_up
+
+    metasync(a, b, status, keys=[key])
+
+    assert status[key] == s
