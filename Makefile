@@ -5,7 +5,7 @@ export REMOTESTORAGE_SERVER := skip
 export RADICALE_BACKEND := filesystem
 export REQUIREMENTS := release
 export TESTSERVER_BASE := ./tests/storage/servers/
-export TRAVIS := false
+export CI := false
 export DETERMINISTIC_TESTS := false
 
 install-servers:
@@ -28,11 +28,11 @@ install-test: install-servers
 			git+https://github.com/DRMacIver/hypothesis \
 			git+https://github.com/pytest-dev/pytest; \
 	fi
-	[ $(TRAVIS) != "true" ] || pip install coverage codecov
+	[ $(CI) != "true" ] || pip install coverage codecov
 
 test:
 	set -e; \
-	if [ "$(TRAVIS)" = "true" ]; then \
+	if [ "$(CI)" = "true" ]; then \
 		coverage run --source=vdirsyncer/ --module pytest; \
 		codecov; \
 	else \
