@@ -3,8 +3,11 @@
 General-purpose fixtures for vdirsyncer's testsuite.
 '''
 import logging
+import os
 
 import click_log
+
+from hypothesis import Verbosity, settings
 
 import pytest
 
@@ -27,3 +30,16 @@ except ImportError:
         return lambda x: x()
 else:
     del pytest_benchmark
+
+settings.register_profile("ci", settings(
+    max_examples=1000,
+    verbosity=Verbosity.verbose,
+))
+settings.register_profile("deterministic", settings(
+    derandomize=True,
+))
+
+if os.getenv('DETERMINISTIC_TESTS').lower == 'true':
+    settings.load_profile("deterministic")
+elif os.getenv('TRAVIS').lower == 'true':
+    settings.load_profile("ci")

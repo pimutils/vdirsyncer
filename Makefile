@@ -1,11 +1,4 @@
-# Packagers who want to run the testsuite against an installed vdirsyncer:
-#
-# - Create a virtualenv
-# - Somehow link your installation of vdirsyncer into the virtualenv, e.g. by
-#   using --system-site-packages when creating the virtualenv
-# - Inside the virtualenv: `make install-test test`
-#
-# The `install-test` target requires internet access.
+# See the documentation on how to run the tests.
 
 export DAV_SERVER := skip
 export REMOTESTORAGE_SERVER := skip
@@ -13,6 +6,7 @@ export RADICALE_BACKEND := filesystem
 export REQUIREMENTS := release
 export TESTSERVER_BASE := ./tests/storage/servers/
 export TRAVIS := false
+export DETERMINISTIC_TESTS := false
 
 install-servers:
 	set -ex; \
@@ -28,14 +22,12 @@ install-servers:
 
 install-test: install-servers
 	(python --version | grep -vq 'Python 3.3') || pip install enum34
+	pip install -r test-requirements.txt
 	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
 		pip install -U --force-reinstall \
 			git+https://github.com/DRMacIver/hypothesis \
 			git+https://github.com/pytest-dev/pytest; \
-	else \
-		pip install pytest hypothesis; \
 	fi
-	pip install pytest-xprocess pytest-localserver pytest-subtesthack
 	[ $(TRAVIS) != "true" ] || pip install coverage codecov
 
 test:
@@ -62,7 +54,7 @@ travis-conf:
 	python3 scripts/make_travisconf.py > .travis.yml
 
 install-docs:
-	pip install sphinx sphinx_rtd_theme
+	pip install -r docs-requirements.txt
 
 docs:
 	cd docs && make html
@@ -88,7 +80,7 @@ install-dev:
 	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
 	    pip install -U --force-reinstall git+https://github.com/kennethreitz/requests; \
 	elif [ "$$REQUIREMENTS" = "minimal" ]; then \
-		pip install -U --force-reinstall lxml==3.1 requests==2.4.1 requests_toolbelt==0.4.0 click==5.0; \
+		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
 	fi
 
 .PHONY: docs
