@@ -1,3 +1,5 @@
+Before you submit bug reports: https://vdirsyncer.readthedocs.org/en/stable/contributing.html
+
 Things to include in your bugreport:
 
 * Your vdirsyncer version

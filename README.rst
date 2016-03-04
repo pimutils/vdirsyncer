@@ -29,10 +29,11 @@ Links of interest
   <https://vdirsyncer.readthedocs.org/en/stable/tutorial.html>`_ for basic
   usage.
 
-* See `CONTACT.rst <CONTACT.rst>`_ for help and support.
+* `Contact information
+  <https://vdirsyncer.readthedocs.org/en/stable/contact.html>`_
 
-* See `CONTRIBUTING.rst <CONTRIBUTING.rst>`_ for how to contribute to this
-  project.
+* `How to contribute to this project
+  <https://vdirsyncer.readthedocs.org/en/stable/contributing.html>`_
 
 License
 =======

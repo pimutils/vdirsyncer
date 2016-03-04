@@ -28,6 +28,7 @@ Table of Contents
    supported
    problems
    vdir
-   changelog
+   contributing
    contact
+   changelog
    license
