@@ -31,6 +31,9 @@ Links of interest
 
 * See `CONTACT.rst <CONTACT.rst>`_ for help and support.
 
+* See `CONTRIBUTING.rst <CONTRIBUTING.rst>`_ for how to contribute to this
+  project.
+
 License
 =======
 
