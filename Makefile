@@ -78,7 +78,15 @@ install-dev:
 	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
 	    pip install -U --force-reinstall git+https://github.com/kennethreitz/requests; \
 	elif [ "$$REQUIREMENTS" = "minimal" ]; then \
-		pip install -U --force-reinstall lxml==3.1 requests==2.4.1 requests_toolbelt==0.4.0 click==5.0; \
+		# FIXME: Looking for a tool that parses setup.py requirements and installs minimum viable version
+		pip install -U --force-reinstall \
+			lxml==3.1 \
+			requests==2.0.1 \
+			requests_toolbelt==0.4.0 \
+			click-threading==0.1.2 \
+			click-log==0.1.3 \
+			atomicwrites==0.1.7 \
+			click==5.0; \
 	fi
 
 .PHONY: docs
