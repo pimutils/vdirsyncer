@@ -11,9 +11,8 @@ Vdirsyncer is a synchronization tool for vdir. See the README for more details.
 
 
 import platform
-import re
 
-from setuptools import find_packages, setup, Command
+from setuptools import Command, find_packages, setup
 
 
 requirements = [

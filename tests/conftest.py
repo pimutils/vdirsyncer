@@ -6,8 +6,10 @@ import logging
 import os
 
 import click_log
+
+from hypothesis import Verbosity, settings
+
 import pytest
-from hypothesis import settings, Verbosity
 
 
 @pytest.fixture(autouse=True)
