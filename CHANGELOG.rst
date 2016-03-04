@@ -18,6 +18,8 @@ Version 0.9.1
 - ``metasync`` will now strip whitespace from the start and the end of the
   values. See :gh:`358`.
 
+- New ``Packaging Guidelines`` have been added to the documentation.
+
 Version 0.9.0
 =============
 
