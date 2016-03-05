@@ -24,9 +24,9 @@ requirements = [
     # >=2.4.1: https://github.com/shazow/urllib3/pull/444
     #
     # Without the above pull request, `verify=False` also disables fingerprint
-    # validation. This is *not* what we want, and it's not possible to replicate
-    # vdirsyncer's current behavior (verifying fingerprints without verifying
-    # against CAs) with older versions of urllib3.
+    # validation. This is *not* what we want, and it's not possible to
+    # replicate vdirsyncer's current behavior (verifying fingerprints without
+    # verifying against CAs) with older versions of urllib3.
     'requests >=2.4.1, !=2.9.0',
     'lxml >=3.1' + (
         # See https://github.com/untitaker/vdirsyncer/issues/298
