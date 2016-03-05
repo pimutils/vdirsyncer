@@ -32,7 +32,8 @@ requirements = [
         else ''
     ),
     # https://github.com/sigmavirus24/requests-toolbelt/pull/28
-    'requests_toolbelt >=0.3.0',
+    # And https://github.com/sigmavirus24/requests-toolbelt/issues/54
+    'requests_toolbelt >=0.4.0',
     # https://github.com/untitaker/python-atomicwrites/commit/4d12f23227b6a944ab1d99c507a69fdbc7c9ed6d  # noqa
     'atomicwrites>=0.1.7'
 ]
