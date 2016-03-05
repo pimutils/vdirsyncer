@@ -20,8 +20,14 @@ requirements = [
     'click>=5.0',
     'click-log>=0.1.3',
     'click-threading>=0.1.2',
-    # https://github.com/kennethreitz/requests/issues/2930
-    'requests >=2.0.1, !=2.9.0',
+    # !=2.9.0: https://github.com/kennethreitz/requests/issues/2930
+    # >=2.4.1: https://github.com/shazow/urllib3/pull/444
+    #
+    # Without the above pull request, `verify=False` also disables fingerprint
+    # validation. This is *not* what we want, and it's not possible to replicate
+    # vdirsyncer's current behavior (verifying fingerprints without verifying
+    # against CAs) with older versions of urllib3.
+    'requests >=2.4.1, !=2.9.0',
     'lxml >=3.1' + (
         # See https://github.com/untitaker/vdirsyncer/issues/298
         # We pin some LXML version that is known to work with PyPy

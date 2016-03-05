@@ -8,28 +8,6 @@ from .. import exceptions, log
 logger = log.get(__name__)
 
 
-def _verify_fingerprint_works():
-    try:
-        from pkg_resources import parse_version as ver
-
-        return ver(requests.__version__) >= ver('2.4.1')
-    except Exception:
-        return False
-
-# https://github.com/shazow/urllib3/pull/444
-#
-# Without the above pull request, `verify=False` also disables fingerprint
-# validation. This is *not* what we want, and it's not possible to replicate
-# vdirsyncer's current behavior (verifying fingerprints without verifying
-# against CAs) with older versions of urllib3.
-#
-# We check this here instead of setup.py, because:
-# - Python's packaging stuff doesn't check installed versions.
-# - The people who don't use `verify_fingerprint` wouldn't care.
-VERIFY_FINGERPRINT_WORKS = _verify_fingerprint_works()
-del _verify_fingerprint_works
-
-
 def _install_fingerprint_adapter(session, fingerprint):
     prefix = 'https://'
     try:
@@ -65,9 +43,6 @@ def request(method, url, session=None, latin1_fallback=True,
         session = requests.Session()
 
     if verify_fingerprint is not None:
-        if not VERIFY_FINGERPRINT_WORKS:
-            raise RuntimeError('`verify_fingerprint` can only be used with '
-                               'requests versions >= 2.4.1')
         _install_fingerprint_adapter(session, verify_fingerprint)
 
     func = session.request
