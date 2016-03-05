@@ -59,5 +59,5 @@ def _normalize_value(value):
     if value is None:
         return value
     else:
-        assert isinstance(value, text_type)
+        assert isinstance(value, (bytes, text_type))
         return value.strip()
