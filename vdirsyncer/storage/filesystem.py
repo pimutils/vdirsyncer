@@ -6,7 +6,7 @@ import subprocess
 
 from atomicwrites import atomic_write
 
-from .base import Item, Storage
+from .base import Item, Storage, normalize_meta_value
 from .. import exceptions, log
 from ..utils import checkdir, expand_path, generate_href, get_etag_from_file, \
     get_etag_from_fileobject
@@ -183,16 +183,16 @@ class FilesystemStorage(Storage):
         fpath = os.path.join(self.path, key)
         try:
             with open(fpath, 'rb') as f:
-                return f.read().decode(self.encoding) or None
+                return normalize_meta_value(f.read().decode(self.encoding))
         except IOError as e:
             if e.errno == errno.ENOENT:
-                return None
+                return u''
             else:
                 raise
 
     def set_meta(self, key, value):
-        value = value or u''
-        assert isinstance(value, text_type)
+        value = normalize_meta_value(value)
+
         fpath = os.path.join(self.path, key)
         with atomic_write(fpath, mode='wb', overwrite=True) as f:
             f.write(value.encode(self.encoding))

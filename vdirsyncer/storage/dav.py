@@ -7,11 +7,11 @@ from lxml import etree
 import requests
 from requests.exceptions import HTTPError
 
-from .base import Item, Storage
+from .base import Item, Storage, normalize_meta_value
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
 from .. import exceptions, log, utils
-from ..utils.compat import text_type, to_native, to_unicode
+from ..utils.compat import text_type, to_native
 
 
 dav_logger = log.get(__name__)
@@ -597,9 +597,10 @@ class DavStorage(Storage):
         root = _parse_xml(response.content)
 
         for prop in root.findall('.//' + lxml_selector):
-            text = getattr(prop, 'text', None)
+            text = normalize_meta_value(getattr(prop, 'text', None))
             if text:
-                return to_unicode(text)
+                return text
+        return u''
 
     def set_meta(self, key, value):
         try:
@@ -609,7 +610,7 @@ class DavStorage(Storage):
 
         lxml_selector = '{%s}%s' % (namespace, tagname)
         element = etree.Element(lxml_selector)
-        element.text = value
+        element.text = normalize_meta_value(value)
 
         data = '''<?xml version="1.0" encoding="utf-8" ?>
             <D:propertyupdate xmlns:D="DAV:">

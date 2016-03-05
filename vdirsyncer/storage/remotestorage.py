@@ -19,7 +19,7 @@ We also use a custom ``data``-URI for the redirect in OAuth:
 
 import click
 
-from .base import Item, Storage
+from .base import Item, Storage, normalize_meta_value
 from .http import HTTP_STORAGE_PARAMETERS, prepare_client_cert, \
     prepare_verify
 from .. import exceptions, log, utils
@@ -225,15 +225,15 @@ class RemoteStorage(Storage):
 
     def get_meta(self, key):
         try:
-            return self.session.request('GET', key).text or None
+            return normalize_meta_value(self.session.request('GET', key).text)
         except exceptions.NotFoundError:
-            pass
+            return u''
 
     def set_meta(self, key, value):
         self.session.request(
             'PUT',
             key,
-            data=(value or u'').encode('utf-8'),
+            data=normalize_meta_value(value).encode('utf-8'),
             headers={'Content-Type': 'text/plain; charset=utf-8'}
         )
 

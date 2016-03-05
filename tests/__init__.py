@@ -3,6 +3,8 @@
 Test suite for vdirsyncer.
 '''
 
+import hypothesis.strategies as st
+
 from vdirsyncer.utils.vobject import normalize_item
 
 
@@ -66,3 +68,7 @@ UID:{uid}
 X-SOMETHING:{r}
 HAHA:YES
 END:FOO'''
+
+printable_characters_strategy = st.text(
+    st.characters(blacklist_categories=('Cc',))
+)

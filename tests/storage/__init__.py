@@ -2,14 +2,17 @@
 
 import random
 
+from hypothesis import given
+import hypothesis.strategies as st
+
 import pytest
 
 import vdirsyncer.exceptions as exceptions
-from vdirsyncer.storage.base import Item
+from vdirsyncer.storage.base import Item, normalize_meta_value
 from vdirsyncer.utils.compat import iteritems, text_type, urlquote, urlunquote
 
 from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
-    assert_item_equals
+    assert_item_equals, printable_characters_strategy
 
 
 def get_server_mixin(server_name):
@@ -269,12 +272,12 @@ class StorageTests(object):
             pytest.skip('ownCloud is fundamentally broken.')
 
         if not getattr(self, 'dav_server', ''):
-            assert s.get_meta('color') is None
-            assert s.get_meta('displayname') is None
+            assert not s.get_meta('color')
+            assert not s.get_meta('displayname')
 
         try:
             s.set_meta('color', None)
-            assert s.get_meta('color') is None
+            assert not s.get_meta('color')
             s.set_meta('color', u'#ff0000')
             assert s.get_meta('color') == u'#ff0000'
         except exceptions.UnsupportedMetadataError:
@@ -285,3 +288,17 @@ class StorageTests(object):
             rv = s.get_meta('displayname')
             assert rv == x
             assert isinstance(rv, text_type)
+
+    @given(value=st.one_of(
+        st.none(),
+        printable_characters_strategy.filter(lambda x: x.strip() != x)
+    ))
+    def test_metadata_normalization(self, requires_metadata, s, value):
+        x = s.get_meta('displayname')
+        assert x == normalize_meta_value(x)
+
+        if not getattr(self, 'dav_server', None):
+            # ownCloud replaces "" with "unnamed"
+            # Also https://github.com/owncloud/core/issues/18409
+            s.set_meta('displayname', value)
+            assert s.get_meta('displayname') == normalize_meta_value(value)
