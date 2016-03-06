@@ -70,5 +70,7 @@ HAHA:YES
 END:FOO'''
 
 printable_characters_strategy = st.text(
-    st.characters(blacklist_categories=('Cc',))
+    st.characters(blacklist_categories=(
+        'Cc', 'Cs'
+    ))
 )
