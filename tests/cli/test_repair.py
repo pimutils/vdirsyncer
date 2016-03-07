@@ -12,7 +12,7 @@ from vdirsyncer.utils.vobject import Item
 
 uid_strategy = st.text(st.characters(blacklist_categories=(
     'Zs', 'Zl', 'Zp',
-    'Cc'
+    'Cc', 'Cs'
 )))
 
 

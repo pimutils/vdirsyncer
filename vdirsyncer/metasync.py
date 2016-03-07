@@ -1,5 +1,5 @@
 from . import exceptions, log
-from .utils.compat import text_type
+from .storage.base import normalize_meta_value
 
 logger = log.get(__name__)
 
@@ -34,9 +34,9 @@ def metasync(storage_a, storage_b, status, keys, conflict_resolution=None):
             _b_to_a()
 
     for key in keys:
-        a = _normalize_value(storage_a.get_meta(key))
-        b = _normalize_value(storage_b.get_meta(key))
-        s = status.get(key)
+        a = storage_a.get_meta(key)
+        b = storage_b.get_meta(key)
+        s = normalize_meta_value(status.get(key))
         logger.debug(u'Key: {}'.format(key))
         logger.debug(u'A: {}'.format(a))
         logger.debug(u'B: {}'.format(b))
@@ -53,11 +53,3 @@ def metasync(storage_a, storage_b, status, keys, conflict_resolution=None):
 
     for key in set(status) - set(keys):
         del status[key]
-
-
-def _normalize_value(value):
-    if value is None:
-        return value
-    else:
-        assert isinstance(value, (bytes, text_type))
-        return value.strip()

@@ -2,8 +2,9 @@
 
 import random
 
-import vdirsyncer.exceptions as exceptions
-from vdirsyncer.storage.base import Storage
+from .base import Storage, normalize_meta_value
+
+from .. import exceptions
 
 
 def _random_string():
@@ -66,7 +67,7 @@ class MemoryStorage(Storage):
         del self.items[href]
 
     def get_meta(self, key):
-        return self.metadata.get(key)
+        return normalize_meta_value(self.metadata.get(key))
 
     def set_meta(self, key, value):
-        self.metadata[key] = value
+        self.metadata[key] = normalize_meta_value(value)

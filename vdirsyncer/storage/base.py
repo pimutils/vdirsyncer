@@ -5,7 +5,7 @@ import functools
 
 from .. import exceptions, sync
 from ..utils import uniq
-from ..utils.compat import to_native, with_metaclass
+from ..utils.compat import to_native, to_unicode, with_metaclass
 from ..utils.vobject import Item  # noqa
 
 
@@ -238,3 +238,7 @@ class Storage(with_metaclass(StorageMeta)):
         '''
 
         raise NotImplementedError('This storage does not support metadata.')
+
+
+def normalize_meta_value(value):
+    return to_unicode(value or u'').strip()
