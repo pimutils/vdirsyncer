@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 
 import functools
+import logging
 import sys
 
 import click
 
 import click_log
 
-from .. import __version__, log
+from .. import __version__
 from ..utils.compat import PY2
 
 
-cli_logger = log.get(__name__)
+cli_logger = logging.getLogger(__name__)
 
 
 class AppContext(object):
@@ -38,7 +39,7 @@ def catch_errors(f):
 
 
 def validate_verbosity(ctx, param, value):
-    x = getattr(log.logging, value.upper(), None)
+    x = getattr(logging.getLogger, value.upper(), None)
     if x is None:
         raise click.BadParameter(
             'Must be CRITICAL, ERROR, WARNING, INFO or DEBUG, not {}'
@@ -75,7 +76,7 @@ main = app
 
 
 def max_workers_callback(ctx, param, value):
-    if value == 0 and click_log.get_level() == log.logging.DEBUG:
+    if value == 0 and click_log.get_level() == logging.DEBUG:
         value = 1
 
     cli_logger.debug('Using {} maximal workers.'.format(value))

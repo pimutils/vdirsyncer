@@ -3,17 +3,18 @@
 import collections
 import contextlib
 import functools
+import logging
 import os
 
 from atomicwrites import atomic_write
 
 from .base import Item, Storage
-from .. import exceptions, log
+from .. import exceptions
 from ..utils import checkfile, expand_path
 from ..utils.compat import iteritems, itervalues
 from ..utils.vobject import join_collection, split_collection
 
-logger = log.get(__name__)
+logger = logging.getLogger(__name__)
 
 
 def _writing_op(f):

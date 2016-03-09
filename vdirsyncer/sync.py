@@ -10,11 +10,13 @@ The algorithm is based on the blogpost "How OfflineIMAP works" by Edward Z.
 Yang. http://blog.ezyang.com/2012/08/how-offlineimap-works/
 '''
 import itertools
+import logging
 
-from . import exceptions, log
+from . import exceptions
 from .utils import uniq
 from .utils.compat import iteritems, text_type
-sync_logger = log.get(__name__)
+
+sync_logger = logging.getLogger(__name__)
 
 
 class SyncError(exceptions.Error):

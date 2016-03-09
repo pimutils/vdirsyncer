@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import errno
+import logging
 import os
 import subprocess
 
 from atomicwrites import atomic_write
 
 from .base import Item, Storage, normalize_meta_value
-from .. import exceptions, log
+from .. import exceptions
 from ..utils import checkdir, expand_path, generate_href, get_etag_from_file, \
     get_etag_from_fileobject
 from ..utils.compat import text_type, to_native
 
-logger = log.get(__name__)
+logger = logging.getLogger(__name__)
 
 
 class FilesystemStorage(Storage):
