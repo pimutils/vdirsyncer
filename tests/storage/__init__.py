@@ -94,10 +94,6 @@ class StorageTests(object):
         assert etag2 == etag
 
     def test_upload_already_existing(self, s, get_item):
-        if getattr(self, 'dav_server', '') == 'baikal':
-            # https://github.com/untitaker/vdirsyncer/issues/160
-            pytest.xfail(reason='Baikal uses an old version of SabreDAV.')
-
         item = get_item()
         s.upload(item)
         with pytest.raises(exceptions.PreconditionFailed):
@@ -120,19 +116,11 @@ class StorageTests(object):
         assert_item_equals(s.get(href)[0], new_item)
 
     def test_update_nonexisting(self, s, get_item):
-        if getattr(self, 'dav_server', '') == 'baikal':
-            # https://github.com/untitaker/vdirsyncer/issues/160
-            pytest.xfail(reason='Baikal uses an old version of SabreDAV.')
-
         item = get_item()
         with pytest.raises(exceptions.PreconditionFailed):
             s.update('huehue', item, '"123"')
 
     def test_wrong_etag(self, s, get_item):
-        if getattr(self, 'dav_server', '') == 'baikal':
-            # https://github.com/untitaker/vdirsyncer/issues/160
-            pytest.xfail(reason='Baikal uses an old version of SabreDAV.')
-
         item = get_item()
         href, etag = s.upload(item)
         with pytest.raises(exceptions.PreconditionFailed):
