@@ -38,16 +38,6 @@ def catch_errors(f):
     return inner
 
 
-def validate_verbosity(ctx, param, value):
-    x = getattr(logging.getLogger, value.upper(), None)
-    if x is None:
-        raise click.BadParameter(
-            'Must be CRITICAL, ERROR, WARNING, INFO or DEBUG, not {}'
-            .format(value)
-        )
-    return x
-
-
 def _check_python2():
     if PY2:
         cli_logger.warning('Python 2 support will be dropped. Please switch '
