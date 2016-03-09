@@ -8,7 +8,7 @@ import click
 
 import click_log
 
-from .. import __version__
+from .. import PROJECT_HOME, __version__
 from ..utils.compat import PY2
 
 
@@ -42,8 +42,8 @@ def _check_python2():
     if PY2:
         cli_logger.warning('Python 2 support will be dropped. Please switch '
                            'to at least Python 3.3 as soon as possible. See '
-                           'https://github.com/untitaker/vdirsyncer/issues/219'
-                           ' for more information.')
+                           '{home}/issues/219 for more information.'
+                           .format(home=PROJECT_HOME))
 
 
 @click.group()
