@@ -2,4 +2,3 @@ hypothesis>=3
 pytest
 pytest-localserver
 pytest-subtesthack
-pytest-xprocess
