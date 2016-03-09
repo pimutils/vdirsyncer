@@ -280,6 +280,5 @@ class StorageTests(object):
 
         if not getattr(self, 'dav_server', None):
             # ownCloud replaces "" with "unnamed"
-            # Also https://github.com/owncloud/core/issues/18409
             s.set_meta('displayname', value)
             assert s.get_meta('displayname') == normalize_meta_value(value)
