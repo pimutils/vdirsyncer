@@ -17,18 +17,20 @@ We also use a custom ``data``-URI for the redirect in OAuth:
 
 '''
 
+import logging
+
 import click
 
 from .base import Item, Storage, normalize_meta_value
 from .http import HTTP_STORAGE_PARAMETERS, prepare_client_cert, \
     prepare_verify
-from .. import exceptions, log, utils
+from .. import exceptions, utils
 
 REDIRECT_URI = 'https://vdirsyncer.5apps.com/'
 CLIENT_ID = 'https://vdirsyncer.5apps.com'
 DRAFT_VERSION = '05'
 
-logger = log.get(__name__)
+logger = logging.getLogger(__name__)
 
 urljoin = utils.compat.urlparse.urljoin
 urlquote = utils.compat.urlquote

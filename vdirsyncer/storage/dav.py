@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import logging
 
 from lxml import etree
 
@@ -10,11 +11,11 @@ from requests.exceptions import HTTPError
 from .base import Item, Storage, normalize_meta_value
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
-from .. import exceptions, log, utils
+from .. import exceptions, utils
 from ..utils.compat import text_type, to_native
 
 
-dav_logger = log.get(__name__)
+dav_logger = logging.getLogger(__name__)
 
 CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
 

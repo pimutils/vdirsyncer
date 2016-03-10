@@ -1,7 +1,9 @@
-from . import exceptions, log
+import logging
+
+from . import exceptions
 from .storage.base import normalize_meta_value
 
-logger = log.get(__name__)
+logger = logging.getLogger(__name__)
 
 
 class MetaSyncError(exceptions.Error):

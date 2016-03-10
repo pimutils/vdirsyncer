@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+import logging
 
 import requests
 
-from .. import exceptions, log
+from .. import exceptions
 
 
-logger = log.get(__name__)
+logger = logging.getLogger(__name__)
 
 
 def _install_fingerprint_adapter(session, fingerprint):

@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import logging
+
 import click
 
 from . import AppContext
-from .. import exceptions, log
+from .. import exceptions
 from ..utils import expand_path, synchronized
 
 SUFFIX = '.fetch'
 
-logger = log.get(__name__)
+logger = logging.getLogger(__name__)
 
 
 def expand_fetch_params(config):

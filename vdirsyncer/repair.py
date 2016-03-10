@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import logging
 from os.path import basename
 
-
-from . import log
 from .utils import generate_href, href_safe
 from .utils.vobject import Item
 
-logger = log.get(__name__)
+logger = logging.getLogger(__name__)
 
 
 def repair_storage(storage):
