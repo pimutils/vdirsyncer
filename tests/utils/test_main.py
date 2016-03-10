@@ -79,3 +79,17 @@ def test_request_ssl_fingerprints(httpsserver, fingerprint):
         utils.http.request('GET', httpsserver.url, verify=False,
                            verify_fingerprint=''.join(reversed(fingerprint)))
     assert 'Fingerprints did not match' in str(excinfo.value)
+
+
+def test_open_graphical_browser(monkeypatch):
+    import webbrowser
+    # Just assert that this internal attribute still exists,is some sort of
+    # collection and non-empty
+    assert len(webbrowser._tryorder)
+
+    monkeypatch.setattr('webbrowser._tryorder', [])
+
+    with pytest.raises(RuntimeError) as excinfo:
+        utils.open_graphical_browser('http://example.com')
+
+    assert 'No graphical browser found' in str(excinfo.value)
