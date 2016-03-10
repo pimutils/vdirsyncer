@@ -78,7 +78,9 @@ install-dev:
 		pip install -e .; \
 	fi
 	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
-	    pip install -U --force-reinstall git+https://github.com/kennethreitz/requests; \
+	    pip install -U --force-reinstall \
+			git+https://github.com/mitsuhiko/click \
+			git+https://github.com/kennethreitz/requests; \
 	elif [ "$$REQUIREMENTS" = "minimal" ]; then \
 		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
 	fi
