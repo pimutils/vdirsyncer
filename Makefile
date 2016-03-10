@@ -12,10 +12,7 @@ install-servers:
 	set -ex; \
 	for server in $(DAV_SERVER) $(REMOTESTORAGE_SERVER); do \
 		if [ ! -d "$(TESTSERVER_BASE)$$server/" ]; then \
-			git clone --depth=1 \
-				https://github.com/vdirsyncer/$$server-testserver.git \
-				/tmp/$$server-testserver; \
-			ln -s /tmp/$$server-testserver $(TESTSERVER_BASE)$$server; \
+			git submodule update --init -- "$(TESTSERVER_BASE)$$server"; \
 		fi; \
 		(cd $(TESTSERVER_BASE)$$server && sh install.sh); \
 	done
