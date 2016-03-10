@@ -114,3 +114,8 @@ matrix:
           env: BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal
 
 
+branches:
+    only:
+        - auto
+
+

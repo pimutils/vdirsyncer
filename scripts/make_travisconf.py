@@ -78,3 +78,7 @@ with section("matrix"):
                   .format(server_type=server_type,
                           server=server,
                           requirements=requirements))
+
+with section("branches"):
+    with section("only"):
+        p('- auto')
