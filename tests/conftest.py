@@ -7,7 +7,7 @@ import os
 
 import click_log
 
-from hypothesis import Verbosity, settings
+from hypothesis import HealthCheck, Verbosity, settings
 
 import pytest
 
@@ -34,6 +34,7 @@ else:
 settings.register_profile("ci", settings(
     max_examples=1000,
     verbosity=Verbosity.verbose,
+    suppress_health_check=[HealthCheck.too_slow]
 ))
 settings.register_profile("deterministic", settings(
     derandomize=True,
