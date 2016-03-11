@@ -25,21 +25,7 @@ p("language: python")
 p("")
 
 with section("install"):
-    # Travis uses an outdated PyPy, this installs the most recent one.  This
-    # makes the tests run on Travis' legacy infrastructure, but so be it.
-    # temporary pyenv installation to get pypy-2.6 before container infra
-    # upgrade
-    # Taken from werkzeug, which took it from pyca/cryptography
-    p('- if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then')
-    p('    git clone https://github.com/yyuu/pyenv.git ~/.pyenv;')
-    p('    PYENV_ROOT="$HOME/.pyenv";')
-    p('    PATH="$PYENV_ROOT/bin:$PATH";')
-    p('    eval "$(pyenv init -)";')
-    p('    pyenv install pypy-4.0.1;')
-    p('    pyenv global pypy-4.0.1;')
-    p('    python --version;')
-    p('    pip --version;')
-    p('  fi')
+    p('- ". scripts/travis-install.sh"')
 
     p('- "pip install -U pip"')
     p('- "pip install wheel"')
@@ -78,6 +64,10 @@ with section("matrix"):
                   .format(server_type=server_type,
                           server=server,
                           requirements=requirements))
+
+        p("- language: generic")
+        p("  os: osx")
+        p("  env: BUILD=test")
 
 with section("branches"):
     with section("only"):
