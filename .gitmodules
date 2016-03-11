@@ -1,0 +1,12 @@
+[submodule "tests/storage/servers/baikal"]
+	path = tests/storage/servers/baikal
+	url = https://github.com/vdirsyncer/baikal-testserver
+[submodule "tests/storage/servers/owncloud"]
+	path = tests/storage/servers/owncloud
+	url = https://github.com/vdirsyncer/owncloud-testserver
+[submodule "tests/storage/servers/mysteryshack"]
+	path = tests/storage/servers/mysteryshack
+	url = https://github.com/vdirsyncer/mysteryshack-testserver
+[submodule "tests/storage/servers/davical"]
+	path = tests/storage/servers/davical
+	url = https://github.com/vdirsyncer/davical-testserver
