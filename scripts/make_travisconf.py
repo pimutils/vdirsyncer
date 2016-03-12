@@ -87,7 +87,3 @@ with section("matrix"):
                 h()
                 p("  env: BUILD=style")
                 p('  branches: {"exclude": ["auto"]}')
-
-with section("branches"):
-    with section("only"):
-        p('- auto')
