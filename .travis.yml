@@ -4,16 +4,7 @@ sudo: true
 language: python
 
 install:
-    - if [ "$TRAVIS_PYTHON_VERSION" == "pypy" ]; then
-        git clone https://github.com/yyuu/pyenv.git ~/.pyenv;
-        PYENV_ROOT="$HOME/.pyenv";
-        PATH="$PYENV_ROOT/bin:$PATH";
-        eval "$(pyenv init -)";
-        pyenv install pypy-4.0.1;
-        pyenv global pypy-4.0.1;
-        python --version;
-        pip --version;
-      fi
+    - ". scripts/travis-install.sh"
     - "pip install -U pip"
     - "pip install wheel"
     - "make -e install-dev"
@@ -112,6 +103,9 @@ matrix:
           env: BUILD=test DAV_SERVER=radicale REQUIREMENTS=release
         - python: pypy
           env: BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal
+        - language: generic
+          os: osx
+          env: BUILD=test
 
 
 branches:

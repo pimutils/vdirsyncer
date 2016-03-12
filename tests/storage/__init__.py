@@ -213,6 +213,9 @@ class StorageTests(object):
         assert 'test2' in s.collection
 
     def test_case_sensitive_uids(self, s, get_item):
+        if s.storage_name == 'filesystem':
+            pytest.skip('Behavior depends on the filesystem.')
+
         s.upload(get_item(uid='A' * 42))
         s.upload(get_item(uid='a' * 42))
         items = list(href for href, etag in s.list())

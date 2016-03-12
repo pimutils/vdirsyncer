@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import unicodedata
 from textwrap import dedent
 
 from click.testing import CliRunner
@@ -13,7 +14,7 @@ from pkg_resources import load_entry_point
 import pytest
 
 import vdirsyncer.cli as cli
-from vdirsyncer.utils.compat import PY2, to_native
+from vdirsyncer.utils.compat import PY2, to_native, to_unicode
 
 
 def test_entry_points(monkeypatch, capsys):
@@ -331,10 +332,22 @@ def test_create_collections(subtest, collections):
             input='y\n' * 2 * (len(collections) + 1)
         )
         assert not result.exception
-        assert \
-            set(x.basename for x in tmpdir.join('foo').listdir()) == \
-            set(x.basename for x in tmpdir.join('bar').listdir()) == \
-            set(collections)
+
+        # Macs normally operate on the HFS+ file system which normalizes paths.
+        # That is, if you save a file with accented é in it (u'\xe9') for
+        # example, and then do a os.listdir you will see that the filename got
+        # converted to u'e\u0301'. This is normal unicode NFD normalization
+        # that the Python unicodedata module can handle.
+        #
+        # Quoted from
+        # https://stackoverflow.com/questions/18137554/how-to-convert-path-to-mac-os-x-path-the-almost-nfd-normal-form  # noqa
+        u = lambda xs: set(
+            unicodedata.normalize('NFKD', to_unicode(x, 'utf-8'))
+            for x in xs
+        )
+        assert u(x.basename for x in tmpdir.join('foo').listdir()) == \
+            u(x.basename for x in tmpdir.join('bar').listdir()) == \
+            u(collections)
 
         result = runner.invoke(
             ['sync'] + ['foobar/' + x for x in collections]
