@@ -79,6 +79,15 @@ with section("matrix"):
                           server=server,
                           requirements=requirements))
 
+            if python in ("2.7", "3.5"):
+                h()
+                p("  env: BUILD=test")
+                p('  branches: {"exclude": ["auto"]}')
+
+                h()
+                p("  env: BUILD=style")
+                p('  branches: {"exclude": ["auto"]}')
+
 with section("branches"):
     with section("only"):
         p('- auto')
