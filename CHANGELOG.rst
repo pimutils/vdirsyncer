@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.9.1
 =============
 
+*released on 13 March 2016*
+
 - Removed leftover debug print statement in ``vdirsyncer discover``, see commit
   ``3d856749f37639821b148238ef35f1acba82db36``.
 
