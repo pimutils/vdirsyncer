@@ -72,3 +72,4 @@ with section("matrix"):
 with section("branches"):
     with section("only"):
         p('- auto')
+        p('- master')
