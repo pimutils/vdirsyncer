@@ -83,9 +83,9 @@ def test_request_ssl_fingerprints(httpsserver, fingerprint):
 
 def test_open_graphical_browser(monkeypatch):
     import webbrowser
-    # Just assert that this internal attribute still exists,is some sort of
-    # collection and non-empty
-    assert len(webbrowser._tryorder)
+    # Just assert that this internal attribute still exists and is some sort of
+    # collection.
+    iter(webbrowser._tryorder)
 
     monkeypatch.setattr('webbrowser._tryorder', [])
 
