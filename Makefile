@@ -43,9 +43,7 @@ style:
 	flake8
 	! grep -ri syncroniz */*
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
-	python3 scripts/make_travisconf.py | \
-		diff -q .travis.yml - > /dev/null || \
-		(echo 'travis.yml is outdated. Run `make travis-conf`.' && false)
+	python3 scripts/make_travisconf.py | diff -b .travis.yml -
 
 travis-conf:
 	python3 scripts/make_travisconf.py > .travis.yml
