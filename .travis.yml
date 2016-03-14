@@ -17,7 +17,8 @@
   "branches": {
     "only": [
       "auto",
-      "master"
+      "master",
+      "containers"
     ]
   },
   "dist": "trusty",

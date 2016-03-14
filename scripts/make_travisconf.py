@@ -33,7 +33,7 @@ cfg['addons'] = {
 }
 
 cfg['branches'] = {
-    'only': ['auto', 'master']
+    'only': ['auto', 'master', 'containers']
 }
 
 cfg['install'] = [script("""
