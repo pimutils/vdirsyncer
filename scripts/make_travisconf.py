@@ -12,8 +12,25 @@ fi
 
 cfg = {}
 
-cfg['sudo'] = True
+cfg['sudo'] = False
 cfg['language'] = 'python'
+cfg['dist'] = 'trusty'
+
+cfg['addons'] = {
+    'apt': {
+        'packages': [
+            'php5',
+            'php5-cli',
+            'php5-gd',
+            'php5-json',
+            'php5-sqlite',
+            'php5-curl',
+            'php5-intl',
+            'php5-mcrypt',
+            'php5-imagick'
+        ]
+    }
+}
 
 cfg['branches'] = {
     'only': ['auto', 'master']

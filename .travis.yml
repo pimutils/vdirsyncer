@@ -1,10 +1,26 @@
 {
+  "addons": {
+    "apt": {
+      "packages": [
+        "php5",
+        "php5-cli",
+        "php5-gd",
+        "php5-json",
+        "php5-sqlite",
+        "php5-curl",
+        "php5-intl",
+        "php5-mcrypt",
+        "php5-imagick"
+      ]
+    }
+  },
   "branches": {
     "only": [
       "auto",
       "master"
     ]
   },
+  "dist": "trusty",
   "install": [
     "if [ \"$BUILD_PRS\" = \"true\" ] || [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ]; then\n    . scripts/travis-install.sh;\n    pip install -U pip;\n    pip install wheel;\n    make -e install-dev;\n    make -e install-$BUILD;\nfi"
   ],
@@ -197,5 +213,5 @@
   "script": [
     "if [ \"$BUILD_PRS\" = \"true\" ] || [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ]; then\n    make -e $BUILD\nfi"
   ],
-  "sudo": true
+  "sudo": false
 }
