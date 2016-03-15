@@ -68,7 +68,7 @@
     ]
   },
   "script": [
-    "if [ \"$BUILD_PRS\" = \"true\" ] || [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ]; then\n    make -e $BUILD\nfi"
+    "if [ \"$BUILD_PRS\" = \"true\" ] || [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ]; then\n    make -e $BUILD || (cat .xprocess/owncloud_server/xprocess.log && false)\nfi"
   ],
   "sudo": false
 }

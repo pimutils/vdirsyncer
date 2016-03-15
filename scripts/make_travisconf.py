@@ -45,7 +45,7 @@ cfg['install'] = [script("""
 """)]
 
 cfg['script'] = [script("""
-    make -e $BUILD
+    make -e $BUILD || (cat .xprocess/owncloud_server/xprocess.log && false)
 """)]
 
 matrix = []
