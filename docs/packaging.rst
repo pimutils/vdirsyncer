@@ -20,7 +20,7 @@ junk and are more of a distraction than anything else.
 
 I give each release a tag in the git repo. If you want to get notified of new
 releases, `GitHub's feed
-<https://github.com/untitaker/vdirsyncer/releases.atom>`_ is a good way.
+<https://github.com/pimutils/vdirsyncer/releases.atom>`_ is a good way.
 
 Dependency versions
 ===================

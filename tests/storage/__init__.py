@@ -111,7 +111,7 @@ class StorageTests(object):
 
         new_item = get_item(uid=item.uid)
         new_etag = s.update(href, new_item, etag)
-        # See https://github.com/untitaker/vdirsyncer/issues/48
+        # See https://github.com/pimutils/vdirsyncer/issues/48
         assert isinstance(new_etag, (bytes, text_type))
         assert_item_equals(s.get(href)[0], new_item)
 

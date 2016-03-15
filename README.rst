@@ -3,7 +3,7 @@ vdirsyncer
 ==========
 
 - `Documentation <https://vdirsyncer.readthedocs.org/en/stable/>`_
-- `Source code <https://github.com/untitaker/vdirsyncer>`_
+- `Source code <https://github.com/pimutils/vdirsyncer>`_
 
 Vdirsyncer synchronizes your calendars and addressbooks between two storages_.
 The most popular purpose is to synchronize a CalDAV/CardDAV server with a local
@@ -16,11 +16,11 @@ none of which have to know or worry about syncing to a server.
 It aims to be for CalDAV and CardDAV what `OfflineIMAP
 <http://offlineimap.org/>`_ is for IMAP.
 
-.. image:: https://travis-ci.org/untitaker/vdirsyncer.png?branch=master
-    :target: https://travis-ci.org/untitaker/vdirsyncer
+.. image:: https://travis-ci.org/pimutils/vdirsyncer.png?branch=master
+    :target: https://travis-ci.org/pimutils/vdirsyncer
 
-.. image:: https://codecov.io/github/untitaker/vdirsyncer/coverage.svg?branch=master
-    :target: https://codecov.io/github/untitaker/vdirsyncer?branch=master
+.. image:: https://codecov.io/github/pimutils/vdirsyncer/coverage.svg?branch=master
+    :target: https://codecov.io/github/pimutils/vdirsyncer?branch=master
 
 Links of interest
 =================

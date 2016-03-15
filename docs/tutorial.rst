@@ -30,7 +30,7 @@ Configuration
 .. note::
 
     - The `config.example from the repository
-      <https://github.com/untitaker/vdirsyncer/blob/master/config.example>`_
+      <https://github.com/pimutils/vdirsyncer/blob/master/config.example>`_
       contains a very terse version of this.
 
     - In this example we set up contacts synchronization, but calendar sync

@@ -5,7 +5,7 @@ vdirsyncer is a synchronization tool for vdir. See the README for more details.
 
 from __future__ import print_function
 
-PROJECT_HOME = 'https://github.com/untitaker/vdirsyncer'
+PROJECT_HOME = 'https://github.com/pimutils/vdirsyncer'
 DOCS_HOME = 'https://vdirsyncer.readthedocs.org/en/stable'
 
 try:

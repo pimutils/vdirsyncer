@@ -22,7 +22,7 @@ IGNORE_PROPS = _process_properties(
     # their filesystem backend
     'X-RADICALE-NAME',
     # Apparently this is set by Horde?
-    # https://github.com/untitaker/vdirsyncer/issues/318
+    # https://github.com/pimutils/vdirsyncer/issues/318
     'X-WR-CALNAME',
     # REV is from the VCARD specification and is supposed to change when the
     # item does -- however, we can determine that ourselves

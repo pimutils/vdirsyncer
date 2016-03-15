@@ -6,7 +6,7 @@ Support and Contact
   your timezone. Use it for support and general (including off-topic)
   discussion.
 
-* Open `a GitHub issue <https://github.com/untitaker/vdirsyncer/issues/>`_ for
+* Open `a GitHub issue <https://github.com/pimutils/vdirsyncer/issues/>`_ for
   concrete bug reports and feature requests.
 
 * Lastly, you can also `contact the author directly

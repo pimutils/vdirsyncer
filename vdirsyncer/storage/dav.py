@@ -511,9 +511,9 @@ class DavStorage(Storage):
             if href in hrefs:
                 # Servers that send duplicate hrefs:
                 # - Zimbra
-                #   https://github.com/untitaker/vdirsyncer/issues/88
+                #   https://github.com/pimutils/vdirsyncer/issues/88
                 # - Davmail
-                #   https://github.com/untitaker/vdirsyncer/issues/144
+                #   https://github.com/pimutils/vdirsyncer/issues/144
                 dav_logger.warning('Skipping identical href: {!r}'
                                    .format(href))
                 continue
@@ -561,7 +561,7 @@ class DavStorage(Storage):
             '''
 
         # We use a PROPFIND request instead of addressbook-query due to issues
-        # with Zimbra. See https://github.com/untitaker/vdirsyncer/issues/83
+        # with Zimbra. See https://github.com/pimutils/vdirsyncer/issues/83
         response = self.session.request('PROPFIND', '', data=data,
                                         headers=headers)
         root = _parse_xml(response.content)
@@ -771,7 +771,7 @@ class CaldavStorage(DavStorage):
             </C:calendar-query>'''
 
         headers = self.session.get_default_headers()
-        # https://github.com/untitaker/vdirsyncer/issues/166
+        # https://github.com/pimutils/vdirsyncer/issues/166
         # The default in CalDAV's calendar-queries is 0, but the examples use
         # an explicit value of 1 for querying items. it is extremely unclear in
         # the spec which values from WebDAV are actually allowed.

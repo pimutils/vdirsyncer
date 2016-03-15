@@ -29,7 +29,7 @@ requirements = [
     # verifying against CAs) with older versions of urllib3.
     'requests >=2.4.1, !=2.9.0',
     'lxml >=3.1' + (
-        # See https://github.com/untitaker/vdirsyncer/issues/298
+        # See https://github.com/pimutils/vdirsyncer/issues/298
         # We pin some LXML version that is known to work with PyPy
         # I assume nobody actually uses PyPy with vdirsyncer, so this is
         # moot
@@ -69,7 +69,7 @@ setup(
     setup_requires=['setuptools_scm'],
     author='Markus Unterwaditzer',
     author_email='markus@unterwaditzer.net',
-    url='https://github.com/untitaker/vdirsyncer',
+    url='https://github.com/pimutils/vdirsyncer',
     description='Synchronize calendars and contacts',
     license='MIT',
     long_description=open('README.rst').read(),
