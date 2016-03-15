@@ -2,7 +2,7 @@
 Support and Contact
 ===================
 
-* The ``#vdirsyncer`` IRC channel on Freenode might be active, depending on
+* The ``#pimutils`` IRC channel on Freenode might be active, depending on
   your timezone. Use it for support and general (including off-topic)
   discussion.
 
