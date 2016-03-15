@@ -15,6 +15,10 @@ cfg = {}
 cfg['sudo'] = True
 cfg['language'] = 'python'
 
+cfg['git'] = {
+    'submodules': False
+}
+
 cfg['branches'] = {
     'only': ['auto', 'master']
 }

@@ -5,6 +5,9 @@
       "master"
     ]
   },
+  "git": {
+    "submodules": false
+  },
   "install": [
     "if [ \"$BUILD_PRS\" = \"true\" ] || [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ]; then\n    . scripts/travis-install.sh;\n    pip install -U pip;\n    pip install wheel;\n    make -e install-dev;\n    make -e install-$BUILD;\nfi"
   ],

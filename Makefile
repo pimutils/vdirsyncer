@@ -11,7 +11,7 @@ export DETERMINISTIC_TESTS := false
 install-servers:
 	set -ex; \
 	for server in $(DAV_SERVER) $(REMOTESTORAGE_SERVER); do \
-		if [ ! -d "$(TESTSERVER_BASE)$$server/" ]; then \
+		if [ ! "$$(ls $(TESTSERVER_BASE)$$server/)" ]; then \
 			git submodule update --init -- "$(TESTSERVER_BASE)$$server"; \
 		fi; \
 		(cd $(TESTSERVER_BASE)$$server && sh install.sh); \
