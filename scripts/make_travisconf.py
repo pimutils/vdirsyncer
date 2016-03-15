@@ -12,11 +12,28 @@ fi
 
 cfg = {}
 
-cfg['sudo'] = True
+cfg['sudo'] = False
 cfg['language'] = 'python'
+cfg['dist'] = 'trusty'
+
+cfg['addons'] = {
+    'apt': {
+        'packages': [
+            'php5',
+            'php5-cli',
+            'php5-gd',
+            'php5-json',
+            'php5-sqlite',
+            'php5-curl',
+            'php5-intl',
+            'php5-mcrypt',
+            'php5-imagick'
+        ]
+    }
+}
 
 cfg['branches'] = {
-    'only': ['auto', 'master']
+    'only': ['auto', 'master', 'containers']
 }
 
 cfg['install'] = [script("""
@@ -28,7 +45,7 @@ cfg['install'] = [script("""
 """)]
 
 cfg['script'] = [script("""
-    make -e $BUILD
+    make -e $BUILD &> /dev/null || (cat .xprocess/owncloud_server/xprocess.log && false)
 """)]
 
 matrix = []
@@ -59,6 +76,9 @@ for python in ("2.7", "3.3", "3.4", "3.5", "pypy"):
             server_type == 'DAV' and
             server == 'radicale'
         )
+
+        if server != "owncloud" or python != "3.5":
+            continue
 
         matrix.append({
             'python': python,

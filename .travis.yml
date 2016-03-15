@@ -1,10 +1,27 @@
 {
+  "addons": {
+    "apt": {
+      "packages": [
+        "php5",
+        "php5-cli",
+        "php5-gd",
+        "php5-json",
+        "php5-sqlite",
+        "php5-curl",
+        "php5-intl",
+        "php5-mcrypt",
+        "php5-imagick"
+      ]
+    }
+  },
   "branches": {
     "only": [
       "auto",
-      "master"
+      "master",
+      "containers"
     ]
   },
+  "dist": "trusty",
   "install": [
     "if [ \"$BUILD_PRS\" = \"true\" ] || [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ]; then\n    . scripts/travis-install.sh;\n    pip install -U pip;\n    pip install wheel;\n    make -e install-dev;\n    make -e install-$BUILD;\nfi"
   ],
@@ -16,79 +33,7 @@
         "python": "2.7"
       },
       {
-        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "2.7"
-      },
-      {
-        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=release BUILD_PRS=false",
-        "python": "2.7"
-      },
-      {
-        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=minimal BUILD_PRS=false",
-        "python": "2.7"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=true",
-        "python": "2.7"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=true",
-        "python": "2.7"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=true",
-        "python": "2.7"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "2.7"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=release BUILD_PRS=false",
-        "python": "2.7"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=minimal BUILD_PRS=false",
-        "python": "2.7"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "2.7"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=release BUILD_PRS=false",
-        "python": "2.7"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=minimal BUILD_PRS=false",
-        "python": "2.7"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "2.7"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=release BUILD_PRS=false",
-        "python": "2.7"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=minimal BUILD_PRS=false",
-        "python": "2.7"
-      },
-      {
         "env": "BUILD=style BUILD_PRS=true",
-        "python": "3.3"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "3.3"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=false",
-        "python": "3.3"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=false",
         "python": "3.3"
       },
       {
@@ -96,43 +41,7 @@
         "python": "3.4"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "3.4"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=false",
-        "python": "3.4"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=false",
-        "python": "3.4"
-      },
-      {
         "env": "BUILD=style BUILD_PRS=true",
-        "python": "3.5"
-      },
-      {
-        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "3.5"
-      },
-      {
-        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=release BUILD_PRS=false",
-        "python": "3.5"
-      },
-      {
-        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=minimal BUILD_PRS=false",
-        "python": "3.5"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=true",
-        "python": "3.5"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=true",
-        "python": "3.5"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=true",
         "python": "3.5"
       },
       {
@@ -148,43 +57,7 @@
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "3.5"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=release BUILD_PRS=false",
-        "python": "3.5"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=minimal BUILD_PRS=false",
-        "python": "3.5"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "3.5"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=release BUILD_PRS=false",
-        "python": "3.5"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=minimal BUILD_PRS=false",
-        "python": "3.5"
-      },
-      {
         "env": "BUILD=style BUILD_PRS=true",
-        "python": "pypy"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "pypy"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=false",
-        "python": "pypy"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=false",
         "python": "pypy"
       },
       {
@@ -195,7 +68,7 @@
     ]
   },
   "script": [
-    "if [ \"$BUILD_PRS\" = \"true\" ] || [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ]; then\n    make -e $BUILD\nfi"
+    "if [ \"$BUILD_PRS\" = \"true\" ] || [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ]; then\n    make -e $BUILD &> /dev/null || (cat .xprocess/owncloud_server/xprocess.log && false)\nfi"
   ],
-  "sudo": true
+  "sudo": false
 }
