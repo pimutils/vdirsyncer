@@ -43,12 +43,13 @@ For many patches, it might suffice to just let Travis run the tests. However,
 Travis is slow, so you might want to run them locally too. For this, set up a
 virtualenv_ and run this inside of it::
 
-    make install-test
-    make install-style
+    make install-dev  # install vdirsyncer from the repo into the virtualenv
+    make install-test  # install test dependencies
+    make install-style  # install dependencies for stylechecking
 
 Then you can run::
 
-    make test
+    make test  # The normal testsuite
     make style  # Stylechecker
 
 If you have any questions, feel free to open issues about it.
