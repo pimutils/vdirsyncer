@@ -77,6 +77,9 @@ for python in ("2.7", "3.3", "3.4", "3.5", "pypy"):
             server == 'radicale'
         )
 
+        if server != "owncloud" or python != "3.5":
+            continue
+
         matrix.append({
             'python': python,
             'env': ("BUILD=test "
