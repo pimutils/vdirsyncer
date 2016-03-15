@@ -60,4 +60,4 @@ If you found my work useful, please consider donating. Thank you!
 - Flattr can be used for recurring donations:
 
   .. image:: https://api.flattr.com/button/flattr-badge-large.png
-      :target: https://flattr.com/submit/auto?user_id=untitaker&url=https%3A%2F%2Fgithub.com%2Funtitaker%2Fvdirsyncer
+      :target: https://flattr.com/submit/auto?user_id=untitaker&url=https%3A%2F%2Fgithub.com%2Fpimutils%2Fvdirsyncer
