@@ -40,15 +40,20 @@ repository or PyPI package. Trying to e.g. run ``py.test`` directly will
 require a lot of environment variables to be set (for configuration) and you
 probably don't want to deal with that.
 
-You can install the testing dependencies with ``make install-test``. You
-probably don't want this since it will use pip to download the dependencies.
-Alternatively you can find the testing dependencies in
+You can install the testing dependencies with::
+
+    make install-test
+
+You probably don't want this since it will use pip to download the
+dependencies. Alternatively you can find the testing dependencies in
 ``test-requirements.txt``, again with lower-bound version requirements.
 
 You also have to have vdirsyncer fully installed at this point. Merely
 ``cd``-ing into the tarball will not be sufficient.
 
-Running the tests happens with ``make test``.
+Running the tests happens with::
+
+    make test
 
 Hypothesis will randomly generate test input. If you care about deterministic
 tests, set the ``DETERMINISTIC_TESTS`` variable to ``"true"``::
@@ -58,8 +63,16 @@ tests, set the ``DETERMINISTIC_TESTS`` variable to ``"true"``::
 Documentation
 =============
 
-You can find a list of dependencies in ``docs-requirements.txt``.
+Using Sphinx_ you can generate the documentation you're reading right now in a
+variety of formats, such as HTML, PDF, or even as a manpage. That said, I only
+take care of the HTML docs' formatting.
 
-Change into the ``docs/`` directory and build whatever format you want. That
-said, I only take care of the HTML docs' formatting -- other targets (such as
-the generated manpage) may look like garbage.
+You can find a list of dependencies in ``docs-requirements.txt``. Again, you
+can install those using pip with::
+
+    make install-docs
+
+Then change into the ``docs/`` directory and build whatever format you want
+using the ``Makefile`` in there (run ``make`` for the formats you can build).
+
+.. _Sphinx: www.sphinx-doc.org/
