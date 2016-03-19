@@ -22,6 +22,9 @@ It aims to be for CalDAV and CardDAV what `OfflineIMAP
 .. image:: https://codecov.io/github/pimutils/vdirsyncer/coverage.svg?branch=master
     :target: https://codecov.io/github/pimutils/vdirsyncer?branch=master
 
+.. image:: https://badge.waffle.io/pimutils/vdirsyncer.svg?label=ready&title=Ready
+    :target: https://waffle.io/pimutils/vdirsyncer
+
 Links of interest
 =================
 
