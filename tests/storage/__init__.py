@@ -2,6 +2,8 @@
 
 import random
 
+import textwrap
+
 from hypothesis import given
 import hypothesis.strategies as st
 
@@ -12,7 +14,7 @@ from vdirsyncer.storage.base import Item, normalize_meta_value
 from vdirsyncer.utils.compat import iteritems, text_type, urlquote, urlunquote
 
 from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
-    assert_item_equals, printable_characters_strategy
+    assert_item_equals, normalize_item, printable_characters_strategy
 
 
 def get_server_mixin(server_name):
@@ -285,3 +287,49 @@ class StorageTests(object):
             # ownCloud replaces "" with "unnamed"
             s.set_meta('displayname', value)
             assert s.get_meta('displayname') == normalize_meta_value(value)
+
+    def test_recurring_events(self, s, item_type):
+        if item_type != 'VEVENT':
+            pytest.skip('This storage instance doesn\'t support iCalendar.')
+
+        uid = u'abc123'
+        item = Item(textwrap.dedent(u'''
+        BEGIN:VCALENDAR
+        VERSION:2.0
+        BEGIN:VEVENT
+        DTSTART;TZID=Australia/Sydney:20140325T084000
+        DTEND;TZID=Australia/Sydney:20140325T101000
+        DTSTAMP:20140327T060506Z
+        UID:{uid}
+        RECURRENCE-ID;TZID=Australia/Sydney:20140325T083000
+        CREATED:20131216T033331Z
+        DESCRIPTION:
+        LAST-MODIFIED:20140327T060215Z
+        LOCATION:
+        SEQUENCE:1
+        STATUS:CONFIRMED
+        SUMMARY:test Event
+        TRANSP:OPAQUE
+        END:VEVENT
+        BEGIN:VEVENT
+        DTSTART;TZID=Australia/Sydney:20140128T083000
+        DTEND;TZID=Australia/Sydney:20140128T100000
+        RRULE:FREQ=WEEKLY;UNTIL=20141208T213000Z;BYDAY=TU
+        DTSTAMP:20140327T060506Z
+        UID:{uid}
+        CREATED:20131216T033331Z
+        DESCRIPTION:
+        LAST-MODIFIED:20140222T101012Z
+        LOCATION:
+        SEQUENCE:0
+        STATUS:CONFIRMED
+        SUMMARY:Test event
+        TRANSP:OPAQUE
+        END:VEVENT
+        END:VCALENDAR
+        '''.format(uid=uid)).strip())
+
+        href, etag = s.upload(item)
+
+        item2, etag2 = s.get(href)
+        assert normalize_item(item) == normalize_item(item2)

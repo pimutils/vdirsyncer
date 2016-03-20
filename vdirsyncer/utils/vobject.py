@@ -4,7 +4,7 @@ import hashlib
 from itertools import chain, tee
 
 from . import cached_property, uniq
-from .compat import text_type
+from .compat import itervalues, text_type
 
 
 def _process_properties(*s):
@@ -114,17 +114,24 @@ def hash_item(text):
 def split_collection(text):
     assert isinstance(text, text_type)
     inline = []
-    items = []
+    items = {}  # uid => item
+    ungrouped_items = []
 
     def inner(item, main):
         if item.name == u'VTIMEZONE':
             inline.append(item)
         elif item.name == u'VCARD':
-            items.append(item)
+            ungrouped_items.append(item)
         elif item.name in (u'VTODO', u'VEVENT', u'VJOURNAL'):
-            items.append(_Component(main.name,
-                                    main.props[:],
-                                    [item]))
+            uid = item.get(u'UID', u'')
+            wrapper = _Component(main.name, main.props[:], [])
+
+            if uid.strip():
+                wrapper = items.setdefault(uid, wrapper)
+            else:
+                ungrouped_items.append(wrapper)
+
+            wrapper.subcomponents.append(item)
         elif item.name in (u'VCALENDAR', u'VADDRESSBOOK'):
             for subitem in item.subcomponents:
                 inner(subitem, item)
@@ -135,7 +142,7 @@ def split_collection(text):
     for main in _Component.parse(text, multiple=True):
         inner(main, main)
 
-    for item in items:
+    for item in chain(itervalues(items), ungrouped_items):
         item.subcomponents.extend(inline)
         yield u'\r\n'.join(item.dump_lines())
 
@@ -316,3 +323,9 @@ class _Component(object):
                 break
 
         return rv
+
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
