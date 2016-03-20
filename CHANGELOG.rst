@@ -14,6 +14,9 @@ Version 0.9.3
 
 - :storage:`singlefile` and :storage:`http` now handle recurring events
   properly.
+- Fix a typo in the packaging guidelines.
+- Moved to ``pimutils`` organization on GitHub. Old links *should* redirect,
+  but be aware of client software that doesn't properly handle redirects.
 
 Version 0.9.2
 =============
