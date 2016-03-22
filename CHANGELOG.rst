@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.9.3
 =============
 
+*released on 22 March 2016*
+
 - :storage:`singlefile` and :storage:`http` now handle recurring events
   properly.
 - Fix a typo in the packaging guidelines.
