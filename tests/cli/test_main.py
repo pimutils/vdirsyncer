@@ -9,8 +9,6 @@ from click.testing import CliRunner
 from hypothesis import example, given
 import hypothesis.strategies as st
 
-from pkg_resources import load_entry_point
-
 import pytest
 
 import vdirsyncer.cli as cli
