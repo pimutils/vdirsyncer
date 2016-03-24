@@ -50,6 +50,8 @@ If you found my work useful, please consider donating. Thank you!
 
 - Bitcoin: ``16sSHxZm263WHR9P9PJjCxp64jp9ooXKVt``
 
+- `PayPal.me <https://www.paypal.me/untitaker>`_
+
 - Bountysource is useful for funding work on a specific GitHub issue:
 
   .. image:: https://img.shields.io/bountysource/team/vdirsyncer/activity.svg
