@@ -1,7 +1,15 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import datetime
+import errno
+import json
 import logging
+import os
+import sys
+
+from atomicwrites import atomic_write
 
 from lxml import etree
 
@@ -12,8 +20,18 @@ from .base import Item, Storage, normalize_meta_value
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
 from .. import exceptions, utils
+from ..utils import expand_path
 from ..utils.compat import text_type, to_native
 
+OAUTH2_GOOGLE_TOKEN_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
+OAUTH2_GOOGLE_REFRESH_URL = 'https://www.googleapis.com/oauth2/v4/token'
+have_oauth2 = True
+try:
+    from requests_oauthlib import OAuth2Session
+    oauth2_client_id = 'FIXME'
+    oauth2_client_secret = 'FIXME'
+except ImportError:
+    have_oauth2 = False
 
 dav_logger = logging.getLogger(__name__)
 
@@ -301,7 +319,6 @@ class DavSession(object):
                  useragent=USERAGENT, verify_fingerprint=None,
                  auth_cert=None):
         self._settings = {
-            'auth': prepare_auth(auth, username, password),
             'cert': prepare_client_cert(auth_cert),
         }
         self._settings.update(prepare_verify(verify, verify_fingerprint))
@@ -310,6 +327,21 @@ class DavSession(object):
         self.url = url.rstrip('/') + '/'
         self.parsed_url = utils.compat.urlparse.urlparse(self.url)
         self._session = None
+        self._token = None
+        self._use_oauth2_google = False
+        if auth == 'oauth2_google':
+            if not have_oauth2:
+                raise exceptions.UserError("requests-oauthlib not installed")
+            self._token_path = expand_path(password)
+            # silly sanity check if that's really a path
+            if not os.path.exists(os.path.dirname(self._token_path)):
+                raise exceptions.UserError(
+                    "For oauth2_google auth, password must point a file "
+                    "in already existing directory")
+            self._token = self._load_oauth2_token()
+            self._use_oauth2_google = True
+        else:
+            self._settings['auth'] = prepare_auth(auth, username, password)
 
     def request(self, method, path, **kwargs):
         url = self.url
@@ -317,6 +349,39 @@ class DavSession(object):
             url = utils.compat.urlparse.urljoin(self.url, path)
         if self._session is None:
             self._session = requests.session()
+            if self._use_oauth2_google:
+                self._session = OAuth2Session(
+                    client_id=oauth2_client_id,
+                    token=self._token,
+                    redirect_uri='urn:ietf:wg:oauth:2.0:oob',
+                    scope=['https://www.googleapis.com/auth/calendar',
+                           'https://www.googleapis.com/auth/contacts'],
+                    auto_refresh_url=OAUTH2_GOOGLE_REFRESH_URL,
+                    auto_refresh_kwargs={
+                        'client_id': oauth2_client_id,
+                        'client_secret': oauth2_client_secret,
+                    },
+                    token_updater=self._save_oauth2_token
+                )
+                if not self._token:
+                    authorization_url, state = self._session.authorization_url(
+                        OAUTH2_GOOGLE_TOKEN_URL,
+                        # access_type and approval_prompt are Google specific
+                        # extra parameters.
+                        access_type="offline", approval_prompt="force")
+                    print("Please go to %s" % authorization_url)
+                    # flake8 complains about raw_input even if used
+                    # only on python2
+                    print("Paste obtained code: ", end='')
+                    code = sys.stdin.readline().strip()
+                    self._token = self._session.fetch_token(
+                        OAUTH2_GOOGLE_REFRESH_URL,
+                        code=code,
+                        # Google specific extra parameter used for client
+                        # authentication
+                        client_secret=oauth2_client_secret,
+                    )
+                    self._save_oauth2_token(self._token)
 
         more = dict(self._settings)
         more.update(kwargs)
@@ -327,6 +392,26 @@ class DavSession(object):
             'User-Agent': self.useragent,
             'Content-Type': 'application/xml; charset=UTF-8'
         }
+
+    def _save_oauth2_token(self, token):
+        dirname = os.path.dirname(self._token_path)
+        try:
+            os.makedirs(dirname, 0o700)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+
+        with atomic_write(self._token_path, mode='w', overwrite=True) as f:
+            json.dump(token, f)
+
+        os.chmod(self._token_path, 0o600)
+
+    def _load_oauth2_token(self):
+        if not os.path.exists(self._token_path):
+            return None
+
+        with open(self._token_path) as f:
+            return dict(json.load(f))
 
 
 class DavStorage(Storage):
