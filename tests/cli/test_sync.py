@@ -408,3 +408,12 @@ def test_unknown_storage(tmpdir, runner, existing, missing):
         "These are the configured storages: ['{existing}']"
         .format(missing=missing, existing=existing)
     ) in result.output
+
+
+@pytest.mark.parametrize('cmd', ['sync', 'metasync'])
+def test_no_configured_pairs(tmpdir, runner, cmd):
+    runner.write_with_general('')
+
+    result = runner.invoke([cmd])
+    assert result.output == 'critical: Nothing to do.\n'
+    assert result.exception.code == 5
