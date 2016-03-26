@@ -355,7 +355,7 @@ class DavSession(object):
                     token=self._token,
                     redirect_uri='urn:ietf:wg:oauth:2.0:oob',
                     scope=['https://www.googleapis.com/auth/calendar',
-                           'https://www.googleapis.com/auth/contacts'],
+                           'https://www.googleapis.com/auth/carddav'],
                     auto_refresh_url=OAUTH2_GOOGLE_REFRESH_URL,
                     auto_refresh_kwargs={
                         'client_id': oauth2_client_id,
