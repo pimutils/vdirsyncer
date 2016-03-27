@@ -459,8 +459,17 @@ class WorkerQueue(object):
         assert self._workers or not self._queue.unfinished_tasks
         ui_worker = click_threading.UiWorker()
         self._shutdown_handlers.append(ui_worker.shutdown)
+        _echo = click.echo
+
         with ui_worker.patch_click():
             yield
+
+            if not self._workers:
+                # Ugly hack, needed because ui_worker is not running.
+                click.echo = _echo
+                cli_logger.critical('Nothing to do.')
+                sys.exit(5)
+
             ui_worker.run()
             self._queue.join()
             for worker in self._workers:
