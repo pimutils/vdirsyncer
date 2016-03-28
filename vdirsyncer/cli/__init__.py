@@ -155,7 +155,7 @@ def metasync(ctx, collections, max_workers):
     '''
     Synchronize metadata of the given collections or pairs.
 
-    See the `sync` command regarding the PAIRS argument.
+    See the `sync` command for usage.
     '''
     from .tasks import prepare_pair, metasync_collection
     from .utils import WorkerQueue
