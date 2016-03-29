@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function
-
+import click
 import datetime
 import errno
 import json
@@ -369,11 +368,14 @@ class DavSession(object):
                         # access_type and approval_prompt are Google specific
                         # extra parameters.
                         access_type="offline", approval_prompt="force")
-                    print("Please go to %s" % authorization_url)
-                    # flake8 complains about raw_input even if used
-                    # only on python2
-                    print("Paste obtained code: ", end='')
-                    code = sys.stdin.readline().strip()
+                    click.echo('Opening {} ...'.format(authorization_url))
+                    try:
+                        utils.open_graphical_browser(authorization_url)
+                    except Exception as e:
+                        dav_logger.warning(str(e))
+
+                    click.echo("Follow the instructions on the page.")
+                    code = click.prompt("Paste obtained code")
                     self._token = self._session.fetch_token(
                         OAUTH2_GOOGLE_REFRESH_URL,
                         code=code,
