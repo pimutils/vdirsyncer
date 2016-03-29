@@ -207,7 +207,7 @@ Vdirsyncer is continuously tested against the latest version of Baikal_.
 Google
 ------
 
-Using vdirsyncer with Google Callendar is possible, but it is not tested
+Using vdirsyncer with Google Calendar is possible, but it is not tested
 frequently.
 
 ::
@@ -226,7 +226,7 @@ frequently.
 
 - Google's CardDav implementation is very limited, may lead to data loss, use
   with care.
-- You can select which callendars to sync on
+- You can select which calendars to sync on
   `CalDav settings page <https://calendar.google.com/calendar/syncselect>`_
 
 For more information see :gh:`202` and :gh:`8`.
