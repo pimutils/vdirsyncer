@@ -87,8 +87,8 @@ Pair Section
 
       metadata = ["color", "displayname"]
 
-   This synchronizes the ``color`` and the ``displayname`` properties. The
-   ``conflict_resolution`` parameter applies here as well.
+  This synchronizes the ``color`` and the ``displayname`` properties. The
+  ``conflict_resolution`` parameter applies here as well.
 
 .. _storage_config:
 
