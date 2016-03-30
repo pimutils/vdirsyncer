@@ -207,5 +207,28 @@ Vdirsyncer is continuously tested against the latest version of Baikal_.
 Google
 ------
 
-Vdirsyncer doesn't currently support Google accounts fully. For possible
-solutions see :gh:`202` and :gh:`8`.
+Using vdirsyncer with Google Calendar is possible, but it is not tested
+frequently.
+
+::
+
+    [storage cal]
+    type = caldav
+    url = https://apidata.googleusercontent.com/caldav/v2/
+    auth = oauth2_google
+
+    [storage card]
+    type = carddav
+    url = https://www.googleapis.com/carddav/v1/principals/EMAIL/lists/default
+    auth = oauth2_google
+
+At first run you will be asked to authorize application for google account
+access. Simply follow the instructions. You'll be asked to modify configuration
+file (save `refresh_token` as a password).
+
+- Google's CardDav implementation is very limited, may lead to data loss, use
+  with care.
+- You can select which calendars to sync on
+  `CalDav settings page <https://calendar.google.com/calendar/syncselect>`_
+
+For more information see :gh:`202` and :gh:`8`.
