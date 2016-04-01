@@ -14,7 +14,7 @@ from .base import Item, Storage, normalize_meta_value
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
 from .. import exceptions, utils
-from ..utils.compat import text_type, to_native
+from ..utils.compat import getargspec_ish, text_type, to_native
 
 OAUTH2_GOOGLE_TOKEN_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
 OAUTH2_GOOGLE_REFRESH_URL = 'https://www.googleapis.com/oauth2/v4/token'
@@ -133,16 +133,11 @@ class Discover(object):
     </d:propfind>
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, session, kwargs):
         if kwargs.pop('collection', None) is not None:
             raise TypeError('collection argument must not be given.')
 
-        discover_args, _ = utils.split_dict(kwargs, lambda key: key in (
-            'url', 'username', 'password', 'verify', 'auth', 'useragent',
-            'verify_fingerprint', 'auth_cert',
-        ))
-
-        self.session = DavSession(**discover_args)
+        self.session = session
         self.kwargs = kwargs
 
     def find_dav(self):
@@ -308,6 +303,15 @@ class DavSession(object):
     A helper class to connect to DAV servers.
     '''
 
+    @classmethod
+    def init_and_remaining_args(cls, **kwargs):
+        argspec = getargspec_ish(cls.__init__)
+        argspec.args
+        self_args, remainder = \
+            utils.split_dict(kwargs, argspec.args.__contains__)
+
+        return cls(**self_args), remainder
+
     def __init__(self, url, username='', password='', verify=True, auth=None,
                  useragent=USERAGENT, verify_fingerprint=None,
                  auth_cert=None):
@@ -416,36 +420,35 @@ class DavStorage(Storage):
     get_multi_data_query = None
     # The Discover subclass to use
     discovery_class = None
+    # The DavSession class to use
+    session_class = DavSession
 
-    _session = None
     _repr_attributes = ('username', 'url')
 
     _property_table = {
         'displayname': ('displayname', 'DAV:'),
     }
 
-    def __init__(self, url, username='', password='', verify=True, auth=None,
-                 useragent=USERAGENT, verify_fingerprint=None, auth_cert=None,
-                 **kwargs):
+    def __init__(self, **kwargs):
+        # defined for _repr_attributes
+        self.username = kwargs.get('username')
+        self.url = kwargs['url']
+
+        self.session, kwargs = \
+            self.session_class.init_and_remaining_args(**kwargs)
         super(DavStorage, self).__init__(**kwargs)
 
-        url = url.rstrip('/') + '/'
-        self.session = DavSession(url, username, password, verify, auth,
-                                  useragent, verify_fingerprint,
-                                  auth_cert)
-
-        # defined for _repr_attributes
-        self.username = username
-        self.url = url
 
     @classmethod
     def discover(cls, **kwargs):
-        d = cls.discovery_class(**kwargs)
+        session, _ = cls.session_class.init_and_remaining_args(**kwargs)
+        d = cls.discovery_class(session, kwargs)
         return d.discover()
 
     @classmethod
     def create_collection(cls, collection, **kwargs):
-        d = cls.discovery_class(**kwargs)
+        session, _ = cls.session_class.init_and_remaining_args(**kwargs)
+        d = cls.discovery_class(session, kwargs)
         return d.create(collection)
 
     def _normalize_href(self, *args, **kwargs):
