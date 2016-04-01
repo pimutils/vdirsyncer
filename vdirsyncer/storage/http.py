@@ -82,10 +82,7 @@ HTTP_STORAGE_PARAMETERS = '''
         information.
     :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. Default
         ``guess``. If you know yours, consider setting it explicitly for
-        performance. For caldav and carddav, additionaly ``oauth2_google`` is
-        supported. ``password`` setting should point a file for OAuth2 token
-        storage (directory must already exists, but file itself will be created
-        automatically).
+        performance.
     :param auth_cert: Optional. Either a path to a certificate with a client
         certificate and the key or a list of paths to the files with them.
     :param useragent: Default ``vdirsyncer``.

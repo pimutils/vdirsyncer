@@ -81,7 +81,7 @@ setup(
     install_requires=requirements,
     extras_require={
         'remotestorage': ['requests-oauthlib'],
-        'oauth2': ['requests-oauthlib'],
+        'google': ['requests-oauthlib'],
     },
     cmdclass={
         'minimal_requirements': PrintRequirements

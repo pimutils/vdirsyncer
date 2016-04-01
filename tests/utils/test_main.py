@@ -23,20 +23,10 @@ def no_debug_output(request):
     logger.setLevel(logging.WARNING)
 
 
-def test_get_class_init_args():
-    class Foobar(object):
-        def __init__(self, foo, bar, baz=None):
-            pass
-
-    all, required = utils.get_class_init_args(Foobar)
-    assert all == {'foo', 'bar', 'baz'}
-    assert required == {'foo', 'bar'}
-
-
-def test_get_class_init_args_on_storage():
+def test_get_storage_init_args():
     from vdirsyncer.storage.memory import MemoryStorage
 
-    all, required = utils.get_class_init_args(MemoryStorage)
+    all, required = utils.get_storage_init_args(MemoryStorage)
     assert all == set(['fileext', 'collection', 'read_only', 'instance_name'])
     assert not required
 

@@ -3,8 +3,6 @@
 import datetime
 import logging
 
-import click
-
 from lxml import etree
 
 import requests
@@ -14,17 +12,8 @@ from .base import Item, Storage, normalize_meta_value
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
 from .. import exceptions, utils
-from ..utils.compat import getargspec_ish, text_type, to_native
+from ..utils.compat import PY2, getargspec_ish, text_type, to_native
 
-OAUTH2_GOOGLE_TOKEN_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
-OAUTH2_GOOGLE_REFRESH_URL = 'https://www.googleapis.com/oauth2/v4/token'
-have_oauth2 = True
-try:
-    from requests_oauthlib import OAuth2Session
-    oauth2_client_id = 'FIXME'
-    oauth2_client_secret = 'FIXME'
-except ImportError:
-    have_oauth2 = False
 
 dav_logger = logging.getLogger(__name__)
 
@@ -114,11 +103,6 @@ def _fuzzy_matches_mimetype(strict, weak):
     return False
 
 
-def _get_collection_from_url(url):
-    _, collection = url.rstrip('/').rsplit('/', 1)
-    return utils.compat.urlunquote(collection)
-
-
 class Discover(object):
     _namespace = None
     _resourcetype = None
@@ -139,6 +123,11 @@ class Discover(object):
 
         self.session = session
         self.kwargs = kwargs
+
+    @staticmethod
+    def _get_collection_from_url(url):
+        _, collection = url.rstrip('/').rsplit('/', 1)
+        return utils.compat.urlunquote(collection)
 
     def find_dav(self):
         try:
@@ -218,14 +207,14 @@ class Discover(object):
     def discover(self):
         for c in self.find_collections():
             url = c['href']
-            collection = _get_collection_from_url(url)
+            collection = self._get_collection_from_url(url)
             storage_args = dict(self.kwargs)
             storage_args.update({'url': url, 'collection': collection})
             yield storage_args
 
     def create(self, collection):
         if collection is None:
-            collection = _get_collection_from_url(self.kwargs['url'])
+            collection = self._get_collection_from_url(self.kwargs['url'])
 
         for c in self.discover():
             if c['collection'] == collection:
@@ -306,7 +295,6 @@ class DavSession(object):
     @classmethod
     def init_and_remaining_args(cls, **kwargs):
         argspec = getargspec_ish(cls.__init__)
-        argspec.args
         self_args, remainder = \
             utils.split_dict(kwargs, argspec.args.__contains__)
 
@@ -317,73 +305,23 @@ class DavSession(object):
                  auth_cert=None):
         self._settings = {
             'cert': prepare_client_cert(auth_cert),
+            'auth': prepare_auth(auth, username, password)
         }
         self._settings.update(prepare_verify(verify, verify_fingerprint))
 
         self.useragent = useragent
         self.url = url.rstrip('/') + '/'
-        self.parsed_url = utils.compat.urlparse.urlparse(self.url)
-        self._session = None
-        self._token = None
-        self._use_oauth2_google = False
-        if auth == 'oauth2_google':
-            if not have_oauth2:
-                raise exceptions.UserError("requests-oauthlib not installed")
-            if password:
-                self._token = {
-                    'refresh_token': password,
-                    # Will be derived from refresh_token
-                    'access_token': 'dummy',
-                    'expires_in': -30
-                }
-            self._use_oauth2_google = True
-        else:
-            self._settings['auth'] = prepare_auth(auth, username, password)
+
+        self._session = requests.session()
+
+    @utils.cached_property
+    def parsed_url(self):
+        return utils.compat.urlparse.urlparse(self.url)
 
     def request(self, method, path, **kwargs):
         url = self.url
         if path:
             url = utils.compat.urlparse.urljoin(self.url, path)
-        if self._session is None:
-            self._session = requests.session()
-            if self._use_oauth2_google:
-                self._session = OAuth2Session(
-                    client_id=oauth2_client_id,
-                    token=self._token,
-                    redirect_uri='urn:ietf:wg:oauth:2.0:oob',
-                    scope=['https://www.googleapis.com/auth/calendar',
-                           'https://www.googleapis.com/auth/carddav'],
-                    auto_refresh_url=OAUTH2_GOOGLE_REFRESH_URL,
-                    auto_refresh_kwargs={
-                        'client_id': oauth2_client_id,
-                        'client_secret': oauth2_client_secret,
-                    },
-                    token_updater=lambda x: None
-                )
-                if not self._token:
-                    authorization_url, state = self._session.authorization_url(
-                        OAUTH2_GOOGLE_TOKEN_URL,
-                        # access_type and approval_prompt are Google specific
-                        # extra parameters.
-                        access_type="offline", approval_prompt="force")
-                    click.echo('Opening {} ...'.format(authorization_url))
-                    try:
-                        utils.open_graphical_browser(authorization_url)
-                    except Exception as e:
-                        dav_logger.warning(str(e))
-
-                    click.echo("Follow the instructions on the page.")
-                    code = click.prompt("Paste obtained code")
-                    self._token = self._session.fetch_token(
-                        OAUTH2_GOOGLE_REFRESH_URL,
-                        code=code,
-                        # Google specific extra parameter used for client
-                        # authentication
-                        client_secret=oauth2_client_secret,
-                    )
-                    raise exceptions.UserError(
-                        "Set the following token in a password field: {}".
-                        format(self._token['refresh_token']))
 
         more = dict(self._settings)
         more.update(kwargs)
@@ -401,8 +339,6 @@ class DavStorage(Storage):
     __doc__ = '''
     :param url: Base URL or an URL to a collection.
     ''' + HTTP_STORAGE_PARAMETERS + '''
-    :param unsafe_href_chars: Replace the given characters when generating
-        hrefs. Defaults to ``'@'``.
 
     .. note::
 
@@ -432,12 +368,15 @@ class DavStorage(Storage):
     def __init__(self, **kwargs):
         # defined for _repr_attributes
         self.username = kwargs.get('username')
-        self.url = kwargs['url']
+        self.url = kwargs.get('url')
 
         self.session, kwargs = \
             self.session_class.init_and_remaining_args(**kwargs)
         super(DavStorage, self).__init__(**kwargs)
 
+    if not PY2:
+        import inspect
+        __init__.__signature__ = inspect.signature(session_class.__init__)
 
     @classmethod
     def discover(cls, **kwargs):

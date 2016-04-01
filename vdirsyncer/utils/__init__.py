@@ -82,16 +82,22 @@ def get_etag_from_fileobject(f):
     return get_etag_from_file(f.name)
 
 
-def get_class_init_specs(cls, stop_at=object):
+def get_storage_init_specs(cls, stop_at=object):
     if cls is stop_at:
         return ()
+
     spec = getargspec_ish(cls.__init__)
-    supercls = next(getattr(x.__init__, '__objclass__', x)
-                    for x in cls.__mro__[1:])
-    return (spec,) + get_class_init_specs(supercls, stop_at=stop_at)
+    if getattr(cls.__init__, '_traverse_superclass', True):
+        supercls = next(getattr(x.__init__, '__objclass__', x)
+                        for x in cls.__mro__[1:])
+        superspecs = get_storage_init_specs(supercls, stop_at=stop_at)
+    else:
+        superspecs = ()
+
+    return (spec,) + superspecs
 
 
-def get_class_init_args(cls, stop_at=object):
+def get_storage_init_args(cls, stop_at=object):
     '''
     Get args which are taken during class initialization. Assumes that all
     classes' __init__ calls super().__init__ with the rest of the arguments.
@@ -102,7 +108,7 @@ def get_class_init_args(cls, stop_at=object):
         requires.
     '''
     all, required = set(), set()
-    for spec in get_class_init_specs(cls, stop_at=stop_at):
+    for spec in get_storage_init_specs(cls, stop_at=stop_at):
         all.update(spec.args[1:])
         required.update(spec.args[1:-len(spec.defaults or ())])
 
