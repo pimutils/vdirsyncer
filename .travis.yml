@@ -31,18 +31,6 @@
         "python": "2.7"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=true",
-        "python": "2.7"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=true",
-        "python": "2.7"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=true",
-        "python": "2.7"
-      },
-      {
         "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=devel BUILD_PRS=false",
         "python": "2.7"
       },
@@ -176,18 +164,6 @@
       },
       {
         "env": "BUILD=style BUILD_PRS=true",
-        "python": "pypy"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "pypy"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=false",
-        "python": "pypy"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=false",
         "python": "pypy"
       },
       {

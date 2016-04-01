@@ -44,9 +44,15 @@ for python in ("2.7", "3.3", "3.4", "3.5", "pypy"):
         'env': 'BUILD=style BUILD_PRS=true'
     })
 
-    if python in ("2.7", "3.5"):
+    if python == "3.5":
         dav_servers = ("radicale", "owncloud", "baikal", "davical")
         rs_servers = ("mysteryshack",)
+    elif python == "2.7":
+        dav_servers = ("owncloud", "baikal", "davical")
+        rs_servers = ("mysteryshack",)
+    elif python == "pypy":
+        dav_servers = ()
+        rs_servers = ()
     else:
         dav_servers = ("radicale",)
         rs_servers = ()
@@ -59,7 +65,7 @@ for python in ("2.7", "3.3", "3.4", "3.5", "pypy"):
         ("devel", "release", "minimal")
     ):
         build_prs = (
-            python in ("2.7", "3.5") and
+            python == "3.5" and
             server_type == 'DAV' and
             server == 'radicale'
         )
