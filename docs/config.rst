@@ -116,19 +116,26 @@ Storage Section
 Supported Storages
 ------------------
 
-Read-write storages
-~~~~~~~~~~~~~~~~~~~
-
-These storages generally support reading and changing of their items. Their
-default value for ``read_only`` is ``false``, but can be set to ``true`` if
-wished.
-
 CalDAV and CardDAV
 ++++++++++++++++++
 
 .. autostorage:: vdirsyncer.storage.dav.CaldavStorage
 
 .. autostorage:: vdirsyncer.storage.dav.CarddavStorage
+
+Google
+++++++
+
+At first run you will be asked to authorize application for google account
+access.
+
+To use this storage type, you need to install some additional dependencies::
+
+    pip install vdirsyncer[google]
+
+.. autostorage:: vdirsyncer.storage.google.GoogleCalendarStorage
+
+.. autostorage:: vdirsyncer.storage.google.GoogleContactsStorage
 
 remoteStorage
 +++++++++++++
@@ -157,7 +164,7 @@ Local
 
 
 Read-only storages
-~~~~~~~~~~~~~~~~~~
+++++++++++++++++++
 
 These storages don't support writing of their items, consequently ``read_only``
 is set to ``true`` by default. Changing ``read_only`` to ``false`` on them

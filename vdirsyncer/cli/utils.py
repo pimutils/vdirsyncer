@@ -17,7 +17,7 @@ import click_threading
 from . import cli_logger
 from .. import DOCS_HOME, exceptions
 from ..sync import IdentConflict, StorageEmpty, SyncConflict
-from ..utils import expand_path, get_class_init_args
+from ..utils import expand_path, get_storage_init_args
 from ..utils.compat import to_native
 
 try:
@@ -46,6 +46,8 @@ class _StorageIndex(object):
                 'vdirsyncer.storage.remotestorage.RemoteStorageContacts'),
             remotestorage_calendars=(
                 'vdirsyncer.storage.remotestorage.RemoteStorageCalendars'),
+            google_calendar='vdirsyncer.storage.google.GoogleCalendarStorage',
+            google_contacts='vdirsyncer.storage.google.GoogleContactsStorage'
         )
 
     def __getitem__(self, name):
@@ -380,7 +382,7 @@ def handle_storage_init_error(cls, config):
     if isinstance(e, (click.Abort, exceptions.UserError, KeyboardInterrupt)):
         raise
 
-    all, required = get_class_init_args(cls)
+    all, required = get_storage_init_args(cls)
     given = set(config)
     missing = required - given
     invalid = given - all
@@ -488,9 +490,9 @@ def format_storage_config(cls, header=True):
     yield 'type = {}'.format(cls.storage_name)
 
     from ..storage.base import Storage
-    from ..utils import get_class_init_specs
+    from ..utils import get_storage_init_specs
     handled = set()
-    for spec in get_class_init_specs(cls, stop_at=Storage):
+    for spec in get_storage_init_specs(cls, stop_at=Storage):
         defaults = spec.defaults or ()
         defaults = dict(zip(spec.args[-len(defaults):], defaults))
         for key in spec.args[1:]:
