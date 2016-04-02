@@ -9,6 +9,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.10.0
+==============
+
+- New storage types :storage:`google_calendar` and :storage:`google_contacts`
+  have been added.
+
 Version 0.9.3
 =============
 
