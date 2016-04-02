@@ -60,3 +60,24 @@ def test_discover_command(tmpdir, runner):
         .join('status') \
         .join('foobar.collections') \
         .read()
+
+
+def test_discover_on_unsupported_storage(tmpdir, runner):
+    runner.write_with_general(dedent('''
+    [storage foo]
+    type = http
+    url = https://example.com/foo.ics
+
+    [storage bar]
+    type = memory
+    fileext = .txt
+
+    [pair foobar]
+    a = foo
+    b = bar
+    collections = ["from a"]
+    ''').format(str(tmpdir)))
+
+    result = runner.invoke(['discover'])
+    assert result.exception
+    assert 'doesn\'t support collection discovery' in result.output

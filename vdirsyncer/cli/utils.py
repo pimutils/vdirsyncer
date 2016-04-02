@@ -221,7 +221,14 @@ def _discover_from_config(config):
     cls, config = storage_class_from_config(config)
 
     try:
-        discovered = list(cls.discover(**config))
+        try:
+            discovered = list(cls.discover(**config))
+        except NotImplementedError:
+            raise exceptions.UserError(
+                'The storage {} (type {}) doesn\'t support collection '
+                'discovery. You can only use `collections = null` with it.'
+                .format(config.get('instance_name', '???'), storage_type)
+            )
     except Exception:
         return handle_storage_init_error(cls, config)
     else:
