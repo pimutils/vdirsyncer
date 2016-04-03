@@ -110,7 +110,6 @@ def test_empty_storage(tmpdir, runner):
     tmpdir.join('path_b/haha.txt').remove()
     result = runner.invoke(['sync'])
     lines = result.output.splitlines()
-    assert len(lines) == 2
     assert lines[0] == 'Syncing my_pair'
     assert lines[1].startswith('error: my_pair: '
                                'Storage "my_b" was completely emptied.')

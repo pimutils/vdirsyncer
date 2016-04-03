@@ -4,6 +4,7 @@ import contextlib
 import errno
 import hashlib
 import importlib
+import itertools
 import json
 import os
 import sys
@@ -427,9 +428,13 @@ class WorkerQueue(object):
     def __init__(self, max_workers):
         self._queue = queue.Queue()
         self._workers = []
-        self._exceptions = []
         self._max_workers = max_workers
         self._shutdown_handlers = []
+
+        # According to http://stackoverflow.com/a/27062830, those are
+        # threadsafe compared to increasing a simple integer variable.
+        self.num_done_tasks = itertools.count()
+        self.num_failed_tasks = itertools.count()
 
     def shutdown(self):
         while self._shutdown_handlers:
@@ -447,11 +452,12 @@ class WorkerQueue(object):
 
             try:
                 func(wq=self)
-            except Exception as e:
+            except Exception:
                 handle_cli_error()
-                self._exceptions.append(e)
+                next(self.num_failed_tasks)
             finally:
                 self._queue.task_done()
+                next(self.num_done_tasks)
                 if not self._queue.unfinished_tasks:
                     self.shutdown()
 
@@ -484,7 +490,12 @@ class WorkerQueue(object):
             for worker in self._workers:
                 worker.join()
 
-        if self._exceptions:
+        tasks_failed = next(self.num_failed_tasks)
+        tasks_done = next(self.num_done_tasks)
+
+        if tasks_failed > 0:
+            cli_logger.error('{} out of {} tasks failed.'
+                             .format(tasks_failed, tasks_done))
             sys.exit(1)
 
     def put(self, f):
