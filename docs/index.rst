@@ -14,10 +14,8 @@ know or worry about syncing to a server.
 It aims to be for CalDAV and CardDAV what `OfflineIMAP
 <http://offlineimap.org/>`_ is for IMAP.
 
-Table of Contents
-=================
-
 .. toctree::
+   :caption: Users
    :maxdepth: 1
 
    when
@@ -27,8 +25,18 @@ Table of Contents
    config
    supported
    problems
-   vdir
+
+.. toctree::
+   :caption: Developers
+   :maxdepth: 1
+
    contributing
+   vdir
+
+.. toctree::
+   :caption: General
+   :maxdepth: 1
+
    packaging
    contact
    changelog
