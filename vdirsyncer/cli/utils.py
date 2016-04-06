@@ -387,7 +387,7 @@ def storage_instance_from_config(config, create=True):
 
 def handle_storage_init_error(cls, config):
     e = sys.exc_info()[1]
-    if isinstance(e, (click.Abort, exceptions.UserError, KeyboardInterrupt)):
+    if not isinstance(e, TypeError) or '__init__' not in repr(e):
         raise
 
     all, required = get_storage_init_args(cls)
@@ -398,19 +398,17 @@ def handle_storage_init_error(cls, config):
     problems = []
 
     if missing:
-        cli_logger.critical(
+        problems.append(
             u'{} storage requires the parameters: {}'
             .format(cls.storage_name, u', '.join(missing)))
 
     if invalid:
-        cli_logger.critical(
+        problems.append(
             u'{} storage doesn\'t take the parameters: {}'
             .format(cls.storage_name, u', '.join(invalid)))
 
-    if not problems:
-        if not isinstance(e, exceptions.UserError):
-            cli_logger.exception('')
-        problems.append(str(e))
+    if not problems:  # XXX: Py2: Proper reraise
+        raise e
 
     raise exceptions.UserError(
         u'Failed to initialize {}'.format(config['instance_name']),
