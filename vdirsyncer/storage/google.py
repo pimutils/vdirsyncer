@@ -26,11 +26,16 @@ except ImportError:
 
 
 class GoogleSession(dav.DavSession):
-    def __init__(self, token_file, client_id=None, client_secret=None):
+    def __init__(self, token_file, url=None, client_id=None,
+                 client_secret=None):
         # Not a default in function signature, otherwise these show up in user
         # documentation
         client_id = client_id or CLIENT_ID
         client_secret = client_secret or CLIENT_SECRET
+
+        # Required for discovering collections
+        if url is not None:
+            self.url = url
 
         self.useragent = client_id
         self._settings = {}
@@ -157,4 +162,4 @@ class GoogleContactsStorage(dav.CarddavStorage):
     # This is ugly: We define/override the entire signature computed for the
     # docs here because the current way we autogenerate those docs are too
     # simple for our advanced argspec juggling in `vdirsyncer.storage.dav`.
-    __init__._traverse_superclass = False
+    __init__._traverse_superclass = base.Storage
