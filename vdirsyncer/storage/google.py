@@ -14,10 +14,6 @@ logger = logging.getLogger(__name__)
 TOKEN_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
 REFRESH_URL = 'https://www.googleapis.com/oauth2/v4/token'
 
-CLIENT_ID = ('155040592229-mth5eiq7qt9dtk46j0vcnoometuab9mb'
-             '.apps.googleusercontent.com')
-CLIENT_SECRET = 'flVXF7jB2A2-YC4rg2sUCCX1'
-
 try:
     from requests_oauthlib import OAuth2Session
     have_oauth2 = True
@@ -26,13 +22,7 @@ except ImportError:
 
 
 class GoogleSession(dav.DavSession):
-    def __init__(self, token_file, url=None, client_id=None,
-                 client_secret=None):
-        # Not a default in function signature, otherwise these show up in user
-        # documentation
-        client_id = client_id or CLIENT_ID
-        client_secret = client_secret or CLIENT_SECRET
-
+    def __init__(self, token_file, client_id, client_secret, url=None):
         # Required for discovering collections
         if url is not None:
             self.url = url
@@ -96,8 +86,8 @@ class GoogleSession(dav.DavSession):
 
 GOOGLE_PARAMS_DOCS = '''
     :param token_file: A filepath where access tokens are stored.
-    :param client_id/client_secret: OAuth credentials. Hardcoded ones are
-        provided, you shouldn't need this unless you hit API rate limits.
+    :param client_id/client_secret: OAuth credentials, obtained from the Google
+        API Manager.
 '''
 
 
@@ -124,8 +114,8 @@ class GoogleCalendarStorage(dav.CaldavStorage):
 
     storage_name = 'google_calendar'
 
-    def __init__(self, token_file, client_id=None, client_secret=None,
-                 start_date=None, end_date=None, item_types=(), **kwargs):
+    def __init__(self, token_file, client_id, client_secret, start_date=None,
+                 end_date=None, item_types=(), **kwargs):
         super(GoogleCalendarStorage, self).__init__(
             token_file=token_file, client_id=client_id,
             client_secret=client_secret, start_date=start_date,
@@ -141,6 +131,11 @@ class GoogleCalendarStorage(dav.CaldavStorage):
 
 class GoogleContactsStorage(dav.CarddavStorage):
     __doc__ = '''Google contacts.
+
+    .. note: Google's CardDAV implementation is allegedly a disaster in terms
+        of data safety. See `this blog post
+        <https://evertpot.com/google-carddav-issues/>`_ for the details.
+        Always back up your data.
     ''' + GOOGLE_PARAMS_DOCS
 
     class session_class(GoogleSession):
@@ -151,8 +146,7 @@ class GoogleContactsStorage(dav.CarddavStorage):
 
     storage_name = 'google_contacts'
 
-    def __init__(self, token_file, client_id=None, client_secret=None,
-                 **kwargs):
+    def __init__(self, token_file, client_id, client_secret, **kwargs):
         super(GoogleContactsStorage, self).__init__(
             token_file=token_file, client_id=client_id,
             client_secret=client_secret,

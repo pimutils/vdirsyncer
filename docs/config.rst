@@ -133,6 +133,28 @@ To use this storage type, you need to install some additional dependencies::
 
     pip install vdirsyncer[google]
 
+Furthermore you need to register vdirsyncer as an application yourself to
+obtain ``client_id`` and ``client_secret``, as it is against Google's Terms of
+Service to hardcode those into opensource software:
+
+1. Go to the `Google API Manager <https://console.developers.google.com>`_ and
+   create a new project under any name.
+
+2. Within that project, enable the "CalDAV" and "CardDAV" APIs. There should be
+   a searchbox where you can just enter those terms.
+
+3. In the sidebar, select "Credentials" and create a new "OAuth Client ID". The
+   application type is "Other".
+   
+   You'll be prompted to create a OAuth consent screen first. Fill out that
+   form however you like.
+
+4. Finally you should have a Client ID and a Client secret. Provide these in
+   your storage config.
+
+You can select which calendars to sync on `CalDav settings page
+<https://calendar.google.com/calendar/syncselect>`_.
+
 .. autostorage:: vdirsyncer.storage.google.GoogleCalendarStorage
 
 .. autostorage:: vdirsyncer.storage.google.GoogleContactsStorage
