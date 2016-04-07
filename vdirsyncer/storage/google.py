@@ -49,7 +49,7 @@ class GoogleSession(dav.DavSession):
         try:
             with open(token_file) as f:
                 token = json.load(f)
-        except OSError:
+        except (OSError, IOError):
             pass
 
         def _save_token(token):
