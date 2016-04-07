@@ -134,8 +134,9 @@ To use this storage type, you need to install some additional dependencies::
     pip install vdirsyncer[google]
 
 Furthermore you need to register vdirsyncer as an application yourself to
-obtain ``client_id`` and ``client_secret``, as it is against Google's Terms of
-Service to hardcode those into opensource software:
+obtain ``client_id`` and ``client_secret``, as `it is against Google's Terms of
+Service to hardcode those into opensource software
+<https://developers.google.com/terms/?hl=th#b-confidential-matters>`_:
 
 1. Go to the `Google API Manager <https://console.developers.google.com>`_ and
    create a new project under any name.
