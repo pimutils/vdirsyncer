@@ -14,6 +14,8 @@ Version 0.10.0
 
 - New storage types :storage:`google_calendar` and :storage:`google_contacts`
   have been added.
+- New global command line option `--config`, to specify an alternative config
+  file. See :gh:`409`.
 
 Version 0.9.3
 =============
