@@ -79,9 +79,10 @@ def _validate_pair_section(pair_config):
         raise ValueError('Duplicate values in collections parameter.')
 
 
-def load_config():
-    fname = os.environ.get('VDIRSYNCER_CONFIG', None)
-    if not fname:
+def load_config(fname=None):
+    if fname is None:
+        fname = os.environ.get('VDIRSYNCER_CONFIG', None)
+    if fname is None:
         fname = expand_path('~/.vdirsyncer/config')
         if not os.path.exists(fname):
             xdg_config_dir = os.environ.get('XDG_CONFIG_HOME',

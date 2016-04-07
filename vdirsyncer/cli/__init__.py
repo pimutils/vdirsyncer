@@ -50,9 +50,10 @@ def _check_python2():
 @click_log.init('vdirsyncer')
 @click_log.simple_verbosity_option()
 @click.version_option(version=__version__)
+@click.option('--config', '-c', metavar='FILE', help='Config file to use.')
 @pass_context
 @catch_errors
-def app(ctx):
+def app(ctx, config):
     '''
     vdirsyncer -- synchronize calendars and contacts
     '''
@@ -60,7 +61,7 @@ def app(ctx):
     from .config import load_config
 
     if not ctx.config:
-        ctx.config = load_config()
+        ctx.config = load_config(config)
 
 main = app
 
