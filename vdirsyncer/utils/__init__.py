@@ -114,7 +114,8 @@ def get_storage_init_args(cls, stop_at=object):
     all, required = set(), set()
     for spec in get_storage_init_specs(cls, stop_at=stop_at):
         all.update(spec.args[1:])
-        required.update(spec.args[1:-len(spec.defaults or ())])
+        last = -len(spec.defaults) if spec.defaults else len(spec.args)
+        required.update(spec.args[1:last])
 
     return all, required
 
