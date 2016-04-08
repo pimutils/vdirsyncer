@@ -286,9 +286,10 @@ def _handle_collection_not_found(config, discovered, collection, e=None):
                 if display_name else ''
             ))
 
-        collection_i = click.prompt('Your choice?',
-                                  type=click.IntRange(min=0,
-                                                      max=len(choices)))
+        collection_i = click.prompt(
+            'Your choice?',
+            type=click.IntRange(min=0, max=len(choices))
+        )
         collection = choices[collection_i]
         return discovered[collection]
 
