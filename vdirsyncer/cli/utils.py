@@ -242,14 +242,22 @@ def _discover_from_config(config):
         return rv
 
 
-def _handle_collection_not_found(config, collection, e=None):
+def _handle_collection_not_found(config, discovered, collection, e=None):
     storage_name = config.get('instance_name', None)
 
     cli_logger.error('{}No collection {} found for storage {}.'
                      .format('{}\n'.format(e) if e else '',
                              coerce_native(collection), storage_name))
 
-    if click.confirm('Should vdirsyncer attempt to create it?'):
+    click.echo('You can: \n'
+               '  - Try to `create` {c} on {storage}\n'
+               '  - `use` a different collection from {storage}\n'
+               .format(c=coerce_native(collection), storage=storage_name))
+
+    choice = click.prompt('Which will it be? (create, use)',
+                          type=click.Choice(['create', 'use']))
+
+    if choice == 'create':
         storage_type = config['type']
         cls, config = storage_class_from_config(config)
         config['collection'] = collection
@@ -259,6 +267,31 @@ def _handle_collection_not_found(config, collection, e=None):
             return args
         except NotImplementedError as e:
             cli_logger.error(e)
+    elif choice == 'use':
+        click.echo('Choose from:')
+        choices = []
+        for i, (collection, config) in enumerate(discovered.items()):
+            display_name = None
+            try:
+                storage = storage_instance_from_config(config)
+                display_name = storage.get_meta('displayname')
+            except Exception:
+                pass
+
+            choices.append(collection)
+            click.echo('{}.  {}{}'.format(
+                i,
+                coerce_native(collection),
+                ' ({})'.format(coerce_native(display_name))
+                if display_name else ''
+            ))
+
+        collection_i = click.prompt(
+            'Your choice?',
+            type=click.IntRange(min=0, max=len(choices))
+        )
+        collection = choices[collection_i]
+        return discovered[collection]
 
     raise exceptions.UserError(
         'Unable to find or create collection "{collection}" for '
@@ -289,12 +322,14 @@ def _collections_for_pair_impl(status_path, pair):
                     a_args = a_discovered[collection]
                 except KeyError:
                     a_args = _handle_collection_not_found(pair.config_a,
+                                                          a_discovered,
                                                           collection)
 
                 try:
                     b_args = b_discovered[collection]
                 except KeyError:
                     b_args = _handle_collection_not_found(pair.config_b,
+                                                          b_discovered,
                                                           collection)
 
                 yield collection, (a_args, b_args)
