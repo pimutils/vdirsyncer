@@ -78,6 +78,10 @@ Pair Section
   - ``collections = ["from b", from a"]`` makes vdirsyncer synchronize all
     existing collections on either side.
 
+  - ``collections = [["bar", "bar_a", "bar_b"], "foo"]`` makes vdirsyncer
+    synchronize ``bar_a`` from side A with ``bar_b`` from side B, and also
+    synchronize ``foo`` on both sides with each other.
+
 - ``conflict_resolution``: Optional, define how conflicts should be handled.  A
   conflict occurs when one item (event, task) changed on both sides since the
   last sync.
