@@ -66,17 +66,29 @@ def _validate_pair_section(pair_config):
     if collections is None:
         return
 
-    e = ValueError('`collections` parameter must be a list of collection '
-                   'names (strings!) or `null`.')
-
     if not isinstance(collections, list):
-        raise e
+        raise ValueError('`collections` parameter must be a list or `null`.')
 
-    if any(not isinstance(x, (text_type, bytes)) for x in collections):
-        raise e
+    def _list_of_strings(xs):
+        return all(isinstance(x, (text_type, bytes)) for x in xs)
 
-    if len(set(collections)) != len(collections):
-        raise ValueError('Duplicate values in collections parameter.')
+    collection_names = set()
+
+    for i, collection in enumerate(collections):
+        if isinstance(collection, (text_type, bytes)):
+            collection_name = collection
+        elif isinstance(collection, list) \
+           and len(collection) == 3 \
+           and all(isinstance(x, (text_type, bytes)) for x in collection):
+            collection_name = collection[0]
+        else:
+            raise ValueError('`collections` parameter, position {i}:'
+                             'Expected string or list of three strings.'
+                             .format(i=i))
+
+        if collection_name in collection_names:
+            raise ValueError('Duplicate values in collections parameter.')
+        collection_names.add(collection_name)
 
 
 def load_config(fname=None):

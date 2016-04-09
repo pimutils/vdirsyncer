@@ -276,7 +276,7 @@ def _collections_for_pair_impl(status_path, pair):
         a_discovered = _discover_from_config(pair.config_a)
         b_discovered = _discover_from_config(pair.config_b)
 
-        for shortcut in set(shortcuts):
+        for shortcut in shortcuts:
             if shortcut == 'from a':
                 collections = a_discovered
             elif shortcut == 'from b':
@@ -285,17 +285,28 @@ def _collections_for_pair_impl(status_path, pair):
                 collections = [shortcut]
 
             for collection in collections:
-                try:
-                    a_args = a_discovered[collection]
-                except KeyError:
-                    a_args = _handle_collection_not_found(pair.config_a,
-                                                          collection)
+                if isinstance(collection, list):
+                    try:
+                        collection, collection_a, collection_b = collection
+                    except ValueError:
+                        raise UserError(
+                            'Expected string or list of length 3, '
+                            '{} found instead.'
+                            .format(collection))
+                else:
+                    collection_a = collection_b = collection
 
                 try:
-                    b_args = b_discovered[collection]
+                    a_args = a_discovered[collection_a]
+                except KeyError:
+                    a_args = _handle_collection_not_found(pair.config_a,
+                                                          collection_a)
+
+                try:
+                    b_args = b_discovered[collection_b]
                 except KeyError:
                     b_args = _handle_collection_not_found(pair.config_b,
-                                                          collection)
+                                                          collection_b)
 
                 yield collection, (a_args, b_args)
 
