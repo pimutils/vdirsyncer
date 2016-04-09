@@ -221,6 +221,7 @@ def _expand_collections_cache(collections, config_a, config_b):
 
 def _discover_from_config(config):
     storage_type = config['type']
+    instance_name = config.get('instance_name', '???')
     cls, config = storage_class_from_config(config)
 
     try:
@@ -230,7 +231,7 @@ def _discover_from_config(config):
             raise exceptions.UserError(
                 'The storage {} (type {}) doesn\'t support collection '
                 'discovery. You can only use `collections = null` with it.'
-                .format(config.get('instance_name', '???'), storage_type)
+                .format(instance_name, storage_type)
             )
     except Exception:
         return handle_storage_init_error(cls, config)
@@ -238,7 +239,28 @@ def _discover_from_config(config):
         rv = {}
         for args in discovered:
             args['type'] = storage_type
-            rv[args['collection']] = args
+            storage = storage_instance_from_config(args)
+
+            key = ''
+            try:
+                key = storage.get_meta('displayname').strip()
+            except NotImplementedError:
+                pass
+
+            if not key:
+                key = args['collection']
+                cli_logger.warning(
+                    'Collection on {} has no or empty displayname property. '
+                    'Will use bare name (foldername, URL path): {!r}'
+                    .format(instance_name, key))
+
+            if key in args:
+                raise exceptions.UserError(
+                    'The storage {} has two collections named {}. '
+                    'Vdirsyncer requires unique names.'
+                    .format(instance_name, coerce_native(key))
+                )
+            rv[key] = args
         return rv
 
 
