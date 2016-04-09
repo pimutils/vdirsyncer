@@ -69,17 +69,14 @@ def _validate_pair_section(pair_config):
     if not isinstance(collections, list):
         raise ValueError('`collections` parameter must be a list or `null`.')
 
-    def _list_of_strings(xs):
-        return all(isinstance(x, (text_type, bytes)) for x in xs)
-
     collection_names = set()
 
     for i, collection in enumerate(collections):
         if isinstance(collection, (text_type, bytes)):
             collection_name = collection
-        elif isinstance(collection, list) \
-           and len(collection) == 3 \
-           and all(isinstance(x, (text_type, bytes)) for x in collection):
+        elif isinstance(collection, list) and \
+                len(collection) == 3 and \
+                all(isinstance(x, (text_type, bytes)) for x in collection):
             collection_name = collection[0]
         else:
             raise ValueError('`collections` parameter, position {i}:'

@@ -289,7 +289,7 @@ def _collections_for_pair_impl(status_path, pair):
                     try:
                         collection, collection_a, collection_b = collection
                     except ValueError:
-                        raise UserError(
+                        raise exceptions.UserError(
                             'Expected string or list of length 3, '
                             '{} found instead.'
                             .format(collection))
