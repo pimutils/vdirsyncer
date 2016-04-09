@@ -199,7 +199,4 @@ def test_invalid_collections_arg():
     with pytest.raises(exceptions.UserError) as excinfo:
         _read_config(f)
 
-    assert (
-        'Section `pair foobar`: `collections` parameter must be a list of '
-        'collection names (strings!) or `null`.'
-    ) in str(excinfo.value)
+    assert 'Expected string' in str(excinfo.value)
