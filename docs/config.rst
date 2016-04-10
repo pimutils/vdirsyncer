@@ -64,6 +64,12 @@ Pair Section
   The special values ``"from a"`` and ``"from b"``, tell vdirsyncer to try
   autodiscovery on a specific storage.
 
+  If the collection you want to sync doesn't have the same name on each side,
+  you may also use a value of the form ``["config_name", "name_a", "name_b"]``.
+  This will synchronize the collection ``name_a`` on side A with the collection
+  ``name_b`` on side B. The ``config_name`` will be used for representation in
+  CLI arguments and logging.
+
   Examples:
 
   - ``collections = ["from b", "foo", "bar"]`` makes vdirsyncer synchronize the
@@ -71,6 +77,10 @@ Pair Section
 
   - ``collections = ["from b", from a"]`` makes vdirsyncer synchronize all
     existing collections on either side.
+
+  - ``collections = [["bar", "bar_a", "bar_b"], "foo"]`` makes vdirsyncer
+    synchronize ``bar_a`` from side A with ``bar_b`` from side B, and also
+    synchronize ``foo`` on both sides with each other.
 
 - ``conflict_resolution``: Optional, define how conflicts should be handled.  A
   conflict occurs when one item (event, task) changed on both sides since the

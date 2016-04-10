@@ -16,6 +16,8 @@ Version 0.10.0
   have been added.
 - New global command line option `--config`, to specify an alternative config
   file. See :gh:`409`.
+- The ``collections`` parameter can now be used to synchronize
+  differently-named collections with each other.
 
 Version 0.9.3
 =============

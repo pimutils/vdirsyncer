@@ -81,3 +81,48 @@ def test_discover_on_unsupported_storage(tmpdir, runner):
     result = runner.invoke(['discover'])
     assert result.exception
     assert 'doesn\'t support collection discovery' in result.output
+
+
+def test_discover_different_collection_names(tmpdir, runner):
+    foo = tmpdir.mkdir('foo')
+    bar = tmpdir.mkdir('bar')
+    runner.write_with_general(dedent('''
+    [storage foo]
+    type = filesystem
+    fileext = .txt
+    path = {foo}
+
+    [storage bar]
+    type = filesystem
+    fileext = .txt
+    path = {bar}
+
+    [pair foobar]
+    a = foo
+    b = bar
+    collections = [
+        ["coll1", "coll_a1", "coll_b1"],
+        "coll2"
+     ]
+    ''').format(foo=str(foo), bar=str(bar)))
+
+    result = runner.invoke(['discover'], input='y\n' * 6)
+    assert not result.exception
+
+    coll_a1 = foo.join('coll_a1')
+    coll_b1 = bar.join('coll_b1')
+
+    assert coll_a1.exists()
+    assert coll_b1.exists()
+
+    result = runner.invoke(['sync'])
+    assert not result.exception
+
+    foo_txt = coll_a1.join('foo.txt')
+    foo_txt.write('BEGIN:VCALENDAR\nUID:foo\nEND:VCALENDAR')
+
+    result = runner.invoke(['sync'])
+    assert not result.exception
+
+    assert foo_txt.exists()
+    assert coll_b1.join('foo.txt').exists()
