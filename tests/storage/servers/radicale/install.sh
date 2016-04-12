@@ -1,11 +1,6 @@
 #!/bin/sh
 set -e
 
-if [ -z "$RADICALE_BACKEND" ]; then
-    echo "Missing RADICALE_BACKEND"
-    false
-fi
-
 if [ "$REQUIREMENTS" = "release" ] || [ "$REQUIREMENTS" = "minimal" ]; then
     radicale_pkg="radicale"
 elif [ "$REQUIREMENTS" = "devel" ]; then
@@ -15,7 +10,3 @@ else
     false
 fi
 pip install wsgi_intercept $radicale_pkg
-
-if [ "$RADICALE_BACKEND" = "database" ]; then
-    pip install sqlalchemy
-fi
