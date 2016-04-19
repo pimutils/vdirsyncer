@@ -4,6 +4,8 @@ import os
 
 import pytest
 
+import pytest
+
 import requests
 import requests.exceptions
 
@@ -22,12 +24,12 @@ ServerMixin = get_server_mixin(dav_server)
 class DAVStorageTests(ServerMixin, StorageTests):
     dav_server = dav_server
 
+    @pytest.mark.skipif(dav_server == 'radicale',
+                        reason='Radicale is very tolerant.')
     def test_dav_broken_item(self, s):
         item = Item(u'HAHA:YES')
-        try:
+        with pytest.raises((exceptions.Error, requests.exceptions.HTTPError)):
             s.upload(item)
-        except (exceptions.Error, requests.exceptions.HTTPError):
-            pass
         assert not list(s.list())
 
     def test_dav_empty_get_multi_performance(self, s, monkeypatch):
