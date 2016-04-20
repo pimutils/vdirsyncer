@@ -87,9 +87,12 @@ pipsi_ is a new package manager for Python-based software that automatically
 sets up a virtualenv for each program you install. Assuming you have it
 installed on your operating system, you can do::
 
-    pipsi install vdirsyncer
+    pipsi install --python python3 vdirsyncer
 
-and ``.local/bin/vdirsyncer`` will be your new vdirsyncer installation.
+and ``.local/bin/vdirsyncer`` will be your new vdirsyncer installation. To
+update vdirsyncer to the latest version::
+
+    pipsi upgrade vdirsyncer
 
 If you're done with vdirsyncer, you can do::
 
