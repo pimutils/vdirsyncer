@@ -3,7 +3,7 @@
 import datetime
 import logging
 
-from lxml import etree
+import xml.etree.ElementTree as etree
 
 import requests
 from requests.exceptions import HTTPError
@@ -69,18 +69,12 @@ class InvalidXMLResponse(exceptions.InvalidResponse):
 
 
 def _parse_xml(content):
-    p = etree.XMLParser(recover=True)
-    rv = etree.XML(content, parser=p)
-    if rv is None:
+    try:
+        return etree.XML(content)
+    except etree.ParseError as e:
         raise InvalidXMLResponse('Invalid XML encountered: {}\n'
                                  'Double-check the URLs in your config.'
-                                 .format(p.error_log))
-    if p.error_log:
-        dav_logger.warning('Partially invalid XML response, some of your '
-                           'items may be corrupted. Check the debug log and '
-                           'consider switching servers. ({})'
-                           .format(p.error_log))
-    return rv
+                                 .format(e))
 
 
 def _merge_xml(items):
@@ -177,7 +171,7 @@ class Discover(object):
 
         root = etree.fromstring(response.content)
         # Better don't do string formatting here, because of XML namespaces
-        rv = root.find('.//' + self._homeset_tag + '/{*}href')
+        rv = root.find('.//' + self._homeset_tag + '/{DAV:}href')
         if rv is None:
             raise InvalidXMLResponse()
         return utils.compat.urlparse.urljoin(response.url, rv.text)
@@ -192,11 +186,11 @@ class Discover(object):
         root = _parse_xml(r.content)
         done = set()
         for response in root.findall('{DAV:}response'):
-            props = _merge_xml(response.findall('{*}propstat/{*}prop'))
-            if props.find('{*}resourcetype/{*}' + self._resourcetype) is None:
+            props = _merge_xml(response.findall('{DAV:}propstat/{DAV:}prop'))
+            if props.find('{DAV:}resourcetype/' + self._resourcetype) is None:
                 continue
 
-            href = response.find('{*}href')
+            href = response.find('{DAV:}href')
             if href is None:
                 raise InvalidXMLResponse()
             href = utils.compat.urlparse.urljoin(r.url, href.text)
@@ -261,7 +255,7 @@ class Discover(object):
 
 class CalDiscover(Discover):
     _namespace = 'urn:ietf:params:xml:ns:caldav'
-    _resourcetype = 'calendar'
+    _resourcetype = '{%s}calendar' % _namespace
     _homeset_xml = """
     <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
         <d:prop>
@@ -269,13 +263,13 @@ class CalDiscover(Discover):
         </d:prop>
     </d:propfind>
     """
-    _homeset_tag = '{*}calendar-home-set'
+    _homeset_tag = '{%s}calendar-home-set' % _namespace
     _well_known_uri = '/.well-known/caldav/'
 
 
 class CardDiscover(Discover):
     _namespace = 'urn:ietf:params:xml:ns:carddav'
-    _resourcetype = 'addressbook'
+    _resourcetype = '{%s}addressbook' % _namespace
     _homeset_xml = """
     <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:carddav">
         <d:prop>
@@ -283,7 +277,7 @@ class CardDiscover(Discover):
         </d:prop>
     </d:propfind>
     """
-    _homeset_tag = '{*}addressbook-home-set'
+    _homeset_tag = '{%s}addressbook-home-set' % _namespace
     _well_known_uri = '/.well-known/carddav/'
 
 
@@ -581,7 +575,7 @@ class DavStorage(Storage):
         except KeyError:
             raise exceptions.UnsupportedMetadataError()
 
-        lxml_selector = '{%s}%s' % (namespace, tagname)
+        xpath = '{%s}%s' % (namespace, tagname)
         data = '''<?xml version="1.0" encoding="utf-8" ?>
             <D:propfind xmlns:D="DAV:">
                 <D:prop>
@@ -589,7 +583,7 @@ class DavStorage(Storage):
                 </D:prop>
             </D:propfind>
         '''.format(
-            to_native(etree.tostring(etree.Element(lxml_selector)))
+            to_native(etree.tostring(etree.Element(xpath)))
         )
 
         headers = self.session.get_default_headers()
@@ -602,7 +596,7 @@ class DavStorage(Storage):
 
         root = _parse_xml(response.content)
 
-        for prop in root.findall('.//' + lxml_selector):
+        for prop in root.findall('.//' + xpath):
             text = normalize_meta_value(getattr(prop, 'text', None))
             if text:
                 return text
