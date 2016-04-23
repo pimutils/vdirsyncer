@@ -167,6 +167,18 @@
         "python": "pypy"
       },
       {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=false",
+        "python": "pypy3"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=false",
+        "python": "pypy3"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=false",
+        "python": "pypy3"
+      },
+      {
         "env": "BUILD=test",
         "language": "generic",
         "os": "osx"

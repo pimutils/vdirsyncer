@@ -36,7 +36,8 @@ def test_request_ssl(httpsserver):
 
     with pytest.raises(requests.exceptions.SSLError) as excinfo:
         utils.http.request('GET', httpsserver.url)
-    assert 'certificate verify failed' in str(excinfo.value)
+    assert 'certificate verify failed' in str(excinfo.value) or \
+        'unknown ca' in str(excinfo.value)
 
     utils.http.request('GET', httpsserver.url, verify=False)
 

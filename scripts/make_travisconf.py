@@ -38,11 +38,13 @@ cfg['script'] = [script("""
 matrix = []
 cfg['matrix'] = {'include': matrix}
 
-for python in ("2.7", "3.3", "3.4", "3.5", "pypy"):
-    matrix.append({
-        'python': python,
-        'env': 'BUILD=style BUILD_PRS=true'
-    })
+for python in ("2.7", "3.3", "3.4", "3.5", "pypy", "pypy3"):
+    if python != "pypy3":
+        # Sphinx doesn't work under Python 3.2
+        matrix.append({
+            'python': python,
+            'env': 'BUILD=style BUILD_PRS=true'
+        })
 
     if python == "3.5":
         dav_servers = ("radicale", "owncloud", "baikal", "davical")
