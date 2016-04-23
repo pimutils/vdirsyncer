@@ -2,6 +2,10 @@
 
 from copy import deepcopy
 
+from hypothesis import assume
+from hypothesis.stateful import Bundle, rule, RuleBasedStateMachine
+import hypothesis.strategies as st
+
 import pytest
 
 import vdirsyncer.exceptions as exceptions
@@ -390,3 +394,52 @@ def test_unicode_hrefs():
     status = {}
     href, etag = a.upload(Item(u'UID:äää'))
     sync(a, b, status)
+
+
+class SyncMachine(RuleBasedStateMachine):
+    Status = Bundle('status')
+    Storage = Bundle('storage')
+
+    @rule(target=Storage)
+    def newstorage(self):
+        return MemoryStorage()
+
+    @rule(target=Status)
+    def newstatus(self):
+        return {}
+
+    @rule(target=Storage, storage=Storage,
+          uid=st.text(min_size=1),
+          etag=st.text())
+    def upload(self, storage, uid, etag):
+        item = Item(u'UID:{}'.format(uid))
+        storage.items[uid] = (etag, item)
+        return storage
+
+    @rule(target=Storage, storage=Storage, href=st.text())
+    def delete(self, storage, href):
+        storage.items.pop(href, None)
+        return storage
+
+    @rule(target=Status, status=Status,
+          a=Storage, b=Storage,
+          force_delete=st.booleans(),
+          conflict_resolution=st.one_of((st.just('a wins'), st.just('b wins'))))
+    def sync(self, status, a, b, force_delete, conflict_resolution):
+        try:
+            sync(a, b, status,
+                 force_delete=force_delete,
+                 conflict_resolution=conflict_resolution)
+        except StorageEmpty:
+            if force_delete:
+                raise
+            else:
+                assert not list(a.list()) or not list(b.list())
+                assume(False)
+
+        assert sorted(item.raw for etag, item in a.items.values()) == \
+            sorted(item.raw for etag, item in b.items.values())
+        return status
+
+
+TestSyncMachine = SyncMachine.TestCase
