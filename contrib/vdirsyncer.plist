@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Blueprint for cron-like launchd plist -->
+<!-- Replace @@PLACEHOLDERS@@ with appropriate values for your system/settings! -->
+<plist version="1.0">
+  <dict>
+    <key>EnvironmentVariables</key>
+    <dict>
+      <!-- Locale to use for vdirsyncer, e.g. en_US.UTF-8 -->
+      <key>LANG</key>
+      <string>@@LOCALE@@</string>
+      <key>LC_ALL</key>
+      <string>@@LOCALE@@</string>
+    </dict>
+    <key>Label</key>
+    <string>vdirsyncer</string>
+    <key>WorkingDirectory</key>
+    <!-- working directory for vdirsyncer, usually the base directory where
+         vdirsyncer is installed, e.g. /usr/local/ -->
+    <string>@@WORKINGDIRECTORY@@</string>
+    <key>ProgramArguments</key>
+    <array>
+      <!-- full path to vdirsyncer binary -->
+      <string>@@VDIRSYNCER@@</string>
+      <!-- only log errors -->
+      <string>-v</string>
+      <string>ERROR</string>
+      <string>sync</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StartInterval</key>
+    <!-- Sync intervall in seconds -->
+    <integer>@@SYNCINTERVALL@@</integer>
+    <!-- For logging, redirect stdout & stderr -->
+    <!-- <key>StandardErrorPath</key> -->
+    <!-- Full path to stderr logfile, e.g. /tmp/vdirsyncer_err.log -->
+    <!-- <string>@@STDERRFILE@@</string>  -->
+    <!-- Full path to stdout logfile, e.g. /tmp/vdirsyncer_out.log -->
+    <!-- <key>StandardOutPath</key> -->
+    <!-- <string>@@STDOUTFILE@@</string> -->
+  </dict>
+</plist>
