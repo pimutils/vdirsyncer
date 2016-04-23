@@ -232,17 +232,19 @@ class Discover(object):
 
     def _create_collection_impl(self, url):
         data = '''<?xml version="1.0" encoding="utf-8" ?>
-            <D:mkcol xmlns:D="DAV:" xmlns:C="{}">
+            <D:mkcol xmlns:D="DAV:">
                 <D:set>
                     <D:prop>
                         <D:resourcetype>
                             <D:collection/>
-                            <C:{}/>
+                            {}
                         </D:resourcetype>
                     </D:prop>
                 </D:set>
             </D:mkcol>
-        '''.format(self._namespace, self._resourcetype)
+        '''.format(
+            to_native(etree.tostring(etree.Element(self._resourcetype)))
+        )
 
         response = self.session.request(
             'MKCOL',
