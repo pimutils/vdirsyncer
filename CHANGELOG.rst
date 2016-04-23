@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.10.0
 ==============
 
+*released on 23 April 2016*
+
 - New storage types :storage:`google_calendar` and :storage:`google_contacts`
   have been added.
 - New global command line option `--config`, to specify an alternative config
