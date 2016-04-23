@@ -18,6 +18,9 @@ Version 0.10.0
   file. See :gh:`409`.
 - The ``collections`` parameter can now be used to synchronize
   differently-named collections with each other.
+- **Packagers:** The ``lxml`` dependency has been dropped.
+- XML parsing is now a lot stricter. Malfunctioning servers that used to work
+  with vdirsyncer may stop working.
 
 Version 0.9.3
 =============

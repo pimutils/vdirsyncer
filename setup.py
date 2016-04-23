@@ -10,8 +10,6 @@ Vdirsyncer is a synchronization tool for vdir. See the README for more details.
 # detectable for setuptools-scm. Rather use the PyPI ones.
 
 
-import platform
-
 from setuptools import Command, find_packages, setup
 
 
@@ -28,15 +26,6 @@ requirements = [
     # replicate vdirsyncer's current behavior (verifying fingerprints without
     # verifying against CAs) with older versions of urllib3.
     'requests >=2.4.1, !=2.9.0',
-    'lxml >=3.1' + (
-        # See https://github.com/pimutils/vdirsyncer/issues/298
-        # We pin some LXML version that is known to work with PyPy
-        # I assume nobody actually uses PyPy with vdirsyncer, so this is
-        # moot
-        ', <=3.4.4'
-        if platform.python_implementation() == 'PyPy'
-        else ''
-    ),
     # https://github.com/sigmavirus24/requests-toolbelt/pull/28
     # And https://github.com/sigmavirus24/requests-toolbelt/issues/54
     'requests_toolbelt >=0.4.0',
