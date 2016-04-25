@@ -3,7 +3,7 @@
 from copy import deepcopy
 
 from hypothesis import assume
-from hypothesis.stateful import Bundle, rule, RuleBasedStateMachine
+from hypothesis.stateful import Bundle, RuleBasedStateMachine, rule
 import hypothesis.strategies as st
 
 import pytest
@@ -421,10 +421,12 @@ class SyncMachine(RuleBasedStateMachine):
         storage.items.pop(href, None)
         return storage
 
-    @rule(target=Status, status=Status,
-          a=Storage, b=Storage,
-          force_delete=st.booleans(),
-          conflict_resolution=st.one_of((st.just('a wins'), st.just('b wins'))))
+    @rule(
+        target=Status, status=Status,
+        a=Storage, b=Storage,
+        force_delete=st.booleans(),
+        conflict_resolution=st.one_of((st.just('a wins'), st.just('b wins')))
+    )
     def sync(self, status, a, b, force_delete, conflict_resolution):
         try:
             sync(a, b, status,
