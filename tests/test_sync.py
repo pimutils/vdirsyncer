@@ -14,7 +14,7 @@ from vdirsyncer.storage.memory import MemoryStorage
 from vdirsyncer.sync import BothReadOnly, IdentConflict, StorageEmpty, \
     SyncConflict, sync
 
-from . import assert_item_equals, blow_up
+from . import assert_item_equals, blow_up, uid_strategy
 
 
 def empty_storage(x):
@@ -409,7 +409,7 @@ class SyncMachine(RuleBasedStateMachine):
         return {}
 
     @rule(target=Storage, storage=Storage,
-          uid=st.text(min_size=1),
+          uid=uid_strategy,
           etag=st.text())
     def upload(self, storage, uid, etag):
         item = Item(u'UID:{}'.format(uid))

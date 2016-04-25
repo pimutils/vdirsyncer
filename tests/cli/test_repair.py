@@ -3,17 +3,13 @@
 from textwrap import dedent
 
 from hypothesis import given, settings
-import hypothesis.strategies as st
+
+from tests import uid_strategy
 
 from vdirsyncer.repair import repair_storage
 from vdirsyncer.storage.memory import MemoryStorage
 from vdirsyncer.utils import href_safe
 from vdirsyncer.utils.vobject import Item
-
-uid_strategy = st.text(st.characters(blacklist_categories=(
-    'Zs', 'Zl', 'Zp',
-    'Cc', 'Cs'
-)))
 
 
 @given(uid=uid_strategy)
