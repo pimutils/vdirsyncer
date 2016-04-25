@@ -8,6 +8,7 @@ include docs-requirements.txt
 
 recursive-include docs *
 recursive-include tests *
+recursive-include contrib *
 prune tests/storage/servers
 recursive-include tests/storage/servers/radicale *
 recursive-include tests/storage/servers/skip *
