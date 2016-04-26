@@ -4,8 +4,6 @@ import json
 import unicodedata
 from textwrap import dedent
 
-from click.testing import CliRunner
-
 from hypothesis import example, given
 import hypothesis.strategies as st
 
