@@ -77,8 +77,8 @@ printable_characters_strategy = st.text(
 
 uid_strategy = st.text(
     st.characters(blacklist_categories=(
-    'Zs', 'Zl', 'Zp',
-    'Cc', 'Cs'
+        'Zs', 'Zl', 'Zp',
+        'Cc', 'Cs'
     )),
     min_size=1
 ).filter(lambda x: x.strip() == x)
