@@ -162,8 +162,8 @@ def collections_for_pair(status_path, pair, from_cache=True,
     shortcut expansion and result caching.
 
     :param status_path: The path to the status directory.
-    :param skip_cache: Whether to skip the cached data and always do discovery.
-        Even with this option enabled, the new cache is written.
+    :param from_cache: Whether to load from cache (aborting on cache miss) or
+        discover and save to cache.
 
     :returns: iterable of (collection, (a_args, b_args))
     '''
