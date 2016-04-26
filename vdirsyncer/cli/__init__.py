@@ -74,7 +74,6 @@ def max_workers_callback(ctx, param, value):
     return value
 
 
-
 def max_workers_option(default=0):
     help = 'Use at most this many connections. '
     if default == 0:
