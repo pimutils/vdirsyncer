@@ -89,12 +89,12 @@ default addressbook to ``~/.contacts/``::
 
     Configuration for other servers can be found at :ref:`supported-servers`.
 
-After running ``vdirsyncer sync``, ``~/.contacts/`` will contain a bunch of
-``.vcf`` files which all contain a contact in ``VCARD`` format each. You can
-modify their content, add new ones and delete some [1]_, and your changes will be
-synchronized to the CalDAV server after you run ``vdirsyncer sync`` again. For
-further reference, it uses the storages :storage:`filesystem` and
-:storage:`carddav`.
+After running ``vdirsyncer discover`` and ``vdirsyncer sync``, ``~/.contacts/``
+will contain a bunch of ``.vcf`` files which all contain a contact in ``VCARD``
+format each. You can modify their content, add new ones and delete some [1]_,
+and your changes will be synchronized to the CalDAV server after you run
+``vdirsyncer sync`` again. For further reference, it uses the storages
+:storage:`filesystem` and :storage:`carddav`.
 
 .. [1] You'll want to :doc:`use a helper program for this <supported>`.
 
@@ -145,15 +145,16 @@ line to let vdirsyncer automatically sync all addressbooks it can find::
     username = bob
     password = asdf
 
-With the above configuration, vdirsyncer will fetch all available collections
-from the server, and create subdirectories for each of them in
-``~/.contacts/``. For example, ownCloud's default addressbook ``"default"``
-would be synchronized to the location ``~/.contacts/default/``.
+With the above configuration, ``vdirsyncer discover`` will fetch all available
+collections from the server, and create subdirectories for each of them in
+``~/.contacts/`` after confirmation. For example, ownCloud's default
+addressbook ``"default"`` would be synchronized to the location
+``~/.contacts/default/``.
 
-Vdirsyncer fetches this list on first sync, and will re-fetch it if you change
-your configuration file. However, if new collections are created on the server,
-it will not automatically start synchronizing those [2]_. You should run
-``vdirsyncer discover`` to re-fetch this list instead.
+After that, ``vdirsyncer sync`` will synchronize all your addressbooks as
+expected. However, if new collections are created on the server, it will not
+automatically start synchronizing those [2]_. You need to run ``vdirsyncer
+discover`` again to re-fetch this list instead.
 
 .. [2] Because collections are added rarely, and checking for this case before
    every synchronization isn't worth the overhead.

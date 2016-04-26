@@ -156,7 +156,7 @@ def _get_collections_cache_key(pair):
     return m.hexdigest()
 
 
-def collections_for_pair(status_path, pair, skip_cache=False,
+def collections_for_pair(status_path, pair, from_cache=True,
                          list_collections=False):
     '''Determine all configured collections for a given pair. Takes care of
     shortcut expansion and result caching.
@@ -167,16 +167,21 @@ def collections_for_pair(status_path, pair, skip_cache=False,
 
     :returns: iterable of (collection, (a_args, b_args))
     '''
-    rv = load_status(status_path, pair.name, data_type='collections')
     cache_key = _get_collections_cache_key(pair)
-    if rv and not skip_cache:
-        if rv.get('cache_key', None) == cache_key:
+    if from_cache:
+        rv = load_status(status_path, pair.name, data_type='collections')
+        if rv and rv.get('cache_key', None) == cache_key:
             return list(_expand_collections_cache(
                 rv['collections'], pair.config_a, pair.config_b
             ))
         elif rv:
-            cli_logger.info('Detected change in config file, discovering '
-                            'collections for {}'.format(pair.name))
+            raise exceptions.UserError('Detected change in config file, '
+                                       'please run `vdirsyncer discover {}`.'
+                                       .format(pair.name))
+        else:
+            raise exceptions.UserError('Please run `vdirsyncer discover {}` '
+                                       ' before synchronization.'
+                                       .format(pair.name))
 
     cli_logger.info('Discovering collections for pair {}'
                     .format(pair.name))
