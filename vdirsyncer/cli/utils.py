@@ -156,7 +156,8 @@ def _get_collections_cache_key(pair):
     return m.hexdigest()
 
 
-def collections_for_pair(status_path, pair, skip_cache=False):
+def collections_for_pair(status_path, pair, skip_cache=False,
+                         list_collections=False):
     '''Determine all configured collections for a given pair. Takes care of
     shortcut expansion and result caching.
 
@@ -182,7 +183,8 @@ def collections_for_pair(status_path, pair, skip_cache=False):
 
     # We have to use a list here because the special None/null value would get
     # mangled to string (because JSON objects always have string keys).
-    rv = list(_collections_for_pair_impl(status_path, pair))
+    rv = list(_collections_for_pair_impl(status_path, pair,
+                                         list_collections=list_collections))
 
     save_status(status_path, pair.name, data_type='collections',
                 data={
@@ -267,7 +269,27 @@ def _handle_collection_not_found(config, collection, e=None):
                            storage=storage_name))
 
 
-def _collections_for_pair_impl(status_path, pair):
+def _print_collections(base_config, discovered):
+    instance_name = base_config['instance_name']
+    cli_logger.info('{}:'.format(coerce_native(instance_name)))
+    for args in discovered.values():
+        args['instance_name'] = instance_name
+        try:
+            storage = storage_instance_from_config(args)
+            displayname = storage.get_meta('displayname')
+        except Exception:
+            displayname = u''
+
+        cli_logger.info('  - {}{}'.format(
+            storage.collection,
+            ' ("{}")'.format(coerce_native(displayname))
+            if displayname and displayname != storage.collection
+            else ''
+        ))
+
+
+def _collections_for_pair_impl(status_path, pair, list_collections=False):
+    handled_collections = set()
 
     shortcuts = pair.options['collections']
     if shortcuts is None:
@@ -275,6 +297,10 @@ def _collections_for_pair_impl(status_path, pair):
     else:
         a_discovered = _discover_from_config(pair.config_a)
         b_discovered = _discover_from_config(pair.config_b)
+
+        if list_collections:
+            _print_collections(pair.config_a, a_discovered)
+            _print_collections(pair.config_b, b_discovered)
 
         for shortcut in shortcuts:
             if shortcut == 'from a':
@@ -295,6 +321,10 @@ def _collections_for_pair_impl(status_path, pair):
                             .format(collection))
                 else:
                     collection_a = collection_b = collection
+
+                if collection in handled_collections:
+                    continue
+                handled_collections.add(collection)
 
                 try:
                     a_args = a_discovered[collection_a]

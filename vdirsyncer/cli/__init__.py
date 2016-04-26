@@ -74,13 +74,19 @@ def max_workers_callback(ctx, param, value):
     return value
 
 
-max_workers_option = click.option(
-    '--max-workers', default=0, type=click.IntRange(min=0, max=None),
-    callback=max_workers_callback,
-    help=('Use at most this many connections. With debug messages enabled, '
-          'the default is 1, otherwise one connection per collection is '
-          'opened.')
-)
+def max_workers_option(default=0):
+    help = 'Use at most this many connections. '
+    if default == 0:
+        help += 'The default is 0, which means "as many as necessary". ' \
+                'With -vdebug enabled, the default is 1.'
+    else:
+        help += 'The default is {}.'.format(default)
+
+    return click.option(
+        '--max-workers', default=default, type=click.IntRange(min=0, max=None),
+        callback=max_workers_callback,
+        help=help
+    )
 
 
 def collections_arg_callback(ctx, param, value):
@@ -112,7 +118,7 @@ collections_arg = click.argument('collections', nargs=-1,
 @click.option('--force-delete/--no-force-delete',
               help=('Do/Don\'t abort synchronization when all items are about '
                     'to be deleted from both sides.'))
-@max_workers_option
+@max_workers_option()
 @pass_context
 @catch_errors
 def sync(ctx, collections, force_delete, max_workers):
@@ -149,7 +155,7 @@ def sync(ctx, collections, force_delete, max_workers):
 
 @app.command()
 @collections_arg
-@max_workers_option
+@max_workers_option()
 @pass_context
 @catch_errors
 def metasync(ctx, collections, max_workers):
@@ -174,10 +180,18 @@ def metasync(ctx, collections, max_workers):
 
 @app.command()
 @click.argument('pairs', nargs=-1)
-@max_workers_option
+@click.option(
+    '--list/--no-list', default=True,
+    help=(
+        'Whether to list all collections from both sides during discovery, '
+        'for debugging. This is quite slow. For faster discovery, disable '
+        'with --no-list.'
+    )
+)
+@max_workers_option(default=1)
 @pass_context
 @catch_errors
-def discover(ctx, pairs, max_workers):
+def discover(ctx, pairs, max_workers, list):
     '''
     Refresh collection cache for the given pairs.
     '''
@@ -195,6 +209,7 @@ def discover(ctx, pairs, max_workers):
                 status_path=config.general['status_path'],
                 pair=pair,
                 skip_cache=True,
+                list_collections=list,
             ))
             wq.spawn_worker()
 
