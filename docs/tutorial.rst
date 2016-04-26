@@ -157,3 +157,34 @@ it will not automatically start synchronizing those [2]_. You should run
 
 .. [2] Because collections are added rarely, and checking for this case before
    every synchronization isn't worth the overhead.
+
+Metadata synchronization
+------------------------
+
+Besides items, vdirsyncer can also synchronize metadata like the addressbook's
+or calendar's "human-friendly" name (internally called "displayname") or the
+color associated with a calendar. For the purpose of explaining this feature,
+let's switch to a different base example. This time we'll synchronize calendars::
+
+    [pair my_calendars]
+    a = my_calendars_local
+    b = my_calendars_remote
+    collections = ["from a", "from b"]
+    metadata = ["color"]
+
+    [storage my_calendars_local]
+    type = filesystem
+    path = ~/.calendars/
+    fileext = .ics
+
+    [storage my_calendars_remote]
+    type = caldav
+
+    url = https://owncloud.example.com/remote.php/caldav/
+    username = bob
+    password = asdf
+
+Run ``vdirsyncer discover`` for discovery. Then you can use ``vdirsyncer
+metasync`` to synchronize the ``color`` property between your local calendars
+in ``~/.calendars/`` and your ownCloud. Locally the color is just represented
+as a file within the calendar folder.
