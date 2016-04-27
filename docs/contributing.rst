@@ -32,8 +32,7 @@ further information.
 Reporting bugs
 --------------
 
-* Make sure your problem isn't already listed in `Known Problems
-  <https://vdirsyncer.readthedocs.io/en/stable/problems.html>`_.
+* Make sure your problem isn't already listed in :doc:`problems`.
 
 * Make sure you have the latest version by executing ``pip install --user
   --upgrade vdirsyncer``.
@@ -45,9 +44,8 @@ Suggesting features
 
 If you're suggesting a feature, keep in mind that vdirsyncer tries not to be a
 full calendar or contacts client, but rather just the piece of software that
-synchronizes all the data. `Take a look at the documentation for software
-working with vdirsyncer
-<http://vdirsyncer.readthedocs.io/en/latest/supported.html>`_.
+synchronizes all the data. :doc:`Take a look at the documentation for software
+working with vdirsyncer <supported>`.
 
 Submitting patches, pull requests
 =================================
