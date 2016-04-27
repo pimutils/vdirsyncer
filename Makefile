@@ -61,7 +61,7 @@ linkcheck:
 	sphinx-build -W -b linkcheck ./docs/ ./docs/_build/linkcheck/
 
 all:
-	$(error Take a look at https://vdirsyncer.readthedocs.org/en/stable/tutorial.html#installation)
+	$(error Take a look at https://vdirsyncer.readthedocs.io/en/stable/tutorial.html#installation)
 
 release:
 	python setup.py sdist bdist_wheel upload

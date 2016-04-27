@@ -2,7 +2,7 @@
 vdirsyncer
 ==========
 
-- `Documentation <https://vdirsyncer.readthedocs.org/en/stable/>`_
+- `Documentation <https://vdirsyncer.readthedocs.io/en/stable/>`_
 - `Source code <https://github.com/pimutils/vdirsyncer>`_
 
 Vdirsyncer synchronizes your calendars and addressbooks between two

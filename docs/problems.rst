@@ -100,5 +100,5 @@ If you're done with vdirsyncer, you can do::
 
 and vdirsyncer will be uninstalled, including its dependencies.
 
-.. _virtualenv: https://virtualenv.readthedocs.org/
+.. _virtualenv: https://virtualenv.readthedocs.io/
 .. _pipsi: https://github.com/mitsuhiko/pipsi
