@@ -27,18 +27,13 @@ def test_discover_command(tmpdir, runner):
         bar.mkdir(x)
     bar.mkdir('d')
 
-    result = runner.invoke(['sync'])
+    result = runner.invoke(['discover'])
     assert not result.exception
-    lines = result.output.splitlines()
-    assert lines[0].startswith('Discovering')
-    assert 'Syncing foobar/a' in lines
-    assert 'Syncing foobar/b' in lines
-    assert 'Syncing foobar/c' in lines
-    assert 'Syncing foobar/d' not in lines
 
     foo.mkdir('d')
     result = runner.invoke(['sync'])
     assert not result.exception
+    lines = result.output.splitlines()
     assert 'Syncing foobar/a' in lines
     assert 'Syncing foobar/b' in lines
     assert 'Syncing foobar/c' in lines

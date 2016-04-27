@@ -208,7 +208,7 @@ def discover(ctx, pairs, max_workers, list):
                 discover_collections,
                 status_path=config.general['status_path'],
                 pair=pair,
-                skip_cache=True,
+                from_cache=False,
                 list_collections=list,
             ))
             wq.spawn_worker()
