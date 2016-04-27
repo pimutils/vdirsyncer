@@ -187,4 +187,4 @@ let's switch to a different base example. This time we'll synchronize calendars:
 Run ``vdirsyncer discover`` for discovery. Then you can use ``vdirsyncer
 metasync`` to synchronize the ``color`` property between your local calendars
 in ``~/.calendars/`` and your ownCloud. Locally the color is just represented
-as a file within the calendar folder.
+as a file called ``color`` within the calendar folder.
