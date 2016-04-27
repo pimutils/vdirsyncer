@@ -9,6 +9,13 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.11.0
+==============
+
+- Discovery is no longer automatically done when running ``vdirsyncer sync``.
+  ``vdirsyncer discover`` now has to be explicitly called.
+- Add a ``.plist`` example for Mac OS X.
+
 Version 0.10.0
 ==============
 
