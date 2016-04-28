@@ -437,7 +437,7 @@ class SyncMachine(RuleBasedStateMachine):
                 raise
             else:
                 assert not list(a.list()) or not list(b.list())
-                assume(False)
+                return status
 
         assert sorted(item.raw for etag, item in a.items.values()) == \
             sorted(item.raw for etag, item in b.items.values())
