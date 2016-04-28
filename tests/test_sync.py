@@ -2,7 +2,6 @@
 
 from copy import deepcopy
 
-from hypothesis import assume
 from hypothesis.stateful import Bundle, RuleBasedStateMachine, rule
 import hypothesis.strategies as st
 
