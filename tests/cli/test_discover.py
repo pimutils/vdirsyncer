@@ -121,3 +121,34 @@ def test_discover_different_collection_names(tmpdir, runner):
 
     assert foo_txt.exists()
     assert coll_b1.join('foo.txt').exists()
+
+
+def test_discover_direct_path(tmpdir, runner):
+    foo = tmpdir.join('foo')
+    bar = tmpdir.join('bar')
+
+    runner.write_with_general(dedent('''
+    [storage foo]
+    type = filesystem
+    fileext = .txt
+    path = {foo}
+
+    [storage bar]
+    type = filesystem
+    fileext = .txt
+    path = {bar}
+
+    [pair foobar]
+    a = foo
+    b = bar
+    collections = null
+    ''').format(foo=str(foo), bar=str(bar)))
+
+    result = runner.invoke(['discover'])
+    assert not result.exception
+
+    result = runner.invoke(['sync'], input='y\n' * 2)
+    assert not result.exception
+
+    assert foo.exists()
+    assert bar.exists()
