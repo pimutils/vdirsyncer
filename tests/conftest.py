@@ -19,7 +19,7 @@ def setup_logging():
 
 @pytest.fixture(autouse=True)
 def suppress_py2_warning(monkeypatch):
-    monkeypatch.setattr('vdirsyncer.cli._check_python2', lambda: None)
+    monkeypatch.setattr('vdirsyncer.cli._check_python2', lambda _: None)
 
 
 try:
