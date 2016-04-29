@@ -10,7 +10,7 @@ import pytest
 
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
-from vdirsyncer.storage.memory import MemoryStorage
+from vdirsyncer.storage.memory import MemoryStorage, _random_string
 from vdirsyncer.sync import BothReadOnly, IdentConflict, StorageEmpty, \
     SyncConflict, sync
 
@@ -404,10 +404,18 @@ class SyncMachine(RuleBasedStateMachine):
     def _get_items(storage):
         return sorted(item.raw for etag, item in storage.items.values())
 
-    @rule(target=Storage, read_only=st.booleans())
-    def newstorage(self, read_only):
+    @rule(target=Storage, read_only=st.booleans(), flaky_etags=st.booleans())
+    def newstorage(self, read_only, flaky_etags):
         s = MemoryStorage()
         s.read_only = read_only
+        if flaky_etags:
+            def get(href):
+                _, item = s.items[href]
+                etag = _random_string()
+                s.items[href] = etag, item
+                return item, etag
+            s.get = get
+
         return s
 
     @rule(target=Status)
