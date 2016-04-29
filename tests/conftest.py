@@ -17,6 +17,7 @@ def setup_logging():
     click_log.basic_config('vdirsyncer').setLevel(logging.DEBUG)
 
 
+# XXX: Py2
 @pytest.fixture(autouse=True)
 def suppress_py2_warning(monkeypatch):
     monkeypatch.setattr('vdirsyncer.cli._check_python2', lambda _: None)
