@@ -396,7 +396,6 @@ def test_unicode_hrefs():
     sync(a, b, status)
 
 
-
 class SyncMachine(RuleBasedStateMachine):
     Status = Bundle('status')
     Storage = Bundle('storage')
