@@ -6,6 +6,7 @@ import hypothesis.strategies as st
 import pytest
 
 from vdirsyncer.metasync import MetaSyncConflict, metasync
+from vdirsyncer.storage.base import normalize_meta_value
 from vdirsyncer.storage.memory import MemoryStorage
 
 from . import blow_up
@@ -88,11 +89,8 @@ def test_conflict_x_wins(wins):
 
 
 keys = st.text(min_size=1).filter(lambda x: x.strip() == x)
-
-metadata = st.dictionaries(
-    keys,
-    st.text()
-)
+values = st.text().filter(lambda x: normalize_meta_value(x) == x)
+metadata = st.dictionaries(keys, values)
 
 
 @given(
