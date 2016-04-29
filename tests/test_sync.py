@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 
+from hypothesis import assume
 from hypothesis.stateful import Bundle, RuleBasedStateMachine, rule
 import hypothesis.strategies as st
 
@@ -399,9 +400,11 @@ class SyncMachine(RuleBasedStateMachine):
     Status = Bundle('status')
     Storage = Bundle('storage')
 
-    @rule(target=Storage)
-    def newstorage(self):
-        return MemoryStorage()
+    @rule(target=Storage, read_only=st.booleans())
+    def newstorage(self, read_only):
+        s = MemoryStorage()
+        s.read_only = read_only
+        return s
 
     @rule(target=Status)
     def newstatus(self):
@@ -428,9 +431,13 @@ class SyncMachine(RuleBasedStateMachine):
     )
     def sync(self, status, a, b, force_delete, conflict_resolution):
         try:
-            sync(a, b, status,
-                 force_delete=force_delete,
-                 conflict_resolution=conflict_resolution)
+            for _ in range(2 if a.read_only or b.read_only else 1):
+                sync(a, b, status,
+                     force_delete=force_delete,
+                     conflict_resolution=conflict_resolution)
+        except BothReadOnly:
+            assert a.read_only and b.read_only
+            assume(False)
         except StorageEmpty:
             if force_delete:
                 raise
