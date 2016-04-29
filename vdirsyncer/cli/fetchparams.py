@@ -56,11 +56,6 @@ def _fetch_value(opts, key):
     try:
         strategy_fn = STRATEGIES[strategy]
     except KeyError:
-        if strategy == 'keyring':
-            # XXX: Deprecate
-            raise exceptions.UserError(
-                'Fetching passwords via keyring is deprecated. See the '
-                'changelog for migration paths.')
         raise exceptions.UserError('Unknown strategy: {}'.format(strategy))
 
     logger.debug('Fetching value for {} with {} strategy.'

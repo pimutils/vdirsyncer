@@ -30,11 +30,6 @@ def validate_section_name(name, section_type):
 
 
 def _validate_general_section(general_config):
-    if 'passwordeval' in general_config:
-        # XXX: Deprecation
-        cli_logger.warning('The `passwordeval` parameter has been renamed to '
-                           '`password_command`.')
-
     invalid = set(general_config) - GENERAL_ALL
     missing = GENERAL_REQUIRED - set(general_config)
     problems = []
