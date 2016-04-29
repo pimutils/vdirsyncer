@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from hypothesis import given
+import hypothesis.strategies as st
+
 import pytest
 
 from vdirsyncer.metasync import MetaSyncConflict, metasync
@@ -82,3 +85,38 @@ def test_conflict_x_wins(wins):
     assert a.get_meta('foo') == b.get_meta('foo') == status['foo'] == (
         'bar' if wins == 'a' else 'baz'
     )
+
+
+keys = st.text(min_size=1).filter(lambda x: x.strip() == x)
+
+metadata = st.dictionaries(
+    keys,
+    st.text()
+)
+
+
+@given(
+    a=metadata, b=metadata,
+    status=metadata, keys=st.sets(keys),
+    conflict_resolution=st.just('a wins') | st.just('b wins')
+)
+def test_fuzzing(a, b, status, keys, conflict_resolution):
+    def _get_storage(m, instance_name):
+        s = MemoryStorage(instance_name=instance_name)
+        s.metadata = m
+        return s
+
+    a = _get_storage(a, 'A')
+    b = _get_storage(b, 'B')
+
+    winning_storage = (a if conflict_resolution == 'a wins' else b)
+    expected_values = dict((key, winning_storage.get_meta(key))
+                           for key in keys)
+
+    metasync(a, b, status,
+             keys=keys, conflict_resolution=conflict_resolution)
+
+    for key in keys:
+        assert a.get_meta(key) == b.get_meta(key) == status.get(key, '')
+        if expected_values[key]:
+            assert status[key] == expected_values[key]
