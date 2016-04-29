@@ -396,9 +396,14 @@ def test_unicode_hrefs():
     sync(a, b, status)
 
 
+
 class SyncMachine(RuleBasedStateMachine):
     Status = Bundle('status')
     Storage = Bundle('storage')
+
+    @staticmethod
+    def _get_items(storage):
+        return sorted(item.raw for etag, item in storage.items.values())
 
     @rule(target=Storage, read_only=st.booleans())
     def newstorage(self, read_only):
@@ -430,6 +435,9 @@ class SyncMachine(RuleBasedStateMachine):
         conflict_resolution=st.one_of((st.just('a wins'), st.just('b wins')))
     )
     def sync(self, status, a, b, force_delete, conflict_resolution):
+        old_items_a = self._get_items(a)
+        old_items_b = self._get_items(b)
+
         try:
             for _ in range(2 if a.read_only or b.read_only else 1):
                 sync(a, b, status,
@@ -445,8 +453,13 @@ class SyncMachine(RuleBasedStateMachine):
                 assert not list(a.list()) or not list(b.list())
                 return status
 
-        assert sorted(item.raw for etag, item in a.items.values()) == \
-            sorted(item.raw for etag, item in b.items.values())
+        items_a = self._get_items(a)
+        items_b = self._get_items(b)
+
+        assert items_a == items_b
+        assert items_a == old_items_a or not a.read_only
+        assert items_b == old_items_b or not b.read_only
+
         return status
 
 
