@@ -131,27 +131,6 @@ def test_verbosity(tmpdir, runner):
     assert 'invalid value for "--verbosity"' in result.output.lower()
 
 
-def test_deprecated_item_status(tmpdir):
-    f = tmpdir.join('mypair.items')
-    f.write(dedent('''
-    ["ident", ["href_a", "etag_a", "href_b", "etag_b"]]
-    ["ident_two", ["href_a", "etag_a", "href_b", "etag_b"]]
-    ''').strip())
-
-    data = {
-        'ident': ['href_a', 'etag_a', 'href_b', 'etag_b'],
-        'ident_two': ['href_a', 'etag_a', 'href_b', 'etag_b']
-    }
-
-    assert cli.utils.load_status(
-        str(tmpdir), 'mypair', data_type='items') == data
-
-    cli.utils.save_status(
-        str(tmpdir), 'mypair', data_type='items', data=data)
-    assert cli.utils.load_status(
-        str(tmpdir), 'mypair', data_type='items') == data
-
-
 def test_collections_cache_invalidation(tmpdir, runner):
     foo = tmpdir.mkdir('foo')
     bar = tmpdir.mkdir('bar')
