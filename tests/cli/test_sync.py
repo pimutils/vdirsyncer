@@ -9,7 +9,6 @@ import hypothesis.strategies as st
 
 import pytest
 
-import vdirsyncer.cli as cli
 from vdirsyncer.utils.compat import PY2, to_native, to_unicode
 
 
