@@ -15,8 +15,8 @@ Version 0.11.0
 - Discovery is no longer automatically done when running ``vdirsyncer sync``.
   ``vdirsyncer discover`` now has to be explicitly called.
 - Add a ``.plist`` example for Mac OS X.
-- Usage under Python 2 now requires a special config parameter to be set.  -
-  Various deprecated configuration parameters do no longer have specialized
+- Usage under Python 2 now requires a special config parameter to be set.
+- Various deprecated configuration parameters do no longer have specialized
   errormessages. The generic error message for unknown parameters is shown.
 
   - Vdirsyncer no longer warns that the ``passwordeval`` parameter has been
