@@ -2,6 +2,8 @@
 
 import os
 
+import pytest
+
 import requests
 import requests.exceptions
 
@@ -41,10 +43,11 @@ class DavStorageTests(ServerMixin, StorageTests):
             monkeypatch.undo()
 
     def test_dav_unicode_href(self, s, get_item, monkeypatch):
-        if self.dav_server != 'radicale':
-            # Radicale is unable to deal with unicode hrefs
-            monkeypatch.setattr(s, '_get_href',
-                                lambda item: item.ident + s.fileext)
+        if self.dav_server == 'radicale':
+            pytest.xfail('Radicale is unable to deal with unicode hrefs')
+
+        monkeypatch.setattr(s, '_get_href',
+                            lambda item: item.ident + s.fileext)
         item = get_item(uid=u'lolätvdirsynceröü град сатану')
         href, etag = s.upload(item)
         item2, etag2 = s.get(href)
