@@ -156,27 +156,6 @@ def test_invalid_storage_name(read_config):
     assert 'invalid characters' in str(excinfo.value).lower()
 
 
-def test_parse_config_value(parse_config_value):
-    x = parse_config_value
-
-    assert x('123  # comment!') is invalid
-
-    assert x('True') == ('True', 1)
-    assert x('False') == ('False', 1)
-    assert x('Yes') == ('Yes', 1)
-    assert x('None') == ('None', 1)
-    assert x('"True"') == ('True', 0)
-    assert x('"False"') == ('False', 0)
-
-    assert x('"123  # comment!"') == ('123  # comment!', 0)
-    assert x('true') == (True, 0)
-    assert x('false') == (False, 0)
-    assert x('null') == (None, 0)
-    assert x('3.14') == (3.14, 0)
-    assert x('') == ('', 0)
-    assert x('""') == ('', 0)
-
-
 def test_invalid_collections_arg(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
         read_config(u'''
@@ -200,3 +179,24 @@ def test_invalid_collections_arg(read_config):
         ''')
 
     assert 'Expected string' in str(excinfo.value)
+
+
+def test_parse_config_value(parse_config_value):
+    x = parse_config_value
+
+    assert x('123  # comment!') is invalid
+
+    assert x('True') == ('True', 1)
+    assert x('False') == ('False', 1)
+    assert x('Yes') == ('Yes', 1)
+    assert x('None') == ('None', 1)
+    assert x('"True"') == ('True', 0)
+    assert x('"False"') == ('False', 0)
+
+    assert x('"123  # comment!"') == ('123  # comment!', 0)
+    assert x('true') == (True, 0)
+    assert x('false') == (False, 0)
+    assert x('null') == (None, 0)
+    assert x('3.14') == (3.14, 0)
+    assert x('') == ('', 0)
+    assert x('""') == ('', 0)
