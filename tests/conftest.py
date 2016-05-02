@@ -41,7 +41,7 @@ settings.register_profile("deterministic", settings(
     derandomize=True,
 ))
 
-if os.getenv('DETERMINISTIC_TESTS').lower() == 'true':
+if os.environ['DETERMINISTIC_TESTS'].lower() == 'true':
     settings.load_profile("deterministic")
-elif os.getenv('CI').lower() == 'true':
+elif os.environ['CI'].lower() == 'true':
     settings.load_profile("ci")
