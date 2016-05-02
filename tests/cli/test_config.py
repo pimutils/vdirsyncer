@@ -3,24 +3,41 @@ from textwrap import dedent
 
 import pytest
 
+import vdirsyncer.cli.config  # noqa
 import vdirsyncer.cli.utils  # noqa
 from vdirsyncer import cli, exceptions
-from vdirsyncer.cli.config import parse_config_value, \
-    read_config as _read_config
+
+
+invalid = object()
 
 
 @pytest.fixture
-def read_config(tmpdir):
+def read_config(tmpdir, monkeypatch):
     def inner(cfg):
+        errors = []
+        monkeypatch.setattr('vdirsyncer.cli.cli_logger.error', errors.append)
         f = io.StringIO(dedent(cfg.format(base=str(tmpdir))))
-        return _read_config(f)
+        rv = vdirsyncer.cli.config.read_config(f)
+        monkeypatch.undo()
+        return errors, rv
     return inner
 
 
-def test_read_config(read_config, monkeypatch):
-    errors = []
-    monkeypatch.setattr('vdirsyncer.cli.cli_logger.error', errors.append)
-    general, pairs, storages = read_config(u'''
+@pytest.fixture
+def parse_config_value(capsys):
+    def inner(s):
+        try:
+            rv = vdirsyncer.cli.config.parse_config_value(s)
+        except ValueError:
+            return invalid
+        else:
+            warnings = capsys.readouterr()[1]
+            return rv, len(warnings.splitlines())
+    return inner
+
+
+def test_read_config(read_config):
+    errors, (general, pairs, storages) = read_config(u'''
         [general]
         status_path = /tmp/status/
 
@@ -60,10 +77,7 @@ def test_read_config(read_config, monkeypatch):
     assert 'bogus' in errors[0]
 
 
-def test_missing_collections_param(read_config, monkeypatch):
-    errorlog = []
-    monkeypatch.setattr('vdirsyncer.cli.cli_logger.error', errorlog.append)
-
+def test_missing_collections_param(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
         read_config(u'''
             [general]
@@ -81,7 +95,6 @@ def test_missing_collections_param(read_config, monkeypatch):
             ''')
 
     assert 'collections parameter missing' in str(excinfo.value)
-    assert not errorlog
 
 
 def test_storage_instance_from_config(monkeypatch):
@@ -131,31 +144,20 @@ def test_wrong_general_section(read_config):
     ]
 
 
-def test_invalid_storage_name():
-    f = io.StringIO(dedent(u'''
+def test_invalid_storage_name(read_config):
+    with pytest.raises(exceptions.UserError) as excinfo:
+        read_config(u'''
         [general]
         status_path = {base}/status/
 
         [storage foo.bar]
-        '''))
-
-    with pytest.raises(exceptions.UserError) as excinfo:
-        _read_config(f)
+        ''')
 
     assert 'invalid characters' in str(excinfo.value).lower()
 
 
-def test_parse_config_value(capsys):
-    invalid = object()
-
-    def x(s):
-        try:
-            rv = parse_config_value(s)
-        except ValueError:
-            return invalid
-        else:
-            warnings = capsys.readouterr()[1]
-            return rv, len(warnings.splitlines())
+def test_parse_config_value(parse_config_value):
+    x = parse_config_value
 
     assert x('123  # comment!') is invalid
 
@@ -175,8 +177,9 @@ def test_parse_config_value(capsys):
     assert x('""') == ('', 0)
 
 
-def test_invalid_collections_arg():
-    f = io.StringIO(dedent(u'''
+def test_invalid_collections_arg(read_config):
+    with pytest.raises(exceptions.UserError) as excinfo:
+        read_config(u'''
         [general]
         status_path = /tmp/status/
 
@@ -194,9 +197,6 @@ def test_invalid_collections_arg():
         type = filesystem
         path = /tmp/bar/
         fileext = .txt
-        '''))
-
-    with pytest.raises(exceptions.UserError) as excinfo:
-        _read_config(f)
+        ''')
 
     assert 'Expected string' in str(excinfo.value)
