@@ -70,7 +70,7 @@ def _check_python2(config):
 @catch_errors
 def app(ctx, config):
     '''
-    vdirsyncer -- synchronize calendars and contacts
+    Synchronize calendars and contacts
     '''
     from .config import load_config
 
