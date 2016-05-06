@@ -17,6 +17,7 @@ your distribution:
 - `nixpkg <https://github.com/NixOS/nixpkgs/tree/master/pkgs/tools/misc/vdirsyncer>`_
 - `GNU Guix <https://www.gnu.org/software/guix/package-list.html#vdirsyncer>`_
 - `homebrew <http://braumeister.org/formula/vdirsyncer>`_
+- `Gentoo <https://packages.gentoo.org/packages/dev-python/vdirsyncer>`_
 - Debian and Ubuntu don't have packages, but make a manual installation
   especially hard. See :ref:`debian-urllib3`.
 
