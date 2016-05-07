@@ -2,3 +2,4 @@ coverage:
   status:
     patch: false
     project: false
+comment: false
