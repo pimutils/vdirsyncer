@@ -16,7 +16,7 @@ import click
 import click_threading
 
 from . import cli_logger
-from .. import DOCS_HOME, exceptions
+from .. import BUGTRACKER_HOME, DOCS_HOME, exceptions
 from ..sync import IdentConflict, StorageEmpty, SyncConflict
 from ..utils import expand_path, get_storage_init_args
 from ..utils.compat import to_native
@@ -127,6 +127,15 @@ def handle_cli_error(status_name=None):
             'Pair {pair_name} does not exist. Please check your '
             'configuration file and make sure you\'ve typed the pair name '
             'correctly'.format(pair_name=e.pair_name)
+        )
+    except exceptions.InvalidResponse as e:
+        cli_logger.error(
+            'The server returned something vdirsyncer doesn\'t understand. '
+            'Error message: {!r}\n'
+            'While this is most likely a serverside problem, the vdirsyncer '
+            'devs are generally interested in such bugs. Please report it in '
+            'the issue tracker at {}'
+            .format(e, BUGTRACKER_HOME)
         )
     except Exception as e:
         if status_name:
