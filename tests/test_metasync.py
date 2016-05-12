@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from hypothesis import given
+from hypothesis import given, example
 import hypothesis.strategies as st
 
 import pytest
@@ -98,6 +98,8 @@ metadata = st.dictionaries(keys, values)
     status=metadata, keys=st.sets(keys),
     conflict_resolution=st.just('a wins') | st.just('b wins')
 )
+@example(a={u'0': u'0'}, b={}, status={u'0': u'0'}, keys={u'0'},
+         conflict_resolution='a wins')
 def test_fuzzing(a, b, status, keys, conflict_resolution):
     def _get_storage(m, instance_name):
         s = MemoryStorage(instance_name=instance_name)
@@ -115,6 +117,6 @@ def test_fuzzing(a, b, status, keys, conflict_resolution):
              keys=keys, conflict_resolution=conflict_resolution)
 
     for key in keys:
-        assert a.get_meta(key) == b.get_meta(key) == status.get(key, '')
-        if expected_values[key]:
-            assert status[key] == expected_values[key]
+        s = status.get(key, '')
+        assert a.get_meta(key) == b.get_meta(key) == s
+        assert s == expected_values[key] or not expected_values[key] or not s
