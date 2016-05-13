@@ -169,12 +169,13 @@ class StorageTests(object):
         assert self.storage_class.__name__ in repr(s)
         assert s.instance_name is None
 
-    def test_discover(self, requires_collections, get_storage_args):
+    def test_discover(self, requires_collections, get_storage_args, get_item):
         collections = set()
         for i in range(1, 5):
             collection = 'test{}'.format(i)
             s = self.storage_class(**get_storage_args(collection=collection))
             assert not list(s.list())
+            s.upload(get_item())
             collections.add(s.collection)
 
         actual = set(
