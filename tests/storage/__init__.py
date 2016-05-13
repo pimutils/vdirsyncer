@@ -197,8 +197,8 @@ class StorageTests(object):
             **self.storage_class.create_collection(**args)
         )
 
-        items = [s.upload(get_item())]
-        assert list(s.list()) == items
+        item = s.upload(get_item())
+        assert item in set(s.list())
 
     def test_discover_collection_arg(self, requires_collections,
                                      get_storage_args):
