@@ -169,36 +169,35 @@ class StorageTests(object):
         assert self.storage_class.__name__ in repr(s)
         assert s.instance_name is None
 
-    def test_discover(self, requires_collections, get_storage_args, get_item):
-        expected = set()
-        items = {}
-
+    def test_discover(self, requires_collections, get_storage_args):
+        collections = set()
         for i in range(1, 5):
-            # Create collections, but use the "collection" attribute because
-            # Radicale requires file extensions in their names.
             collection = 'test{}'.format(i)
-            s = self.storage_class(
-                **self.storage_class.create_collection(
-                    **get_storage_args(collection=collection)
-                )
-            )
+            s = self.storage_class(**get_storage_args(collection=collection))
+            assert not list(s.list())
+            collections.add(s.collection)
 
-            items[s.collection] = [s.upload(get_item())]
-            expected.add(s.collection)
+        actual = set(
+            c['collection'] for c in
+            self.storage_class.discover(**get_storage_args(collection=None))
+        )
 
-        d = self.storage_class.discover(
-            **get_storage_args(collection=None))
+        assert actual >= collections
 
-        actual = set(args['collection'] for args in d)
-        assert actual >= expected
+    def test_create_collection(self, requires_collections, get_storage_args,
+                               get_item):
+        if getattr(self, 'dav_server', '') == 'radicale':
+            pytest.xfail('MKCOL is broken under Radicale 1.x')
 
-        for storage_args in d:
-            collection = storage_args['collection']
-            if collection not in expected:
-                continue
-            s = self.storage_class(**storage_args)
-            rv = list(s.list())
-            assert rv == items[collection]
+        args = get_storage_args(collection=None)
+        args['collection'] = 'test'
+
+        s = self.storage_class(
+            **self.storage_class.create_collection(**args)
+        )
+
+        items = [s.upload(get_item())]
+        assert list(s.list()) == items
 
     def test_discover_collection_arg(self, requires_collections,
                                      get_storage_args):
