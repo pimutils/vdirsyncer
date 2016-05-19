@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.11.0
 ==============
 
+*released on 19 May 2016*
+
 - Discovery is no longer automatically done when running ``vdirsyncer sync``.
   ``vdirsyncer discover`` now has to be explicitly called.
 - Add a ``.plist`` example for Mac OS X.
