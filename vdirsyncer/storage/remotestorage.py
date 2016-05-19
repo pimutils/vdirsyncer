@@ -4,17 +4,6 @@ A storage type for accessing contact and calendar data from `remoteStorage
 
 A few things are hardcoded for now so the user doesn't have to specify those
 things, and plugging in an account "just works".
-
-We also use a custom ``data``-URI for the redirect in OAuth:
-
-- There is no server that could be compromised.
-- With a proper URL, ``access_token`` would be stored in the browser history.
-  For some reason Firefox doesn't do that with ``data``-URIs.
-- ``data``-URIs have no clear domain name that could prevent from phishing
-  attacks. However, I don't see a way to phish without compromising the
-  vdirsyncer installation, at which point any hope would already be lost.
-- On the downside, redirect URIs are monstrous.
-
 '''
 
 import logging
