@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-vdirsyncer is a synchronization tool for vdir. See the README for more details.
+Vdirsyncer synchronizes calendars and contacts.
 '''
 
 from __future__ import print_function

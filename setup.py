@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 '''
-Vdirsyncer is a synchronization tool for vdir. See the README for more details.
-'''
+Vdirsyncer synchronizes calendars and contacts.
 
-# Packagers: Vdirsyncer's version is automatically detected using
-# setuptools-scm, but that one is not a runtime dependency.
-#
-# Do NOT use the GitHub's tarballs, those don't contain any version information
-# detectable for setuptools-scm. Rather use the PyPI ones.
+Please refer to https://vdirsyncer.readthedocs.io/en/stable/packaging.html for
+how to package vdirsyncer.
+'''
 
 
 from setuptools import Command, find_packages, setup
