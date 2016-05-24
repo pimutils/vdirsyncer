@@ -50,9 +50,12 @@ Contacts
 
 - mates_, a commandline addressbook supporting :doc:`vdir <vdir>`.
 
+- vdirel_, access :doc:`vdir <vdir>` contacts from Emacs.
+
 .. _khard: https://github.com/scheibler/khard/
 .. _contactquery.c: https://github.com/t-8ch/snippets/blob/master/contactquery.c
 .. _mates: https://github.com/untitaker/mates.rs
+.. _vdirel: https://github.com/DamienCassou/vdirel
 
 .. _supported-servers:
 
