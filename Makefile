@@ -41,7 +41,8 @@ install-style:
 	
 style:
 	flake8
-	! grep -ri syncroniz */*
+	! git grep -i syncroniz */*
+	! git grep -i 'text/icalendar' */*
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
 	python3 scripts/make_travisconf.py | diff -b .travis.yml -
 

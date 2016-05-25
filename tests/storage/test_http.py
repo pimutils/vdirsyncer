@@ -42,7 +42,7 @@ def test_list(monkeypatch):
         r.status_code = 200
         assert responses
         r._content = responses.pop().encode('utf-8')
-        r.headers['Content-Type'] = 'text/icalendar'
+        r.headers['Content-Type'] = 'text/calendar'
         r.encoding = 'ISO-8859-1'
         return r
 

@@ -61,7 +61,7 @@ class TestHttpStorage(StorageTests):
             except IOError:
                 r._content = b''
 
-            r.headers['Content-Type'] = 'text/icalendar'
+            r.headers['Content-Type'] = 'text/calendar'
             r.encoding = 'utf-8'
             return r
 

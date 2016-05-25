@@ -258,7 +258,7 @@ class RemoteStorageCalendars(RemoteStorage):
 
     storage_name = 'remotestorage_calendars'
     fileext = '.ics'
-    item_mimetype = 'text/icalendar'
+    item_mimetype = 'text/calendar'
     scope = 'vdir_calendars'
 
     def __init__(self, **kwargs):
