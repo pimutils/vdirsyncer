@@ -53,33 +53,24 @@ def uniq(s):
             yield x
 
 
-def get_etag_from_file(fpath):
-    '''Get mtime-based etag from a filepath.'''
-    stat = os.stat(fpath)
+def get_etag_from_file(f):
+    '''Get mtime-based etag from a filepath or file-like object.
+
+    This function will flush/sync the file as much as necessary to obtain a
+    correct mtime.
+    '''
+    if hasattr(f, 'read'):
+        f.flush()  # Only this is necessary on Linux
+        if sys.platform == 'win32':
+            os.fsync(f.fileno())  # Apparently necessary on Windows
+        stat = os.fstat(f.fileno())
+    else:
+        stat = os.stat(f)
+
     mtime = getattr(stat, 'st_mtime_ns', None)
     if mtime is None:
         mtime = stat.st_mtime
     return '{:.9f}'.format(mtime)
-
-
-def get_etag_from_fileobject(f):
-    '''
-    Get mtime-based etag from a local file's fileobject.
-
-    This function will flush/sync the file as much as necessary to obtain a
-    correct mtime.
-
-    In filesystem-based storages, this is used instead of
-    :py:func:`get_etag_from_file` to determine the correct etag *before*
-    writing the temporary file to the target location.
-
-    This works because, as far as I've tested, moving and linking a file
-    doesn't change its mtime.
-    '''
-    f.flush()  # Only this is necessary on Linux
-    if sys.platform == 'win32':
-        os.fsync(f.fileno())  # Apparently necessary on Windows
-    return get_etag_from_file(f.name)
 
 
 def get_storage_init_specs(cls, stop_at=object):

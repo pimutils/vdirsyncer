@@ -9,8 +9,7 @@ from atomicwrites import atomic_write
 
 from .base import Item, Storage, normalize_meta_value
 from .. import exceptions
-from ..utils import checkdir, expand_path, generate_href, get_etag_from_file, \
-    get_etag_from_fileobject
+from ..utils import checkdir, expand_path, generate_href, get_etag_from_file
 from ..utils.compat import text_type, to_native
 
 logger = logging.getLogger(__name__)
@@ -137,7 +136,7 @@ class FilesystemStorage(Storage):
         try:
             with atomic_write(fpath, mode='wb', overwrite=False) as f:
                 f.write(item.raw.encode(self.encoding))
-                return fpath, get_etag_from_fileobject(f)
+                return fpath, get_etag_from_file(f)
         except OSError as e:
             if e.errno == errno.EEXIST:
                 raise exceptions.AlreadyExistingError(existing_href=href)
@@ -157,7 +156,7 @@ class FilesystemStorage(Storage):
 
         with atomic_write(fpath, mode='wb', overwrite=True) as f:
             f.write(item.raw.encode(self.encoding))
-            etag = get_etag_from_fileobject(f)
+            etag = get_etag_from_file(f)
 
         if self.post_hook:
             self._run_post_hook(fpath)
