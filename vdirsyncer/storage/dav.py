@@ -173,7 +173,7 @@ class Discover(object):
         # Better don't do string formatting here, because of XML namespaces
         rv = root.find('.//' + self._homeset_tag + '/{DAV:}href')
         if rv is None:
-            raise InvalidXMLResponse()
+            raise InvalidXMLResponse('Couldn\'t find home-set.')
         return utils.compat.urlparse.urljoin(response.url, rv.text)
 
     def find_collections(self, url=None):
@@ -192,7 +192,8 @@ class Discover(object):
 
             href = response.find('{DAV:}href')
             if href is None:
-                raise InvalidXMLResponse()
+                raise InvalidXMLResponse('Missing href tag for collection '
+                                         'props.')
             href = utils.compat.urlparse.urljoin(r.url, href.text)
             if href not in done:
                 done.add(href)
