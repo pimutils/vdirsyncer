@@ -27,7 +27,6 @@ General Section
 
     [general]
     status_path = ...
-    #password_command =
 
 
 - ``status_path``: A directory where vdirsyncer will store some additional data
