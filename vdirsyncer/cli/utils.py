@@ -138,13 +138,19 @@ def handle_cli_error(status_name=None):
             .format(e, BUGTRACKER_HOME)
         )
     except Exception as e:
+        tb = sys.exc_info()[2]
+        import traceback
+        tb = traceback.format_tb(tb)
         if status_name:
-            msg = 'Unhandled exception occured for {}.'.format(
+            msg = 'Unknown error occured for {}'.format(
                 coerce_native(status_name))
         else:
-            msg = 'Unhandled exception occured.'
+            msg = 'Unknown error occured'
 
-        cli_logger.exception(msg)
+        msg += ': {}\nUse `-vdebug` to see the full traceback.'.format(e)
+
+        cli_logger.error(msg)
+        cli_logger.debug(tb)
 
 
 def get_status_name(pair, collection):
