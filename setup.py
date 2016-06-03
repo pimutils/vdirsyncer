@@ -14,7 +14,11 @@ requirements = [
     # https://github.com/mitsuhiko/click/issues/200
     'click>=5.0',
     'click-log>=0.1.3',
+
+    # https://github.com/pimutils/vdirsyncer/issues/456
+    # https://github.com/click-contrib/click-threading/commit/70319372acc3a6fa90c86f00ac344f5319e1b603  # noqa
     'click-threading>=0.1.2',
+
     # !=2.9.0: https://github.com/kennethreitz/requests/issues/2930
     # >=2.4.1: https://github.com/shazow/urllib3/pull/444
     #
@@ -23,9 +27,11 @@ requirements = [
     # replicate vdirsyncer's current behavior (verifying fingerprints without
     # verifying against CAs) with older versions of urllib3.
     'requests >=2.4.1, !=2.9.0',
+
     # https://github.com/sigmavirus24/requests-toolbelt/pull/28
     # And https://github.com/sigmavirus24/requests-toolbelt/issues/54
     'requests_toolbelt >=0.4.0',
+
     # https://github.com/untitaker/python-atomicwrites/commit/4d12f23227b6a944ab1d99c507a69fdbc7c9ed6d  # noqa
     'atomicwrites>=0.1.7'
 ]
