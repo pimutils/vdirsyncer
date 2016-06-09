@@ -140,7 +140,7 @@ class GoogleCalendarStorage(dav.CaldavStorage):
 class GoogleContactsStorage(dav.CarddavStorage):
     __doc__ = '''Google contacts.
 
-    .. note: Google's CardDAV implementation is allegedly a disaster in terms
+    .. note:: Google's CardDAV implementation is allegedly a disaster in terms
         of data safety. See `this blog post
         <https://evertpot.com/google-carddav-issues/>`_ for the details.
         Always back up your data.
