@@ -74,7 +74,7 @@ Pair Section
   - ``collections = ["from b", "foo", "bar"]`` makes vdirsyncer synchronize the
     collections from side B, and also the collections named "foo" and "bar".
 
-  - ``collections = ["from b", from a"]`` makes vdirsyncer synchronize all
+  - ``collections = ["from b", "from a"]`` makes vdirsyncer synchronize all
     existing collections on either side.
 
   - ``collections = [["bar", "bar_a", "bar_b"], "foo"]`` makes vdirsyncer
