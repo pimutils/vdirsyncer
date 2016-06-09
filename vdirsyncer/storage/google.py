@@ -3,7 +3,11 @@
 import json
 import logging
 
+from atomicwrites import atomic_write
+
 import click
+
+from click_threading import get_ui_worker
 
 from . import base, dav
 from .. import exceptions, utils
@@ -30,11 +34,15 @@ class GoogleSession(dav.DavSession):
         self.useragent = client_id
         self._settings = {}
 
-        token_file = utils.expand_path(token_file)
-
         if not have_oauth2:
             raise exceptions.UserError('requests-oauthlib not installed')
 
+        token_file = utils.expand_path(token_file)
+        ui_worker = get_ui_worker()
+        f = lambda: self._init_token(token_file, client_id, client_secret)
+        ui_worker.put(f)
+
+    def _init_token(self, token_file, client_id, client_secret):
         token = None
         try:
             with open(token_file) as f:
@@ -43,7 +51,7 @@ class GoogleSession(dav.DavSession):
             pass
 
         def _save_token(token):
-            with open(token_file, 'w') as f:
+            with atomic_write(token_file, mode='w', overwrite=True) as f:
                 json.dump(token, f)
 
         self._session = OAuth2Session(
