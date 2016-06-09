@@ -150,7 +150,7 @@ def handle_cli_error(status_name=None):
         msg += ': {}\nUse `-vdebug` to see the full traceback.'.format(e)
 
         cli_logger.error(msg)
-        cli_logger.debug(tb)
+        cli_logger.debug(''.join(tb))
 
 
 def get_status_name(pair, collection):
