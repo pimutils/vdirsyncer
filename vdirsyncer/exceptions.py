@@ -75,3 +75,7 @@ class InvalidResponse(Error, ValueError):
 
 class UnsupportedMetadataError(Error, NotImplementedError):
     '''The storage doesn't support this type of metadata.'''
+
+
+class CollectionRequired(Error):
+    '''`collection = null` is not allowed.'''
