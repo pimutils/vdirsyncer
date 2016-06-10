@@ -263,6 +263,6 @@ class RemoteStorageCalendars(RemoteStorage):
 
     def __init__(self, **kwargs):
         if not kwargs.get('collection'):
-            raise ValueError('The collections parameter is required.')
+            raise exceptions.CollectionRequired()
 
         super(RemoteStorageCalendars, self).__init__(**kwargs)
