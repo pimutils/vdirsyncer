@@ -150,8 +150,9 @@ Service to hardcode those into opensource software
 1. Go to the `Google API Manager <https://console.developers.google.com>`_ and
    create a new project under any name.
 
-2. Within that project, enable the "CalDAV" and "CardDAV" APIs. There should be
-   a searchbox where you can just enter those terms.
+2. Within that project, enable the "CalDAV" and "CardDAV" APIs (**not** the
+   Calendar and Contacts APIs, those are different and won't work). There should
+   be a searchbox where you can just enter those terms.
 
 3. In the sidebar, select "Credentials" and create a new "OAuth Client ID". The
    application type is "Other".
