@@ -146,7 +146,7 @@ def test_wrong_general_section(read_config):
 
 def test_invalid_storage_name(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
-        read_config(u'''None
+        read_config(u'''
         [general]
         status_path = {base}/status/
 
