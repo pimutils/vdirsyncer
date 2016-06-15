@@ -9,6 +9,13 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.11.2
+==============
+
+*released on 15 June 2016*
+
+- Fix typo that would break tests.
+
 Version 0.11.1
 ==============
 
