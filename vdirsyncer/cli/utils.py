@@ -250,23 +250,20 @@ def _discover_from_config(config):
     storage_type = config['type']
     cls, config = storage_class_from_config(config)
 
+    discovered = []
+
     try:
-        try:
-            discovered = list(cls.discover(**config))
-        except NotImplementedError:
-            raise exceptions.UserError(
-                'The storage {} (type {}) doesn\'t support collection '
-                'discovery. You can only use `collections = null` with it.'
-                .format(config.get('instance_name', '???'), storage_type)
-            )
+        discovered.extend(cls.discover(**config))
+    except NotImplementedError:
+        pass
     except Exception:
         return handle_storage_init_error(cls, config)
-    else:
-        rv = {}
-        for args in discovered:
-            args['type'] = storage_type
-            rv[args['collection']] = args
-        return rv
+
+    rv = {}
+    for args in discovered:
+        args['type'] = storage_type
+        rv[args['collection']] = args
+    return rv
 
 
 def _handle_collection_not_found(config, collection, e=None):
@@ -298,17 +295,21 @@ def _print_collections(base_config, discovered):
     instance_name = base_config['instance_name']
     cli_logger.info('{}:'.format(coerce_native(instance_name)))
     for args in discovered.values():
+        collection = args['collection']
+        if collection is None:
+            continue
+
         args['instance_name'] = instance_name
         try:
-            storage = storage_instance_from_config(args)
+            storage = storage_instance_from_config(args, create=False)
             displayname = storage.get_meta('displayname')
         except Exception:
             displayname = u''
 
         cli_logger.info('  - {}{}'.format(
-            storage.collection,
+            json.dumps(collection),
             ' ("{}")'.format(coerce_native(displayname))
-            if displayname and displayname != storage.collection
+            if displayname and displayname != collection
             else ''
         ))
 
@@ -318,52 +319,52 @@ def _collections_for_pair_impl(status_path, pair, list_collections=False):
 
     shortcuts = pair.options['collections']
     if shortcuts is None:
-        yield None, (pair.config_a, pair.config_b)
-    else:
-        a_discovered = _discover_from_config(pair.config_a)
-        b_discovered = _discover_from_config(pair.config_b)
+        shortcuts = [None]
 
-        if list_collections:
-            _print_collections(pair.config_a, a_discovered)
-            _print_collections(pair.config_b, b_discovered)
+    a_discovered = _discover_from_config(pair.config_a)
+    b_discovered = _discover_from_config(pair.config_b)
 
-        for shortcut in shortcuts:
-            if shortcut == 'from a':
-                collections = a_discovered
-            elif shortcut == 'from b':
-                collections = b_discovered
+    if list_collections:
+        _print_collections(pair.config_a, a_discovered)
+        _print_collections(pair.config_b, b_discovered)
+
+    for shortcut in shortcuts:
+        if shortcut == 'from a':
+            collections = a_discovered
+        elif shortcut == 'from b':
+            collections = b_discovered
+        else:
+            collections = [shortcut]
+
+        for collection in collections:
+            if isinstance(collection, list):
+                collection, collection_a, collection_b = collection
             else:
-                collections = [shortcut]
+                collection_a = collection_b = collection
 
-            for collection in collections:
-                if isinstance(collection, list):
-                    try:
-                        collection, collection_a, collection_b = collection
-                    except ValueError:
-                        raise exceptions.UserError(
-                            'Expected string or list of length 3, '
-                            '{} found instead.'
-                            .format(collection))
-                else:
-                    collection_a = collection_b = collection
+            if collection in handled_collections:
+                continue
+            handled_collections.add(collection)
 
-                if collection in handled_collections:
-                    continue
-                handled_collections.add(collection)
+            a_args = _collection_from_discovered(a_discovered, collection_a,
+                                                 pair.config_a)
+            b_args = _collection_from_discovered(b_discovered, collection_b,
+                                                 pair.config_b)
 
-                try:
-                    a_args = a_discovered[collection_a]
-                except KeyError:
-                    a_args = _handle_collection_not_found(pair.config_a,
-                                                          collection_a)
+            yield collection, (a_args, b_args)
 
-                try:
-                    b_args = b_discovered[collection_b]
-                except KeyError:
-                    b_args = _handle_collection_not_found(pair.config_b,
-                                                          collection_b)
 
-                yield collection, (a_args, b_args)
+def _collection_from_discovered(discovered, collection, config):
+    if collection is None:
+        args = dict(config)
+        args['collection'] = None
+        storage_instance_from_config(args)
+        return args
+
+    try:
+        return discovered[collection]
+    except KeyError:
+        return _handle_collection_not_found(config, collection)
 
 
 def load_status(base_path, pair, collection=None, data_type=None):
