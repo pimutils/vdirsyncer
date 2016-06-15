@@ -67,20 +67,34 @@ def _validate_pair_section(pair_config):
     collection_names = set()
 
     for i, collection in enumerate(collections):
-        if isinstance(collection, (text_type, bytes)):
-            collection_name = collection
-        elif isinstance(collection, list) and \
-                len(collection) == 3 and \
-                all(isinstance(x, (text_type, bytes)) for x in collection):
-            collection_name = collection[0]
-        else:
-            raise ValueError('`collections` parameter, position {i}:'
-                             'Expected string or list of three strings.'
-                             .format(i=i))
+        try:
+            if isinstance(collection, (text_type, bytes)):
+                collection_name = collection
+            elif isinstance(collection, list):
+                e = ValueError(
+                    'Expected list of format '
+                    '["config_name", "storage_a_name", "storage_b_name"]'
+                    .format(len(collection)))
+                if len(collection) != 3:
+                    raise e
 
-        if collection_name in collection_names:
-            raise ValueError('Duplicate values in collections parameter.')
-        collection_names.add(collection_name)
+                if not isinstance(collection[0], (text_type, bytes)):
+                    raise e
+
+                for x in collection[1:]:
+                    if x is not None and not isinstance(x, (text_type, bytes)):
+                        raise e
+
+                collection_name = collection[0]
+            else:
+                raise ValueError('Expected string or list of three strings.')
+
+            if collection_name in collection_names:
+                raise ValueError('Duplicate value.')
+            collection_names.add(collection_name)
+        except ValueError as e:
+            raise ValueError('`collections` parameter, position {i}: {e}'
+                             .format(i=i, e=str(e)))
 
 
 def load_config(fname=None):

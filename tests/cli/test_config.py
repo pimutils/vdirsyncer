@@ -146,7 +146,7 @@ def test_wrong_general_section(read_config):
 
 def test_invalid_storage_name(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
-        read_config(u'''
+        read_config(u'''None
         [general]
         status_path = {base}/status/
 
@@ -200,3 +200,17 @@ def test_parse_config_value(parse_config_value):
     assert x('3.14') == (3.14, 0)
     assert x('') == ('', 0)
     assert x('""') == ('', 0)
+
+
+def test_validate_pair_section_collections_param():
+    def x(val):
+        return cli.config._validate_pair_section({'collections': val})
+
+    x(None)
+    x(["c", "a", "b"])
+    pytest.raises(ValueError, x, [None])
+    pytest.raises(ValueError, x, ["a", "a", "a"])
+    pytest.raises(ValueError, x, [[None, "a", "b"]])
+    x([["c", None, "b"]])
+    x([["c", "a", None]])
+    x([["c", None, None]])
