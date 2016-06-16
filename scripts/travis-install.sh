@@ -24,3 +24,6 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
     virtualenv -p python3 $HOME/osx-py3
     . $HOME/osx-py3/bin/activate
 fi
+
+pip install -U pip
+pip install wheel

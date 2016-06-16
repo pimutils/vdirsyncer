@@ -3,13 +3,6 @@ import json
 import sys
 
 
-def script(x):
-    return """
-if [ "$BUILD_PRS" = "true" ] || [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-    {}
-fi
-    """.strip().format(x.strip())
-
 cfg = {}
 
 cfg['sudo'] = True
@@ -23,17 +16,13 @@ cfg['branches'] = {
     'only': ['auto', 'master']
 }
 
-cfg['install'] = [script("""
-    . scripts/travis-install.sh;
-    pip install -U pip;
-    pip install wheel;
-    make -e install-dev;
-    make -e install-$BUILD;
-""")]
+cfg['install'] = [
+    ". scripts/travis-install.sh",
+    "make -e install-dev",
+    "make -e install-$BUILD"
+]
 
-cfg['script'] = [script("""
-    make -e $BUILD
-""")]
+cfg['script'] = "make -e $BUILD"
 
 matrix = []
 cfg['matrix'] = {'include': matrix}
@@ -41,7 +30,7 @@ cfg['matrix'] = {'include': matrix}
 for python in ("2.7", "3.3", "3.4", "3.5", "pypy"):
     matrix.append({
         'python': python,
-        'env': 'BUILD=style BUILD_PRS=true'
+        'env': 'BUILD=style'
     })
 
     if python == "3.5":
@@ -64,22 +53,14 @@ for python in ("2.7", "3.3", "3.4", "3.5", "pypy"):
         ),
         ("devel", "release", "minimal")
     ):
-        build_prs = (
-            python == "3.5" and
-            server_type == 'DAV' and
-            server == 'radicale'
-        )
-
         matrix.append({
             'python': python,
             'env': ("BUILD=test "
                     "{server_type}_SERVER={server} "
-                    "REQUIREMENTS={requirements} "
-                    "BUILD_PRS={build_prs}"
+                    "REQUIREMENTS={requirements}"
                     .format(server_type=server_type,
                             server=server,
-                            requirements=requirements,
-                            build_prs='true' if build_prs else 'false'))
+                            requirements=requirements))
         })
 
 matrix.append({
