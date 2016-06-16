@@ -404,8 +404,11 @@ class SyncMachine(RuleBasedStateMachine):
     def _get_items(storage):
         return sorted(item.raw for etag, item in storage.items.values())
 
-    @rule(target=Storage, read_only=st.booleans(), flaky_etags=st.booleans())
-    def newstorage(self, read_only, flaky_etags):
+    @rule(target=Storage,
+          read_only=st.booleans(),
+          flaky_etags=st.booleans(),
+          null_etag_on_upload=st.booleans())
+    def newstorage(self, read_only, flaky_etags, null_etag_on_upload):
         s = MemoryStorage()
         s.read_only = read_only
         if flaky_etags:
@@ -415,6 +418,12 @@ class SyncMachine(RuleBasedStateMachine):
                 s.items[href] = etag, item
                 return item, etag
             s.get = get
+
+        if null_etag_on_upload:
+            _old_upload = s.upload
+            _old_update = s.update
+            s.upload = lambda item: (_old_upload(item)[0], None)
+            s.update = lambda h, i, e: _old_update(h, i, e) and None
 
         return s
 
