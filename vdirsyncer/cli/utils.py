@@ -271,7 +271,7 @@ def _handle_collection_not_found(config, collection, e=None):
 
     cli_logger.error('{}No collection {} found for storage {}.'
                      .format('{}\n'.format(e) if e else '',
-                             coerce_native(collection), storage_name))
+                             json.dumps(collection), storage_name))
 
     if click.confirm('Should vdirsyncer attempt to create it?'):
         storage_type = config['type']

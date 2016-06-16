@@ -234,7 +234,7 @@ def test_invalid_pairs_as_cli_arg(tmpdir, runner):
 
     result = runner.invoke(['sync', 'foobar/d'])
     assert result.exception
-    assert 'pair foobar: collection d not found' in result.output.lower()
+    assert 'pair foobar: collection "d" not found' in result.output.lower()
 
 
 def test_multiple_pairs(tmpdir, runner):
