@@ -9,161 +9,163 @@
     "submodules": false
   },
   "install": [
-    "if [ \"$BUILD_PRS\" = \"true\" ] || [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ]; then\n    . scripts/travis-install.sh;\n    pip install -U pip;\n    pip install wheel;\n    make -e install-dev;\n    make -e install-$BUILD;\nfi"
+    ". scripts/travis-install.sh",
+    "make -e install-dev",
+    "make -e install-$BUILD"
   ],
   "language": "python",
   "matrix": {
     "include": [
       {
-        "env": "BUILD=style BUILD_PRS=true",
+        "env": "BUILD=style",
         "python": "2.7"
       },
       {
-        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=devel BUILD_PRS=false",
+        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=devel",
         "python": "2.7"
       },
       {
-        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=release BUILD_PRS=false",
+        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=release",
         "python": "2.7"
       },
       {
-        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=minimal BUILD_PRS=false",
+        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=minimal",
         "python": "2.7"
       },
       {
-        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=devel BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=devel",
         "python": "2.7"
       },
       {
-        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=release BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=release",
         "python": "2.7"
       },
       {
-        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=minimal BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=minimal",
         "python": "2.7"
       },
       {
-        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=devel BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=devel",
         "python": "2.7"
       },
       {
-        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=release BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=release",
         "python": "2.7"
       },
       {
-        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=minimal BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=minimal",
         "python": "2.7"
       },
       {
-        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=devel BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=devel",
         "python": "2.7"
       },
       {
-        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=release BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=release",
         "python": "2.7"
       },
       {
-        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=minimal BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=minimal",
         "python": "2.7"
       },
       {
-        "env": "BUILD=style BUILD_PRS=true",
+        "env": "BUILD=style",
         "python": "3.3"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel",
         "python": "3.3"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release",
         "python": "3.3"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal",
         "python": "3.3"
       },
       {
-        "env": "BUILD=style BUILD_PRS=true",
+        "env": "BUILD=style",
         "python": "3.4"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel",
         "python": "3.4"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release",
         "python": "3.4"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal",
         "python": "3.4"
       },
       {
-        "env": "BUILD=style BUILD_PRS=true",
+        "env": "BUILD=style",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=devel BUILD_PRS=false",
+        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=devel",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=release BUILD_PRS=false",
+        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=release",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=minimal BUILD_PRS=false",
+        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=minimal",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=true",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=true",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=true",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=devel BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=devel",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=release BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=release",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=minimal BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=minimal",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=devel BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=devel",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=release BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=release",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=minimal BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=minimal",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=devel BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=devel",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=release BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=release",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=minimal BUILD_PRS=false",
+        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=minimal",
         "python": "3.5"
       },
       {
-        "env": "BUILD=style BUILD_PRS=true",
+        "env": "BUILD=style",
         "python": "pypy"
       },
       {
@@ -173,8 +175,6 @@
       }
     ]
   },
-  "script": [
-    "if [ \"$BUILD_PRS\" = \"true\" ] || [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ]; then\n    make -e $BUILD\nfi"
-  ],
+  "script": "make -e $BUILD",
   "sudo": true
 }
