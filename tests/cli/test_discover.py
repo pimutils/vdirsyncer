@@ -57,27 +57,6 @@ def test_discover_command(tmpdir, runner):
         .read()
 
 
-def test_discover_on_unsupported_storage(tmpdir, runner):
-    runner.write_with_general(dedent('''
-    [storage foo]
-    type = http
-    url = https://example.com/foo.ics
-
-    [storage bar]
-    type = memory
-    fileext = .txt
-
-    [pair foobar]
-    a = foo
-    b = bar
-    collections = ["from a"]
-    ''').format(str(tmpdir)))
-
-    result = runner.invoke(['discover'])
-    assert result.exception
-    assert 'doesn\'t support collection discovery' in result.output
-
-
 def test_discover_different_collection_names(tmpdir, runner):
     foo = tmpdir.mkdir('foo')
     bar = tmpdir.mkdir('bar')
@@ -144,11 +123,47 @@ def test_discover_direct_path(tmpdir, runner):
     collections = null
     ''').format(foo=str(foo), bar=str(bar)))
 
-    result = runner.invoke(['discover'])
+    result = runner.invoke(['discover'], input='y\n' * 2)
     assert not result.exception
 
-    result = runner.invoke(['sync'], input='y\n' * 2)
+    result = runner.invoke(['sync'])
     assert not result.exception
 
     assert foo.exists()
     assert bar.exists()
+
+
+def test_null_collection_with_named_collection(tmpdir, runner):
+    runner.write_with_general(dedent('''
+    [pair foobar]
+    a = foo
+    b = bar
+    collections = [["baz", "baz", null]]
+
+    [storage foo]
+    type = filesystem
+    path = {base}/foo/
+    fileext = .txt
+
+    [storage bar]
+    type = singlefile
+    path = {base}/bar.txt
+    '''.format(base=str(tmpdir))))
+
+    result = runner.invoke(['discover'], input='y\n' * 2)
+    assert not result.exception
+
+    foo = tmpdir.join('foo')
+    foobaz = foo.join('baz')
+    assert foo.exists()
+    assert foobaz.exists()
+
+    bar = tmpdir.join('bar.txt')
+    assert bar.exists()
+
+    foobaz.join('lol.txt').write('BEGIN:VCARD\nUID:HAHA\nEND:VCARD')
+
+    result = runner.invoke(['sync'])
+    assert not result.exception
+
+    assert 'HAHA' in bar.read()

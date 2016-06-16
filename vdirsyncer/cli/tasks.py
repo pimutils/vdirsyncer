@@ -33,7 +33,7 @@ def prepare_pair(wq, pair_name, collections, config, callback, **kwargs):
                 'Pair {}: Collection {} not found. These are the '
                 'configured collections:\n{}'
                 .format(pair_name,
-                        coerce_native(collection_name),
+                        json.dumps(collection_name),
                         list(all_collections)))
         new_workers += 1
 
