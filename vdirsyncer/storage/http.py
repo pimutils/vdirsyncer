@@ -12,12 +12,12 @@ USERAGENT = 'vdirsyncer'
 
 def prepare_auth(auth, username, password):
     if username and password:
-        if auth == 'basic':
+        if auth == 'basic' or auth is None:
             return (username, password)
         elif auth == 'digest':
             from requests.auth import HTTPDigestAuth
             return HTTPDigestAuth(username, password)
-        elif auth == 'guess' or auth is None:
+        elif auth == 'guess':
             try:
                 from requests_toolbelt.auth.guess import GuessAuth
             except ImportError:
@@ -80,9 +80,11 @@ HTTP_STORAGE_PARAMETERS = '''
     :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
         expected server certificate. See :ref:`ssl-tutorial` for more
         information.
-    :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. Default
-        ``guess``. If you know yours, consider setting it explicitly for
-        performance.
+    :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. The
+        default is preemptive Basic auth, sending credentials even if server
+        didn't request them. This saves from an additional roundtrip per
+        request. Consider setting ``guess`` if this causes issues with your
+        server.
     :param auth_cert: Optional. Either a path to a certificate with a client
         certificate and the key or a list of paths to the files with them.
     :param useragent: Default ``vdirsyncer``.

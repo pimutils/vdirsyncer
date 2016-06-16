@@ -83,7 +83,9 @@ def test_readonly_param():
 def test_prepare_auth():
     assert prepare_auth(None, '', '') is None
 
+    assert prepare_auth(None, 'user', 'pwd') == ('user', 'pwd')
     assert prepare_auth('basic', 'user', 'pwd') == ('user', 'pwd')
+
     with pytest.raises(ValueError) as excinfo:
         assert prepare_auth('basic', '', 'pwd')
     assert 'you need to specify username and password' in \
@@ -99,17 +101,16 @@ def test_prepare_auth():
     assert 'unknown authentication method' in str(excinfo.value).lower()
 
 
-@pytest.mark.parametrize('auth', (None, 'guess'))
-def test_prepare_auth_guess(monkeypatch, auth):
+def test_prepare_auth_guess(monkeypatch):
     import requests_toolbelt.auth.guess
 
-    assert isinstance(prepare_auth(auth, 'user', 'pwd'),
+    assert isinstance(prepare_auth('guess', 'user', 'pwd'),
                       requests_toolbelt.auth.guess.GuessAuth)
 
     monkeypatch.delattr(requests_toolbelt.auth.guess, 'GuessAuth')
 
     with pytest.raises(UserError) as excinfo:
-        prepare_auth(auth, 'user', 'pwd')
+        prepare_auth('guess', 'user', 'pwd')
 
     assert 'requests_toolbelt is too old' in str(excinfo.value).lower()
 
