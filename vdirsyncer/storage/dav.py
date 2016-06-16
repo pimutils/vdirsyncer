@@ -465,16 +465,24 @@ class DavStorage(Storage):
             data=item.raw.encode('utf-8'),
             headers=headers
         )
+
+        # The server may not return an etag under certain conditions:
+        #
+        #   An origin server MUST NOT send a validator header field (Section
+        #   7.2), such as an ETag or Last-Modified field, in a successful
+        #   response to PUT unless the request's representation data was saved
+        #   without any transformation applied to the body (i.e., the
+        #   resource's new representation data is identical to the
+        #   representation data received in the PUT request) and the validator
+        #   field value reflects the new representation.
+        #
+        # -- https://tools.ietf.org/html/rfc7231#section-4.3.4
+        #
+        # In such cases we return None as etag. The next synchronization will
+        # then detect an etag change (None != some string) and will download
+        # the new item.
         etag = response.headers.get('etag', None)
         href = self._normalize_href(response.url)
-        if not etag:
-            # The server violated the RFC and didn't send an etag. This is
-            # technically a race-condition, but too many popular servers do it.
-            #
-            # ownCloud: https://github.com/owncloud/contacts/issues/920
-            dav_logger.debug('Server did not send etag, fetching {!r}'
-                             .format(href))
-            item2, etag = self.get(href)
         return href, etag
 
     def update(self, href, item, etag):
