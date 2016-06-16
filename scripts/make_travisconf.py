@@ -45,10 +45,11 @@ for python in ("2.7", "3.3", "3.4", "3.5", "pypy"):
     })
 
     if python == "3.5":
-        dav_servers = ("radicale", "owncloud", "baikal", "davical")
+        dav_servers = ("radicale", "owncloud", "nextcloud", "baikal",
+                       "davical")
         rs_servers = ("mysteryshack",)
     elif python == "2.7":
-        dav_servers = ("owncloud", "baikal", "davical")
+        dav_servers = ("owncloud", "nextcloud", "baikal", "davical")
         rs_servers = ("mysteryshack",)
     elif python == "pypy":
         dav_servers = ()

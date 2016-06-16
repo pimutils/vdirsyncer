@@ -10,3 +10,6 @@
 [submodule "tests/storage/servers/davical"]
 	path = tests/storage/servers/davical
 	url = https://github.com/vdirsyncer/davical-testserver
+[submodule "tests/storage/servers/nextcloud"]
+	path = tests/storage/servers/nextcloud
+	url = git@github.com:vdirsyncer/nextcloud-testserver

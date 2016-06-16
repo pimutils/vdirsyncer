@@ -43,6 +43,18 @@
         "python": "2.7"
       },
       {
+        "env": "BUILD=test DAV_SERVER=nextcloud REQUIREMENTS=devel BUILD_PRS=false",
+        "python": "2.7"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=nextcloud REQUIREMENTS=release BUILD_PRS=false",
+        "python": "2.7"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=nextcloud REQUIREMENTS=minimal BUILD_PRS=false",
+        "python": "2.7"
+      },
+      {
         "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=devel BUILD_PRS=false",
         "python": "2.7"
       },
@@ -136,6 +148,18 @@
       },
       {
         "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=minimal BUILD_PRS=false",
+        "python": "3.5"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=nextcloud REQUIREMENTS=devel BUILD_PRS=false",
+        "python": "3.5"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=nextcloud REQUIREMENTS=release BUILD_PRS=false",
+        "python": "3.5"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=nextcloud REQUIREMENTS=minimal BUILD_PRS=false",
         "python": "3.5"
       },
       {
