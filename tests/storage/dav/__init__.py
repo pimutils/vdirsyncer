@@ -4,8 +4,6 @@ import os
 
 import pytest
 
-import pytest
-
 import requests
 import requests.exceptions
 

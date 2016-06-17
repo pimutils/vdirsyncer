@@ -9,6 +9,8 @@ import pytest
 import radicale
 import radicale.config
 
+from pkg_resources import parse_version as ver
+
 from urllib.parse import quote as urlquote
 
 import wsgi_intercept
@@ -22,6 +24,10 @@ class ServerMixin(object):
     @pytest.fixture(autouse=True)
     def setup(self, request, tmpdir):
         tmpdir.mkdir('bob')
+
+        if ver(radicale.VERSION) < ver('2.0.0-pre'):
+            raise RuntimeError('Testing against Radicale only works with '
+                               'Radicale >= 2.0.0')
 
         def get_app():
             config = radicale.config.load(())
