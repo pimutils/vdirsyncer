@@ -9,6 +9,13 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.11.3
+==============
+
+- Default value of ``auth`` parameter was changed from ``guess`` to ``basic``
+  to resolve issues with the Apple Calendar Server (:gh:`457`) and improve
+  performance. See :gh:`461`.
+
 Version 0.11.2
 ==============
 
