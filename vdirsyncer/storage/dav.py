@@ -124,26 +124,16 @@ class Discover(object):
         return utils.compat.urlunquote(collection)
 
     def find_dav(self):
-        uri = self._well_known_uri
-        for i in range(5):
-            try:
-                response = self.session.request(
-                    'GET', uri, allow_redirects=False,
-                    headers=self.session.get_default_headers()
-                )
-                if not response.is_redirect:
-                    return uri
-
-                uri = response.headers.get('Location', None)
-                if not uri:
-                    dav_logger.debug('Redirected without new Location')
-                    return ''
-            except (HTTPError, exceptions.Error):
-                # The user might not have well-known URLs set up and instead points
-                # vdirsyncer directly to the DAV server.
-                dav_logger.debug('Server does not support well-known URIs.')
-                return ''
-        else:
+        try:
+            response = self.session.request(
+                'GET', self._well_known_uri, allow_redirects=True,
+                headers=self.session.get_default_headers()
+            )
+            return response.url
+        except (HTTPError, exceptions.Error):
+            # The user might not have well-known URLs set up and instead points
+            # vdirsyncer directly to the DAV server.
+            dav_logger.debug('Server does not support well-known URIs.')
             return ''
 
     def find_principal(self, url=None):
