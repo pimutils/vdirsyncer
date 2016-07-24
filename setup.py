@@ -15,9 +15,8 @@ requirements = [
     'click>=5.0',
     'click-log>=0.1.3',
 
-    # https://github.com/pimutils/vdirsyncer/issues/456
-    # https://github.com/click-contrib/click-threading/commit/70319372acc3a6fa90c86f00ac344f5319e1b603  # noqa
-    'click-threading>=0.1.2',
+    # https://github.com/pimutils/vdirsyncer/issues/478
+    'click-threading>=0.2',
 
     # !=2.9.0: https://github.com/kennethreitz/requests/issues/2930
     # >=2.4.1: https://github.com/shazow/urllib3/pull/444
