@@ -79,7 +79,8 @@ def _parse_xml(content):
 
 def _merge_xml(items):
     rv = items[0]
-    rv.extend(items[1:])
+    for item in items[1:]:
+        rv.extend(item.getiterator())
     return rv
 
 
@@ -544,6 +545,7 @@ class DavStorage(Storage):
             if not etag:
                 dav_logger.warning('Skipping {!r}, etag property is missing.'
                                    .format(href))
+                continue
 
             contenttype = getattr(props.find('{DAV:}getcontenttype'),
                                   'text', None)
