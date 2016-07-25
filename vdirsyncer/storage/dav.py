@@ -145,7 +145,7 @@ class Discover(object):
                 return self.find_principal(self.find_dav())
 
         headers = self.session.get_default_headers()
-        headers['Depth'] = 0
+        headers['Depth'] = '0'
         body = """
         <d:propfind xmlns:d="DAV:">
             <d:prop>
@@ -165,7 +165,7 @@ class Discover(object):
         if url is None:
             url = self.find_principal()
         headers = self.session.get_default_headers()
-        headers['Depth'] = 0
+        headers['Depth'] = '0'
         response = self.session.request('PROPFIND', url,
                                         headers=headers,
                                         data=self._homeset_xml)
@@ -181,7 +181,7 @@ class Discover(object):
         if url is None:
             url = self.find_home()
         headers = self.session.get_default_headers()
-        headers['Depth'] = 1
+        headers['Depth'] = '1'
         r = self.session.request('PROPFIND', url, headers=headers,
                                  data=self._collection_xml)
         root = _parse_xml(r.content)
@@ -560,7 +560,7 @@ class DavStorage(Storage):
 
     def list(self):
         headers = self.session.get_default_headers()
-        headers['Depth'] = 1
+        headers['Depth'] = '1'
 
         data = '''<?xml version="1.0" encoding="utf-8" ?>
             <D:propfind xmlns:D="DAV:">
@@ -600,7 +600,7 @@ class DavStorage(Storage):
         )
 
         headers = self.session.get_default_headers()
-        headers['Depth'] = 0
+        headers['Depth'] = '0'
 
         response = self.session.request(
             'PROPFIND', '',
@@ -787,7 +787,7 @@ class CaldavStorage(DavStorage):
         # The default in CalDAV's calendar-queries is 0, but the examples use
         # an explicit value of 1 for querying items. it is extremely unclear in
         # the spec which values from WebDAV are actually allowed.
-        headers['Depth'] = 1
+        headers['Depth'] = '1'
 
         for caldavfilter in caldavfilters:
             xml = data.format(caldavfilter=caldavfilter)
