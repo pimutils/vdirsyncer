@@ -1,4 +1,5 @@
-from vdirsyncer.storage.dav import _parse_xml, _merge_xml
+from vdirsyncer.storage.dav import _merge_xml, _parse_xml
+
 
 def test_xml_utilities():
     x = _parse_xml('''<?xml version="1.0" encoding="UTF-8" ?>
