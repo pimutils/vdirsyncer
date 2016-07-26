@@ -127,10 +127,10 @@ class Discover(object):
     def find_dav(self):
         try:
             response = self.session.request(
-                'GET', self._well_known_uri, allow_redirects=False,
+                'GET', self._well_known_uri, allow_redirects=True,
                 headers=self.session.get_default_headers()
             )
-            return response.headers.get('Location', '')
+            return response.url
         except (HTTPError, exceptions.Error):
             # The user might not have well-known URLs set up and instead points
             # vdirsyncer directly to the DAV server.
