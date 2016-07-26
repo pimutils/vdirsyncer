@@ -4,8 +4,8 @@ import pytest
 
 from requests import Response
 
-from vdirsyncer.storage.base import Storage
 import vdirsyncer.storage.http
+from vdirsyncer.storage.base import Storage
 from vdirsyncer.storage.singlefile import SingleFileStorage
 
 from . import StorageTests

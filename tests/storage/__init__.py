@@ -4,8 +4,8 @@ import random
 
 import textwrap
 
-from hypothesis import given
 import hypothesis.strategies as st
+from hypothesis import given
 
 import pytest
 

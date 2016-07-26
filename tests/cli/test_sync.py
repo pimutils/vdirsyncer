@@ -4,8 +4,8 @@ import json
 import unicodedata
 from textwrap import dedent
 
-from hypothesis import example, given
 import hypothesis.strategies as st
+from hypothesis import example, given
 
 import pytest
 

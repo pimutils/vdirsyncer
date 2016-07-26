@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from hypothesis import example, given
 import hypothesis.strategies as st
+from hypothesis import example, given
 
 import pytest
 
