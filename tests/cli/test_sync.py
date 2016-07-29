@@ -335,7 +335,9 @@ def test_create_collections(subtest, collections):
         result = runner.invoke(
             ['sync'] + ['foobar/' + x for x in collections]
         )
-        assert not result.exception
+        if result.exception:
+            print(result.output)
+            assert False
 
 
 def test_ident_conflict(tmpdir, runner):
