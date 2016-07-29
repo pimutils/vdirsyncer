@@ -12,9 +12,17 @@ may want to subscribe to `GitHub's tag feed
 Version 0.11.3
 ==============
 
+*released on 29 July 2016*
+
 - Default value of ``auth`` parameter was changed from ``guess`` to ``basic``
   to resolve issues with the Apple Calendar Server (:gh:`457`) and improve
   performance. See :gh:`461`.
+- **Packagers:** The ``click-threading`` requirement is now ``>=0.2``. It was
+  incorrect before. See :gh:`478`.
+- Fix a bug in the DAV XML parsing code that would make vdirsyncer crash on
+  certain input. See :gh:`480`.
+- Redirect chains should now be properly handled when resolving ``well-known``
+  URLs. See :ghpr:`481`.
 
 Version 0.11.2
 ==============
