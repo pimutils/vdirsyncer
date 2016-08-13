@@ -28,7 +28,7 @@ Dependency versions
 It is strongly discouraged to package vdirsyncer as a Python 2 application.
 Future releases will only work on Python 3.3 and newer versions.
 
-As with most Python packages, ``setup.py`` denotes the runtime dependencies of
+As with most Python packages, ``setup.py`` denotes the dependencies of
 vdirsyncer. It also contains lower-bound versions of each dependency. Older
 versions will be rejected by the testsuite.
 

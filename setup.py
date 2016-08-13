@@ -53,28 +53,37 @@ class PrintRequirements(Command):
             print(requirement.replace(">", "=").replace(" ", ""))
 
 setup(
+    # General metadata
     name='vdirsyncer',
-    use_scm_version={
-        'write_to': 'vdirsyncer/version.py',
-    },
-    setup_requires=['setuptools_scm'],
     author='Markus Unterwaditzer',
     author_email='markus@unterwaditzer.net',
     url='https://github.com/pimutils/vdirsyncer',
     description='Synchronize calendars and contacts',
     license='MIT',
     long_description=open('README.rst').read(),
-    packages=find_packages(exclude=['tests.*', 'tests']),
-    include_package_data=True,
-    entry_points={
-        'console_scripts': ['vdirsyncer = vdirsyncer.cli:main']
-    },
+
+    # Runtime dependencies
     install_requires=requirements,
+
+    # Optional dependencies
     extras_require={
         'remotestorage': ['requests-oauthlib'],
         'google': ['requests-oauthlib'],
     },
+
+    # Build dependencies
+    setup_requires=['setuptools_scm'],
+
+    # Other
+    packages=find_packages(exclude=['tests.*', 'tests']),
+    include_package_data=True,
     cmdclass={
         'minimal_requirements': PrintRequirements
-    }
+    },
+    use_scm_version={
+        'write_to': 'vdirsyncer/version.py'
+    },
+    entry_points={
+        'console_scripts': ['vdirsyncer = vdirsyncer.cli:main']
+    },
 )
