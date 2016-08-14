@@ -10,16 +10,14 @@ from . import StorageTests
 class TestSingleFileStorage(StorageTests):
 
     storage_class = SingleFileStorage
-    supports_collections = False
     supports_metadata = False
 
-    @pytest.fixture(autouse=True)
-    def setup(self, tmpdir):
-        self._path = str(tmpdir.ensure('test.txt'))
-
     @pytest.fixture
-    def get_storage_args(self):
-        def inner(**kwargs):
-            kwargs.update(path=self._path)
-            return kwargs
+    def get_storage_args(self, tmpdir):
+        def inner(collection='test'):
+            rv = {'path': str(tmpdir.join('%s.txt')),
+                  'collection': collection}
+            if collection is not None:
+                rv = self.storage_class.create_collection(**rv)
+            return rv
         return inner
