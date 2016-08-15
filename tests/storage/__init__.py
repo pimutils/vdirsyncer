@@ -216,7 +216,7 @@ class StorageTests(object):
             assert 'test2' in s.collection
         else:
             with pytest.raises(ValueError):
-                self.storage_class(**get_storage_args(), collection='ayy')
+                self.storage_class(collection='ayy', **get_storage_args())
 
     def test_case_sensitive_uids(self, s, get_item):
         if s.storage_name == 'filesystem':
