@@ -23,7 +23,3 @@ class TestSingleFileStorage(StorageTests):
             kwargs.update(path=self._path)
             return kwargs
         return inner
-
-    def test_collection_arg(self, tmpdir):
-        with pytest.raises(ValueError):
-            self.storage_class(str(tmpdir.join('foo.ics')), collection='ha')

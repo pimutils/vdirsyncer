@@ -17,6 +17,9 @@ class CombinedStorage(Storage):
     _repr_attributes = ('url', 'path')
 
     def __init__(self, url, path, **kwargs):
+        if kwargs.get('collection', None) is not None:
+            raise ValueError()
+
         super(CombinedStorage, self).__init__(**kwargs)
         self.url = url
         self.path = path
