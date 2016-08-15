@@ -2,7 +2,7 @@
 '''
 Vdirsyncer synchronizes calendars and contacts.
 
-Please refer to https://vdirsyncer.readthedocs.io/en/stable/packaging.html for
+Please refer to https://vdirsyncer.pimutils.org/en/stable/packaging.html for
 how to package vdirsyncer.
 '''
 

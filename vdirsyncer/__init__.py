@@ -7,7 +7,7 @@ from __future__ import print_function
 
 PROJECT_HOME = 'https://github.com/pimutils/vdirsyncer'
 BUGTRACKER_HOME = PROJECT_HOME + '/issues'
-DOCS_HOME = 'https://vdirsyncer.readthedocs.io/en/stable'
+DOCS_HOME = 'https://vdirsyncer.pimutils.org/en/stable'
 
 try:
     from .version import version as __version__  # noqa

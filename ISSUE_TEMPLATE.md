@@ -1,4 +1,4 @@
-Before you submit bug reports: https://vdirsyncer.readthedocs.io/en/stable/contributing.html
+Before you submit bug reports: https://vdirsyncer.pimutils.org/en/stable/contributing.html
 
 Things to include in your bugreport:
 

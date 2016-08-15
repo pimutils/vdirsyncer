@@ -5,7 +5,7 @@
 #
 # Optional parameters are commented out.
 # This file doesn't document all available parameters, see
-# http://vdirsyncer.readthedocs.io/ for the rest of them.
+# http://vdirsyncer.pimutils.org/ for the rest of them.
 
 [general]
 # A folder where vdirsyncer can store some metadata about each pair.
@@ -46,7 +46,7 @@ type = carddav
 url = https://owncloud.example.com/remote.php/carddav/
 #username =
 # The password can also be fetched from the system password storage, netrc or a
-# custom command. See http://vdirsyncer.readthedocs.io/en/stable/keyring.html
+# custom command. See http://vdirsyncer.pimutils.org/en/stable/keyring.html
 #password =
 
 # CALDAV
