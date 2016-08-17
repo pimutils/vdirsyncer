@@ -9,6 +9,11 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.12
+============
+
+- :storage:`singlefile` now supports collections. See :ghpr:`488`.
+
 Version 0.11.3
 ==============
 
