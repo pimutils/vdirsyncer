@@ -163,7 +163,7 @@ Version 0.7.4
   :gh:`300`.
 - Safer shutdown of threadpool, avoid exceptions, see :gh:`291`.
 - Fix a sync bug for read-only storages see commmit
-  `ed22764921b2e5bf6a934cf14aa9c5fede804d8e`.
+  ``ed22764921b2e5bf6a934cf14aa9c5fede804d8e``.
 - Etag changes are no longer sufficient to trigger sync operations. An actual
   content change is also necessary. See :gh:`257`.
 - :storage:`remotestorage` now automatically opens authentication dialogs in
