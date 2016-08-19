@@ -19,8 +19,15 @@ dav_logger = logging.getLogger(__name__)
 
 CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
 
-_path_reserved_chars = frozenset(utils.compat.urlquote(x, '')
-                                 for x in "/?#[]!$&'()*+,;=")
+
+def _generate_path_reserved_chars():
+    for x in "/?#[]!$&'()*+,;=":
+        x = utils.compat.urlquote(x, '')
+        yield x.upper()
+        yield x.lower()
+
+_path_reserved_chars = frozenset(_generate_path_reserved_chars())
+del _generate_path_reserved_chars
 
 
 def _contains_quoted_reserved_chars(x):
