@@ -21,7 +21,7 @@ CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
 
 
 def _generate_path_reserved_chars():
-    for x in "/?#[]!$&'()*+,;=":
+    for x in "/?#[]!$&'()*+,;":
         x = utils.compat.urlquote(x, '')
         yield x.upper()
         yield x.lower()
