@@ -29,6 +29,7 @@ IGNORE_PROPS = _process_properties(
     # Same with LAST-MODIFIED
     'REV',
     'LAST-MODIFIED',
+    'CREATED',
     # Added those because e.g. http://www.feiertage-oesterreich.at/ is
     # generating those randomly on every request.
     # Some iCalendar HTTP calendars (Google's read-only calendar links)
