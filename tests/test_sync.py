@@ -422,8 +422,8 @@ class SyncMachine(RuleBasedStateMachine):
         if null_etag_on_upload:
             _old_upload = s.upload
             _old_update = s.update
-            s.upload = lambda item: (_old_upload(item)[0], None)
-            s.update = lambda h, i, e: _old_update(h, i, e) and None
+            s.upload = lambda item: (_old_upload(item)[0], 'NULL')
+            s.update = lambda h, i, e: _old_update(h, i, e) and 'NULL'
 
         return s
 

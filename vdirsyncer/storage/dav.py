@@ -479,10 +479,9 @@ class DavStorage(Storage):
         #
         # -- https://tools.ietf.org/html/rfc7231#section-4.3.4
         #
-        # In such cases we return None as etag. The next synchronization will
-        # then detect an etag change (None != some string) and will download
-        # the new item.
-        etag = response.headers.get('etag', None)
+        # In such cases we return a constant etag. The next synchronization
+        # will then detect an etag change and will download the new item.
+        etag = response.headers.get('etag', 'NULL')
         href = self._normalize_href(response.url)
         return href, etag
 
