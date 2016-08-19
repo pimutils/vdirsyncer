@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.12
 ============
 
+*released on 19 August 2016*
+
 - :storage:`singlefile` now supports collections. See :ghpr:`488`.
 
 Version 0.11.3
