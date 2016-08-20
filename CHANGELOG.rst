@@ -9,6 +9,14 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.12.1
+==============
+
+*released on 20 August 2016*
+
+- Fix a crash for Google and DAV storages. See :ghpr:`492`.
+- Fix an URL-encoding problem with DavMail. See :gh:`491`.
+
 Version 0.12
 ============
 
