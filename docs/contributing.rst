@@ -2,7 +2,12 @@
 Contributing to this project
 ============================
 
-**Important:** Please read :doc:`contact` for questions and support requests.
+.. note::
+
+    - Please read :doc:`contact` for questions and support requests.
+
+    - All participants must follow the `pimutils Code of Conduct
+      <http://pimutils.org/coc>`_.
 
 The issue tracker
 =================
