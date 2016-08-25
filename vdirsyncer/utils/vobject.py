@@ -4,18 +4,14 @@ import hashlib
 from itertools import chain, tee
 
 from . import cached_property, uniq
-from .compat import itervalues, text_type
+from .compat import itervalues, text_type, to_unicode
 
 
-def _process_properties(*s):
-    rv = set()
-    for key in s:
-        rv.add(key + ':')
-        rv.add(key + ';')
+def _prepare_props(*x):
+    return tuple(map(to_unicode, x))
 
-    return tuple(rv)
 
-IGNORE_PROPS = _process_properties(
+IGNORE_PROPS = _prepare_props(
     # PRODID is changed by radicale for some reason after upload
     'PRODID',
     # X-RADICALE-NAME is used by radicale, because hrefs don't really exist in
@@ -24,22 +20,21 @@ IGNORE_PROPS = _process_properties(
     # Apparently this is set by Horde?
     # https://github.com/pimutils/vdirsyncer/issues/318
     'X-WR-CALNAME',
-    # REV is from the VCARD specification and is supposed to change when the
+    # Those are from the VCARD specification and is supposed to change when the
     # item does -- however, we can determine that ourselves
-    # Same with LAST-MODIFIED
     'REV',
     'LAST-MODIFIED',
     'CREATED',
-    # Added those because e.g. http://www.feiertage-oesterreich.at/ is
-    # generating those randomly on every request.
-    # Some iCalendar HTTP calendars (Google's read-only calendar links)
-    # generate the DTSTAMP at request time, so this property always changes
-    # when the rest of the item didn't.
-    # Some do the same with the UID.
+    # Some iCalendar HTTP calendars generate the DTSTAMP at request time, so
+    # this property always changes when the rest of the item didn't. Some do
+    # the same with the UID.
+    #
+    # - Google's read-only calendar links
+    # - http://www.feiertage-oesterreich.at/
     'DTSTAMP',
     'UID',
 )
-del _process_properties
+del _prepare_props
 
 
 class Item(object):
@@ -102,10 +97,13 @@ def normalize_item(item, ignore_props=IGNORE_PROPS):
     '''Create syntactically invalid mess that is equal for similar items.'''
     if not isinstance(item, Item):
         item = Item(item)
-    return u'\r\n'.join(line.strip()
-                        for line in sorted(item.raw.splitlines())
-                        if line.strip() and
-                        not line.startswith(IGNORE_PROPS))
+
+    x = _Component('TEMP', item.raw.splitlines(), [])
+    for prop in IGNORE_PROPS:
+        del x[prop]
+
+    x.props.sort()
+    return u'\r\n'.join(filter(bool, (line.strip() for line in x.props)))
 
 
 def hash_item(text):
@@ -283,7 +281,7 @@ class _Component(object):
         yield u'END:{}'.format(self.name)
 
     def __delitem__(self, key):
-        prefix = u'{}:'.format(key)
+        prefix = (u'{}:'.format(key), u'{};'.format(key))
         new_lines = []
         lineiter = iter(self.props)
         for line in lineiter:
@@ -308,11 +306,11 @@ class _Component(object):
         self.props.append(line)
 
     def __getitem__(self, key):
-        prefix = u'{}:'.format(key)
+        prefix = (u'{}:'.format(key), u'{};'.format(key))
         iterlines = iter(self.props)
         for line in iterlines:
             if line.startswith(prefix):
-                rv = line[len(prefix):]
+                rv = line.split(u':', 1)[-1]
                 break
         else:
             raise KeyError()
