@@ -1,3 +1,9 @@
+from vdirsyncer.storage.base import Storage
+from vdirsyncer import exceptions
+
+from hypothesis import given
+import hypothesis.strategies as st
+
 from textwrap import dedent
 
 
@@ -167,3 +173,40 @@ def test_null_collection_with_named_collection(tmpdir, runner):
     assert not result.exception
 
     assert 'HAHA' in bar.read()
+
+
+@given(a_requires=st.booleans(), b_requires=st.booleans())
+def test_collection_required(a_requires, b_requires, tmpdir, runner,
+                             monkeypatch):
+
+    class TestStorage(Storage):
+        storage_name = 'test'
+        def __init__(self, require_collection, **kw):
+            if require_collection:
+                assert not kw.get('collection')
+                raise exceptions.CollectionRequired()
+
+    from vdirsyncer.cli.utils import storage_names
+    monkeypatch.setitem(storage_names._storages, 'test', TestStorage)
+
+    runner.write_with_general(dedent('''
+    [pair foobar]
+    a = foo
+    b = bar
+    collections = null
+
+    [storage foo]
+    type = test
+    require_collection = {a}
+
+    [storage bar]
+    type = test
+    require_collection = {b}
+    '''.format(a=a_requires, b=b_requires)))
+
+    result = runner.invoke(['discover'])
+    if a_requires or b_requires:
+        assert result.exception
+        assert \
+            'One or more storages don\'t support `collections = null`.' in \
+            result.output
