@@ -284,18 +284,20 @@ class _Component(object):
         prefix = (u'{}:'.format(key), u'{};'.format(key))
         new_lines = []
         lineiter = iter(self.props)
-        for line in lineiter:
-            if line.startswith(prefix):
-                break
+        while True:
+            for line in lineiter:
+                if line.startswith(prefix):
+                    break
+                else:
+                    new_lines.append(line)
             else:
-                new_lines.append(line)
-
-        for line in lineiter:
-            if not line.startswith((u' ', u'\t')):
-                new_lines.append(line)
                 break
 
-        new_lines.extend(lineiter)
+            for line in lineiter:
+                if not line.startswith((u' ', u'\t')):
+                    new_lines.append(line)
+                    break
+
         self.props = new_lines
 
     def __setitem__(self, key, val):
