@@ -1,10 +1,10 @@
-from vdirsyncer.storage.base import Storage
-from vdirsyncer import exceptions
-
-from hypothesis import given
-import hypothesis.strategies as st
-
 from textwrap import dedent
+
+import hypothesis.strategies as st
+from hypothesis import given
+
+from vdirsyncer import exceptions
+from vdirsyncer.storage.base import Storage
 
 
 def test_discover_command(tmpdir, runner):
@@ -181,6 +181,7 @@ def test_collection_required(a_requires, b_requires, tmpdir, runner,
 
     class TestStorage(Storage):
         storage_name = 'test'
+
         def __init__(self, require_collection, **kw):
             if require_collection:
                 assert not kw.get('collection')
