@@ -215,10 +215,11 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
     a_info.prepare_idents()
     b_info.prepare_idents()
 
-    if bool(a_info.idents) != bool(b_info.idents) \
-       and status and not force_delete:
-        raise StorageEmpty(
-            empty_storage=(storage_b if a_info.idents else storage_a))
+    if status and not force_delete:
+        if a_info.idents and not b_info.idents:
+            raise StorageEmpty(empty_storage=storage_b)
+        elif b_info.idents and not a_info.idents:
+            raise StorageEmpty(empty_storage=storage_a)
 
     actions = list(_get_actions(a_info, b_info))
 
