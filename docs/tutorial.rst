@@ -18,7 +18,8 @@ your distribution:
 - `GNU Guix <https://www.gnu.org/software/guix/package-list.html#vdirsyncer>`_
 - `homebrew <http://braumeister.org/formula/vdirsyncer>`_
 - `Gentoo <https://packages.gentoo.org/packages/dev-python/vdirsyncer>`_
-- Debian and Ubuntu don't have packages, but make a manual installation
+- `Debian Sid <https://packages.debian.org/search?keywords=vdirsyncer&searchon=names&exact=1&suite=all&section=all>`_.
+- Debian stable and Ubuntu don't have packages, but make a manual installation
   especially hard. See :ref:`debian-urllib3`.
 
 If there is no package for your distribution, you'll need to :ref:`install

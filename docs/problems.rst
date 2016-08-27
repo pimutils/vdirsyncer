@@ -44,14 +44,19 @@ way to do this, for example, using Ubuntu::
 
     sudo apt-get install libxml2 libxslt1.1 zlib1g python
 
-Then you have several options:
+Then you have several options. The following text applies for most Python
+software by the way.
 
 The dirty, easy way
 ~~~~~~~~~~~~~~~~~~~
 
 The easiest way to install vdirsyncer at this point would be to run::
 
-    pip install --user vdirsyncer
+    pip install --user --ignore-installed vdirsyncer
+
+- ``--user`` is to install without root rights (into your home directory)
+- ``--ignore-installed`` is to work around Debian's potentially broken packages
+  (see :ref:`debian-urllib3`).
 
 This method has a major flaw though: Pip doesn't keep track of the files it
 installs. Vdirsyncer's files would be located somewhere in
