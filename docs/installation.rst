@@ -1,8 +1,8 @@
 .. _installation:
 
-=====================
-Installing vdirsyncer
-=====================
+============
+Installation
+============
 
 OS/distro packages
 ------------------
