@@ -19,6 +19,7 @@ It aims to be for CalDAV and CardDAV what `OfflineIMAP
    :maxdepth: 1
 
    when
+   installation
    tutorial
    ssl-tutorial
    keyring

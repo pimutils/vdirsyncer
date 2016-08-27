@@ -8,23 +8,7 @@ are better alternatives available for particular usecases.
 Installation
 ============
 
-Unless you want to contribute to vdirsyncer, you should use the packages from
-your distribution:
-
-- `ArchLinux (AUR) <https://aur.archlinux.org/packages/vdirsyncer>`_
-- `pkgsrc <http://pkgsrc.se/time/py-vdirsyncer>`_
-- `Fedora <https://apps.fedoraproject.org/packages/vdirsyncer>`_
-- `nixpkg <https://github.com/NixOS/nixpkgs/tree/master/pkgs/tools/misc/vdirsyncer>`_
-- `GNU Guix <https://www.gnu.org/software/guix/package-list.html#vdirsyncer>`_
-- `homebrew <http://braumeister.org/formula/vdirsyncer>`_
-- `Gentoo <https://packages.gentoo.org/packages/dev-python/vdirsyncer>`_
-- `Debian Sid <https://packages.debian.org/search?keywords=vdirsyncer&searchon=names&exact=1&suite=all&section=all>`_.
-- Debian stable and Ubuntu don't have packages, but make a manual installation
-  especially hard. See :ref:`debian-urllib3`.
-
-If there is no package for your distribution, you'll need to :ref:`install
-vdirsyncer manually <manual-installation>`. There is an easy command to
-copy-and-paste for this as well, but you should be aware of its consequences.
+See :ref:`installation`.
 
 Configuration
 =============
