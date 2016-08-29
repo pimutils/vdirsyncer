@@ -23,8 +23,6 @@ class ServerMixin(object):
 
     @pytest.fixture(autouse=True)
     def setup(self, request, tmpdir):
-        tmpdir.mkdir('bob')
-
         if ver(radicale.VERSION) < ver('2.0.0-pre'):
             raise RuntimeError('Testing against Radicale only works with '
                                'Radicale >= 2.0.0')
@@ -53,14 +51,11 @@ class ServerMixin(object):
     @pytest.fixture
     def get_storage_args(self, get_item):
         def inner(collection='test'):
-            url = 'http://127.0.0.1/bob/'
-            if collection is not None:
-                collection += self.storage_class.fileext
-                url = url.rstrip('/') + '/' + urlquote(collection)
-
+            url = 'http://127.0.0.1/'
             rv = {'url': url, 'username': 'bob', 'password': 'bob'}
 
             if collection is not None:
+                collection = collection + self.storage_class.fileext
                 rv = self.storage_class.create_collection(collection, **rv)
                 s = self.storage_class(**rv)
                 assert not list(s.list())

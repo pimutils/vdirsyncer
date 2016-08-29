@@ -175,7 +175,7 @@ def request(method, url, session=None, latin1_fallback=True,
 
     if r.status_code == 412:
         raise exceptions.PreconditionFailed(r.reason)
-    if r.status_code == 404:
+    if r.status_code in (404, 410):
         raise exceptions.NotFoundError(r.reason)
 
     r.raise_for_status()
