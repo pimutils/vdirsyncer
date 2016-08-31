@@ -98,10 +98,11 @@ class StorageSyncer(object):
         self.idents = {}
 
         def _store_props(ident, props):
-            if self.idents.setdefault(ident, props) is not props:
+            href = props['href']
+            new_href = self.idents.setdefault(ident, props)['href']
+            if new_href is not props['href']:
                 raise IdentConflict(storage=self.storage,
-                                    hrefs=[self.idents[ident]['href'],
-                                           href])
+                                    hrefs=[new_href, href])
 
             if ident in self.status:
                 # Necessary if item's href changes.
