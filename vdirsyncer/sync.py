@@ -54,9 +54,9 @@ class IdentConflict(SyncError):
 
     @hrefs.setter
     def hrefs(self, val):
-        val = set(val)
-        assert len(val) > 1
-        self._hrefs = val
+        new_val = set(val)
+        assert len(new_val) > 1, val
+        self._hrefs = new_val
 
 
 class StorageEmpty(SyncError):
@@ -98,10 +98,11 @@ class StorageSyncer(object):
         self.idents = {}
 
         def _store_props(ident, props):
-            if self.idents.setdefault(ident, props) is not props:
+            new_props = self.idents.setdefault(ident, props)
+            if new_props is not props:
                 raise IdentConflict(storage=self.storage,
-                                    hrefs=[self.idents[ident]['href'],
-                                           href])
+                                    hrefs=[new_props['href'],
+                                           props['href']])
 
             if ident in self.status:
                 # Necessary if item's href changes.
