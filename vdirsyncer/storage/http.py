@@ -103,6 +103,7 @@ class HttpStorage(Storage):
         [pair holidays]
         a = holidays_local
         b = holidays_remote
+        collections = null
 
         [storage holidays_local]
         type = filesystem
