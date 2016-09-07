@@ -23,11 +23,3 @@ def to_bytes(x, encoding='ascii'):
     if not isinstance(x, bytes):
         x = x.encode(encoding)
     return x
-
-
-def with_metaclass(meta, *bases):
-    '''Original code from six, by Benjamin Peterson.'''
-    class metaclass(meta):
-        def __new__(cls, name, this_bases, d):
-            return meta(name, bases, d)
-    return type.__new__(metaclass, 'temporary_class', (), {})

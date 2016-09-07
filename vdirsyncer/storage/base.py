@@ -5,7 +5,7 @@ import functools
 
 from .. import exceptions, sync
 from ..utils import uniq
-from ..utils.compat import to_unicode, with_metaclass
+from ..utils.compat import to_unicode
 from ..utils.vobject import Item  # noqa
 
 
@@ -25,7 +25,7 @@ class StorageMeta(type):
         return super(StorageMeta, cls).__init__(name, bases, d)
 
 
-class Storage(with_metaclass(StorageMeta)):
+class Storage(metaclass=StorageMeta):
 
     '''Superclass of all storages, mainly useful to summarize the interface to
     implement.
