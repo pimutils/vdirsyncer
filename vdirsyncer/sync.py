@@ -14,7 +14,7 @@ import logging
 
 from . import exceptions
 from .utils import uniq
-from .utils.compat import iteritems, text_type
+from .utils.compat import iteritems, str
 
 sync_logger = logging.getLogger(__name__)
 
@@ -275,7 +275,7 @@ def _action_update(ident, source, dest):
             dest_href = dest_meta['href']
             dest_etag = dest.storage.update(dest_href, source_meta['item'],
                                             dest_meta['etag'])
-            assert isinstance(dest_etag, (bytes, text_type))
+            assert isinstance(dest_etag, (bytes, str))
 
         source.status[ident] = _compress_meta(source_meta)
         dest.status[ident] = {

@@ -3,7 +3,7 @@
 from .base import Item, Storage
 from .. import exceptions
 from ..utils import expand_path
-from ..utils.compat import iteritems, text_type, urlparse
+from ..utils.compat import iteritems, str, urlparse
 from ..utils.http import request
 from ..utils.vobject import split_collection
 
@@ -39,7 +39,7 @@ def prepare_auth(auth, username, password):
 
 
 def prepare_verify(verify, verify_fingerprint):
-    if isinstance(verify, (text_type, bytes)):
+    if isinstance(verify, (str, bytes)):
         verify = expand_path(verify)
     elif not isinstance(verify, bool):
         raise exceptions.UserError('Invalid value for verify ({}), '
@@ -47,7 +47,7 @@ def prepare_verify(verify, verify_fingerprint):
                                    .format(verify))
 
     if verify_fingerprint is not None:
-        if not isinstance(verify_fingerprint, (bytes, text_type)):
+        if not isinstance(verify_fingerprint, (bytes, str)):
             raise exceptions.UserError('Invalid value for verify_fingerprint '
                                        '({}), must be a string or null.'
                                        .format(verify_fingerprint))
@@ -64,7 +64,7 @@ def prepare_verify(verify, verify_fingerprint):
 
 
 def prepare_client_cert(cert):
-    if isinstance(cert, (text_type, bytes)):
+    if isinstance(cert, (str, bytes)):
         cert = expand_path(cert)
     elif isinstance(cert, list):
         cert = tuple(map(prepare_client_cert, cert))

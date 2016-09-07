@@ -13,7 +13,7 @@ if sys.version_info < (3, 3) and \
 
 
 def to_unicode(x, encoding='ascii'):
-    if not isinstance(x, text_type):
+    if not isinstance(x, str):
         x = x.decode(encoding)
     return x
 
@@ -29,7 +29,7 @@ from inspect import getfullargspec as getargspec_ish  # noqa
 
 urlquote = urlparse.quote
 urlunquote = urlparse.unquote
-text_type = str
+str = str
 iteritems = lambda x: x.items()
 itervalues = lambda x: x.values()
 to_native = to_unicode

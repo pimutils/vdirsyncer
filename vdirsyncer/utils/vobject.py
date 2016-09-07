@@ -4,7 +4,7 @@ import hashlib
 from itertools import chain, tee
 
 from . import cached_property, uniq
-from .compat import itervalues, text_type, to_unicode
+from .compat import itervalues, str, to_unicode
 
 
 def _prepare_props(*x):
@@ -43,7 +43,7 @@ class Item(object):
     VCARD'''
 
     def __init__(self, raw):
-        assert isinstance(raw, text_type)
+        assert isinstance(raw, str)
         self._raw = raw
 
     @cached_property
@@ -111,7 +111,7 @@ def hash_item(text):
 
 
 def split_collection(text):
-    assert isinstance(text, text_type)
+    assert isinstance(text, str)
     inline = []
     items = {}  # uid => item
     ungrouped_items = []
@@ -240,7 +240,7 @@ class _Component(object):
     def parse(cls, lines, multiple=False):
         if isinstance(lines, bytes):
             lines = lines.decode('utf-8')
-        if isinstance(lines, text_type):
+        if isinstance(lines, str):
             lines = lines.splitlines()
 
         stack = []
@@ -301,7 +301,7 @@ class _Component(object):
         self.props = new_lines
 
     def __setitem__(self, key, val):
-        assert isinstance(val, text_type)
+        assert isinstance(val, str)
         assert u'\n' not in val
         del self[key]
         line = u'{}:{}'.format(key, val)

@@ -12,7 +12,7 @@ from .base import Item, Storage, normalize_meta_value
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
 from .. import exceptions, utils
-from ..utils.compat import getargspec_ish, text_type, to_native
+from ..utils.compat import getargspec_ish, str, to_native
 
 
 dav_logger = logging.getLogger(__name__)
@@ -722,11 +722,11 @@ class CaldavStorage(DavStorage):
             namespace = dict(datetime.__dict__)
             namespace['start_date'] = self.start_date = \
                 (eval(start_date, namespace)
-                 if isinstance(start_date, (bytes, text_type))
+                 if isinstance(start_date, (bytes, str))
                  else start_date)
             self.end_date = \
                 (eval(end_date, namespace)
-                 if isinstance(end_date, (bytes, text_type))
+                 if isinstance(end_date, (bytes, str))
                  else end_date)
 
     @staticmethod

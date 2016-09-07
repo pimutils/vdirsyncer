@@ -10,7 +10,7 @@ from atomicwrites import atomic_write
 from .base import Item, Storage, normalize_meta_value
 from .. import exceptions
 from ..utils import checkdir, expand_path, generate_href, get_etag_from_file
-from ..utils.compat import text_type, to_native
+from ..utils.compat import str, to_native
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +108,7 @@ class FilesystemStorage(Storage):
                 raise
 
     def upload(self, item):
-        if not isinstance(item.raw, text_type):
+        if not isinstance(item.raw, str):
             raise TypeError('item.raw must be a unicode string.')
 
         try:
@@ -151,7 +151,7 @@ class FilesystemStorage(Storage):
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
 
-        if not isinstance(item.raw, text_type):
+        if not isinstance(item.raw, str):
             raise TypeError('item.raw must be a unicode string.')
 
         with atomic_write(fpath, mode='wb', overwrite=True) as f:

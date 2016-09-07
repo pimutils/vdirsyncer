@@ -11,7 +11,7 @@ import pytest
 
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item, normalize_meta_value
-from vdirsyncer.utils.compat import iteritems, text_type, urlquote, urlunquote
+from vdirsyncer.utils.compat import iteritems, str, urlquote, urlunquote
 
 from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
     assert_item_equals, normalize_item, printable_characters_strategy
@@ -80,8 +80,8 @@ class StorageTests(object):
         hrefs.sort()
         assert hrefs == sorted(s.list())
         for href, etag in hrefs:
-            assert isinstance(href, (text_type, bytes))
-            assert isinstance(etag, (text_type, bytes))
+            assert isinstance(href, (str, bytes))
+            assert isinstance(etag, (str, bytes))
             assert s.has(href)
             item, etag2 = s.get(href)
             assert etag == etag2
@@ -114,7 +114,7 @@ class StorageTests(object):
         new_item = get_item(uid=item.uid)
         new_etag = s.update(href, new_item, etag)
         # See https://github.com/pimutils/vdirsyncer/issues/48
-        assert isinstance(new_etag, (bytes, text_type))
+        assert isinstance(new_etag, (bytes, str))
         assert_item_equals(s.get(href)[0], new_item)
 
     def test_update_nonexisting(self, s, get_item):
@@ -277,7 +277,7 @@ class StorageTests(object):
             s.set_meta('displayname', x)
             rv = s.get_meta('displayname')
             assert rv == x
-            assert isinstance(rv, text_type)
+            assert isinstance(rv, str)
 
     @given(value=st.one_of(
         st.none(),

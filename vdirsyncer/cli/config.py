@@ -7,7 +7,7 @@ from . import cli_logger
 from .fetchparams import expand_fetch_params
 from .. import PROJECT_HOME, exceptions
 from ..utils import cached_property, expand_path
-from ..utils.compat import text_type
+from ..utils.compat import str
 
 try:
     from ConfigParser import RawConfigParser
@@ -68,7 +68,7 @@ def _validate_pair_section(pair_config):
 
     for i, collection in enumerate(collections):
         try:
-            if isinstance(collection, (text_type, bytes)):
+            if isinstance(collection, (str, bytes)):
                 collection_name = collection
             elif isinstance(collection, list):
                 e = ValueError(
@@ -78,11 +78,11 @@ def _validate_pair_section(pair_config):
                 if len(collection) != 3:
                     raise e
 
-                if not isinstance(collection[0], (text_type, bytes)):
+                if not isinstance(collection[0], (str, bytes)):
                     raise e
 
                 for x in collection[1:]:
-                    if x is not None and not isinstance(x, (text_type, bytes)):
+                    if x is not None and not isinstance(x, (str, bytes)):
                         raise e
 
                 collection_name = collection[0]
