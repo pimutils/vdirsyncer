@@ -33,7 +33,7 @@ def _iter_listing(json):
     new_listing = '@context' in json  # draft-02 and beyond
     if new_listing:
         json = json['items']
-    for name, info in utils.compat.iteritems(json):
+    for name, info in json.items():
         if not new_listing:
             info = {'ETag': info}
         yield name, info

@@ -27,7 +27,6 @@ def to_bytes(x, encoding='ascii'):
 
 urlquote = urlparse.quote
 urlunquote = urlparse.unquote
-iteritems = lambda x: x.items()
 itervalues = lambda x: x.values()
 
 

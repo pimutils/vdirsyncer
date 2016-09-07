@@ -11,7 +11,7 @@ import pytest
 
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item, normalize_meta_value
-from vdirsyncer.utils.compat import iteritems, str, urlquote, urlunquote
+from vdirsyncer.utils.compat import str, urlquote, urlunquote
 
 from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
     assert_item_equals, normalize_item, printable_characters_strategy
@@ -162,7 +162,7 @@ class StorageTests(object):
 
         assert dict(
             (href, etag) for href, item, etag
-            in s.get_multi(href for href, etag in iteritems(info))
+            in s.get_multi(href for href, etag in info.items())
         ) == info
 
     def test_repr(self, s, get_storage_args):

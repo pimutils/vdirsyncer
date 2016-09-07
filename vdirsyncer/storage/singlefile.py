@@ -12,7 +12,7 @@ from atomicwrites import atomic_write
 from .base import Item, Storage
 from .. import exceptions
 from ..utils import checkfile, expand_path
-from ..utils.compat import iteritems, itervalues
+from ..utils.compat import itervalues
 from ..utils.vobject import join_collection, split_collection
 
 logger = logging.getLogger(__name__)
@@ -167,7 +167,7 @@ class SingleFileStorage(Storage):
             etag = item.hash
             self._items[item.ident] = item, etag
 
-        return ((href, etag) for href, (item, etag) in iteritems(self._items))
+        return ((href, etag) for href, (item, etag) in self._items.items())
 
     def get(self, href):
         if self._items is None or not self._at_once:

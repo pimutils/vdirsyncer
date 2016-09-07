@@ -5,7 +5,7 @@ import os
 import sys
 import uuid
 
-from .compat import getargspec_ish, iteritems, to_unicode
+from .compat import getargspec_ish, to_unicode
 from .. import exceptions
 
 
@@ -25,7 +25,7 @@ def expand_path(p):
 
 def split_dict(d, f):
     '''Puts key into first dict if f(key), otherwise in second dict'''
-    a, b = split_sequence(iteritems(d), lambda item: f(item[0]))
+    a, b = split_sequence(d.items(), lambda item: f(item[0]))
     return dict(a), dict(b)
 
 

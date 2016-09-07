@@ -3,7 +3,7 @@
 from .base import Item, Storage
 from .. import exceptions
 from ..utils import expand_path
-from ..utils.compat import iteritems, str, urlparse
+from ..utils.compat import str, urlparse
 from ..utils.http import request
 from ..utils.vobject import split_collection
 
@@ -154,7 +154,7 @@ class HttpStorage(Storage):
             etag = item.hash
             self._items[item.ident] = item, etag
 
-        return ((href, etag) for href, (item, etag) in iteritems(self._items))
+        return ((href, etag) for href, (item, etag) in self._items.items())
 
     def get(self, href):
         if self._items is None:
