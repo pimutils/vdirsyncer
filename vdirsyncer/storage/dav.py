@@ -5,6 +5,8 @@ import logging
 import urllib.parse as urlparse
 import xml.etree.ElementTree as etree
 
+from inspect import getfullargspec
+
 import requests
 from requests.exceptions import HTTPError
 
@@ -12,7 +14,7 @@ from .base import Item, Storage, normalize_meta_value
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
 from .. import exceptions, utils
-from ..utils.compat import getargspec_ish, to_unicode
+from ..utils.compat import to_unicode
 
 
 dav_logger = logging.getLogger(__name__)
@@ -299,7 +301,7 @@ class DavSession(object):
 
     @classmethod
     def init_and_remaining_args(cls, **kwargs):
-        argspec = getargspec_ish(cls.__init__)
+        argspec = getfullargspec(cls.__init__)
         self_args, remainder = \
             utils.split_dict(kwargs, argspec.args.__contains__)
 

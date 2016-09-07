@@ -5,7 +5,9 @@ import os
 import sys
 import uuid
 
-from .compat import getargspec_ish, to_unicode
+from inspect import getfullargspec
+
+from .compat import to_unicode
 from .. import exceptions
 
 
@@ -77,7 +79,7 @@ def get_storage_init_specs(cls, stop_at=object):
     if cls is stop_at:
         return ()
 
-    spec = getargspec_ish(cls.__init__)
+    spec = getfullargspec(cls.__init__)
     traverse_superclass = getattr(cls.__init__, '_traverse_superclass', True)
     if traverse_superclass:
         if traverse_superclass is True:  # noqa

@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import sys
-
-from inspect import getfullargspec as getargspec_ish  # noqa
-
 
 def to_unicode(x, encoding='ascii'):
     if not isinstance(x, str):
