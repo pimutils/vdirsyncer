@@ -3,6 +3,7 @@
 import random
 
 import textwrap
+from urllib.parse import quote as urlquote, unquote as urlunquote
 
 import hypothesis.strategies as st
 from hypothesis import given
@@ -11,7 +12,6 @@ import pytest
 
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item, normalize_meta_value
-from vdirsyncer.utils.compat import urlquote, urlunquote
 
 from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
     assert_item_equals, normalize_item, printable_characters_strategy

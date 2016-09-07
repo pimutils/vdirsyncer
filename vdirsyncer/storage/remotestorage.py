@@ -7,6 +7,7 @@ things, and plugging in an account "just works".
 '''
 
 import logging
+from urllib.parse import quote as urlquote, urljoin
 
 import click
 
@@ -20,9 +21,6 @@ CLIENT_ID = 'https://vdirsyncer.5apps.com'
 DRAFT_VERSION = '05'
 
 logger = logging.getLogger(__name__)
-
-urljoin = utils.compat.urlparse.urljoin
-urlquote = utils.compat.urlquote
 
 
 def _ensure_slash(dir):

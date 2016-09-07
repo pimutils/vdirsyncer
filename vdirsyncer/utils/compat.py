@@ -2,7 +2,6 @@
 
 import sys
 
-import urllib.parse as urlparse
 from inspect import getfullargspec as getargspec_ish  # noqa
 
 PY2 = sys.version_info[0] == 2
@@ -24,9 +23,6 @@ def to_bytes(x, encoding='ascii'):
     if not isinstance(x, bytes):
         x = x.encode(encoding)
     return x
-
-urlquote = urlparse.quote
-urlunquote = urlparse.unquote
 
 
 def with_metaclass(meta, *bases):

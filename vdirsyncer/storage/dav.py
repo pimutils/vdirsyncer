@@ -2,7 +2,7 @@
 
 import datetime
 import logging
-
+import urllib.parse as urlparse
 import xml.etree.ElementTree as etree
 
 import requests
@@ -22,7 +22,7 @@ CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
 
 def _generate_path_reserved_chars():
     for x in "/?#[]!$&'()*+,;":
-        x = utils.compat.urlquote(x, '')
+        x = urlparse.quote(x, '')
         yield x.upper()
         yield x.lower()
 
@@ -47,8 +47,8 @@ def _normalize_href(base, href):
     if not href:
         raise ValueError(href)
 
-    x = utils.compat.urlparse.urljoin(base, href)
-    x = utils.compat.urlparse.urlsplit(x).path
+    x = urlparse.join(base, href)
+    x = urlparse.urlsplit(x).path
 
     # Encoding issues:
     # - https://github.com/owncloud/contacts/issues/581
@@ -58,9 +58,9 @@ def _normalize_href(base, href):
         if _contains_quoted_reserved_chars(x):
             break
         old_x = x
-        x = utils.compat.urlunquote(x)
+        x = urlparse.unquote(x)
 
-    x = utils.compat.urlquote(x, '/@%:')
+    x = urlparse.quote(x, '/@%:')
 
     if orig_href == x:
         dav_logger.debug('Already normalized: {!r}'.format(x))
@@ -129,7 +129,7 @@ class Discover(object):
     @staticmethod
     def _get_collection_from_url(url):
         _, collection = url.rstrip('/').rsplit('/', 1)
-        return utils.compat.urlunquote(collection)
+        return urlparse.unquote(collection)
 
     def find_dav(self):
         try:
@@ -166,7 +166,7 @@ class Discover(object):
         rv = root.find('.//{DAV:}current-user-principal/{DAV:}href')
         if rv is None:
             raise InvalidXMLResponse()
-        return utils.compat.urlparse.urljoin(response.url, rv.text)
+        return urlparse.urljoin(response.url, rv.text)
 
     def find_home(self, url=None):
         if url is None:
@@ -182,7 +182,7 @@ class Discover(object):
         rv = root.find('.//' + self._homeset_tag + '/{DAV:}href')
         if rv is None:
             raise InvalidXMLResponse('Couldn\'t find home-set.')
-        return utils.compat.urlparse.urljoin(response.url, rv.text)
+        return urlparse.urljoin(response.url, rv.text)
 
     def find_collections(self, url=None):
         if url is None:
@@ -202,7 +202,7 @@ class Discover(object):
             if href is None:
                 raise InvalidXMLResponse('Missing href tag for collection '
                                          'props.')
-            href = utils.compat.urlparse.urljoin(r.url, href.text)
+            href = urlparse.urljoin(r.url, href.text)
             if href not in done:
                 done.add(href)
                 yield {'href': href}
@@ -224,9 +224,9 @@ class Discover(object):
                 return c
 
         home = self.find_home()
-        url = utils.compat.urlparse.urljoin(
+        url = urlparse.urljoin(
             home,
-            utils.compat.urlquote(collection, '/@')
+            urlparse.quote(collection, '/@')
         )
 
         try:
@@ -321,12 +321,12 @@ class DavSession(object):
 
     @utils.cached_property
     def parsed_url(self):
-        return utils.compat.urlparse.urlparse(self.url)
+        return urlparse.urlparse(self.url)
 
     def request(self, method, path, **kwargs):
         url = self.url
         if path:
-            url = utils.compat.urlparse.urljoin(self.url, path)
+            url = urlparse.join(self.url, path)
 
         more = dict(self._settings)
         more.update(kwargs)

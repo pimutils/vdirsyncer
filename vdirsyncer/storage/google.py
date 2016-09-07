@@ -2,6 +2,7 @@
 
 import json
 import logging
+import urllib.parse as urlparse
 
 from atomicwrites import atomic_write
 
@@ -10,7 +11,8 @@ import click
 from click_threading import get_ui_worker
 
 from . import base, dav
-from .. import exceptions, utils
+from .. import exceptions
+from ..utils import expand_path, open_graphical_browser
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +39,7 @@ class GoogleSession(dav.DavSession):
         if not have_oauth2:
             raise exceptions.UserError('requests-oauthlib not installed')
 
-        token_file = utils.expand_path(token_file)
+        token_file = expand_path(token_file)
         ui_worker = get_ui_worker()
         f = lambda: self._init_token(token_file, client_id, client_secret)
         ui_worker.put(f)
@@ -75,7 +77,7 @@ class GoogleSession(dav.DavSession):
                 access_type='offline', approval_prompt='force')
             click.echo('Opening {} ...'.format(authorization_url))
             try:
-                utils.open_graphical_browser(authorization_url)
+                open_graphical_browser(authorization_url)
             except Exception as e:
                 logger.warning(str(e))
 
@@ -118,7 +120,7 @@ class GoogleCalendarStorage(dav.CaldavStorage):
             parts = url.rstrip('/').split('/')
             parts.pop()
             collection = parts.pop()
-            return utils.compat.urlunquote(collection)
+            return urlparse.unquote(collection)
 
     storage_name = 'google_calendar'
 
