@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import functools
 import sys
+
+import urllib.parse as urlparse
+from inspect import getfullargspec as getargspec_ish  # noqa
 
 PY2 = sys.version_info[0] == 2
 
@@ -22,10 +24,6 @@ def to_bytes(x, encoding='ascii'):
     if not isinstance(x, bytes):
         x = x.encode(encoding)
     return x
-
-
-import urllib.parse as urlparse
-from inspect import getfullargspec as getargspec_ish  # noqa
 
 urlquote = urlparse.quote
 urlunquote = urlparse.unquote
