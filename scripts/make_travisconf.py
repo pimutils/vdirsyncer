@@ -38,7 +38,7 @@ cfg['script'] = [script("""
 matrix = []
 cfg['matrix'] = {'include': matrix}
 
-for python in ("2.7", "3.3", "3.4", "3.5", "pypy"):
+for python in ("3.3", "3.4", "3.5"):
     matrix.append({
         'python': python,
         'env': 'BUILD=style BUILD_PRS=true'
@@ -48,12 +48,6 @@ for python in ("2.7", "3.3", "3.4", "3.5", "pypy"):
         dav_servers = ("radicale", "owncloud", "nextcloud", "baikal",
                        "davical")
         rs_servers = ("mysteryshack",)
-    elif python == "2.7":
-        dav_servers = ("owncloud", "nextcloud", "baikal", "davical")
-        rs_servers = ("mysteryshack",)
-    elif python == "pypy":
-        dav_servers = ()
-        rs_servers = ()
     else:
         dav_servers = ("radicale",)
         rs_servers = ()
