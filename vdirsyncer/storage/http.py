@@ -3,7 +3,7 @@
 from .base import Item, Storage
 from .. import exceptions
 from ..utils import expand_path
-from ..utils.compat import str, urlparse
+from ..utils.compat import urlparse
 from ..utils.http import request
 from ..utils.vobject import split_collection
 

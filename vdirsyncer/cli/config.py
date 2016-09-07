@@ -7,7 +7,6 @@ from . import cli_logger
 from .fetchparams import expand_fetch_params
 from .. import PROJECT_HOME, exceptions
 from ..utils import cached_property, expand_path
-from ..utils.compat import str
 
 try:
     from ConfigParser import RawConfigParser

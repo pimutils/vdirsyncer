@@ -14,7 +14,6 @@ import logging
 
 from . import exceptions
 from .utils import uniq
-from .utils.compat import str
 
 sync_logger = logging.getLogger(__name__)
 

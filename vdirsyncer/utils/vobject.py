@@ -4,7 +4,7 @@ import hashlib
 from itertools import chain, tee
 
 from . import cached_property, uniq
-from .compat import str, to_unicode
+from .compat import to_unicode
 
 
 def _prepare_props(*x):

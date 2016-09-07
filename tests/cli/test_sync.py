@@ -9,7 +9,7 @@ from hypothesis import example, given
 
 import pytest
 
-from vdirsyncer.utils.compat import to_unicode, to_unicode
+from vdirsyncer.utils.compat import to_unicode
 
 
 def test_simple_run(tmpdir, runner):

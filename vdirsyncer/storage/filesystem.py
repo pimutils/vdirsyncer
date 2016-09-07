@@ -10,7 +10,7 @@ from atomicwrites import atomic_write
 from .base import Item, Storage, normalize_meta_value
 from .. import exceptions
 from ..utils import checkdir, expand_path, generate_href, get_etag_from_file
-from ..utils.compat import str, to_unicode
+from ..utils.compat import to_unicode
 
 logger = logging.getLogger(__name__)
 

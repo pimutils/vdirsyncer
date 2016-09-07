@@ -12,7 +12,7 @@ from .base import Item, Storage, normalize_meta_value
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
 from .. import exceptions, utils
-from ..utils.compat import getargspec_ish, str, to_unicode
+from ..utils.compat import getargspec_ish, to_unicode
 
 
 dav_logger = logging.getLogger(__name__)
