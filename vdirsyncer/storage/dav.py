@@ -46,7 +46,7 @@ def _normalize_href(base, href):
     if not href:
         raise ValueError(href)
 
-    x = urlparse.join(base, href)
+    x = urlparse.urljoin(base, href)
     x = urlparse.urlsplit(x).path
 
     # Encoding issues:
