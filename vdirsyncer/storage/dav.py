@@ -325,7 +325,7 @@ class DavSession(object):
     def request(self, method, path, **kwargs):
         url = self.url
         if path:
-            url = urlparse.join(self.url, path)
+            url = urlparse.urljoin(self.url, path)
 
         more = dict(self._settings)
         more.update(kwargs)
