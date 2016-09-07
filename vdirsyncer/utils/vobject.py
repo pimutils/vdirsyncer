@@ -4,7 +4,7 @@ import hashlib
 from itertools import chain, tee
 
 from . import cached_property, uniq
-from .compat import itervalues, str, to_unicode
+from .compat import str, to_unicode
 
 
 def _prepare_props(*x):
@@ -141,7 +141,7 @@ def split_collection(text):
     for main in _Component.parse(text, multiple=True):
         inner(main, main)
 
-    for item in chain(itervalues(items), ungrouped_items):
+    for item in chain(items.values(), ungrouped_items):
         item.subcomponents.extend(inline)
         yield u'\r\n'.join(item.dump_lines())
 

@@ -12,7 +12,6 @@ from atomicwrites import atomic_write
 from .base import Item, Storage
 from .. import exceptions
 from ..utils import checkfile, expand_path
-from ..utils.compat import itervalues
 from ..utils.vobject import join_collection, split_collection
 
 logger = logging.getLogger(__name__)
@@ -218,7 +217,7 @@ class SingleFileStorage(Storage):
                 'synchronization and make sure absolutely no other program is '
                 'writing into the same file.'.format(self.path))
         text = join_collection(
-            (item.raw for item, etag in itervalues(self._items)),
+            item.raw for item, etag in self._items.values()
         )
         try:
             with atomic_write(self.path, mode='wb', overwrite=True) as f:

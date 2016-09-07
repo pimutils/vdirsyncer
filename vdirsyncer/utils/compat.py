@@ -27,7 +27,6 @@ def to_bytes(x, encoding='ascii'):
 
 urlquote = urlparse.quote
 urlunquote = urlparse.unquote
-itervalues = lambda x: x.values()
 
 
 def with_metaclass(meta, *bases):
