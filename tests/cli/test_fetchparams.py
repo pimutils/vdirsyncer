@@ -9,7 +9,6 @@ import pytest
 
 from vdirsyncer import exceptions
 from vdirsyncer.cli.fetchparams import STRATEGIES, expand_fetch_params
-from vdirsyncer.utils.compat import PY2
 
 
 @pytest.fixture
@@ -90,7 +89,6 @@ def test_key_conflict(monkeypatch, mystrategy):
     assert 'Can\'t set foo.fetch and foo.' in str(excinfo.value)
 
 
-@pytest.mark.skipif(PY2, reason='Don\'t care about Python 2')
 @given(s=st.text(), t=st.text(min_size=1))
 def test_fuzzing(s, t, mystrategy):
     config = expand_fetch_params({

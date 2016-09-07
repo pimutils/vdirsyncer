@@ -9,7 +9,7 @@ from hypothesis import example, given
 
 import pytest
 
-from vdirsyncer.utils.compat import PY2, to_native, to_unicode
+from vdirsyncer.utils.compat import to_native, to_unicode
 
 
 def test_simple_run(tmpdir, runner):
@@ -277,7 +277,6 @@ def test_multiple_pairs(tmpdir, runner):
         st.characters(
             blacklist_characters=set(
                 u'./\x00'  # Invalid chars on POSIX filesystems
-                + (u';' if PY2 else u'')  # https://bugs.python.org/issue16374
             ),
             # Surrogates can't be encoded to utf-8 in Python
             blacklist_categories=set(['Cs'])

@@ -12,7 +12,7 @@ from .base import Item, Storage, normalize_meta_value
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
 from .. import exceptions, utils
-from ..utils.compat import PY2, getargspec_ish, text_type, to_native
+from ..utils.compat import getargspec_ish, text_type, to_native
 
 
 dav_logger = logging.getLogger(__name__)
@@ -379,9 +379,8 @@ class DavStorage(Storage):
             self.session_class.init_and_remaining_args(**kwargs)
         super(DavStorage, self).__init__(**kwargs)
 
-    if not PY2:
-        import inspect
-        __init__.__signature__ = inspect.signature(session_class.__init__)
+    import inspect
+    __init__.__signature__ = inspect.signature(session_class.__init__)
 
     @classmethod
     def discover(cls, **kwargs):
