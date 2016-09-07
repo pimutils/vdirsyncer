@@ -29,7 +29,7 @@ urlquote = urlparse.quote
 urlunquote = urlparse.unquote
 iteritems = lambda x: x.items()
 itervalues = lambda x: x.values()
-to_native = to_unicode
+to_unicode = to_unicode
 
 
 def with_metaclass(meta, *bases):

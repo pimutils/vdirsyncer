@@ -12,7 +12,7 @@ from .base import Item, Storage, normalize_meta_value
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
 from .. import exceptions, utils
-from ..utils.compat import getargspec_ish, str, to_native
+from ..utils.compat import getargspec_ish, str, to_unicode
 
 
 dav_logger = logging.getLogger(__name__)
@@ -42,8 +42,8 @@ def _normalize_href(base, href):
     '''Normalize the href to be a path only relative to hostname and
     schema.'''
     orig_href = href
-    base = to_native(base, 'utf-8')
-    href = to_native(href, 'utf-8')
+    base = to_unicode(base, 'utf-8')
+    href = to_unicode(href, 'utf-8')
     if not href:
         raise ValueError(href)
 
@@ -252,7 +252,7 @@ class Discover(object):
                 </D:set>
             </D:mkcol>
         '''.format(
-            to_native(etree.tostring(etree.Element(self._resourcetype)))
+            to_unicode(etree.tostring(etree.Element(self._resourcetype)))
         )
 
         response = self.session.request(
@@ -601,7 +601,7 @@ class DavStorage(Storage):
                 </D:prop>
             </D:propfind>
         '''.format(
-            to_native(etree.tostring(etree.Element(xpath)))
+            to_unicode(etree.tostring(etree.Element(xpath)))
         )
 
         headers = self.session.get_default_headers()
@@ -638,7 +638,7 @@ class DavStorage(Storage):
                     </D:prop>
                 </D:set>
             </D:propertyupdate>
-        '''.format(to_native(etree.tostring(element)))
+        '''.format(to_unicode(etree.tostring(element)))
 
         self.session.request(
             'PROPPATCH', '',

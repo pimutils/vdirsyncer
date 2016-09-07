@@ -10,7 +10,7 @@ from atomicwrites import atomic_write
 from .base import Item, Storage, normalize_meta_value
 from .. import exceptions
 from ..utils import checkdir, expand_path, generate_href, get_etag_from_file
-from ..utils.compat import str, to_native
+from ..utils.compat import str, to_unicode
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ class FilesystemStorage(Storage):
     def __init__(self, path, fileext, encoding='utf-8', post_hook=None,
                  **kwargs):
         super(FilesystemStorage, self).__init__(**kwargs)
-        path = expand_path(to_native(path, encoding))
+        path = expand_path(to_unicode(path, encoding))
         checkdir(path, create=False)
         self.path = path
         self.encoding = encoding
@@ -71,10 +71,10 @@ class FilesystemStorage(Storage):
     def create_collection(cls, collection, **kwargs):
         kwargs = dict(kwargs)
         encoding = kwargs.get('encoding', 'utf-8')
-        path = to_native(kwargs['path'], encoding)
+        path = to_unicode(kwargs['path'], encoding)
 
         if collection is not None:
-            collection = to_native(collection, encoding)
+            collection = to_unicode(collection, encoding)
             path = os.path.join(path, collection)
 
         checkdir(expand_path(path), create=True)
@@ -84,7 +84,7 @@ class FilesystemStorage(Storage):
         return kwargs
 
     def _get_filepath(self, href):
-        return os.path.join(self.path, to_native(href, self.encoding))
+        return os.path.join(self.path, to_unicode(href, self.encoding))
 
     def _get_href(self, ident):
         return generate_href(ident) + self.fileext

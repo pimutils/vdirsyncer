@@ -9,7 +9,7 @@ from hypothesis import example, given
 
 import pytest
 
-from vdirsyncer.utils.compat import to_native, to_unicode
+from vdirsyncer.utils.compat import to_unicode, to_unicode
 
 
 def test_simple_run(tmpdir, runner):
@@ -288,7 +288,7 @@ def test_multiple_pairs(tmpdir, runner):
 ))
 @example(collections=[u'persönlich'])
 def test_create_collections(subtest, collections):
-    collections = set(to_native(x, 'utf-8') for x in collections)
+    collections = set(to_unicode(x, 'utf-8') for x in collections)
 
     @subtest
     def test_inner(tmpdir, runner):
