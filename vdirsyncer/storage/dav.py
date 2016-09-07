@@ -14,7 +14,6 @@ from .base import Item, Storage, normalize_meta_value
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
 from .. import exceptions, utils
-from ..utils.compat import to_unicode
 
 
 dav_logger = logging.getLogger(__name__)
@@ -44,8 +43,6 @@ def _normalize_href(base, href):
     '''Normalize the href to be a path only relative to hostname and
     schema.'''
     orig_href = href
-    base = to_unicode(base, 'utf-8')
-    href = to_unicode(href, 'utf-8')
     if not href:
         raise ValueError(href)
 
@@ -254,7 +251,7 @@ class Discover(object):
                 </D:set>
             </D:mkcol>
         '''.format(
-            to_unicode(etree.tostring(etree.Element(self._resourcetype)))
+            etree.tostring(etree.Element(self._resourcetype), encoding=str)
         )
 
         response = self.session.request(
@@ -603,7 +600,7 @@ class DavStorage(Storage):
                 </D:prop>
             </D:propfind>
         '''.format(
-            to_unicode(etree.tostring(etree.Element(xpath)))
+            etree.tostring(etree.Element(xpath), encoding=str)
         )
 
         headers = self.session.get_default_headers()
@@ -640,7 +637,7 @@ class DavStorage(Storage):
                     </D:prop>
                 </D:set>
             </D:propertyupdate>
-        '''.format(to_unicode(etree.tostring(element)))
+        '''.format(etree.tostring(element, encoding=str))
 
         self.session.request(
             'PROPPATCH', '',

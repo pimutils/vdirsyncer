@@ -7,7 +7,6 @@ import uuid
 
 from inspect import getfullargspec
 
-from .compat import to_unicode
 from .. import exceptions
 
 
@@ -180,7 +179,7 @@ def generate_href(ident=None, safe=SAFE_UID_CHARS):
     UUID.
     '''
     if not ident or not href_safe(ident, safe):
-        return to_unicode(uuid.uuid4().hex)
+        return str(uuid.uuid4())
     else:
         return ident
 

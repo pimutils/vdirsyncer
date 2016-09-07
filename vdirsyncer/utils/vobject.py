@@ -4,14 +4,9 @@ import hashlib
 from itertools import chain, tee
 
 from . import cached_property, uniq
-from .compat import to_unicode
 
 
-def _prepare_props(*x):
-    return tuple(map(to_unicode, x))
-
-
-IGNORE_PROPS = _prepare_props(
+IGNORE_PROPS = (
     # PRODID is changed by radicale for some reason after upload
     'PRODID',
     # X-RADICALE-NAME is used by radicale, because hrefs don't really exist in
@@ -34,7 +29,6 @@ IGNORE_PROPS = _prepare_props(
     'DTSTAMP',
     'UID',
 )
-del _prepare_props
 
 
 class Item(object):

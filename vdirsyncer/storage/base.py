@@ -5,7 +5,6 @@ import functools
 
 from .. import exceptions, sync
 from ..utils import uniq
-from ..utils.compat import to_unicode
 from ..utils.vobject import Item  # noqa
 
 
@@ -239,4 +238,4 @@ class Storage(metaclass=StorageMeta):
 
 
 def normalize_meta_value(value):
-    return to_unicode(value or u'').strip()
+    return (value or u'').strip()

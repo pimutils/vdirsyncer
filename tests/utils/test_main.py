@@ -12,7 +12,6 @@ from vdirsyncer import utils
 
 # These modules might be uninitialized and unavailable if not explicitly
 # imported
-import vdirsyncer.utils.compat  # noqa
 import vdirsyncer.utils.http  # noqa
 
 

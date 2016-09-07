@@ -9,8 +9,6 @@ from hypothesis import example, given
 
 import pytest
 
-from vdirsyncer.utils.compat import to_unicode
-
 
 def test_simple_run(tmpdir, runner):
     runner.write_with_general(dedent('''
@@ -288,7 +286,6 @@ def test_multiple_pairs(tmpdir, runner):
 ))
 @example(collections=[u'persönlich'])
 def test_create_collections(subtest, collections):
-    collections = set(to_unicode(x, 'utf-8') for x in collections)
 
     @subtest
     def test_inner(tmpdir, runner):
@@ -324,7 +321,7 @@ def test_create_collections(subtest, collections):
         # Quoted from
         # https://stackoverflow.com/questions/18137554/how-to-convert-path-to-mac-os-x-path-the-almost-nfd-normal-form  # noqa
         u = lambda xs: set(
-            unicodedata.normalize('NFKD', to_unicode(x, 'utf-8'))
+            unicodedata.normalize('NFKD', x)
             for x in xs
         )
         assert u(x.basename for x in tmpdir.join('foo').listdir()) == \
