@@ -14,7 +14,7 @@ try:
 except ImportError:
     from configparser import RawConfigParser
 
-GENERAL_ALL = frozenset(['status_path', 'python2'])  # XXX: Py2
+GENERAL_ALL = frozenset(['status_path'])
 GENERAL_REQUIRED = frozenset(['status_path'])
 SECTION_NAME_CHARS = frozenset(chain(string.ascii_letters, string.digits, '_'))
 
