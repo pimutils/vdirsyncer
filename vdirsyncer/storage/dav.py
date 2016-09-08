@@ -251,7 +251,8 @@ class Discover(object):
                 </D:set>
             </D:mkcol>
         '''.format(
-            etree.tostring(etree.Element(self._resourcetype), encoding=str)
+            etree.tostring(etree.Element(self._resourcetype),
+                           encoding='unicode')
         )
 
         response = self.session.request(
@@ -600,7 +601,7 @@ class DavStorage(Storage):
                 </D:prop>
             </D:propfind>
         '''.format(
-            etree.tostring(etree.Element(xpath), encoding=str)
+            etree.tostring(etree.Element(xpath), encoding='unicode')
         )
 
         headers = self.session.get_default_headers()
@@ -637,7 +638,7 @@ class DavStorage(Storage):
                     </D:prop>
                 </D:set>
             </D:propertyupdate>
-        '''.format(etree.tostring(element, encoding=str))
+        '''.format(etree.tostring(element, encoding='unicode'))
 
         self.session.request(
             'PROPPATCH', '',
