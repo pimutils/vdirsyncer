@@ -13,6 +13,10 @@ Version 0.13.0
 ==============
 
 - Python 2 is no longer supported at all. See :gh:`219`.
+- Config sections are now checked for duplicate names. This also means that you
+  cannot have a storage section ``[storage foo]`` and a pair ``[pair foo]`` in
+  your config, they have to have different names. This is done such that
+  console output is always unambigous. See :gh:`459`.
 
 Version 0.12.1
 ==============
