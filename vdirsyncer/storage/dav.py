@@ -110,7 +110,7 @@ class Discover(object):
     _homeset_xml = None
     _homeset_tag = None
     _well_known_uri = None
-    _collection_xml = """
+    _collection_xml = b"""
     <d:propfind xmlns:d="DAV:">
         <d:prop>
             <d:resourcetype />
@@ -152,7 +152,7 @@ class Discover(object):
 
         headers = self.session.get_default_headers()
         headers['Depth'] = '0'
-        body = """
+        body = b"""
         <d:propfind xmlns:d="DAV:">
             <d:prop>
                 <d:current-user-principal />
@@ -253,7 +253,7 @@ class Discover(object):
         '''.format(
             etree.tostring(etree.Element(self._resourcetype),
                            encoding='unicode')
-        )
+        ).encode('utf-8')
 
         response = self.session.request(
             'MKCOL',
@@ -267,7 +267,7 @@ class Discover(object):
 class CalDiscover(Discover):
     _namespace = 'urn:ietf:params:xml:ns:caldav'
     _resourcetype = '{%s}calendar' % _namespace
-    _homeset_xml = """
+    _homeset_xml = b"""
     <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
         <d:prop>
             <c:calendar-home-set />
@@ -281,7 +281,7 @@ class CalDiscover(Discover):
 class CardDiscover(Discover):
     _namespace = 'urn:ietf:params:xml:ns:carddav'
     _resourcetype = '{%s}addressbook' % _namespace
-    _homeset_xml = """
+    _homeset_xml = b"""
     <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:carddav">
         <d:prop>
             <c:addressbook-home-set />
@@ -419,7 +419,8 @@ class DavStorage(Storage):
         if not href_xml:
             return ()
 
-        data = self.get_multi_template.format(hrefs='\n'.join(href_xml))
+        data = self.get_multi_template \
+            .format(hrefs='\n'.join(href_xml)).encode('utf-8')
         response = self.session.request(
             'REPORT',
             '',
@@ -575,7 +576,7 @@ class DavStorage(Storage):
                     <D:getetag/>
                 </D:prop>
             </D:propfind>
-            '''
+            '''.encode('utf-8')
 
         # We use a PROPFIND request instead of addressbook-query due to issues
         # with Zimbra. See https://github.com/pimutils/vdirsyncer/issues/83
@@ -602,7 +603,7 @@ class DavStorage(Storage):
             </D:propfind>
         '''.format(
             etree.tostring(etree.Element(xpath), encoding='unicode')
-        )
+        ).encode('utf-8')
 
         headers = self.session.get_default_headers()
         headers['Depth'] = '0'
@@ -638,7 +639,7 @@ class DavStorage(Storage):
                     </D:prop>
                 </D:set>
             </D:propertyupdate>
-        '''.format(etree.tostring(element, encoding='unicode'))
+        '''.format(etree.tostring(element, encoding='unicode')).encode('utf-8')
 
         self.session.request(
             'PROPPATCH', '',
@@ -795,7 +796,7 @@ class CaldavStorage(DavStorage):
         headers['Depth'] = '1'
 
         for caldavfilter in caldavfilters:
-            xml = data.format(caldavfilter=caldavfilter)
+            xml = data.format(caldavfilter=caldavfilter).encode('utf-8')
             response = self.session.request('REPORT', '', data=xml,
                                             headers=headers)
             root = _parse_xml(response.content)

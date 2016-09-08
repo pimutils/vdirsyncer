@@ -52,6 +52,9 @@ def request(method, url, session=None, latin1_fallback=True,
     logger.debug(kwargs.get('headers', {}))
     logger.debug(kwargs.get('data', None))
     logger.debug('Sending request...')
+
+    assert isinstance(kwargs.get('data', b''), bytes)
+
     r = func(method, url, **kwargs)
 
     # See https://github.com/kennethreitz/requests/issues/2042
