@@ -8,8 +8,7 @@ import click
 
 import click_log
 
-from .. import PROJECT_HOME, __version__, exceptions
-from ..utils.compat import PY2
+from .. import __version__
 
 
 cli_logger = logging.getLogger(__name__)
@@ -38,29 +37,6 @@ def catch_errors(f):
     return inner
 
 
-def _check_python2(config):
-    # XXX: Py2
-    if not PY2:
-        return
-
-    msg = (
-        'Python 2 support will be dropped. Please switch '
-        'to at least Python 3.3 as soon as possible. See '
-        '{home}/issues/219 for more information.'
-        .format(home=PROJECT_HOME)
-    )
-
-    if not config.general.get('python2', False):
-        raise exceptions.UserError(
-            msg + (
-                '\nSet python2 = true in the [general] section to get rid of '
-                'this error for now.'
-            )
-        )
-    else:
-        cli_logger.warning(msg)
-
-
 @click.group()
 @click_log.init('vdirsyncer')
 @click_log.simple_verbosity_option()
@@ -76,7 +52,6 @@ def app(ctx, config):
 
     if not ctx.config:
         ctx.config = load_config(config)
-    _check_python2(ctx.config)
 
 main = app
 

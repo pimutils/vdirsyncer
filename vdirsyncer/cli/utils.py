@@ -19,7 +19,6 @@ from . import cli_logger
 from .. import BUGTRACKER_HOME, DOCS_HOME, exceptions
 from ..sync import IdentConflict, StorageEmpty, SyncConflict
 from ..utils import expand_path, get_storage_init_args
-from ..utils.compat import to_native
 
 try:
     import Queue as queue
@@ -147,8 +146,7 @@ def handle_cli_error(status_name=None):
         import traceback
         tb = traceback.format_tb(tb)
         if status_name:
-            msg = 'Unknown error occured for {}'.format(
-                coerce_native(status_name))
+            msg = 'Unknown error occured for {}'.format(status_name)
         else:
             msg = 'Unknown error occured'
 
@@ -293,7 +291,7 @@ def _handle_collection_not_found(config, collection, e=None):
 
 def _print_collections(base_config, discovered):
     instance_name = base_config['instance_name']
-    cli_logger.info('{}:'.format(coerce_native(instance_name)))
+    cli_logger.info('{}:'.format(instance_name))
     for args in discovered.values():
         collection = args['collection']
         if collection is None:
@@ -308,7 +306,7 @@ def _print_collections(base_config, discovered):
 
         cli_logger.info('  - {}{}'.format(
             json.dumps(collection),
-            ' ("{}")'.format(coerce_native(displayname))
+            ' ("{}")'.format(displayname)
             if displayname and displayname != collection
             else ''
         ))
@@ -465,7 +463,7 @@ def handle_storage_init_error(cls, config):
             u'{} storage doesn\'t take the parameters: {}'
             .format(cls.storage_name, u', '.join(invalid)))
 
-    if not problems:  # XXX: Py2: Proper reraise
+    if not problems:
         raise e
 
     raise exceptions.UserError(
@@ -585,18 +583,3 @@ def assert_permissions(path, wanted):
         cli_logger.warning('Correcting permissions of {} from {:o} to {:o}'
                            .format(path, permissions, wanted))
         os.chmod(path, wanted)
-
-
-def coerce_native(x, encoding='utf-8'):
-    # XXX: Remove with Python 3 only
-    try:
-        return str(x)
-    except UnicodeError:
-        pass
-
-    try:
-        return to_native(x, encoding=encoding)
-    except UnicodeError:
-        pass
-
-    return repr(x)

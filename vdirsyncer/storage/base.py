@@ -5,7 +5,6 @@ import functools
 
 from .. import exceptions, sync
 from ..utils import uniq
-from ..utils.compat import to_native, to_unicode, with_metaclass
 from ..utils.vobject import Item  # noqa
 
 
@@ -25,7 +24,7 @@ class StorageMeta(type):
         return super(StorageMeta, cls).__init__(name, bases, d)
 
 
-class Storage(with_metaclass(StorageMeta)):
+class Storage(metaclass=StorageMeta):
 
     '''Superclass of all storages, mainly useful to summarize the interface to
     implement.
@@ -77,9 +76,7 @@ class Storage(with_metaclass(StorageMeta)):
         self.read_only = bool(read_only)
 
         if collection and instance_name:
-            # XXX: PY2 hack
-            instance_name = '{}/{}'.format(instance_name,
-                                           to_native(collection, 'utf-8'))
+            instance_name = '{}/{}'.format(instance_name, collection)
         self.instance_name = instance_name
         self.collection = collection
 
@@ -241,4 +238,4 @@ class Storage(with_metaclass(StorageMeta)):
 
 
 def normalize_meta_value(value):
-    return to_unicode(value or u'').strip()
+    return (value or u'').strip()

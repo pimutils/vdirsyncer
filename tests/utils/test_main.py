@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import platform
 
 import click_log
 
@@ -13,7 +12,6 @@ from vdirsyncer import utils
 
 # These modules might be uninitialized and unavailable if not explicitly
 # imported
-import vdirsyncer.utils.compat  # noqa
 import vdirsyncer.utils.http  # noqa
 
 
@@ -43,11 +41,8 @@ def test_request_ssl(httpsserver):
 
 def _fingerprints_broken():
     from pkg_resources import parse_version as ver
-    tolerant_python = (
-        utils.compat.PY2 and platform.python_implementation() != 'PyPy'
-    )
     broken_urllib3 = ver(requests.__version__) <= ver('2.5.1')
-    return broken_urllib3 and not tolerant_python
+    return broken_urllib3
 
 
 @pytest.mark.skipif(_fingerprints_broken(),

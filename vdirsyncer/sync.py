@@ -14,7 +14,6 @@ import logging
 
 from . import exceptions
 from .utils import uniq
-from .utils.compat import iteritems, text_type
 
 sync_logger = logging.getLogger(__name__)
 
@@ -92,7 +91,7 @@ class StorageSyncer(object):
     def prepare_idents(self):
         href_to_status = dict((meta['href'], (ident, meta))
                               for ident, meta
-                              in iteritems(self.status))
+                              in self.status.items())
 
         prefetch = {}
         self.idents = {}
@@ -206,11 +205,11 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
 
     a_info = storage_a.syncer_class(storage_a, dict(
         (ident, meta_a)
-        for ident, (meta_a, meta_b) in iteritems(status)
+        for ident, (meta_a, meta_b) in status.items()
     ))
     b_info = storage_b.syncer_class(storage_b, dict(
         (ident, meta_b)
-        for ident, (meta_a, meta_b) in iteritems(status)
+        for ident, (meta_a, meta_b) in status.items()
     ))
 
     a_info.prepare_idents()
@@ -275,7 +274,7 @@ def _action_update(ident, source, dest):
             dest_href = dest_meta['href']
             dest_etag = dest.storage.update(dest_href, source_meta['item'],
                                             dest_meta['etag'])
-            assert isinstance(dest_etag, (bytes, text_type))
+            assert isinstance(dest_etag, (bytes, str))
 
         source.status[ident] = _compress_meta(source_meta)
         dest.status[ident] = {

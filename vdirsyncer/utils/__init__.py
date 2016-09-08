@@ -5,7 +5,8 @@ import os
 import sys
 import uuid
 
-from .compat import getargspec_ish, iteritems, to_unicode
+from inspect import getfullargspec
+
 from .. import exceptions
 
 
@@ -25,7 +26,7 @@ def expand_path(p):
 
 def split_dict(d, f):
     '''Puts key into first dict if f(key), otherwise in second dict'''
-    a, b = split_sequence(iteritems(d), lambda item: f(item[0]))
+    a, b = split_sequence(d.items(), lambda item: f(item[0]))
     return dict(a), dict(b)
 
 
@@ -77,7 +78,7 @@ def get_storage_init_specs(cls, stop_at=object):
     if cls is stop_at:
         return ()
 
-    spec = getargspec_ish(cls.__init__)
+    spec = getfullargspec(cls.__init__)
     traverse_superclass = getattr(cls.__init__, '_traverse_superclass', True)
     if traverse_superclass:
         if traverse_superclass is True:  # noqa
@@ -178,7 +179,7 @@ def generate_href(ident=None, safe=SAFE_UID_CHARS):
     UUID.
     '''
     if not ident or not href_safe(ident, safe):
-        return to_unicode(uuid.uuid4().hex)
+        return str(uuid.uuid4())
     else:
         return ident
 

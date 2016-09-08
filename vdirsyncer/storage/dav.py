@@ -2,8 +2,10 @@
 
 import datetime
 import logging
-
+import urllib.parse as urlparse
 import xml.etree.ElementTree as etree
+
+from inspect import getfullargspec
 
 import requests
 from requests.exceptions import HTTPError
@@ -12,7 +14,6 @@ from .base import Item, Storage, normalize_meta_value
 from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
 from .. import exceptions, utils
-from ..utils.compat import PY2, getargspec_ish, text_type, to_native
 
 
 dav_logger = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ CALDAV_DT_FORMAT = '%Y%m%dT%H%M%SZ'
 
 def _generate_path_reserved_chars():
     for x in "/?#[]!$&'()*+,;":
-        x = utils.compat.urlquote(x, '')
+        x = urlparse.quote(x, '')
         yield x.upper()
         yield x.lower()
 
@@ -42,13 +43,11 @@ def _normalize_href(base, href):
     '''Normalize the href to be a path only relative to hostname and
     schema.'''
     orig_href = href
-    base = to_native(base, 'utf-8')
-    href = to_native(href, 'utf-8')
     if not href:
         raise ValueError(href)
 
-    x = utils.compat.urlparse.urljoin(base, href)
-    x = utils.compat.urlparse.urlsplit(x).path
+    x = urlparse.urljoin(base, href)
+    x = urlparse.urlsplit(x).path
 
     # Encoding issues:
     # - https://github.com/owncloud/contacts/issues/581
@@ -58,9 +57,9 @@ def _normalize_href(base, href):
         if _contains_quoted_reserved_chars(x):
             break
         old_x = x
-        x = utils.compat.urlunquote(x)
+        x = urlparse.unquote(x)
 
-    x = utils.compat.urlquote(x, '/@%:')
+    x = urlparse.quote(x, '/@%:')
 
     if orig_href == x:
         dav_logger.debug('Already normalized: {!r}'.format(x))
@@ -129,7 +128,7 @@ class Discover(object):
     @staticmethod
     def _get_collection_from_url(url):
         _, collection = url.rstrip('/').rsplit('/', 1)
-        return utils.compat.urlunquote(collection)
+        return urlparse.unquote(collection)
 
     def find_dav(self):
         try:
@@ -166,7 +165,7 @@ class Discover(object):
         rv = root.find('.//{DAV:}current-user-principal/{DAV:}href')
         if rv is None:
             raise InvalidXMLResponse()
-        return utils.compat.urlparse.urljoin(response.url, rv.text)
+        return urlparse.urljoin(response.url, rv.text)
 
     def find_home(self, url=None):
         if url is None:
@@ -182,7 +181,7 @@ class Discover(object):
         rv = root.find('.//' + self._homeset_tag + '/{DAV:}href')
         if rv is None:
             raise InvalidXMLResponse('Couldn\'t find home-set.')
-        return utils.compat.urlparse.urljoin(response.url, rv.text)
+        return urlparse.urljoin(response.url, rv.text)
 
     def find_collections(self, url=None):
         if url is None:
@@ -202,7 +201,7 @@ class Discover(object):
             if href is None:
                 raise InvalidXMLResponse('Missing href tag for collection '
                                          'props.')
-            href = utils.compat.urlparse.urljoin(r.url, href.text)
+            href = urlparse.urljoin(r.url, href.text)
             if href not in done:
                 done.add(href)
                 yield {'href': href}
@@ -224,9 +223,9 @@ class Discover(object):
                 return c
 
         home = self.find_home()
-        url = utils.compat.urlparse.urljoin(
+        url = urlparse.urljoin(
             home,
-            utils.compat.urlquote(collection, '/@')
+            urlparse.quote(collection, '/@')
         )
 
         try:
@@ -252,7 +251,8 @@ class Discover(object):
                 </D:set>
             </D:mkcol>
         '''.format(
-            to_native(etree.tostring(etree.Element(self._resourcetype)))
+            etree.tostring(etree.Element(self._resourcetype),
+                           encoding='unicode')
         )
 
         response = self.session.request(
@@ -299,7 +299,7 @@ class DavSession(object):
 
     @classmethod
     def init_and_remaining_args(cls, **kwargs):
-        argspec = getargspec_ish(cls.__init__)
+        argspec = getfullargspec(cls.__init__)
         self_args, remainder = \
             utils.split_dict(kwargs, argspec.args.__contains__)
 
@@ -321,12 +321,12 @@ class DavSession(object):
 
     @utils.cached_property
     def parsed_url(self):
-        return utils.compat.urlparse.urlparse(self.url)
+        return urlparse.urlparse(self.url)
 
     def request(self, method, path, **kwargs):
         url = self.url
         if path:
-            url = utils.compat.urlparse.urljoin(self.url, path)
+            url = urlparse.urljoin(self.url, path)
 
         more = dict(self._settings)
         more.update(kwargs)
@@ -379,9 +379,8 @@ class DavStorage(Storage):
             self.session_class.init_and_remaining_args(**kwargs)
         super(DavStorage, self).__init__(**kwargs)
 
-    if not PY2:
-        import inspect
-        __init__.__signature__ = inspect.signature(session_class.__init__)
+    import inspect
+    __init__.__signature__ = inspect.signature(session_class.__init__)
 
     @classmethod
     def discover(cls, **kwargs):
@@ -602,7 +601,7 @@ class DavStorage(Storage):
                 </D:prop>
             </D:propfind>
         '''.format(
-            to_native(etree.tostring(etree.Element(xpath)))
+            etree.tostring(etree.Element(xpath), encoding='unicode')
         )
 
         headers = self.session.get_default_headers()
@@ -639,7 +638,7 @@ class DavStorage(Storage):
                     </D:prop>
                 </D:set>
             </D:propertyupdate>
-        '''.format(to_native(etree.tostring(element)))
+        '''.format(etree.tostring(element, encoding='unicode'))
 
         self.session.request(
             'PROPPATCH', '',
@@ -723,11 +722,11 @@ class CaldavStorage(DavStorage):
             namespace = dict(datetime.__dict__)
             namespace['start_date'] = self.start_date = \
                 (eval(start_date, namespace)
-                 if isinstance(start_date, (bytes, text_type))
+                 if isinstance(start_date, (bytes, str))
                  else start_date)
             self.end_date = \
                 (eval(end_date, namespace)
-                 if isinstance(end_date, (bytes, text_type))
+                 if isinstance(end_date, (bytes, str))
                  else end_date)
 
     @staticmethod

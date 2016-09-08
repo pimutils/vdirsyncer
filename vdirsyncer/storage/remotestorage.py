@@ -7,6 +7,7 @@ things, and plugging in an account "just works".
 '''
 
 import logging
+from urllib.parse import quote as urlquote, urljoin
 
 import click
 
@@ -21,9 +22,6 @@ DRAFT_VERSION = '05'
 
 logger = logging.getLogger(__name__)
 
-urljoin = utils.compat.urlparse.urljoin
-urlquote = utils.compat.urlquote
-
 
 def _ensure_slash(dir):
     return dir.rstrip('/') + '/'
@@ -33,7 +31,7 @@ def _iter_listing(json):
     new_listing = '@context' in json  # draft-02 and beyond
     if new_listing:
         json = json['items']
-    for name, info in utils.compat.iteritems(json):
+    for name, info in json.items():
         if not new_listing:
             info = {'ETag': info}
         yield name, info

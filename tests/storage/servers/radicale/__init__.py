@@ -3,9 +3,9 @@
 import os
 import sys
 
-import pytest
+from urllib.parse import quote as urlquote
 
-from vdirsyncer.utils.compat import urlquote
+import pytest
 
 import wsgi_intercept
 import wsgi_intercept.requests_intercept

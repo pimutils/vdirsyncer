@@ -10,7 +10,6 @@ from atomicwrites import atomic_write
 from .base import Item, Storage, normalize_meta_value
 from .. import exceptions
 from ..utils import checkdir, expand_path, generate_href, get_etag_from_file
-from ..utils.compat import text_type, to_native
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +41,7 @@ class FilesystemStorage(Storage):
     def __init__(self, path, fileext, encoding='utf-8', post_hook=None,
                  **kwargs):
         super(FilesystemStorage, self).__init__(**kwargs)
-        path = expand_path(to_native(path, encoding))
+        path = expand_path(path)
         checkdir(path, create=False)
         self.path = path
         self.encoding = encoding
@@ -70,11 +69,9 @@ class FilesystemStorage(Storage):
     @classmethod
     def create_collection(cls, collection, **kwargs):
         kwargs = dict(kwargs)
-        encoding = kwargs.get('encoding', 'utf-8')
-        path = to_native(kwargs['path'], encoding)
+        path = kwargs['path']
 
         if collection is not None:
-            collection = to_native(collection, encoding)
             path = os.path.join(path, collection)
 
         checkdir(expand_path(path), create=True)
@@ -84,7 +81,7 @@ class FilesystemStorage(Storage):
         return kwargs
 
     def _get_filepath(self, href):
-        return os.path.join(self.path, to_native(href, self.encoding))
+        return os.path.join(self.path, href)
 
     def _get_href(self, ident):
         return generate_href(ident) + self.fileext
@@ -108,7 +105,7 @@ class FilesystemStorage(Storage):
                 raise
 
     def upload(self, item):
-        if not isinstance(item.raw, text_type):
+        if not isinstance(item.raw, str):
             raise TypeError('item.raw must be a unicode string.')
 
         try:
@@ -151,7 +148,7 @@ class FilesystemStorage(Storage):
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
 
-        if not isinstance(item.raw, text_type):
+        if not isinstance(item.raw, str):
             raise TypeError('item.raw must be a unicode string.')
 
         with atomic_write(fpath, mode='wb', overwrite=True) as f:
