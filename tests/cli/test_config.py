@@ -3,9 +3,10 @@ from textwrap import dedent
 
 import pytest
 
-import vdirsyncer.cli.config  # noqa
-import vdirsyncer.cli.utils  # noqa
 from vdirsyncer import cli, exceptions
+from vdirsyncer.cli.config import Config
+
+import vdirsyncer.cli.utils  # noqa
 
 
 invalid = object()
@@ -17,7 +18,7 @@ def read_config(tmpdir, monkeypatch):
         errors = []
         monkeypatch.setattr('vdirsyncer.cli.cli_logger.error', errors.append)
         f = io.StringIO(dedent(cfg.format(base=str(tmpdir))))
-        rv = vdirsyncer.cli.config.read_config(f)
+        rv = Config.from_fileobject(f)
         monkeypatch.undo()
         return errors, rv
     return inner
@@ -37,7 +38,7 @@ def parse_config_value(capsys):
 
 
 def test_read_config(read_config):
-    errors, (general, pairs, storages) = read_config(u'''
+    errors, c = read_config(u'''
         [general]
         status_path = /tmp/status/
 
@@ -57,24 +58,19 @@ def test_read_config(read_config):
 
         [storage bob_b]
         type = carddav
-
-        [bogus]
-        lol = true
         ''')
 
-    assert general == {'status_path': '/tmp/status/'}
-    assert pairs == {'bob': ('bob_a', 'bob_b',
-                             {'collections': None, 'bam': True, 'foo': 'bar'})}
-    assert storages == {
+    assert c.general == {'status_path': '/tmp/status/'}
+    assert c.pairs == {
+        'bob': ('bob_a', 'bob_b',
+                {'collections': None, 'bam': True, 'foo': 'bar'})
+    }
+    assert c.storages == {
         'bob_a': {'type': 'filesystem', 'path': '/tmp/contacts/', 'fileext':
                   '.vcf', 'yesno': False, 'number': 42,
                   'instance_name': 'bob_a'},
         'bob_b': {'type': 'carddav', 'instance_name': 'bob_b'}
     }
-
-    assert len(errors) == 1
-    assert errors[0].startswith('Unknown section')
-    assert 'bogus' in errors[0]
 
 
 def test_missing_collections_param(read_config):
@@ -95,6 +91,19 @@ def test_missing_collections_param(read_config):
             ''')
 
     assert 'collections parameter missing' in str(excinfo.value)
+
+
+def test_invalid_section_type(read_config):
+    with pytest.raises(exceptions.UserError) as excinfo:
+        read_config(u'''
+            [general]
+            status_path = /tmp/status/
+
+            [bogus]
+        ''')
+
+    assert 'Unknown section' in str(excinfo.value)
+    assert 'bogus' in str(excinfo.value)
 
 
 def test_storage_instance_from_config(monkeypatch):
@@ -179,6 +188,31 @@ def test_invalid_collections_arg(read_config):
         ''')
 
     assert 'Expected string' in str(excinfo.value)
+
+
+def test_duplicate_sections(read_config):
+    with pytest.raises(exceptions.UserError) as excinfo:
+        read_config(u'''
+        [general]
+        status_path = /tmp/status/
+
+        [pair foobar]
+        a = foobar
+        b = bar
+        collections = null
+
+        [storage foobar]
+        type = filesystem
+        path = /tmp/foo/
+        fileext = .txt
+
+        [storage bar]
+        type = filesystem
+        path = /tmp/bar/
+        fileext = .txt
+        ''')
+
+    assert 'Name "foobar" already used' in str(excinfo.value)
 
 
 def test_parse_config_value(parse_config_value):

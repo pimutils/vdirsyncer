@@ -48,10 +48,10 @@ def app(ctx, config):
     '''
     Synchronize calendars and contacts
     '''
-    from .config import load_config
 
     if not ctx.config:
-        ctx.config = load_config(config)
+        from .config import Config
+        ctx.config = Config.from_filename_or_environment(config)
 
 main = app
 
