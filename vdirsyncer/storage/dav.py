@@ -164,7 +164,13 @@ class Discover(object):
         root = _parse_xml(response.content)
         rv = root.find('.//{DAV:}current-user-principal/{DAV:}href')
         if rv is None:
-            raise InvalidXMLResponse()
+            # This is for servers that don't support current-user-principal
+            # E.g. Synology NAS
+            # See https://github.com/pimutils/vdirsyncer/issues/498
+            dav_logger.debug(
+                'No current-user-principal returned, re-using URL {}'
+                .format(response.url))
+            return response.url
         return urlparse.urljoin(response.url, rv.text)
 
     def find_home(self, url=None):
