@@ -69,6 +69,7 @@ setup(
     extras_require={
         'remotestorage': ['requests-oauthlib'],
         'google': ['requests-oauthlib'],
+        'ldap': ['ldap3', 'vobject'],
     },
 
     # Build dependencies
