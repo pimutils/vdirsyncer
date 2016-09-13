@@ -10,8 +10,7 @@ ldap_logger = logging.getLogger(__name__)
 
 
 class LDAPStorage(Storage):
-
-    __doc__ = '''
+    '''
     :param uri: LDAP URI
     :param search_base: search base
     :param bind: bind dn
