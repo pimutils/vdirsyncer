@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import ldap3
+import vobject
 
 from .base import Item, Storage
 from .. import exceptions
@@ -23,7 +24,9 @@ class LDAPStorage(Storage):
     item_mimetype = 'text/vcard'
 
     def __init__(self, uri=None, search_base=None, bind=None, password=None,
-                 filter='(objectClass=*)', **kwargs):
+                 filter='(&(objectCategory=person)(objectClass=user)'
+                        '(sn=*)(givenName=*))',
+                 **kwargs):
         super(LDAPStorage, self).__init__(**kwargs)
         self.search_base = search_base
         self.filter = filter
@@ -55,7 +58,8 @@ class LDAPStorage(Storage):
         self.conn.search(href, self.filter,
                          attributes=["whenChanged", "cn", "sn", "givenName",
                                      "displayName", "telephoneNumber",
-                                     "mobile", "mail"])
+                                     "mobile", "facsimileTelephoneNumber",
+                                     "mail", "title"])
 
         if not self.conn.entries[0]:
             raise exceptions.NotFoundError(href)
@@ -63,22 +67,32 @@ class LDAPStorage(Storage):
         entry = self.conn.entries[0]
         etag = str(entry.whenChanged)
 
-        vcard = "BEGIN:VCARD\r\n"
-        vcard += "VERSION:3.0\r\n"
-        vcard += "FN;CHARSET=UTF-8:{cn}\r\n".format(cn=entry.cn)
-        if getattr(entry, 'sn', None):
-            vcard += "N;CHARSET=UTF-8:{sn};{givenName}\r\n".format(
-                givenName=entry.givenName, sn=entry.sn)
+        vcard = vobject.vCard()
+        vo = vcard.add('fn')
+        vo.value = str(entry.cn)
+        vo = vcard.add('n')
+        vo.value = vobject.vcard.Name(family=str(entry.sn),
+                                      given=str(entry.givenName))
         if getattr(entry, 'telephoneNumber', None):
-            vcard += "TEL;WORK;VOICE:{tel}\r\n".format(
-                tel=entry.telephoneNumber)
+            vo = vcard.add('tel')
+            vo.value = str(entry.telephoneNumber)
+            vo.type_param = 'WORK'
         if getattr(entry, 'mobile', None):
-            vcard += "TEL;CELL;VOICE:{mobile}\r\n".format(mobile=entry.mobile)
+            vo = vcard.add('tel')
+            vo.value = str(entry.mobile)
+            vo.type_param = 'CELL'
+        if getattr(entry, 'facsimileTelephoneNumber', None):
+            vo = vcard.add('tel')
+            vo.value = str(entry.facsimileTelephoneNumber)
+            vo.type_param = 'FAX'
         if getattr(entry, 'mail', None):
-            vcard += "EMAIL;INTERNET:{email}\r\n".format(
-                email=entry.mail.value.strip())
-        vcard += "END:VCARD"
+            vo = vcard.add('email')
+            vo.value = str(entry.mail)
+            vo.type_param = 'INTERNET'
+        if getattr(entry, 'title', None):
+            vo = vcard.add('title')
+            vo.value = str(entry.title)
 
-        item = Item(vcard)
+        item = Item(vcard.serialize())
 
         return item, etag
