@@ -47,7 +47,8 @@ class _StorageIndex(object):
             remotestorage_calendars=(
                 'vdirsyncer.storage.remotestorage.RemoteStorageCalendars'),
             google_calendar='vdirsyncer.storage.google.GoogleCalendarStorage',
-            google_contacts='vdirsyncer.storage.google.GoogleContactsStorage'
+            google_contacts='vdirsyncer.storage.google.GoogleContactsStorage',
+            ldap='vdirsyncer.storage.ldap.LDAPStorage'
         )
 
     def __getitem__(self, name):
