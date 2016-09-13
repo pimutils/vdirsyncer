@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
-import ldap3
 import logging
+import ldap3
 
-from .base import Storage, Item
+from .base import Item, Storage
+from .. import exceptions
 
 ldap_logger = logging.getLogger(__name__)
+
 
 class LDAPStorage(Storage):
 
@@ -20,13 +22,15 @@ class LDAPStorage(Storage):
     fileext = '.vcf'
     item_mimetype = 'text/vcard'
 
-    def __init__(self, uri=None, search_base=None, bind=None, password=None, filter='(objectClass=*)', **kwargs):
+    def __init__(self, uri=None, search_base=None, bind=None, password=None,
+                 filter='(objectClass=*)', **kwargs):
         super(LDAPStorage, self).__init__(**kwargs)
         self.search_base = search_base
         self.filter = filter
         self.server = ldap3.Server(uri)
         if bind:
-            self.conn = ldap3.Connection(self.server, user=bind, password=password)
+            self.conn = ldap3.Connection(self.server, user=bind,
+                                         password=password)
         else:
             self.conn = ldap3.Connection(self.server)
         self.conn.bind()
@@ -37,8 +41,10 @@ class LDAPStorage(Storage):
         '''
         :returns: list of (href, etag)
         '''
-        ldap_logger.debug('Search on {self.search_base} with filter {self.filter}'.format(self=self))
-        self.conn.search(self.search_base, self.filter, attributes=["whenChanged"])
+        ldap_logger.debug('Search on {self.search_base} with filter'
+                          '{self.filter}'.format(self=self))
+        self.conn.search(self.search_base, self.filter,
+                         attributes=["whenChanged"])
         for entry in self.conn.entries:
             ldap_logger.debug('Found {}'.format(entry.entry_get_dn()))
             href = entry.entry_get_dn()
@@ -47,7 +53,9 @@ class LDAPStorage(Storage):
 
     def get(self, href):
         self.conn.search(href, self.filter,
-                         attributes=["whenChanged", "cn", "sn", "givenName", "displayName", "telephoneNumber", "mobile", "mail"])
+                         attributes=["whenChanged", "cn", "sn", "givenName",
+                                     "displayName", "telephoneNumber",
+                                     "mobile", "mail"])
 
         if not self.conn.entries[0]:
             raise exceptions.NotFoundError(href)
@@ -59,13 +67,16 @@ class LDAPStorage(Storage):
         vcard += "VERSION:3.0\r\n"
         vcard += "FN;CHARSET=UTF-8:{cn}\r\n".format(cn=entry.cn)
         if getattr(entry, 'sn', None):
-            vcard += "N;CHARSET=UTF-8:{sn};{givenName}\r\n".format(givenName=entry.givenName, sn=entry.sn)
+            vcard += "N;CHARSET=UTF-8:{sn};{givenName}\r\n".format(
+                givenName=entry.givenName, sn=entry.sn)
         if getattr(entry, 'telephoneNumber', None):
-            vcard += "TEL;WORK;VOICE:{tel}\r\n".format(tel=entry.telephoneNumber)
+            vcard += "TEL;WORK;VOICE:{tel}\r\n".format(
+                tel=entry.telephoneNumber)
         if getattr(entry, 'mobile', None):
             vcard += "TEL;CELL;VOICE:{mobile}\r\n".format(mobile=entry.mobile)
         if getattr(entry, 'mail', None):
-            vcard += "EMAIL;INTERNET:{email}\r\n".format(email=entry.mail.value.strip())
+            vcard += "EMAIL;INTERNET:{email}\r\n".format(
+                email=entry.mail.value.strip())
         vcard += "END:VCARD"
 
         item = Item(vcard)
