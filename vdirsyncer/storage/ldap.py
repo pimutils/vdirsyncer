@@ -53,7 +53,12 @@ class LDAPStorage(Storage):
         for entry in self.conn.entries:
             ldap_logger.debug('Found {}'.format(entry.entry_get_dn()))
             href = entry.entry_get_dn()
-            etag = str(entry.whenChanged)
+            if getattr(entry, 'whenChanged'):
+                etag = str(entry.whenChanged)
+            else:
+                entry = self.get(href)
+                etag = item.hash
+
             yield href, etag
 
     def get(self, href):
