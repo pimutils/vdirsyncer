@@ -2,4 +2,3 @@ hypothesis>=3.1
 pytest
 pytest-localserver
 pytest-subtesthack
-mockldap

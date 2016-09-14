@@ -25,16 +25,19 @@ class LDAPStorage(Storage):
     def __init__(self, uri=None, search_base=None, bind=None, password=None,
                  filter='(&(objectCategory=person)(objectClass=user)'
                         '(sn=*)(givenName=*))',
+                 conn=None,
                  **kwargs):
         super(LDAPStorage, self).__init__(**kwargs)
         self.search_base = search_base
         self.filter = filter
-        self.server = ldap3.Server(uri)
-        if bind:
-            self.conn = ldap3.Connection(self.server, user=bind,
-                                         password=password)
-        else:
-            self.conn = ldap3.Connection(self.server)
+        self.conn = conn
+        if not self.conn:
+            server = ldap3.Server(uri)
+            if bind:
+                self.conn = ldap3.Connection(server, user=bind,
+                                             password=password)
+            else:
+                self.conn = ldap3.Connection(server)
         self.conn.bind()
         self.conn.start_tls()
         ldap_logger.debug('Connected to: {}'.format(self.conn))

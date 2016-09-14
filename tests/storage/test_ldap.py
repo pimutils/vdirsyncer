@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from mockldap import MockLdap
+import ldap3
 import pytest
 
 from vdirsyncer.storage.ldap import LDAPStorage
@@ -13,13 +13,13 @@ class TestLDAPStorage(StorageTests):
     supports_collections = False
 
     @pytest.fixture
-    def get_storage_args(self, request):
+    def get_storage_args(self):
         uri = 'ldap://localhost'
-        mockldap = MockLdap({})
-        mockldap.start()
-        ldapobj = mockldap[uri]
-        request.addfinalizer(mockldap.stop)
+        server = ldap3.Server('fake')
+        conn = ldap3.Connection(server, client_strategy=ldap3.MOCK_SYNC)
+
+        conn.strategy.add_entry('cn=user0,ou=test,o=lab', {'userPassword': 'test0000', 'sn': 'user0_sn', 'revision': 0})
 
         def inner(collection='test'):
-            return {'uri': uri}
+            return {'uri': uri, 'conn': conn}
         return inner
