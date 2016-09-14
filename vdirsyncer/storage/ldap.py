@@ -31,8 +31,8 @@ class LDAPStorage(Storage):
         self.search_base = search_base
         self.filter = filter
         self.conn = conn
-        if not self.conn:
-            server = ldap3.Server(uri)
+        if self.conn is None:
+            server = ldap3.Server(uri, get_info=ldap3.DSA)
             if bind:
                 self.conn = ldap3.Connection(server, user=bind,
                                              password=password)
@@ -41,6 +41,10 @@ class LDAPStorage(Storage):
         self.conn.bind()
         self.conn.start_tls()
         ldap_logger.debug('Connected to: {}'.format(self.conn))
+
+        if self.search_base is None:
+            # Fallback to default root entry
+            self.search_base = server.info.naming_contexts[0]
 
     def list(self):
         '''
