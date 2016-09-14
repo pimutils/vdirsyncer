@@ -22,7 +22,7 @@ class LDAPStorage(Storage):
     fileext = '.vcf'
     item_mimetype = 'text/vcard'
 
-    def __init__(self, uri=None, search_base=None, bind=None, password=None,
+    def __init__(self, uri='ldap://localhost', search_base=None, bind=None, password=None,
                  filter='(&(objectCategory=person)(objectClass=user)'
                         '(sn=*)(givenName=*))',
                  conn=None,
