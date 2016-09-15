@@ -11,7 +11,7 @@ ldap_logger = logging.getLogger(__name__)
 
 class LDAPStorage(Storage):
     '''
-    :param uri: LDAP URI
+    :param url: LDAP URL
     :param search_base: search base
     :param bind: bind dn
     :param password: bind password
@@ -22,7 +22,7 @@ class LDAPStorage(Storage):
     fileext = '.vcf'
     item_mimetype = 'text/vcard'
 
-    def __init__(self, uri='ldap://localhost', search_base=None, bind=None, password=None,
+    def __init__(self, url='ldap://localhost', search_base=None, bind=None, password=None,
                  filter='(&(objectCategory=person)(objectClass=user)'
                         '(sn=*)(givenName=*))',
                  conn=None,
@@ -32,7 +32,7 @@ class LDAPStorage(Storage):
         self.filter = filter
         self.conn = conn
         if self.conn is None:
-            server = ldap3.Server(uri, get_info=ldap3.DSA)
+            server = ldap3.Server(url, get_info=ldap3.DSA)
             if bind:
                 self.conn = ldap3.Connection(server, user=bind,
                                              password=password)
