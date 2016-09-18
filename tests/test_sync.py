@@ -125,6 +125,23 @@ def test_deletion():
     assert not a.has('1.a') and not b.has('1.b')
 
 
+def test_insert_hash():
+    a = MemoryStorage()
+    b = MemoryStorage()
+    status = {}
+
+    item = Item('UID:1')
+    href, etag = a.upload(item)
+    sync(a, b, status)
+
+    for d in status['1']:
+        del d['hash']
+
+    a.update(href, Item('UID:1\nHAHA:YES'), etag)
+    sync(a, b, status)
+    assert 'hash' in status['1'][0] and 'hash' in status['1'][1]
+
+
 def test_already_synced():
     a = MemoryStorage(fileext='.a')
     b = MemoryStorage(fileext='.b')
@@ -134,9 +151,11 @@ def test_already_synced():
     status = {
         '1': ({
             'href': '1.a',
+            'hash': item.hash,
             'etag': a.get('1.a')[1]
         }, {
             'href': '1.b',
+            'hash': item.hash,
             'etag': b.get('1.b')[1]
         })
     }
@@ -413,7 +432,7 @@ class SyncMachine(RuleBasedStateMachine):
         s.read_only = read_only
         if flaky_etags:
             def get(href):
-                _, item = s.items[href]
+                old_etag, item = s.items[href]
                 etag = _random_string()
                 s.items[href] = etag, item
                 return item, etag
@@ -444,6 +463,15 @@ class SyncMachine(RuleBasedStateMachine):
         storage.items.pop(href, None)
         return storage
 
+    @rule(target=Status, status=Status, delete_from_b=st.booleans())
+    def remove_hash_from_status(self, status, delete_from_b):
+        for a, b in status.values():
+            if delete_from_b:
+                a = b
+            assume('hash' in a)
+            del a['hash']
+        return status
+
     @rule(
         target=Status, status=Status,
         a=Storage, b=Storage,
@@ -451,6 +479,7 @@ class SyncMachine(RuleBasedStateMachine):
         conflict_resolution=st.one_of((st.just('a wins'), st.just('b wins')))
     )
     def sync(self, status, a, b, force_delete, conflict_resolution):
+        assume(a is not b)
         old_items_a = self._get_items(a)
         old_items_b = self._get_items(b)
 
@@ -477,6 +506,8 @@ class SyncMachine(RuleBasedStateMachine):
         assert items_a == items_b
         assert items_a == old_items_a or not a.read_only
         assert items_b == old_items_b or not b.read_only
+
+        assert set(a.items) | set(b.items) == set(status)
 
         return status
 
