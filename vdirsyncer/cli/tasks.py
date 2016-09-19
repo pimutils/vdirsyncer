@@ -58,7 +58,7 @@ def sync_collection(wq, collection, general, force_delete):
         b = storage_instance_from_config(collection.config_b)
         sync(
             a, b, status,
-            conflict_resolution=pair.options.get('conflict_resolution', None),
+            conflict_resolution=pair.conflict_resolution,
             force_delete=force_delete
         )
     except:

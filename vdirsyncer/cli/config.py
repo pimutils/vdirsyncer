@@ -3,6 +3,8 @@ import os
 import string
 from itertools import chain
 
+from click_threading import get_ui_worker
+
 from . import cli_logger
 from .fetchparams import expand_fetch_params
 from .. import PROJECT_HOME, exceptions
@@ -251,12 +253,32 @@ class PairConfig(object):
         self.name_b = options.pop('b')
         self.options = options
 
-        conflict_resolution = self.options.get('conflict_resolution', None)
+        self._set_conflict_resolution()
+        self._set_collections()
+
+    def _set_conflict_resolution(self):
+        conflict_resolution = self.options.pop('conflict_resolution', None)
         if conflict_resolution in (None, 'a wins', 'b wins'):
             self.conflict_resolution = conflict_resolution
+        elif isinstance(conflict_resolution, list) and \
+                len(conflict_resolution) > 1 and \
+                conflict_resolution[0] == 'command':
+            def resolve(a, b):
+                a_name = self.config_a['instance_name']
+                b_name = self.config_b['instance_name']
+                command = conflict_resolution[1:]
+                def inner():
+                    return resolve_conflict_via_command(a, b, command, a_name,
+                                                        b_name)
+
+                ui_worker = get_ui_worker()
+                ui_worker.put(inner)
+
+            self.conflict_resolution = resolve
         else:
             raise ValueError('Invalid value for `conflict_resolution`.')
 
+    def _set_collections(self):
         try:
             collections = self.options['collections']
         except KeyError:
@@ -279,3 +301,35 @@ class CollectionConfig(object):
         self.name = name
         self.config_a = config_a
         self.config_b = config_b
+
+
+def resolve_conflict_via_command(a, b, command, a_name, b_name):
+    import tempfile
+    import shutil
+    import subprocess
+
+    from ..utils.vobject import Item
+
+    dir = tempfile.mkdtemp(prefix='vdirsyncer-conflict.')
+    try:
+        a_tmp = os.path.join(dir, a_name)
+        b_tmp = os.path.join(dir, b_name)
+
+        with open(a_tmp, 'w') as f:
+            f.write(a.raw)
+        with open(b_tmp, 'w') as f:
+            f.write(b.raw)
+
+        subprocess.check_call(command + [a_tmp, b_tmp])
+
+        with open(a_tmp) as f:
+            new_a = f.read()
+        with open(b_tmp) as f:
+            new_b = f.read()
+
+        if new_a != new_b:
+            raise exceptions.UserError('The two files are not completely '
+                                       'equal.')
+        return Item(new_a)
+    finally:
+        shutil.rmtree(dir)

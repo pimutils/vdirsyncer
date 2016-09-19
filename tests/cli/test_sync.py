@@ -409,3 +409,43 @@ def test_no_configured_pairs(tmpdir, runner, cmd):
     result = runner.invoke([cmd])
     assert result.output == 'critical: Nothing to do.\n'
     assert result.exception.code == 5
+
+
+@pytest.mark.parametrize('resolution,expect_foo,expect_bar', [
+    (['command', 'cp'], 'UID:lol\nfööcontent', 'UID:lol\nfööcontent')
+])
+def test_conflict_resolution(tmpdir, runner, resolution, expect_foo,
+                             expect_bar):
+    runner.write_with_general(dedent('''
+    [pair foobar]
+    a = foo
+    b = bar
+    collections = null
+    conflict_resolution = {val}
+
+    [storage foo]
+    type = filesystem
+    fileext = .txt
+    path = {base}/foo
+
+    [storage bar]
+    type = filesystem
+    fileext = .txt
+    path = {base}/bar
+    '''.format(base=str(tmpdir), val=json.dumps(resolution))))
+
+    foo = tmpdir.join('foo')
+    bar = tmpdir.join('bar')
+    fooitem = foo.join('lol.txt').ensure()
+    fooitem.write('UID:lol\nfööcontent')
+    baritem = bar.join('lol.txt').ensure()
+    baritem.write('UID:lol\nbööcontent')
+
+    r = runner.invoke(['discover'])
+    assert not r.exception
+
+    r = runner.invoke(['sync'])
+    assert not r.exception
+
+    assert fooitem.read() == expect_foo
+    assert baritem.read() == expect_bar

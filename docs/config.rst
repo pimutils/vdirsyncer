@@ -87,9 +87,19 @@ Pair Section
 
   Valid values are:
 
+  - ``null``, where an error is shown and no changes are done.
   - ``"a wins"`` and ``"b wins"``, where the whole item is taken from one side.
-    Vdirsyncer will not attempt to merge the two items.
-  - ``null``, the default, where an error is shown and no changes are done.
+  - ``["command", "vimdiff"]``: ``vimdiff <a> <b>`` will be called where
+    ``<a>`` and ``<b>`` are temporary files that contain the item of each side
+    respectively. The files need to be exactly the same when the command
+    returns.
+
+    - ``vimdiff`` can be replaced with any other command. For example, in POSIX
+      ``["command", "cp"]`` is equivalent to ``"a wins"``.
+    - Additional list items will be forwarded as arguments. For example,
+      ``["command", "vimdiff", "--noplugin"]`` runs ``vimdiff --noplugin``.
+
+  Vdirsyncer never attempts to "automatically merge" the two items.
 
 - ``metadata``: Metadata keys that should be synchronized when ``vdirsyncer
   metasync`` is executed. Example::
