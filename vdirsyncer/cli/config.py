@@ -267,10 +267,10 @@ class PairConfig(object):
                 a_name = self.config_a['instance_name']
                 b_name = self.config_b['instance_name']
                 command = conflict_resolution[1:]
+
                 def inner():
                     return resolve_conflict_via_command(a, b, command, a_name,
                                                         b_name)
-
                 ui_worker = get_ui_worker()
                 ui_worker.put(inner)
 
