@@ -154,7 +154,7 @@ class GoogleContactsStorage(dav.CarddavStorage):
     class session_class(GoogleSession):
         # Apparently Google wants us to submit a PROPFIND to the well-known
         # URL, instead of looking for a redirect.
-        url = 'https://www.googleapis.com/.well-known/carddav/'
+        url = 'https://www.googleapis.com/.well-known/carddav'
         scope = ['https://www.googleapis.com/auth/carddav']
 
     storage_name = 'google_contacts'

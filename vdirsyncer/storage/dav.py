@@ -281,7 +281,7 @@ class CalDiscover(Discover):
     </d:propfind>
     """
     _homeset_tag = '{%s}calendar-home-set' % _namespace
-    _well_known_uri = '/.well-known/caldav/'
+    _well_known_uri = '/.well-known/caldav'
 
 
 class CardDiscover(Discover):
@@ -295,7 +295,7 @@ class CardDiscover(Discover):
     </d:propfind>
     """
     _homeset_tag = '{%s}addressbook-home-set' % _namespace
-    _well_known_uri = '/.well-known/carddav/'
+    _well_known_uri = '/.well-known/carddav'
 
 
 class DavSession(object):
