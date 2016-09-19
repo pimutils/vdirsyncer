@@ -267,9 +267,9 @@ def _discover_from_config(config):
 def _handle_collection_not_found(config, collection, e=None):
     storage_name = config.get('instance_name', None)
 
-    cli_logger.error('{}No collection {} found for storage {}.'
-                     .format('{}\n'.format(e) if e else '',
-                             json.dumps(collection), storage_name))
+    cli_logger.warning('{}No collection {} found for storage {}.'
+                       .format('{}\n'.format(e) if e else '',
+                               json.dumps(collection), storage_name))
 
     if click.confirm('Should vdirsyncer attempt to create it?'):
         storage_type = config['type']
