@@ -7,4 +7,6 @@ Things to include in your bugreport:
 * Your Python version
 * Your operating system
 * Your config file
-* Use `vdirsyncer -vdebug` for debug output.
+* Use `vdirsyncer -vdebug` for debug output. The output is sensitive, but
+  please attach at least the last few lines before the error (if applicable),
+  censored as necessary. This is almost always the most useful information.
