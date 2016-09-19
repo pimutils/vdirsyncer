@@ -61,10 +61,11 @@ def test_read_config(read_config):
         ''')
 
     assert c.general == {'status_path': '/tmp/status/'}
-    assert c.pairs == {
-        'bob': ('bob_a', 'bob_b',
-                {'collections': None, 'bam': True, 'foo': 'bar'})
-    }
+
+    assert set(c.pairs) == {'bob'}
+    bob = c.pairs['bob']
+    assert bob.options == {'bam': True, 'foo': 'bar', 'collections': None}
+
     assert c.storages == {
         'bob_a': {'type': 'filesystem', 'path': '/tmp/contacts/', 'fileext':
                   '.vcf', 'yesno': False, 'number': 42,
@@ -236,10 +237,8 @@ def test_parse_config_value(parse_config_value):
     assert x('""') == ('', 0)
 
 
-def test_validate_pair_section_collections_param():
-    def x(val):
-        return cli.config._validate_pair_section({'collections': val})
-
+def test_validate_collections_param():
+    x = cli.config._validate_collections_param
     x(None)
     x(["c", "a", "b"])
     pytest.raises(ValueError, x, [None])

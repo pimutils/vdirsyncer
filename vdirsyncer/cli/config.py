@@ -6,7 +6,7 @@ from itertools import chain
 from . import cli_logger
 from .fetchparams import expand_fetch_params
 from .. import PROJECT_HOME, exceptions
-from ..utils import cached_property, expand_path
+from ..utils import expand_path
 
 try:
     from ConfigParser import RawConfigParser
@@ -48,15 +48,7 @@ def _validate_general_section(general_config):
             .format(PROJECT_HOME), problems=problems)
 
 
-def _validate_pair_section(pair_config):
-    try:
-        collections = pair_config['collections']
-    except KeyError:
-        raise ValueError('collections parameter missing.\n\n'
-                         'As of 0.9.0 this parameter has no default anymore. '
-                         'Set `collections = null` explicitly in your pair '
-                         'config.')
-
+def _validate_collections_param(collections):
     if collections is None:
         return
 
@@ -96,7 +88,7 @@ def _validate_pair_section(pair_config):
                              .format(i=i, e=str(e)))
 
 
-class ConfigReader:
+class _ConfigReader:
     def __init__(self, f):
         self._file = f
         self._parser = c = RawConfigParser()
@@ -107,41 +99,22 @@ class ConfigReader:
         self._pairs = {}
         self._storages = {}
 
-        self._handlers = {
-            'general': self._handle_general,
-            'pair': self._handle_pair,
-            'storage': self._handle_storage
-        }
-
-    def _get_options(self, s):
-        return dict(parse_options(self._parser.items(s), section=s))
-
-    def _handle_storage(self, storage_name, options):
-        options['instance_name'] = storage_name
-        self._storages[storage_name] = options
-
-    def _handle_pair(self, pair_name, options):
-        _validate_pair_section(options)
-        a, b = options.pop('a'), options.pop('b')
-        self._pairs[pair_name] = a, b, options
-
-    def _handle_general(self, _, options):
-        if self._general:
-            raise ValueError('More than one general section.')
-        self._general = options
-
     def _parse_section(self, section_type, name, options):
         validate_section_name(name, section_type)
         if name in self._seen_names:
             raise ValueError('Name "{}" already used.'.format(name))
         self._seen_names.add(name)
 
-        try:
-            f = self._handlers[section_type]
-        except KeyError:
+        if section_type == 'general':
+            if self._general:
+                raise ValueError('More than one general section.')
+            self._general = options
+        elif section_type == 'storage':
+            self._storages[name] = options
+        elif section_type == 'pair':
+            self._pairs[name] = options
+        else:
             raise ValueError('Unknown section type.')
-
-        f(name, options)
 
     def parse(self):
         for section in self._parser.sections():
@@ -151,8 +124,11 @@ class ConfigReader:
                 section_type = name = section
 
             try:
-                self._parse_section(section_type, name,
-                                    self._get_options(section))
+                self._parse_section(
+                    section_type, name,
+                    dict(parse_options(self._parser.items(section),
+                                       section=section))
+                )
             except ValueError as e:
                 raise exceptions.UserError(
                     'Section "{}": {}'.format(section, str(e)))
@@ -212,12 +188,20 @@ def parse_options(items, section=None):
 class Config(object):
     def __init__(self, general, pairs, storages):
         self.general = general
-        self.pairs = pairs
         self.storages = storages
+        for name, options in storages.items():
+            options['instance_name'] = name
+
+        self.pairs = {}
+        for name, options in pairs.items():
+            try:
+                self.pairs[name] = PairConfig(self, name, options)
+            except ValueError as e:
+                raise exceptions.UserError('Pair {}: {}'.format(name, e))
 
     @classmethod
     def from_fileobject(cls, f):
-        reader = ConfigReader(f)
+        reader = _ConfigReader(f)
         return cls(*reader.parse())
 
     @classmethod
@@ -240,41 +224,52 @@ class Config(object):
                 .format(fname, e)
             )
 
-    def get_storage_args(self, storage_name, pair_name=None):
+    def get_storage_args(self, storage_name):
         try:
             args = self.storages[storage_name]
         except KeyError:
-            pair_pref = 'Pair {}: '.format(pair_name) if pair_name else ''
             raise exceptions.UserError(
-                '{}Storage {!r} not found. '
+                'Storage {!r} not found. '
                 'These are the configured storages: {}'
-                .format(pair_pref, storage_name, list(self.storages))
+                .format(storage_name, list(self.storages))
             )
         else:
             return expand_fetch_params(args)
 
     def get_pair(self, pair_name):
         try:
-            return PairConfig(self, pair_name, *self.pairs[pair_name])
+            return self.pairs[pair_name]
         except KeyError as e:
             raise exceptions.PairNotFound(e, pair_name=pair_name)
 
 
 class PairConfig(object):
-    def __init__(self, config, name, name_a, name_b, pair_options):
-        self._config = config
+    def __init__(self, full_config, name, options):
+        self._config = full_config
         self.name = name
-        self.name_a = name_a
-        self.name_b = name_b
-        self.options = pair_options
+        self.name_a = options.pop('a')
+        self.name_b = options.pop('b')
+        self.options = options
 
-    @cached_property
-    def config_a(self):
-        return self._config.get_storage_args(self.name_a, pair_name=self.name)
+        conflict_resolution = self.options.get('conflict_resolution', None)
+        if conflict_resolution in (None, 'a wins', 'b wins'):
+            self.conflict_resolution = conflict_resolution
+        else:
+            raise ValueError('Invalid value for `conflict_resolution`.')
 
-    @cached_property
-    def config_b(self):
-        return self._config.get_storage_args(self.name_b, pair_name=self.name)
+        try:
+            collections = self.options['collections']
+        except KeyError:
+            raise ValueError(
+                'collections parameter missing.\n\n'
+                'As of 0.9.0 this parameter has no default anymore. '
+                'Set `collections = null` explicitly in your pair config.'
+            )
+        else:
+            _validate_collections_param(collections)
+
+        self.config_a = self._config.get_storage_args(self.name_a)
+        self.config_b = self._config.get_storage_args(self.name_b)
 
 
 class CollectionConfig(object):
