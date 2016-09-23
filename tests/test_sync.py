@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from random import random
 from copy import deepcopy
 
 import hypothesis.strategies as st
@@ -450,7 +451,7 @@ class SyncMachine(RuleBasedStateMachine):
 
         return s
 
-    @rule(target=Storage, s=Storage)
+    @rule(s=Storage)
     def actions_fail(self, s):
         def blowup(*a, **kw):
             raise ActionIntentionallyFailed()
@@ -458,36 +459,33 @@ class SyncMachine(RuleBasedStateMachine):
         s.upload = blowup
         s.update = blowup
         s.delete = blowup
-        return s
 
     @rule(target=Status)
     def newstatus(self):
         return {}
 
-    @rule(target=Storage, storage=Storage,
+    @rule(storage=Storage,
           uid=uid_strategy,
           etag=st.text())
     def upload(self, storage, uid, etag):
         item = Item(u'UID:{}'.format(uid))
         storage.items[uid] = (etag, item)
-        return storage
 
-    @rule(target=Storage, storage=Storage, href=st.text())
+    @rule(storage=Storage, href=st.text())
     def delete(self, storage, href):
-        storage.items.pop(href, None)
-        return storage
+        assume(storage.items.pop(href, None))
 
-    @rule(target=Status, status=Status, delete_from_b=st.booleans())
+    @rule(status=Status, delete_from_b=st.booleans())
     def remove_hash_from_status(self, status, delete_from_b):
+        assume(status)
         for a, b in status.values():
             if delete_from_b:
                 a = b
             assume('hash' in a)
             del a['hash']
-        return status
 
     @rule(
-        target=Status, status=Status,
+        status=Status,
         a=Storage, b=Storage,
         force_delete=st.booleans(),
         conflict_resolution=st.one_of((st.just('a wins'), st.just('b wins')))
@@ -496,17 +494,22 @@ class SyncMachine(RuleBasedStateMachine):
         assume(a is not b)
         old_items_a = self._get_items(a)
         old_items_b = self._get_items(b)
-        old_status = deepcopy(status)
+        failed_sync = False
+
+        a.instance_name = 'a'
+        b.instance_name = 'b'
 
         try:
             # If one storage is read-only, double-sync because changes don't
             # get reverted immediately.
             for _ in range(2 if a.read_only or b.read_only else 1):
+                old_status = deepcopy(status)
                 sync(a, b, status,
                      force_delete=force_delete,
                      conflict_resolution=conflict_resolution)
-        except ActionIntentionallyFailed:
+        except ActionIntentionallyFailed as e:
             assert status == old_status
+            failed_sync = True
         except BothReadOnly:
             assert a.read_only and b.read_only
             assume(False)
@@ -520,13 +523,11 @@ class SyncMachine(RuleBasedStateMachine):
         items_a = self._get_items(a)
         items_b = self._get_items(b)
 
-        assert items_a == items_b
+        assert items_a == items_b or failed_sync
         assert items_a == old_items_a or not a.read_only
         assert items_b == old_items_b or not b.read_only
 
-        assert set(a.items) | set(b.items) == set(status)
-
-        return status
+        assert set(a.items) | set(b.items) == set(status) or failed_sync
 
 
 TestSyncMachine = SyncMachine.TestCase
