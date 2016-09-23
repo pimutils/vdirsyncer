@@ -415,6 +415,10 @@ def test_unicode_hrefs():
     sync(a, b, status)
 
 
+class ActionIntentionallyFailed(Exception):
+    pass
+
+
 class SyncMachine(RuleBasedStateMachine):
     Status = Bundle('status')
     Storage = Bundle('storage')
@@ -444,6 +448,16 @@ class SyncMachine(RuleBasedStateMachine):
             s.upload = lambda item: (_old_upload(item)[0], 'NULL')
             s.update = lambda h, i, e: _old_update(h, i, e) and 'NULL'
 
+        return s
+
+    @rule(target=Storage, s=Storage)
+    def actions_fail(self, s):
+        def blowup(*a, **kw):
+            raise ActionIntentionallyFailed()
+
+        s.upload = blowup
+        s.update = blowup
+        s.delete = blowup
         return s
 
     @rule(target=Status)
@@ -482,6 +496,7 @@ class SyncMachine(RuleBasedStateMachine):
         assume(a is not b)
         old_items_a = self._get_items(a)
         old_items_b = self._get_items(b)
+        old_status = deepcopy(status)
 
         try:
             # If one storage is read-only, double-sync because changes don't
@@ -490,6 +505,8 @@ class SyncMachine(RuleBasedStateMachine):
                 sync(a, b, status,
                      force_delete=force_delete,
                      conflict_resolution=conflict_resolution)
+        except ActionIntentionallyFailed:
+            assert status == old_status
         except BothReadOnly:
             assert a.read_only and b.read_only
             assume(False)
