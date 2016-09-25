@@ -4,7 +4,6 @@ import logging
 from os.path import basename
 
 from .utils import generate_href, href_safe
-from .utils.vobject import Item
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +18,6 @@ def repair_storage(storage):
 
         new_item = item
 
-        changed = False
         if item.parsed is None:
             logger.warning('Item {} can\'t be parsed, skipping.'
                            .format(href))
@@ -52,5 +50,3 @@ def repair_storage(storage):
                     storage.update(href, new_item, etag)
             except Exception:
                 logger.exception('Server rejected new item.')
-
-
