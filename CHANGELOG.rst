@@ -19,6 +19,8 @@ Version 0.13.0
   console output is always unambigous. See :gh:`459`.
 - Custom commands can now be used for conflict resolution during sync. See
   :gh:`127`.
+- :storage:`http` now completely ignores UIDs. This avoids a lot of unnecessary
+  down- and uploads.
 
 Version 0.12.1
 ==============

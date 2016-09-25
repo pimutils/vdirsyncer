@@ -95,6 +95,16 @@ HTTP_STORAGE_PARAMETERS = '''
 class HttpStorage(Storage):
     __doc__ = '''
     Use a simple ``.ics`` file (or similar) from the web.
+    ``webcal://``-calendars are supposed to be used with this, but you have to
+    replace ``webcal://`` with ``http://``, or better, ``https://``.
+
+    Too many WebCAL providers generate UIDs of all ``VEVENT``-components
+    on-the-fly, i.e. all UIDs change every time the calendar is downloaded.
+    This leads many synchronization programs to believe that all events have
+    been deleted and new ones created, and accordingly causes a lot of
+    unnecessary uploads and deletions on the other side. Vdirsyncer completely
+    ignores UIDs coming from :storage:`http` and will replace them with a hash
+    of the normalized item content.
 
     :param url: URL to the ``.ics`` file.
     ''' + HTTP_STORAGE_PARAMETERS + '''
@@ -120,6 +130,9 @@ class HttpStorage(Storage):
     read_only = True
     _repr_attributes = ('username', 'url')
     _items = None
+
+    # Required for tests.
+    _ignore_uids = True
 
     def __init__(self, url, username='', password='', verify=True, auth=None,
                  useragent=USERAGENT, verify_fingerprint=None, auth_cert=None,
@@ -152,8 +165,10 @@ class HttpStorage(Storage):
 
         for item in split_collection(r.text):
             item = Item(item)
-            etag = item.hash
-            self._items[item.ident] = item, etag
+            if self._ignore_uids:
+                item = item.with_uid(item.hash)
+
+            self._items[item.ident] = item, item.hash
 
         return ((href, etag) for href, (item, etag) in self._items.items())
 

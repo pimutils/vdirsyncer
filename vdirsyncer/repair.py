@@ -17,6 +17,8 @@ def repair_storage(storage):
         logger.info(u'[{}/{}] Processing {}'
                     .format(i, len(all_hrefs), href))
 
+        new_item = item
+
         changed = False
         if item.parsed is None:
             logger.warning('Item {} can\'t be parsed, skipping.'
@@ -25,15 +27,14 @@ def repair_storage(storage):
 
         if not item.uid:
             logger.warning('No UID, assigning random one.')
-            changed = change_uid(item, generate_href()) or changed
+            new_item = item.with_uid(generate_href())
         elif item.uid in seen_uids:
             logger.warning('Duplicate UID, assigning random one.')
-            changed = change_uid(item, generate_href()) or changed
+            new_item = item.with_uid(generate_href())
         elif not href_safe(item.uid) or not href_safe(basename(href)):
             logger.warning('UID or href is unsafe, assigning random UID.')
-            changed = change_uid(item, generate_href(item.uid)) or changed
+            new_item = item.with_uid(generate_href(item.uid))
 
-        new_item = Item(u'\r\n'.join(item.parsed.dump_lines()))
         if not new_item.uid:
             logger.error('Item {!r} is malformed beyond repair. '
                          'This is a serverside bug.'
@@ -42,7 +43,7 @@ def repair_storage(storage):
             continue
 
         seen_uids.add(new_item.uid)
-        if changed:
+        if new_item.raw != item.raw:
             try:
                 if new_item.uid != item.uid:
                     storage.upload(new_item)
@@ -53,15 +54,3 @@ def repair_storage(storage):
                 logger.exception('Server rejected new item.')
 
 
-def change_uid(item, new_uid):
-    stack = [item.parsed]
-    changed = False
-    while stack:
-        component = stack.pop()
-        stack.extend(component.subcomponents)
-
-        if component.name in ('VEVENT', 'VTODO', 'VJOURNAL', 'VCARD'):
-            component['UID'] = new_uid
-            changed = True
-
-    return changed

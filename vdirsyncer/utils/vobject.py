@@ -40,6 +40,20 @@ class Item(object):
         assert isinstance(raw, str)
         self._raw = raw
 
+    def with_uid(self, new_uid):
+        parsed = _Component.parse(self.raw)
+        stack = [parsed]
+        while stack:
+            component = stack.pop()
+            stack.extend(component.subcomponents)
+
+            if component.name in ('VEVENT', 'VTODO', 'VJOURNAL', 'VCARD'):
+                del component['UID']
+                if new_uid:
+                    component['UID'] = new_uid
+
+        return Item('\r\n'.join(parsed.dump_lines()))
+
     @cached_property
     def raw(self):
         '''Raw content of the item, as unicode string.
@@ -79,8 +93,9 @@ class Item(object):
         # 2. The status file would contain really sensitive information.
         return self.uid or self.hash
 
-    @cached_property
+    @property
     def parsed(self):
+        '''Don't cache because the rv is mutable.'''
         try:
             return _Component.parse(self.raw)
         except Exception:
