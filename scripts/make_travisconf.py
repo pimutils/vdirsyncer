@@ -19,10 +19,6 @@ cfg['git'] = {
     'submodules': False
 }
 
-cfg['branches'] = {
-    'only': ['auto', 'master']
-}
-
 cfg['install'] = [script("""
     . scripts/travis-install.sh;
     pip install -U pip;
@@ -35,14 +31,19 @@ cfg['script'] = [script("""
     make -e $BUILD
 """)]
 
+cfg['after_script'] = [script("""
+    . scripts/upload-hypothesis-db.sh;
+""")]
+
 matrix = []
 cfg['matrix'] = {'include': matrix}
 
-for python in ("3.3", "3.4", "3.5"):
+for python in ("3.3",):
     matrix.append({
         'python': python,
         'env': 'BUILD=style BUILD_PRS=true'
     })
+    continue
 
     if python == "3.5":
         dav_servers = ("radicale", "owncloud", "nextcloud", "baikal",
