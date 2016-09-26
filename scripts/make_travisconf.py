@@ -32,7 +32,11 @@ cfg['install'] = [script("""
 """)]
 
 cfg['script'] = [script("""
-    make -e $BUILD
+    make -e $BUILD;
+""")]
+
+cfg['after_script'] = [script("""
+    scripts/upload-hypothesis-db.sh;
 """)]
 
 matrix = []

@@ -1,4 +1,7 @@
 {
+  "after_script": [
+    "if [ \"$BUILD_PRS\" = \"true\" ] || [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ]; then\n    scripts/upload-hypothesis-db.sh;\nfi"
+  ],
   "branches": {
     "only": [
       "auto",
@@ -130,7 +133,7 @@
     ]
   },
   "script": [
-    "if [ \"$BUILD_PRS\" = \"true\" ] || [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ]; then\n    make -e $BUILD\nfi"
+    "if [ \"$BUILD_PRS\" = \"true\" ] || [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ]; then\n    make -e $BUILD;\nfi"
   ],
   "sudo": true
 }
