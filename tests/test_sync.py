@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from random import random
 from copy import deepcopy
 
 import hypothesis.strategies as st
@@ -507,7 +506,7 @@ class SyncMachine(RuleBasedStateMachine):
                 sync(a, b, status,
                      force_delete=force_delete,
                      conflict_resolution=conflict_resolution)
-        except ActionIntentionallyFailed as e:
+        except ActionIntentionallyFailed:
             assert status == old_status
             failed_sync = True
         except BothReadOnly:
