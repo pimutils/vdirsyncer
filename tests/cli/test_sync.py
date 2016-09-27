@@ -310,7 +310,7 @@ def test_create_collections(subtest, collections):
             ['discover'],
             input='y\n' * 2 * (len(collections) + 1)
         )
-        assert not result.exception
+        assert not result.exception, result.output
 
         # Macs normally operate on the HFS+ file system which normalizes paths.
         # That is, if you save a file with accented é in it (u'\xe9') for
@@ -331,7 +331,7 @@ def test_create_collections(subtest, collections):
         result = runner.invoke(
             ['sync'] + ['foobar/' + x for x in collections]
         )
-        assert not result.exception
+        assert not result.exception, result.output
 
 
 def test_ident_conflict(tmpdir, runner):
