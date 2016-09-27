@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+import pytest
+
 from textwrap import dedent
 
 from hypothesis import given, settings
@@ -54,26 +56,34 @@ def test_repair_unsafe_uids(uid):
     assert href_safe(newuid)
 
 
-def test_full(tmpdir, runner):
+@pytest.mark.parametrize('collection', [None, "foocoll"])
+def test_full(tmpdir, runner, collection):
     runner.write_with_general(dedent('''
         [storage foo]
         type = filesystem
-        path = {0}/foo/
+        path = {base}/foo/
         fileext = .txt
-        ''').format(str(tmpdir)))
+        ''').format(base=str(tmpdir)))
 
-    foo = tmpdir.mkdir('foo')
+    storage = tmpdir.mkdir('foo')
+    if collection is not None:
+        storage = storage.mkdir(collection)
+        collection_arg = 'foo/{}'.format(collection)
+    else:
+        collection_arg = 'foo'
 
-    result = runner.invoke(['repair', 'foo'], input='y')
+    argv = ['repair', collection_arg]
+
+    result = runner.invoke(argv, input='y')
     assert not result.exception
 
-    foo.join('item.txt').write('BEGIN:VCARD\nEND:VCARD')
-    foo.join('toobroken.txt').write('')
+    storage.join('item.txt').write('BEGIN:VCARD\nEND:VCARD')
+    storage.join('toobroken.txt').write('')
 
-    result = runner.invoke(['repair', 'foo'], input='y')
+    result = runner.invoke(argv, input='y')
     assert not result.exception
     assert 'No UID' in result.output
     assert 'warning: Item toobroken.txt can\'t be parsed, skipping' \
         in result.output
-    new_fname, = [x for x in foo.listdir() if 'toobroken' not in str(x)]
+    new_fname, = [x for x in storage.listdir() if 'toobroken' not in str(x)]
     assert 'UID:' in new_fname.read()
