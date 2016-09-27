@@ -57,8 +57,8 @@ Pair Section
 
 - ``a`` and ``b`` reference the storages to sync by their names.
 
-- ``collections``: A list of collections to synchronize when
-  ``vdirsyncer sync`` is executed.
+- ``collections``: A list of collections to synchronize when ``vdirsyncer
+  sync`` is executed. See also :ref:`collections_tutorial`.
 
   The special values ``"from a"`` and ``"from b"``, tell vdirsyncer to try
   autodiscovery on a specific storage.
@@ -83,7 +83,7 @@ Pair Section
 
 - ``conflict_resolution``: Optional, define how conflicts should be handled.  A
   conflict occurs when one item (event, task) changed on both sides since the
-  last sync.
+  last sync. See also :ref:`conflict_resolution_tutorial`.
 
   Valid values are:
 

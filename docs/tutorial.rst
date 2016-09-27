@@ -52,13 +52,13 @@ pairs of storages should actually be synchronized is defined in :ref:`pair
 section <pair_config>`.  This format is copied from OfflineIMAP, where storages
 are called repositories and pairs are called accounts.
 
-The following example synchronizes ownCloud's
-default addressbook to ``~/.contacts/``::
+The following example synchronizes ownCloud's addressbooks to ``~/.contacts/``::
+
 
     [pair my_contacts]
     a = my_contacts_local
     b = my_contacts_remote
-    collections = null
+    collections = ["from a", "from b"]
 
     [storage my_contacts_local]
     type = filesystem
@@ -67,7 +67,9 @@ default addressbook to ``~/.contacts/``::
 
     [storage my_contacts_remote]
     type = carddav
-    url = https://owncloud.example.com/remote.php/carddav/addressbooks/bob/default/
+
+    # We can simplify this URL here as well. In theory it shouldn't matter.
+    url = https://owncloud.example.com/remote.php/carddav/
     username = bob
     password = asdf
 
@@ -76,18 +78,26 @@ default addressbook to ``~/.contacts/``::
     Configuration for other servers can be found at :ref:`supported-servers`.
 
 After running ``vdirsyncer discover`` and ``vdirsyncer sync``, ``~/.contacts/``
-will contain a bunch of ``.vcf`` files which all contain a contact in ``VCARD``
-format each. You can modify their content, add new ones and delete some [1]_,
-and your changes will be synchronized to the CalDAV server after you run
-``vdirsyncer sync`` again. For further reference, it uses the storages
-:storage:`filesystem` and :storage:`carddav`.
+will contain subfolders for each addressbook, which in turn will contain a
+bunch of ``.vcf`` files which all contain a contact in ``VCARD`` format each.
+You can modify their contents, add new ones and delete some [1]_, and your
+changes will be synchronized to the CalDAV server after you run ``vdirsyncer
+sync`` again. For further reference, it uses the storages :storage:`filesystem`
+and :storage:`carddav`.
+
+However, if new collections are created on the server, it will not
+automatically start synchronizing those [2]_. You need to run ``vdirsyncer
+discover`` again to re-fetch this list instead.
 
 .. [1] You'll want to :doc:`use a helper program for this <supported>`.
+
+.. [2] Because collections are added rarely, and checking for this case before
+   every synchronization isn't worth the overhead.
 
 More Configuration
 ==================
 
-.. _conflict_resolution:
+.. _conflict_resolution_tutorial:
 
 Conflict resolution
 -------------------
@@ -106,44 +116,7 @@ the situation where an item changed on both sides, it will simply overwrite the
 local item with the one from the server. Of course ``a wins`` is also a valid
 value.
 
-Collection discovery
---------------------
-
-The above configuration only syncs a single addressbook.  This is denoted by
-``collections = null`` (collection = addressbook/calendar). We can change this
-line to let vdirsyncer automatically sync all addressbooks it can find::
-
-    [pair my_contacts]
-    a = my_contacts_local
-    b = my_contacts_remote
-    collections = ["from a", "from b"]  # changed from `null`
-
-    [storage my_contacts_local]
-    type = filesystem
-    path = ~/.contacts/
-    fileext = .vcf
-
-    [storage my_contacts_remote]
-    type = carddav
-
-    # We can simplify this URL here as well. In theory it shouldn't matter.
-    url = https://owncloud.example.com/remote.php/carddav/
-    username = bob
-    password = asdf
-
-With the above configuration, ``vdirsyncer discover`` will fetch all available
-collections from the server, and create subdirectories for each of them in
-``~/.contacts/`` after confirmation. For example, ownCloud's default
-addressbook ``"default"`` would be synchronized to the location
-``~/.contacts/default/``.
-
-After that, ``vdirsyncer sync`` will synchronize all your addressbooks as
-expected. However, if new collections are created on the server, it will not
-automatically start synchronizing those [2]_. You need to run ``vdirsyncer
-discover`` again to re-fetch this list instead.
-
-.. [2] Because collections are added rarely, and checking for this case before
-   every synchronization isn't worth the overhead.
+.. _metasync_tutorial:
 
 Metadata synchronization
 ------------------------
@@ -175,3 +148,65 @@ Run ``vdirsyncer discover`` for discovery. Then you can use ``vdirsyncer
 metasync`` to synchronize the ``color`` property between your local calendars
 in ``~/.calendars/`` and your ownCloud. Locally the color is just represented
 as a file called ``color`` within the calendar folder.
+
+.. _collections_tutorial:
+
+More information about collections
+----------------------------------
+
+"Collection" is a collective term for addressbooks and calendars. Each
+collection from a storage has a "collection name", a unique identifier for each
+collection. In the case of :storage:`filesystem`-storage, this is the name of the
+directory that represents the collection, in the case of the DAV-storages this
+is the last segment of the URL. We use this identifier in the ``collections``
+parameter in the ``pair``-section.
+
+This identifier doesn't change even if you rename your calendar in whatever UI
+you have, because that only changes the so-called "displayname" property [3]_.
+On some servers (iCloud, Google) this identifier is randomly generated and has
+no correlation with the displayname you chose.
+
+.. [3] Which you can also synchronize with ``metasync`` using ``metadata =
+   ["displayname"]``.
+
+There are three collection names that have a special meaning:
+
+- ``"from a"``, ``"from b"``: A placeholder for all collections that can be
+  found on side A/B when running ``vdirsyncer discover``.
+- ``null``: The parameters give to the storage are exact and require no discovery.
+
+The last one requires a bit more explanation.  Assume this config which
+synchronizes two directories of addressbooks::
+
+    [pair foobar]
+    a = foo
+    b = bar
+    collections = ["from a", "from b"]
+
+    [storage foo]
+    type = filesystem
+    fileext = .vcf
+    path = ./contacts_foo/
+
+    [storage bar]
+    type = filesystem
+    fileext = .vcf
+    path = ./contacts_bar/
+
+As we saw previously this will synchronize all collections in
+``./contacts_foo/`` with each same-named collection in ``./contacts_bar/``. If
+there's a collection that exists on one side but not the other, vdirsyncer will
+ask whether to create that folder on the other side.
+
+If we set ``collections = null``, ``./contacts_foo/`` and ``./contacts_bar/``
+are no longer treated as folders with collections, but as collections
+themselves. This means that ``./contacts_foo/`` and ``./contacts_bar/`` will
+contain ``.vcf``-files, not subfolders that contain ``.vcf``-files.
+
+This is useful in situations where listing all collections fails because your
+DAV-server doesn't support it, for example. In this case, you can set ``url``
+of your :storage:`carddav`- or :storage:`caldav`-storage to a URL that points
+to your CalDAV/CardDAV collection directly.
+
+Note that not all storages support the ``null``-collection, for example
+:storage:`google_contacts` and :storage:`google_calendar` don't.
