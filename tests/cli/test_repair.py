@@ -1,8 +1,8 @@
 # encoding: utf-8
 
-import pytest
-
 from textwrap import dedent
+
+import pytest
 
 
 @pytest.mark.parametrize('collection', [None, "foocoll"])
