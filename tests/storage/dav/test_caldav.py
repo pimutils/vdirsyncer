@@ -11,14 +11,14 @@ import requests.exceptions
 from tests import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE
 
 from vdirsyncer import exceptions
-from vdirsyncer.storage.dav import CaldavStorage
+from vdirsyncer.storage.dav import CalDAVStorage
 
-from . import DavStorageTests, dav_server
+from . import DAVStorageTests, dav_server
 from .. import format_item
 
 
-class TestCaldavStorage(DavStorageTests):
-    storage_class = CaldavStorage
+class TestCalDAVStorage(DAVStorageTests):
+    storage_class = CalDAVStorage
 
     @pytest.fixture(params=['VTODO', 'VEVENT'])
     def item_type(self, request):

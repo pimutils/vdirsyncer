@@ -298,7 +298,7 @@ class CardDiscover(Discover):
     _well_known_uri = '/.well-known/carddav'
 
 
-class DavSession(object):
+class DAVSession(object):
     '''
     A helper class to connect to DAV servers.
     '''
@@ -345,7 +345,7 @@ class DavSession(object):
         }
 
 
-class DavStorage(Storage):
+class DAVStorage(Storage):
 
     __doc__ = '''
     :param url: Base URL or an URL to a collection.
@@ -367,8 +367,8 @@ class DavStorage(Storage):
     get_multi_data_query = None
     # The Discover subclass to use
     discovery_class = None
-    # The DavSession class to use
-    session_class = DavSession
+    # The DAVSession class to use
+    session_class = DAVSession
 
     _repr_attributes = ('username', 'url')
 
@@ -383,7 +383,7 @@ class DavStorage(Storage):
 
         self.session, kwargs = \
             self.session_class.init_and_remaining_args(**kwargs)
-        super(DavStorage, self).__init__(**kwargs)
+        super(DAVStorage, self).__init__(**kwargs)
 
     import inspect
     __init__.__signature__ = inspect.signature(session_class.__init__)
@@ -659,7 +659,7 @@ class DavStorage(Storage):
         # a PROPFIND to see if the value got actually set.
 
 
-class CaldavStorage(DavStorage):
+class CalDAVStorage(DAVStorage):
 
     __doc__ = '''
     CalDAV.
@@ -688,7 +688,7 @@ class CaldavStorage(DavStorage):
     :param item_types: Kind of items to show. The default, the empty list, is
         to show all. This depends on particular features on the server, the
         results are not validated.
-    ''' + DavStorage.__doc__
+    ''' + DAVStorage.__doc__
 
     storage_name = 'caldav'
     fileext = '.ics'
@@ -710,14 +710,14 @@ class CaldavStorage(DavStorage):
 
     get_multi_data_query = '{urn:ietf:params:xml:ns:caldav}calendar-data'
 
-    _property_table = dict(DavStorage._property_table)
+    _property_table = dict(DAVStorage._property_table)
     _property_table.update({
         'color': ('calendar-color', 'http://apple.com/ns/ical/'),
     })
 
     def __init__(self, start_date=None, end_date=None,
                  item_types=(), **kwargs):
-        super(CaldavStorage, self).__init__(**kwargs)
+        super(CalDAVStorage, self).__init__(**kwargs)
         if not isinstance(item_types, (list, tuple)):
             raise exceptions.UserError('item_types must be a list.')
 
@@ -761,7 +761,7 @@ class CaldavStorage(DavStorage):
                                           timefilter=timefilter)
         else:
             if start is not None and end is not None:
-                for x in CaldavStorage._get_list_filters(('VTODO', 'VEVENT'),
+                for x in CalDAVStorage._get_list_filters(('VTODO', 'VEVENT'),
                                                          start, end):
                     yield x
 
@@ -779,7 +779,7 @@ class CaldavStorage(DavStorage):
             # instead?
             #
             # See https://github.com/dmfs/tasks/issues/118 for backstory.
-            for x in DavStorage.list(self):
+            for x in DAVStorage.list(self):
                 yield x
 
         data = '''<?xml version="1.0" encoding="utf-8" ?>
@@ -811,11 +811,11 @@ class CaldavStorage(DavStorage):
                 yield href, etag
 
 
-class CarddavStorage(DavStorage):
+class CardDAVStorage(DAVStorage):
 
     __doc__ = '''
     CardDAV.
-    ''' + DavStorage.__doc__
+    ''' + DAVStorage.__doc__
 
     storage_name = 'carddav'
     fileext = '.vcf'

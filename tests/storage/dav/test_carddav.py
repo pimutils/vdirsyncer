@@ -2,13 +2,13 @@
 
 import pytest
 
-from vdirsyncer.storage.dav import CarddavStorage
+from vdirsyncer.storage.dav import CardDAVStorage
 
-from . import DavStorageTests
+from . import DAVStorageTests
 
 
-class TestCarddavStorage(DavStorageTests):
-    storage_class = CarddavStorage
+class TestCardDAVStorage(DAVStorageTests):
+    storage_class = CardDAVStorage
 
     @pytest.fixture(params=['VCARD'])
     def item_type(self, request):

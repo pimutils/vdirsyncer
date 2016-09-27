@@ -19,7 +19,7 @@ dav_server = os.environ['DAV_SERVER']
 ServerMixin = get_server_mixin(dav_server)
 
 
-class DavStorageTests(ServerMixin, StorageTests):
+class DAVStorageTests(ServerMixin, StorageTests):
     dav_server = dav_server
 
     def test_dav_broken_item(self, s):

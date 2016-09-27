@@ -37,8 +37,8 @@ DISCOVERY_CACHE_VERSION = 1
 class _StorageIndex(object):
     def __init__(self):
         self._storages = dict(
-            caldav='vdirsyncer.storage.dav.CaldavStorage',
-            carddav='vdirsyncer.storage.dav.CarddavStorage',
+            caldav='vdirsyncer.storage.dav.CalDAVStorage',
+            carddav='vdirsyncer.storage.dav.CardDAVStorage',
             filesystem='vdirsyncer.storage.filesystem.FilesystemStorage',
             http='vdirsyncer.storage.http.HttpStorage',
             singlefile='vdirsyncer.storage.singlefile.SingleFileStorage',

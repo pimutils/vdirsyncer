@@ -27,7 +27,7 @@ except ImportError:
     have_oauth2 = False
 
 
-class GoogleSession(dav.DavSession):
+class GoogleSession(dav.DAVSession):
     def __init__(self, token_file, client_id, client_secret, url=None):
         # Required for discovering collections
         if url is not None:
@@ -101,7 +101,7 @@ GOOGLE_PARAMS_DOCS = '''
 '''
 
 
-class GoogleCalendarStorage(dav.CaldavStorage):
+class GoogleCalendarStorage(dav.CalDAVStorage):
     __doc__ = '''Google calendar.
 
     Please refer to :storage:`caldav` regarding
@@ -142,7 +142,7 @@ class GoogleCalendarStorage(dav.CaldavStorage):
     __init__._traverse_superclass = base.Storage
 
 
-class GoogleContactsStorage(dav.CarddavStorage):
+class GoogleContactsStorage(dav.CardDAVStorage):
     __doc__ = '''Google contacts.
 
     .. note:: Google's CardDAV implementation is allegedly a disaster in terms

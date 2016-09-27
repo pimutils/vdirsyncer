@@ -138,9 +138,9 @@ Supported Storages
 CalDAV and CardDAV
 ++++++++++++++++++
 
-.. autostorage:: vdirsyncer.storage.dav.CaldavStorage
+.. autostorage:: vdirsyncer.storage.dav.CalDAVStorage
 
-.. autostorage:: vdirsyncer.storage.dav.CarddavStorage
+.. autostorage:: vdirsyncer.storage.dav.CardDAVStorage
 
 Google
 ++++++
