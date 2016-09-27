@@ -8,6 +8,9 @@ export TESTSERVER_BASE := ./tests/storage/servers/
 export CI := false
 export DETERMINISTIC_TESTS := false
 
+all:
+	$(error Take a look at https://vdirsyncer.pimutils.org/en/stable/tutorial.html#installation)
+
 install-servers:
 	set -ex; \
 	for server in $(DAV_SERVER) $(REMOTESTORAGE_SERVER); do \
@@ -60,9 +63,6 @@ sh:  # open subshell with default test config
 
 linkcheck:
 	sphinx-build -W -b linkcheck ./docs/ ./docs/_build/linkcheck/
-
-all:
-	$(error Take a look at https://vdirsyncer.pimutils.org/en/stable/tutorial.html#installation)
 
 release:
 	python setup.py sdist bdist_wheel upload
