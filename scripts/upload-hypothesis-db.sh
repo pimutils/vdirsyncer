@@ -32,7 +32,7 @@ if _is_dirty; then
     git checkout $TRAVIS_BRANCH
 
     git add -fA $GIT_COMMIT_PATH
-    git commit -m "Hypothesis examples"
+    git commit -m "Hypothesis examples, job $TRAVIS_JOB_NUMBER"
 
     for i in `seq 10`; do
         echo "push: try $i"
