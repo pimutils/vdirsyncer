@@ -4,7 +4,7 @@ set -ex
 
 GIT_COMMIT_PATH="$(dirname $0)/../.hypothesis/examples"
 
-if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     echo "Not building on pull request."
     exit 0
 fi
