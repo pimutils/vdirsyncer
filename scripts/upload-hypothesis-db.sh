@@ -8,8 +8,6 @@ _is_dirty() {
     (! git diff-index --quiet HEAD $GIT_COMMIT_PATH) || [ "$(git status --porcelain $GIT_COMMIT_PATH | tail -n1)" != "" ]
 }
 
-[ -n "$REPO_DEPLOY_KEY" ] || (echo "No deploy key, exiting." && exit 0)
-
 cd "$(dirname $0)"
 openssl aes-256-cbc -K $encrypted_a527bcd44658_key -iv $encrypted_a527bcd44658_iv -in id_travis.enc -out /tmp/id_travis -d
 chmod 600 /tmp/id_travis
