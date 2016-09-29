@@ -2,6 +2,11 @@
 
 GIT_COMMIT_PATH="$(dirname $0)/../.hypothesis/examples"
 
+if [ "$TRAVIS_PULL_REQUEST" = "false"]; then
+    echo "Not building on pull request."
+    exit 0
+fi
+
 set -e
 
 _is_dirty() {
@@ -21,6 +26,10 @@ if _is_dirty; then
     git config --global push.default simple
     git config --global user.email "travis@pimutils.org"
     git config --global user.name "Travis CI for pimutils"
+
+    git remote set-url origin git@github.com:pimutils/vdirsyncer
+    git checkout $TRAVIS_BRANCH
+
     git add -fA $GIT_COMMIT_PATH
     git commit -m "Hypothesis examples"
 
