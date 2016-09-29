@@ -1,3 +1,4 @@
 comment: false
-status:
+coverage:
+  status:
     patch: false
