@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.13.0
 ==============
 
+*released on 29 October 2016*
+
 - Python 2 is no longer supported at all. See :gh:`219`.
 - Config sections are now checked for duplicate names. This also means that you
   cannot have a storage section ``[storage foo]`` and a pair ``[pair foo]`` in
