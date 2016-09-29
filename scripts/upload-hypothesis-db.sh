@@ -1,13 +1,14 @@
 #!/bin/sh
 
+set -ex
+
 GIT_COMMIT_PATH="$(dirname $0)/../.hypothesis/examples"
 
-if [ "$TRAVIS_PULL_REQUEST" = "false"]; then
+if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
     echo "Not building on pull request."
     exit 0
 fi
 
-set -e
 
 _is_dirty() {
     (! git diff-index --quiet HEAD $GIT_COMMIT_PATH) || [ "$(git status --porcelain $GIT_COMMIT_PATH | tail -n1)" != "" ]
