@@ -145,10 +145,7 @@ class Discover(object):
 
     def find_principal(self, url=None):
         if url is None:
-            try:
-                return self.find_principal('')
-            except (HTTPError, exceptions.Error):
-                return self.find_principal(self.find_dav())
+            url = self.find_dav()
 
         headers = self.session.get_default_headers()
         headers['Depth'] = '0'
@@ -191,7 +188,18 @@ class Discover(object):
 
     def find_collections(self, url=None):
         if url is None:
-            url = self.find_home()
+            rv = None
+            try:
+                rv = list(self.find_collections(''))
+            except (HTTPError, exceptions.Error):
+                pass
+
+            if rv:
+                yield from rv
+                return
+            dav_logger.debug('Given URL is not a homeset URL')
+            return self.find_collections(self.find_home())
+
         headers = self.session.get_default_headers()
         headers['Depth'] = '1'
         r = self.session.request('PROPFIND', url, headers=headers,
