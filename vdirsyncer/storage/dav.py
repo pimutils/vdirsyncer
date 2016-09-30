@@ -186,20 +186,19 @@ class Discover(object):
             raise InvalidXMLResponse('Couldn\'t find home-set.')
         return urlparse.urljoin(response.url, rv.text)
 
-    def find_collections(self, url=None):
-        if url is None:
-            rv = None
-            try:
-                rv = list(self.find_collections(''))
-            except (HTTPError, exceptions.Error):
-                pass
+    def find_collections(self):
+        rv = None
+        try:
+            rv = list(self._find_collections_impl(''))
+        except (HTTPError, exceptions.Error):
+            pass
 
-            if rv:
-                yield from rv
-                return
-            dav_logger.debug('Given URL is not a homeset URL')
-            return self.find_collections(self.find_home())
+        if rv:
+            return rv
+        dav_logger.debug('Given URL is not a homeset URL')
+        return self._find_collections_impl(self.find_home())
 
+    def _find_collections_impl(self, url):
         headers = self.session.get_default_headers()
         headers['Depth'] = '1'
         r = self.session.request('PROPFIND', url, headers=headers,
