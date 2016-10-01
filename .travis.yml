@@ -1,7 +1,4 @@
 {
-  "after_script": [
-    "if [ \"$BUILD_PRS\" = \"true\" ] || [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ]; then\n    scripts/upload-hypothesis-db.sh;\nfi"
-  ],
   "branches": {
     "only": [
       "auto",

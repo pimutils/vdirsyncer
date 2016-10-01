@@ -31,13 +31,16 @@ install-test: install-servers
 	[ $(CI) != "true" ] || pip install coverage codecov
 
 test:
-	set -e; \
 	if [ "$(CI)" = "true" ]; then \
 		coverage run --source=vdirsyncer/ --module pytest; \
-		codecov; \
 	else \
 		py.test; \
-	fi
+	fi; \
+	STATUS=$?; \
+	set -e; \
+	[ "$(CI)" != "true" ] || codecov; \
+	[ "$(CI)" != "true" ] || scripts/upload-hypothesis-db.sh; \
+	[ "$$STATUS" = "0" ]
 
 install-style: install-docs
 	pip install flake8 flake8-import-order flake8-bugbear

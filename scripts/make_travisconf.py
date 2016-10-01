@@ -35,10 +35,6 @@ cfg['script'] = [script("""
     make -e $BUILD;
 """)]
 
-cfg['after_script'] = [script("""
-    scripts/upload-hypothesis-db.sh;
-""")]
-
 matrix = []
 cfg['matrix'] = {'include': matrix}
 
