@@ -502,7 +502,6 @@ class SyncMachine(RuleBasedStateMachine):
             # If one storage is read-only, double-sync because changes don't
             # get reverted immediately.
             for _ in range(2 if a.read_only or b.read_only else 1):
-                old_status = deepcopy(status)
                 sync(a, b, status,
                      force_delete=force_delete,
                      conflict_resolution=conflict_resolution,

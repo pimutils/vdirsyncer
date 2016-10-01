@@ -11,7 +11,6 @@ Yang. http://blog.ezyang.com/2012/08/how-offlineimap-works/
 '''
 import itertools
 import logging
-import sys
 
 from . import exceptions
 from .utils import uniq
