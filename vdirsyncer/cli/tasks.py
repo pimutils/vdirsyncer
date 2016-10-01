@@ -61,7 +61,7 @@ def sync_collection(wq, collection, general, force_delete):
             conflict_resolution=pair.conflict_resolution,
             force_delete=force_delete
         )
-    except:
+    except BaseException:
         handle_cli_error(status_name)
         raise JobFailed()
 
@@ -127,7 +127,7 @@ def metasync_collection(wq, collection, general):
             conflict_resolution=pair.options.get('conflict_resolution', None),
             keys=pair.options.get('metadata', None) or ()
         )
-    except:
+    except BaseException:
         handle_cli_error(status_name)
         raise JobFailed()
 

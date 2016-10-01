@@ -29,7 +29,7 @@ def catch_errors(f):
     def inner(*a, **kw):
         try:
             f(*a, **kw)
-        except:
+        except BaseException:
             from .utils import handle_cli_error
             handle_cli_error()
             sys.exit(1)

@@ -40,7 +40,7 @@ test:
 	fi
 
 install-style:
-	pip install flake8 flake8-import-order sphinx
+	pip install flake8 flake8-import-order flake8-bugbear sphinx
 	
 style:
 	flake8

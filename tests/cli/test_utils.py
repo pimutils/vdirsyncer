@@ -5,7 +5,7 @@ from vdirsyncer.cli.utils import handle_cli_error
 def test_handle_cli_error(capsys):
     try:
         raise exceptions.InvalidResponse('ayy lmao')
-    except:
+    except BaseException:
         handle_cli_error()
 
     out, err = capsys.readouterr()

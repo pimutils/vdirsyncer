@@ -232,9 +232,6 @@ class SingleFileStorage(Storage):
         self._at_once = True
         try:
             yield self
-        except:
-            raise
-        else:
             self._write()
         finally:
             self._at_once = False
