@@ -474,15 +474,6 @@ class SyncMachine(RuleBasedStateMachine):
     def delete(self, storage, href):
         assume(storage.items.pop(href, None))
 
-    @rule(status=Status, delete_from_b=st.booleans())
-    def remove_hash_from_status(self, status, delete_from_b):
-        assume(status)
-        for a, b in status.values():
-            if delete_from_b:
-                a = b
-            assume('hash' in a)
-            del a['hash']
-
     @rule(
         status=Status,
         a=Storage, b=Storage,
