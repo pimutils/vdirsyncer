@@ -5,8 +5,7 @@
   "branches": {
     "only": [
       "auto",
-      "master",
-      "mysteryshack-update"
+      "master"
     ]
   },
   "git": {
