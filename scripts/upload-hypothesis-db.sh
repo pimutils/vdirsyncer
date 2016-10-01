@@ -2,7 +2,8 @@
 
 set -ex
 
-GIT_COMMIT_PATH="$(dirname $0)/../.hypothesis/examples"
+SELF_DIR="$(dirname $0)"
+GIT_COMMIT_PATH="$SELF_DIR/../.hypothesis/examples"
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     echo "Not building on pull request."
@@ -14,14 +15,11 @@ _is_dirty() {
     (! git diff-index --quiet HEAD $GIT_COMMIT_PATH) || [ "$(git status --porcelain $GIT_COMMIT_PATH | tail -n1)" != "" ]
 }
 
-cd "$(dirname $0)"
-openssl aes-256-cbc -K $encrypted_a527bcd44658_key -iv $encrypted_a527bcd44658_iv -in id_travis.enc -out /tmp/id_travis -d
+openssl aes-256-cbc -K $encrypted_a527bcd44658_key -iv $encrypted_a527bcd44658_iv -in $SELF_DIR/id_travis.enc -out /tmp/id_travis -d
 chmod 600 /tmp/id_travis
 
 eval `ssh-agent -s`
 ssh-add /tmp/id_travis
-
-cd ..
 
 if _is_dirty; then
     git config --global push.default simple
