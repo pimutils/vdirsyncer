@@ -36,7 +36,7 @@ test:
 	else \
 		py.test; \
 	fi; \
-	STATUS=$?; \
+	STATUS="$$?"; \
 	set -e; \
 	[ "$(CI)" != "true" ] || codecov; \
 	[ "$(CI)" != "true" ] || scripts/upload-hypothesis-db.sh; \
