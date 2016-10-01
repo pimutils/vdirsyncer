@@ -39,8 +39,8 @@ test:
 		py.test; \
 	fi
 
-install-style:
-	pip install flake8 flake8-import-order flake8-bugbear sphinx
+install-style: install-docs
+	pip install flake8 flake8-import-order flake8-bugbear
 	
 style:
 	flake8
