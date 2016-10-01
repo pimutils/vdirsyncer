@@ -11,6 +11,7 @@ Yang. http://blog.ezyang.com/2012/08/how-offlineimap-works/
 '''
 import itertools
 import logging
+import sys
 
 from . import exceptions
 from .utils import uniq
@@ -226,7 +227,7 @@ def _compress_meta(meta):
 
 
 def sync(storage_a, storage_b, status, conflict_resolution=None,
-         force_delete=False):
+         force_delete=False, error_callback=None):
     '''Synchronizes two storages.
 
     :param storage_a: The first storage
@@ -246,6 +247,8 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
         syncs, :py:exc:`StorageEmpty` is raised for
         safety. Setting this parameter to ``True`` disables this safety
         measure.
+    :param error_callback: Instead of raising errors when executing actions,
+        call the given function with an `Exception` as the only argument.
     '''
     if storage_a.read_only and storage_b.read_only:
         raise BothReadOnly()
@@ -277,13 +280,19 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
 
     actions = list(_get_actions(a_info, b_info))
 
-    with storage_a.at_once():
-        with storage_b.at_once():
-            for action in actions:
+    with storage_a.at_once(), storage_b.at_once():
+        for action in actions:
+            try:
                 action.run(a_info, b_info, conflict_resolution)
+            except Exception as e:
+                if error_callback:
+                    error_callback(e)
+                else:
+                    raise
 
     status.clear()
-    for ident in uniq(itertools.chain(a_info.new_status, b_info.new_status)):
+    for ident in uniq(itertools.chain(a_info.new_status,
+                                      b_info.new_status)):
         status[ident] = (
             _compress_meta(a_info.new_status[ident]),
             _compress_meta(b_info.new_status[ident])

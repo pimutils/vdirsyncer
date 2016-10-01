@@ -419,6 +419,10 @@ class ActionIntentionallyFailed(Exception):
     pass
 
 
+def action_failure(*a, **kw):
+    raise ActionIntentionallyFailed()
+
+
 class SyncMachine(RuleBasedStateMachine):
     Status = Bundle('status')
     Storage = Bundle('storage')
@@ -452,12 +456,9 @@ class SyncMachine(RuleBasedStateMachine):
 
     @rule(s=Storage)
     def actions_fail(self, s):
-        def blowup(*a, **kw):
-            raise ActionIntentionallyFailed()
-
-        s.upload = blowup
-        s.update = blowup
-        s.delete = blowup
+        s.upload = action_failure
+        s.update = action_failure
+        s.delete = action_failure
 
     @rule(target=Status)
     def newstatus(self):
@@ -478,16 +479,24 @@ class SyncMachine(RuleBasedStateMachine):
         status=Status,
         a=Storage, b=Storage,
         force_delete=st.booleans(),
-        conflict_resolution=st.one_of((st.just('a wins'), st.just('b wins')))
+        conflict_resolution=st.one_of((st.just('a wins'), st.just('b wins'))),
+        with_error_callback=st.booleans()
     )
-    def sync(self, status, a, b, force_delete, conflict_resolution):
+    def sync(self, status, a, b, force_delete, conflict_resolution,
+             with_error_callback):
         assume(a is not b)
         old_items_a = self._get_items(a)
         old_items_b = self._get_items(b)
-        failed_sync = False
 
         a.instance_name = 'a'
         b.instance_name = 'b'
+
+        errors = []
+
+        if with_error_callback:
+            error_callback = errors.append
+        else:
+            error_callback = None
 
         try:
             # If one storage is read-only, double-sync because changes don't
@@ -496,10 +505,13 @@ class SyncMachine(RuleBasedStateMachine):
                 old_status = deepcopy(status)
                 sync(a, b, status,
                      force_delete=force_delete,
-                     conflict_resolution=conflict_resolution)
+                     conflict_resolution=conflict_resolution,
+                     error_callback=error_callback)
+
+            for e in errors:
+                raise e
         except ActionIntentionallyFailed:
-            assert status == old_status
-            failed_sync = True
+            pass
         except BothReadOnly:
             assert a.read_only and b.read_only
             assume(False)
@@ -508,16 +520,42 @@ class SyncMachine(RuleBasedStateMachine):
                 raise
             else:
                 assert not list(a.list()) or not list(b.list())
-                return status
+        else:
+            items_a = self._get_items(a)
+            items_b = self._get_items(b)
 
-        items_a = self._get_items(a)
-        items_b = self._get_items(b)
+            assert items_a == items_b
+            assert items_a == old_items_a or not a.read_only
+            assert items_b == old_items_b or not b.read_only
 
-        assert items_a == items_b or failed_sync
-        assert items_a == old_items_a or not a.read_only
-        assert items_b == old_items_b or not b.read_only
-
-        assert set(a.items) | set(b.items) == set(status) or failed_sync
+            assert set(a.items) | set(b.items) == set(status)
 
 
 TestSyncMachine = SyncMachine.TestCase
+
+
+@pytest.mark.parametrize('error_callback', [True, False])
+def test_rollback(error_callback):
+    a = MemoryStorage()
+    b = MemoryStorage()
+    status = {}
+
+    a.items['0'] = ('', Item('UID:0'))
+    b.items['1'] = ('', Item('UID:1'))
+
+    b.upload = b.update = b.delete = action_failure
+
+    if error_callback:
+        errors = []
+
+        sync(a, b, status=status, conflict_resolution='a wins',
+             error_callback=errors.append)
+
+        assert len(errors) == 1
+        assert isinstance(errors[0], ActionIntentionallyFailed)
+
+        assert len(status) == 1
+        assert status['1']
+    else:
+        with pytest.raises(ActionIntentionallyFailed):
+            sync(a, b, status=status, conflict_resolution='a wins')
