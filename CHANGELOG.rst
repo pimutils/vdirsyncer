@@ -9,6 +9,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.14.0
+==============
+
+- ``vdirsyncer sync`` now continues other uploads if one upload failed.  The
+  exit code in such situations is still non-zero.
+
 Version 0.13.1
 ==============
 

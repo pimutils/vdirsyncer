@@ -56,17 +56,32 @@ def sync_collection(wq, collection, general, force_delete):
 
         a = storage_instance_from_config(collection.config_a)
         b = storage_instance_from_config(collection.config_b)
+
+        sync_failed = False
+
+        def error_callback(e):
+            nonlocal sync_failed
+            sync_failed = True
+            handle_cli_error(status_name, e)
+
         sync(
             a, b, status,
             conflict_resolution=pair.conflict_resolution,
-            force_delete=force_delete
+            force_delete=force_delete,
+            error_callback=error_callback
+
         )
+
+        save_status(general['status_path'], pair.name, collection.name,
+                    data_type='items', data=status)
+
+        if sync_failed:
+            raise JobFailed()
+    except JobFailed:
+        raise
     except BaseException:
         handle_cli_error(status_name)
         raise JobFailed()
-
-    save_status(general['status_path'], pair.name, collection.name,
-                data_type='items', data=status)
 
 
 def discover_collections(wq, pair, **kwargs):
