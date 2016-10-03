@@ -1,14 +1,10 @@
 #!/bin/sh
 
-set -ex
+# Do not add -x here, otherwise secrets are leaked
+set -e
 
 SELF_DIR="$(dirname $0)"
 GIT_COMMIT_PATH="$SELF_DIR/../.hypothesis/examples"
-
-if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    echo "Not building on pull request."
-    exit 0
-fi
 
 
 _is_dirty() {
@@ -16,6 +12,7 @@ _is_dirty() {
 }
 
 openssl aes-256-cbc -K $encrypted_a527bcd44658_key -iv $encrypted_a527bcd44658_iv -in $SELF_DIR/id_travis.enc -out /tmp/id_travis -d
+
 chmod 600 /tmp/id_travis
 
 eval `ssh-agent -s`
@@ -27,7 +24,11 @@ if _is_dirty; then
     git config --global user.name "Travis CI for pimutils"
 
     git remote set-url origin git@github.com:pimutils/vdirsyncer
-    git checkout $TRAVIS_BRANCH
+    if [ -n "$TRAVIS_PULL_REQUEST_BRANCH" ]; then
+        git checkout "$TRAVIS_PULL_REQUEST_BRANCH"
+    else
+        git checkout "$TRAVIS_BRANCH"
+    fi
 
     git add -fA $GIT_COMMIT_PATH
     git commit -m "Hypothesis examples, job $TRAVIS_JOB_NUMBER"
