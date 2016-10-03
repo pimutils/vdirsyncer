@@ -17,7 +17,7 @@ import click_threading
 
 from . import cli_logger
 from .. import BUGTRACKER_HOME, DOCS_HOME, exceptions
-from ..sync import IdentConflict, StorageEmpty, SyncConflict
+from ..sync import IdentConflict, PartialSync, StorageEmpty, SyncConflict
 from ..utils import expand_path, get_storage_init_args
 
 try:
@@ -96,6 +96,13 @@ def handle_cli_error(status_name=None, e=None):
                 name=e.empty_storage.instance_name,
                 status_name=status_name
             )
+        )
+    except PartialSync as e:
+        cli_logger.error(
+            '{status_name}: Attempted change on {storage}, which is read-only'
+            '. Set `partial_sync` in your pair section to `ignore` to ignore '
+            'those changes, or `revert` to revert them on the other side.'
+            .format(status_name=status_name, storage=e.storage)
         )
     except SyncConflict as e:
         cli_logger.error(

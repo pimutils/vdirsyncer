@@ -449,3 +449,64 @@ def test_conflict_resolution(tmpdir, runner, resolution, expect_foo,
 
     assert fooitem.read() == expect_foo
     assert baritem.read() == expect_bar
+
+
+@pytest.mark.parametrize('partial_sync', ['error', 'ignore', 'revert', None])
+def test_partial_sync(tmpdir, runner, partial_sync):
+    runner.write_with_general(dedent('''
+    [pair foobar]
+    a = foo
+    b = bar
+    collections = null
+    {partial_sync}
+
+    [storage foo]
+    type = filesystem
+    fileext = .txt
+    path = {base}/foo
+
+    [storage bar]
+    type = filesystem
+    read_only = true
+    fileext = .txt
+    path = {base}/bar
+    '''.format(
+        partial_sync=('partial_sync = {}\n'.format(partial_sync)
+                      if partial_sync else ''),
+        base=str(tmpdir)
+    )))
+
+    foo = tmpdir.mkdir('foo')
+    bar = tmpdir.mkdir('bar')
+
+    foo.join('other.txt').write('UID:other')
+    bar.join('other.txt').write('UID:other')
+
+    baritem = bar.join('lol.txt')
+    baritem.write('UID:lol')
+
+    r = runner.invoke(['discover'])
+    assert not r.exception
+
+    r = runner.invoke(['sync'])
+    assert not r.exception
+
+    fooitem = foo.join('lol.txt')
+    fooitem.remove()
+
+    r = runner.invoke(['sync'])
+
+    if partial_sync == 'error':
+        assert r.exception
+        assert 'Attempted change' in r.output
+    elif partial_sync == 'ignore':
+        assert baritem.exists()
+        r = runner.invoke(['sync'])
+        assert not r.exception
+        assert baritem.exists()
+    else:
+        assert baritem.exists()
+        r = runner.invoke(['sync'])
+        assert not r.exception
+        assert baritem.exists()
+        assert fooitem.exists()
