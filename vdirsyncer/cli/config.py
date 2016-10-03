@@ -254,6 +254,7 @@ class PairConfig(object):
         self.options = options
 
         self._set_conflict_resolution()
+        self._set_partial_sync()
         self._set_collections()
 
     def _set_conflict_resolution(self):
@@ -277,6 +278,11 @@ class PairConfig(object):
             self.conflict_resolution = resolve
         else:
             raise ValueError('Invalid value for `conflict_resolution`.')
+
+    def _set_partial_sync(self):
+        self.partial_sync = self.options.pop('partial_sync', 'revert')
+        if self.partial_sync not in ('ignore', 'revert', 'error'):
+            raise ValueError('Invalid value for `partial_sync`.')
 
     def _set_collections(self):
         try:

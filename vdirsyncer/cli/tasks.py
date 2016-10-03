@@ -68,8 +68,8 @@ def sync_collection(wq, collection, general, force_delete):
             a, b, status,
             conflict_resolution=pair.conflict_resolution,
             force_delete=force_delete,
-            error_callback=error_callback
-
+            error_callback=error_callback,
+            partial_sync=pair.partial_sync
         )
 
         save_status(general['status_path'], pair.name, collection.name,

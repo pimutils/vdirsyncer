@@ -101,6 +101,13 @@ Pair Section
 
   Vdirsyncer never attempts to "automatically merge" the two items.
 
+- ``partial_sync``: Assume A is read-only, B not. If you change items on B,
+  vdirsyncer can't sync the changes to A. What should happen instead?
+
+  - ``error``: An error is shown.
+  - ``ignore``: The change is ignored.
+  - ``revert`` (default): The change is reverted on next sync.
+
 - ``metadata``: Metadata keys that should be synchronized when ``vdirsyncer
   metasync`` is executed. Example::
 
