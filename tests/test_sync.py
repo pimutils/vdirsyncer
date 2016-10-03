@@ -551,7 +551,8 @@ class SyncMachine(RuleBasedStateMachine):
             assert items_a == old_items_a or not a.read_only
             assert items_b == old_items_b or not b.read_only
 
-            assert set(a.items) | set(b.items) == set(status)
+            assert set(a.items) | set(b.items) == set(status) or \
+                partial_sync == 'ignore'
 
 
 TestSyncMachine = SyncMachine.TestCase
