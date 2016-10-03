@@ -18,14 +18,14 @@ Version 0.14.0
 Version 0.13.1
 ==============
 
-*released on 30 October 2016*
+*released on 30 September 2016*
 
 - Fix a bug that would completely break collection discovery.
 
 Version 0.13.0
 ==============
 
-*released on 29 October 2016*
+*released on 29 September 2016*
 
 - Python 2 is no longer supported at all. See :gh:`219`.
 - Config sections are now checked for duplicate names. This also means that you
