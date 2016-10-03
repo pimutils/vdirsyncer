@@ -148,50 +148,6 @@ class _StorageInfo(object):
                 # only etag changed
                 return False
 
-    def upload_full(self, item):
-        if self.storage.read_only:
-            sync_logger.warning('{} is read-only. Skipping update...'
-                                .format(self.storage))
-            href = etag = None
-        else:
-            href, etag = self.storage.upload(item)
-
-        assert item.ident not in self.new_status
-        self.new_status[item.ident] = {
-            'href': href,
-            'hash': item.hash,
-            'etag': etag
-        }
-
-    def update_full(self, item):
-        '''Similar to Storage.update, but automatically takes care of ETags and
-        updating the status.'''
-
-        if self.storage.read_only:
-            sync_logger.warning('{} is read-only. Skipping update...'
-                                .format(self.storage))
-            href = etag = None
-        else:
-            meta = self.new_status[item.ident]
-            href = meta['href']
-            etag = self.storage.update(href, item, meta['etag'])
-            assert isinstance(etag, (bytes, str))
-
-        self.new_status[item.ident] = {
-            'href': href,
-            'hash': item.hash,
-            'etag': etag
-        }
-
-    def delete_full(self, ident):
-        meta = self.new_status[ident]
-        if self.storage.read_only:
-            sync_logger.warning('{} is read-only, skipping deletion...'
-                                .format(self.storage))
-        else:
-            self.storage.delete(meta['href'], meta['etag'])
-        del self.new_status[ident]
-
 
 def _status_migrate(status):
     for ident in list(status):
@@ -299,14 +255,6 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
 
 
 class Action:
-    def __init__(self, ident, source, dest):
-        self.ident = ident
-        self.source = source
-        self.dest = dest
-        self.a = None
-        self.b = None
-        self.conflict_resolution = None
-
     def _run_impl(self):
         raise NotImplementedError()
 
@@ -326,19 +274,55 @@ class Action:
 
 
 class Upload(Action):
+    def __init__(self, item, dest):
+        self.item = item
+        self.ident = item.ident
+        self.dest = dest
+
     def _run_impl(self, a, b, conflict_resolution):
         sync_logger.info(u'Copying (uploading) item {} to {}'
                          .format(self.ident, self.dest.storage))
-        item = self.source.new_status[self.ident]['item']
-        self.dest.upload_full(item)
+
+        if self.dest.storage.read_only:
+            sync_logger.warning('{} is read-only. Skipping update...'
+                                .format(self.dest.storage))
+            href = etag = None
+        else:
+            href, etag = self.dest.storage.upload(self.item)
+
+        assert self.ident not in self.dest.new_status
+        self.dest.new_status[self.ident] = {
+            'href': href,
+            'hash': self.item.hash,
+            'etag': etag
+        }
 
 
 class Update(Action):
+    def __init__(self, item, dest):
+        self.item = item
+        self.ident = item.ident
+        self.dest = dest
+
     def _run_impl(self, a, b, conflict_resolution):
         sync_logger.info(u'Copying (updating) item {} to {}'
                          .format(self.ident, self.dest.storage))
-        source_meta = self.source.new_status[self.ident]
-        self.dest.update_full(source_meta['item'])
+
+        if self.dest.storage.read_only:
+            sync_logger.warning('{} is read-only. Skipping update...'
+                                .format(self.dest.storage))
+            href = etag = None
+        else:
+            meta = self.dest.new_status[self.ident]
+            href = meta['href']
+            etag = self.dest.storage.update(href, self.item, meta['etag'])
+            assert isinstance(etag, (bytes, str))
+
+        self.dest.new_status[self.ident] = {
+            'href': href,
+            'hash': self.item.hash,
+            'etag': etag
+        }
 
 
 class Delete(Action):
@@ -349,7 +333,14 @@ class Delete(Action):
     def _run_impl(self, a, b, conflict_resolution):
         sync_logger.info(u'Deleting item {} from {}'
                          .format(self.ident, self.dest.storage))
-        self.dest.delete_full(self.ident)
+
+        meta = self.dest.new_status[self.ident]
+        if self.dest.storage.read_only:
+            sync_logger.warning('{} is read-only, skipping deletion...'
+                                .format(self.dest.storage))
+        else:
+            self.dest.storage.delete(meta['href'], meta['etag'])
+        del self.dest.new_status[self.ident]
 
 
 class ResolveConflict(Action):
@@ -370,9 +361,9 @@ class ResolveConflict(Action):
         elif callable(conflict_resolution):
             new_item = conflict_resolution(meta_a['item'], meta_b['item'])
             if new_item.hash != meta_a['item'].hash:
-                a.update_full(new_item)
+                Update(new_item, a).run(a, b, conflict_resolution)
             if new_item.hash != meta_b['item'].hash:
-                b.update_full(new_item)
+                Update(new_item, b).run(a, b, conflict_resolution)
         else:
             raise exceptions.UserError('Invalid conflict resolution mode: {!r}'
                                        .format(conflict_resolution))
@@ -381,8 +372,8 @@ class ResolveConflict(Action):
 def _get_actions(a_info, b_info):
     for ident in uniq(itertools.chain(a_info.new_status, b_info.new_status,
                                       a_info.status)):
-        a = ident in a_info.new_status  # item exists in a
-        b = ident in b_info.new_status  # item exists in b
+        a = a_info.new_status.get(ident, None)  # item exists in a
+        b = b_info.new_status.get(ident, None)  # item exists in b
 
         if a and b:
             a_changed = a_info.is_changed(ident)
@@ -393,15 +384,15 @@ def _get_actions(a_info, b_info):
                 yield ResolveConflict(ident)
             elif a_changed and not b_changed:
                 # item was only modified in a
-                yield Update(ident, a_info, b_info)
+                yield Update(a['item'], b_info)
             elif not a_changed and b_changed:
                 # item was only modified in b
-                yield Update(ident, b_info, a_info)
+                yield Update(b['item'], a_info)
         elif a and not b:
             if a_info.is_changed(ident):
                 # was deleted from b but modified on a
                 # OR: new item was created in a
-                yield Upload(ident, a_info, b_info)
+                yield Upload(a['item'], b_info)
             else:
                 # was deleted from b and not modified on a
                 yield Delete(ident, a_info)
@@ -409,7 +400,7 @@ def _get_actions(a_info, b_info):
             if b_info.is_changed(ident):
                 # was deleted from a but modified on b
                 # OR: new item was created in b
-                yield Upload(ident, b_info, a_info)
+                yield Upload(b['item'], a_info)
             else:
                 # was deleted from a and not changed on b
                 yield Delete(ident, b_info)
