@@ -282,8 +282,6 @@ class Action:
                     return
                 else:
                     assert partial_sync == 'revert'
-                    sync_logger.warning('{} is read-only. Reverting change on '
-                                        'next sync.'.format(self.dest.storage))
 
             self._run_impl(a, b)
 
@@ -310,12 +308,12 @@ class Upload(Action):
         self.dest = dest
 
     def _run_impl(self, a, b):
-        sync_logger.info(u'Copying (uploading) item {} to {}'
-                         .format(self.ident, self.dest.storage))
 
         if self.dest.storage.read_only:
             href = etag = None
         else:
+            sync_logger.info(u'Copying (uploading) item {} to {}'
+                             .format(self.ident, self.dest.storage))
             href, etag = self.dest.storage.upload(self.item)
 
         assert self.ident not in self.dest.new_status
@@ -333,12 +331,12 @@ class Update(Action):
         self.dest = dest
 
     def _run_impl(self, a, b):
-        sync_logger.info(u'Copying (updating) item {} to {}'
-                         .format(self.ident, self.dest.storage))
 
         if self.dest.storage.read_only:
             href = etag = None
         else:
+            sync_logger.info(u'Copying (updating) item {} to {}'
+                             .format(self.ident, self.dest.storage))
             meta = self.dest.new_status[self.ident]
             href = meta['href']
             etag = self.dest.storage.update(href, self.item, meta['etag'])
@@ -357,11 +355,10 @@ class Delete(Action):
         self.dest = dest
 
     def _run_impl(self, a, b):
-        sync_logger.info(u'Deleting item {} from {}'
-                         .format(self.ident, self.dest.storage))
-
         meta = self.dest.new_status[self.ident]
         if not self.dest.storage.read_only:
+            sync_logger.info(u'Deleting item {} from {}'
+                             .format(self.ident, self.dest.storage))
             self.dest.storage.delete(meta['href'], meta['etag'])
         del self.dest.new_status[self.ident]
 
