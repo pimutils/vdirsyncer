@@ -9,6 +9,7 @@ two CalDAV servers or two local vdirs.
 The algorithm is based on the blogpost "How OfflineIMAP works" by Edward Z.
 Yang. http://blog.ezyang.com/2012/08/how-offlineimap-works/
 '''
+import contextlib
 import itertools
 import logging
 
@@ -75,6 +76,13 @@ class BothReadOnly(SyncError):
     Both storages are marked as read-only. Synchronization is therefore not
     possible.
     '''
+
+
+class PartialSync(SyncError):
+    '''
+    Attempted change on read-only storage.
+    '''
+    storage = None
 
 
 class _StorageInfo(object):
@@ -182,7 +190,7 @@ def _compress_meta(meta):
 
 
 def sync(storage_a, storage_b, status, conflict_resolution=None,
-         force_delete=False, error_callback=None):
+         force_delete=False, error_callback=None, partial_sync='revert'):
     '''Synchronizes two storages.
 
     :param storage_a: The first storage
@@ -204,6 +212,12 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
         measure.
     :param error_callback: Instead of raising errors when executing actions,
         call the given function with an `Exception` as the only argument.
+    :param partial_sync: What to do when doing sync actions on read-only
+        storages.
+
+        - ``error``: Raise an error.
+        - ``ignore``: Those actions are simply skipped.
+        - ``revert`` (default): Revert changes on other side.
     '''
     if storage_a.read_only and storage_b.read_only:
         raise BothReadOnly()
@@ -215,14 +229,14 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
 
     _status_migrate(status)
 
-    a_info = _StorageInfo(storage_a, dict(
-        (ident, meta_a)
-        for ident, (meta_a, meta_b) in status.items()
-    ))
-    b_info = _StorageInfo(storage_b, dict(
-        (ident, meta_b)
-        for ident, (meta_a, meta_b) in status.items()
-    ))
+    a_status = {}
+    b_status = {}
+    for ident, (meta_a, meta_b) in status.items():
+        a_status[ident] = meta_a
+        b_status[ident] = meta_b
+
+    a_info = _StorageInfo(storage_a, a_status)
+    b_info = _StorageInfo(storage_b, b_status)
 
     a_info.prepare_new_status()
     b_info.prepare_new_status()
@@ -238,7 +252,7 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
     with storage_a.at_once(), storage_b.at_once():
         for action in actions:
             try:
-                action.run(a_info, b_info, conflict_resolution)
+                action.run(a_info, b_info, conflict_resolution, partial_sync)
             except Exception as e:
                 if error_callback:
                     error_callback(e)
@@ -255,12 +269,28 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
 
 
 class Action:
-    def _run_impl(self):
+    def _run_impl(self, a, b):
         raise NotImplementedError()
 
-    def run(self, a, b, conflict_resolution):
+    def run(self, a, b, conflict_resolution, partial_sync):
+        with self.auto_rollback(a, b):
+            if self.dest.storage.read_only:
+                if partial_sync == 'error':
+                    raise PartialSync(self.dest.storage)
+                elif partial_sync == 'ignore':
+                    self.rollback(a, b)
+                    return
+                else:
+                    assert partial_sync == 'revert'
+                    sync_logger.warning('{} is read-only. Reverting change on '
+                                        'next sync.'.format(self.dest.storage))
+
+            self._run_impl(a, b)
+
+    @contextlib.contextmanager
+    def auto_rollback(self, a, b):
         try:
-            return self._run_impl(a, b, conflict_resolution)
+            yield
         except BaseException as e:
             self.rollback(a, b)
             raise e
@@ -279,13 +309,11 @@ class Upload(Action):
         self.ident = item.ident
         self.dest = dest
 
-    def _run_impl(self, a, b, conflict_resolution):
+    def _run_impl(self, a, b):
         sync_logger.info(u'Copying (uploading) item {} to {}'
                          .format(self.ident, self.dest.storage))
 
         if self.dest.storage.read_only:
-            sync_logger.warning('{} is read-only. Skipping update...'
-                                .format(self.dest.storage))
             href = etag = None
         else:
             href, etag = self.dest.storage.upload(self.item)
@@ -304,13 +332,11 @@ class Update(Action):
         self.ident = item.ident
         self.dest = dest
 
-    def _run_impl(self, a, b, conflict_resolution):
+    def _run_impl(self, a, b):
         sync_logger.info(u'Copying (updating) item {} to {}'
                          .format(self.ident, self.dest.storage))
 
         if self.dest.storage.read_only:
-            sync_logger.warning('{} is read-only. Skipping update...'
-                                .format(self.dest.storage))
             href = etag = None
         else:
             meta = self.dest.new_status[self.ident]
@@ -330,15 +356,12 @@ class Delete(Action):
         self.ident = ident
         self.dest = dest
 
-    def _run_impl(self, a, b, conflict_resolution):
+    def _run_impl(self, a, b):
         sync_logger.info(u'Deleting item {} from {}'
                          .format(self.ident, self.dest.storage))
 
         meta = self.dest.new_status[self.ident]
-        if self.dest.storage.read_only:
-            sync_logger.warning('{} is read-only, skipping deletion...'
-                                .format(self.dest.storage))
-        else:
+        if not self.dest.storage.read_only:
             self.dest.storage.delete(meta['href'], meta['etag'])
         del self.dest.new_status[self.ident]
 
@@ -347,26 +370,30 @@ class ResolveConflict(Action):
     def __init__(self, ident):
         self.ident = ident
 
-    def _run_impl(self, a, b, conflict_resolution):
-        sync_logger.info(u'Doing conflict resolution for item {}...'
-                         .format(self.ident))
-        meta_a = a.new_status[self.ident]
-        meta_b = b.new_status[self.ident]
+    def run(self, a, b, conflict_resolution, partial_sync):
+        with self.auto_rollback(a, b):
+            sync_logger.info(u'Doing conflict resolution for item {}...'
+                             .format(self.ident))
+            meta_a = a.new_status[self.ident]
+            meta_b = b.new_status[self.ident]
 
-        if meta_a['item'].hash == meta_b['item'].hash:
-            sync_logger.info(u'...same content on both sides.')
-        elif conflict_resolution is None:
-            raise SyncConflict(ident=self.ident, href_a=meta_a['href'],
-                               href_b=meta_b['href'])
-        elif callable(conflict_resolution):
-            new_item = conflict_resolution(meta_a['item'], meta_b['item'])
-            if new_item.hash != meta_a['item'].hash:
-                Update(new_item, a).run(a, b, conflict_resolution)
-            if new_item.hash != meta_b['item'].hash:
-                Update(new_item, b).run(a, b, conflict_resolution)
-        else:
-            raise exceptions.UserError('Invalid conflict resolution mode: {!r}'
-                                       .format(conflict_resolution))
+            if meta_a['item'].hash == meta_b['item'].hash:
+                sync_logger.info(u'...same content on both sides.')
+            elif conflict_resolution is None:
+                raise SyncConflict(ident=self.ident, href_a=meta_a['href'],
+                                   href_b=meta_b['href'])
+            elif callable(conflict_resolution):
+                new_item = conflict_resolution(meta_a['item'], meta_b['item'])
+                if new_item.hash != meta_a['item'].hash:
+                    Update(new_item, a).run(a, b, conflict_resolution,
+                                            partial_sync)
+                if new_item.hash != meta_b['item'].hash:
+                    Update(new_item, b).run(a, b, conflict_resolution,
+                                            partial_sync)
+            else:
+                raise exceptions.UserError(
+                    'Invalid conflict resolution mode: {!r}'
+                    .format(conflict_resolution))
 
 
 def _get_actions(a_info, b_info):

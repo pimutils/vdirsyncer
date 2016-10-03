@@ -11,8 +11,8 @@ import pytest
 import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.memory import MemoryStorage, _random_string
-from vdirsyncer.sync import BothReadOnly, IdentConflict, StorageEmpty, \
-    SyncConflict, sync
+from vdirsyncer.sync import BothReadOnly, IdentConflict, PartialSync, \
+    StorageEmpty, SyncConflict, sync
 
 from . import assert_item_equals, blow_up, uid_strategy
 
@@ -76,6 +76,24 @@ def test_read_only_and_prefetch():
     sync(a, b, status, force_delete=True)
 
     assert list(a.list()) == list(b.list()) == []
+
+
+def test_partial_sync_ignore():
+    a = MemoryStorage()
+    b = MemoryStorage()
+    b.read_only = True
+
+    status = {}
+    item1 = Item(u'UID:1\nhaha')
+    item2 = Item(u'UID:2\nhoho')
+    meta1 = a.upload(item1)
+    meta2 = a.upload(item2)
+
+    for _ in (1, 2):
+        sync(a, b, status, force_delete=True, partial_sync='ignore')
+
+    assert set(a.list()) == {meta1, meta2}
+    assert not list(b.list())
 
 
 def test_upload_and_update():
@@ -323,9 +341,9 @@ def test_readonly():
     with pytest.raises(exceptions.ReadOnlyError):
         b.upload(Item(u'UID:3'))
 
-    sync(a, b, status)
+    sync(a, b, status, partial_sync='revert')
     assert len(status) == 2 and a.has(href_a) and not b.has(href_a)
-    sync(a, b, status)
+    sync(a, b, status, partial_sync='revert')
     assert len(status) == 1 and not a.has(href_a) and not b.has(href_a)
 
 
@@ -429,7 +447,7 @@ class SyncMachine(RuleBasedStateMachine):
 
     @staticmethod
     def _get_items(storage):
-        return sorted(item.raw for etag, item in storage.items.values())
+        return set(item.raw for etag, item in storage.items.values())
 
     @rule(target=Storage,
           read_only=st.booleans(),
@@ -480,10 +498,13 @@ class SyncMachine(RuleBasedStateMachine):
         a=Storage, b=Storage,
         force_delete=st.booleans(),
         conflict_resolution=st.one_of((st.just('a wins'), st.just('b wins'))),
-        with_error_callback=st.booleans()
+        with_error_callback=st.booleans(),
+        partial_sync=st.one_of((
+            st.just('ignore'), st.just('revert'), st.just('error')
+        ))
     )
     def sync(self, status, a, b, force_delete, conflict_resolution,
-             with_error_callback):
+             with_error_callback, partial_sync):
         assume(a is not b)
         old_items_a = self._get_items(a)
         old_items_b = self._get_items(b)
@@ -505,10 +526,13 @@ class SyncMachine(RuleBasedStateMachine):
                 sync(a, b, status,
                      force_delete=force_delete,
                      conflict_resolution=conflict_resolution,
-                     error_callback=error_callback)
+                     error_callback=error_callback,
+                     partial_sync=partial_sync)
 
             for e in errors:
                 raise e
+        except PartialSync:
+            assert partial_sync == 'error'
         except ActionIntentionallyFailed:
             pass
         except BothReadOnly:
@@ -523,7 +547,7 @@ class SyncMachine(RuleBasedStateMachine):
             items_a = self._get_items(a)
             items_b = self._get_items(b)
 
-            assert items_a == items_b
+            assert items_a == items_b or partial_sync == 'ignore'
             assert items_a == old_items_a or not a.read_only
             assert items_b == old_items_b or not b.read_only
 
