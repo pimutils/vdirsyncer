@@ -6,6 +6,10 @@ set -e
 SELF_DIR="$(dirname $0)"
 GIT_COMMIT_PATH="$SELF_DIR/../.hypothesis/examples"
 
+if [ -z "$encrypted_a527bcd44658_key" ]; then
+    echo "Not executing on third-party PRs"
+    exit 0
+fi
 
 _is_dirty() {
     (! git diff-index --quiet HEAD $GIT_COMMIT_PATH) || [ "$(git status --porcelain $GIT_COMMIT_PATH | tail -n1)" != "" ]
