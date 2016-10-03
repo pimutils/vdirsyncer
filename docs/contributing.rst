@@ -71,7 +71,10 @@ For many patches, it might suffice to just let Travis run the tests. However,
 Travis is slow, so you might want to run them locally too. For this, set up a
 virtualenv_ and run this inside of it::
 
-    make install-dev  # install vdirsyncer from the repo into the virtualenv
+    # install vdirsyncer from the repo into the virtualenv. Prerequisite for
+    # most other tasks.
+    make install-dev
+
     make install-test  # install test dependencies
     make install-style  # install dependencies for stylechecking
     make install-docs  # install dependencies for building documentation
