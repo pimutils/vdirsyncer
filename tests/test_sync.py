@@ -14,7 +14,7 @@ from vdirsyncer.storage.memory import MemoryStorage, _random_string
 from vdirsyncer.sync import BothReadOnly, IdentConflict, PartialSync, \
     StorageEmpty, SyncConflict, sync
 
-from . import assert_item_equals, blow_up, uid_strategy
+from . import blow_up, uid_strategy
 
 
 def empty_storage(x):
@@ -31,8 +31,8 @@ def test_irrelevant_status():
     status = {'1': ('1', 1234, '1.ics', 2345)}
     sync(a, b, status)
     assert not status
-    assert empty_storage(a)
-    assert empty_storage(b)
+    assert not items(a)
+    assert not items(b)
 
 
 def test_missing_status():
@@ -40,12 +40,11 @@ def test_missing_status():
     b = MemoryStorage()
     status = {}
     item = Item(u'asdf')
-    href_a, _ = a.upload(item)
-    href_b, _ = b.upload(item)
+    a.upload(item)
+    b.upload(item)
     sync(a, b, status)
     assert len(status) == 1
-    assert a.has(href_a)
-    assert b.has(href_b)
+    assert items(a) == items(b) == {item.raw}
 
 
 def test_missing_status_and_different_items():
@@ -61,8 +60,7 @@ def test_missing_status_and_different_items():
         sync(a, b, status)
     assert not status
     sync(a, b, status, conflict_resolution='a wins')
-    assert_item_equals(item1, b.get('1')[0])
-    assert_item_equals(item1, a.get('1')[0])
+    assert items(a) == items(b) == {item1.raw}
 
 
 def test_read_only_and_prefetch():
@@ -79,7 +77,7 @@ def test_read_only_and_prefetch():
     sync(a, b, status, force_delete=True)
     sync(a, b, status, force_delete=True)
 
-    assert list(a.list()) == list(b.list()) == []
+    assert not items(a) and not items(b)
 
 
 def test_partial_sync_ignore():
@@ -135,22 +133,22 @@ def test_upload_and_update():
     item = Item(u'UID:1')  # new item 1 in a
     a.upload(item)
     sync(a, b, status)
-    assert_item_equals(b.get('1.b')[0], item)
+    assert items(b) == items(a) == {item.raw}
 
     item = Item(u'UID:1\nASDF:YES')  # update of item 1 in b
     b.update('1.b', item, b.get('1.b')[1])
     sync(a, b, status)
-    assert_item_equals(a.get('1.a')[0], item)
+    assert items(b) == items(a) == {item.raw}
 
     item2 = Item(u'UID:2')  # new item 2 in b
     b.upload(item2)
     sync(a, b, status)
-    assert_item_equals(a.get('2.a')[0], item2)
+    assert items(b) == items(a) == {item.raw, item2.raw}
 
     item2 = Item(u'UID:2\nASDF:YES')  # update of item 2 in a
     a.update('2.a', item2, a.get('2.a')[1])
     sync(a, b, status)
-    assert_item_equals(b.get('2.b')[0], item2)
+    assert items(b) == items(a) == {item.raw, item2.raw}
 
 
 def test_deletion():
@@ -160,18 +158,19 @@ def test_deletion():
 
     item = Item(u'UID:1')
     a.upload(item)
-    a.upload(Item(u'UID:2'))
+    item2 = Item(u'UID:2')
+    a.upload(item2)
     sync(a, b, status)
     b.delete('1.b', b.get('1.b')[1])
     sync(a, b, status)
-    assert not a.has('1.a') and not b.has('1.b')
+    assert items(a) == items(b) == {item2.raw}
 
     a.upload(item)
     sync(a, b, status)
-    assert a.has('1.a') and b.has('1.b')
+    assert items(a) == items(b) == {item.raw, item2.raw}
     a.delete('1.a', a.get('1.a')[1])
     sync(a, b, status)
-    assert not a.has('1.a') and not b.has('1.b')
+    assert items(a) == items(b) == {item2.raw}
 
 
 def test_insert_hash():
@@ -208,14 +207,14 @@ def test_already_synced():
             'etag': b.get('1.b')[1]
         })
     }
-    old_status = dict(status)
+    old_status = deepcopy(status)
     a.update = b.update = a.upload = b.upload = \
         lambda *a, **kw: pytest.fail('Method shouldn\'t have been called.')
 
     for i in (1, 2):
         sync(a, b, status)
         assert status == old_status
-        assert a.has('1.a') and b.has('1.b')
+        assert items(a) == items(b) == {item.raw}
 
 
 @pytest.mark.parametrize('winning_storage', 'ab')
@@ -228,17 +227,16 @@ def test_conflict_resolution_both_etags_new(winning_storage):
     status = {}
     sync(a, b, status)
     assert status
-    a.update(href_a, Item(u'UID:1\nitem a'), etag_a)
-    b.update(href_b, Item(u'UID:1\nitem b'), etag_b)
+    item_a = Item(u'UID:1\nitem a')
+    item_b = Item(u'UID:1\nitem b')
+    a.update(href_a, item_a, etag_a)
+    b.update(href_b, item_b, etag_b)
     with pytest.raises(SyncConflict):
         sync(a, b, status)
     sync(a, b, status, conflict_resolution='{} wins'.format(winning_storage))
-    item_a, _ = a.get(href_a)
-    item_b, _ = b.get(href_b)
-    assert_item_equals(item_a, item_b)
-    n = item_a.raw.splitlines()
-    assert u'UID:1' in n
-    assert u'item {}'.format(winning_storage) in n
+    assert items(a) == items(b) == {
+        item_a.raw if winning_storage == 'a' else item_b.raw
+    }
 
 
 def test_updated_and_deleted():
@@ -250,10 +248,11 @@ def test_updated_and_deleted():
 
     (href_b, etag_b), = b.list()
     b.delete(href_b, etag_b)
-    a.update(href_a, Item(u'UID:1\nupdated'), etag_a)
+    updated = Item(u'UID:1\nupdated')
+    a.update(href_a, updated, etag_a)
     sync(a, b, status, force_delete=True)
 
-    assert len(list(a.list())) == len(list(b.list())) == 1
+    assert items(a) == items(b) == {updated.raw}
 
 
 def test_conflict_resolution_invalid_mode():
@@ -329,15 +328,11 @@ def test_empty_storage_dataloss():
 def test_no_uids():
     a = MemoryStorage()
     b = MemoryStorage()
-    href_a, _ = a.upload(Item(u'ASDF'))
-    href_b, _ = b.upload(Item(u'FOOBAR'))
+    a.upload(Item(u'ASDF'))
+    b.upload(Item(u'FOOBAR'))
     status = {}
     sync(a, b, status)
-
-    a_items = set(a.get(href)[0].raw for href, etag in a.list())
-    b_items = set(b.get(href)[0].raw for href, etag in b.list())
-
-    assert a_items == b_items == {u'ASDF', u'FOOBAR'}
+    assert items(a) == items(b) == {u'ASDF', u'FOOBAR'}
 
 
 def test_changed_uids():
@@ -419,7 +414,7 @@ def test_moved_href():
 
     sync(a, b, status)
     assert len(status) == 1
-    assert len(list(a.list())) == len(list(b.list())) == 1
+    assert items(a) == items(b) == {'UID:haha'}
     assert status['haha'][1]['href'] == 'lol'
     old_status = deepcopy(status)
 
@@ -428,7 +423,7 @@ def test_moved_href():
 
     sync(a, b, status)
     assert old_status == status
-    assert len(list(a.list())) == len(list(b.list())) == 1
+    assert items(a) == items(b) == {'UID:haha'}
 
 
 def test_bogus_etag_change():
@@ -452,8 +447,8 @@ def test_bogus_etag_change():
     b.delete = b.update = b.upload = blow_up
 
     sync(a, b, status)
-    assert len(status) == len(list(a.list())) == len(list(b.list())) == 1
-    assert a.get(href_a)[0].raw == u'UID:ASDASD\nACTUALCHANGE:YES'
+    assert len(status) == 1
+    assert items(a) == items(b) == {u'UID:ASDASD\nACTUALCHANGE:YES'}
 
 
 def test_unicode_hrefs():
@@ -475,10 +470,6 @@ def action_failure(*a, **kw):
 class SyncMachine(RuleBasedStateMachine):
     Status = Bundle('status')
     Storage = Bundle('storage')
-
-    @staticmethod
-    def _get_items(storage):
-        return set(item.raw for etag, item in storage.items.values())
 
     @rule(target=Storage,
           read_only=st.booleans(),
@@ -537,8 +528,8 @@ class SyncMachine(RuleBasedStateMachine):
     def sync(self, status, a, b, force_delete, conflict_resolution,
              with_error_callback, partial_sync):
         assume(a is not b)
-        old_items_a = self._get_items(a)
-        old_items_b = self._get_items(b)
+        old_items_a = items(a)
+        old_items_b = items(b)
 
         a.instance_name = 'a'
         b.instance_name = 'b'
@@ -575,8 +566,8 @@ class SyncMachine(RuleBasedStateMachine):
             else:
                 assert not list(a.list()) or not list(b.list())
         else:
-            items_a = self._get_items(a)
-            items_b = self._get_items(b)
+            items_a = items(a)
+            items_b = items(b)
 
             assert items_a == items_b or partial_sync == 'ignore'
             assert items_a == old_items_a or not a.read_only
