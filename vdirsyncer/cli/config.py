@@ -252,6 +252,9 @@ class PairConfig(object):
         self.name_a = options.pop('a')
         self.name_b = options.pop('b')
 
+        self.config_a = self._config.get_storage_args(self.name_a)
+        self.config_b = self._config.get_storage_args(self.name_b)
+
         self._set_conflict_resolution(options)
         self._set_partial_sync(options)
         self._set_collections(options)
@@ -259,9 +262,6 @@ class PairConfig(object):
 
         if options:
             raise ValueError('Unknown options: {}'.format(', '.join(options)))
-
-        self.config_a = self._config.get_storage_args(self.name_a)
-        self.config_b = self._config.get_storage_args(self.name_b)
 
     def _set_conflict_resolution(self, options):
         conflict_resolution = options.pop('conflict_resolution', None)
@@ -286,9 +286,20 @@ class PairConfig(object):
             raise ValueError('Invalid value for `conflict_resolution`.')
 
     def _set_partial_sync(self, options):
-        self.partial_sync = options.pop('partial_sync', 'revert')
-        if self.partial_sync not in ('ignore', 'revert', 'error'):
+        partial_sync = options.pop('partial_sync', None)
+        if partial_sync is not None and \
+           not self.config_a.get('read_only', False) and \
+           not self.config_b.get('read_only', False):
+            raise ValueError('`partial_sync` is only effective if one storage '
+                             'is read-only.')
+
+        if partial_sync is None:
+            partial_sync = 'revert'
+
+        if partial_sync not in ('ignore', 'revert', 'error'):
             raise ValueError('Invalid value for `partial_sync`.')
+
+        self.partial_sync = partial_sync
 
     def _set_collections(self, options):
         try:
