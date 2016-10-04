@@ -96,6 +96,33 @@ def test_partial_sync_ignore():
     assert not list(b.list())
 
 
+def test_ignore_partial_sync():
+    def items(s):
+        return set(x[1].raw for x in s.items.values())
+
+    a = MemoryStorage()
+    b = MemoryStorage()
+    status = {}
+
+    href, etag = a.upload(Item('UID:0'))
+    a.read_only = True
+
+    sync(a, b, status, partial_sync='ignore', force_delete=True)
+    assert items(b) == items(a) == {'UID:0'}
+
+    b.items.clear()
+    sync(a, b, status, partial_sync='ignore', force_delete=True)
+    sync(a, b, status, partial_sync='ignore', force_delete=True)
+    assert items(a) == {'UID:0'}
+    assert not b.items
+
+    a.read_only = False
+    a.update(href, Item('UID:0\nupdated'), etag)
+    a.read_only = True
+    sync(a, b, status, partial_sync='ignore', force_delete=True)
+    assert items(b) == items(a) == {'UID:0\nupdated'}
+
+
 def test_upload_and_update():
     a = MemoryStorage(fileext='.a')
     b = MemoryStorage(fileext='.b')
