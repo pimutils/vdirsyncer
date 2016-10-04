@@ -96,7 +96,7 @@ def test_partial_sync_ignore():
     assert not list(b.list())
 
 
-def test_ignore_partial_sync():
+def test_partial_sync_ignore2():
     def items(s):
         return set(x[1].raw for x in s.items.values())
 
