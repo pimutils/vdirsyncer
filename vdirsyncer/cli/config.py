@@ -251,14 +251,20 @@ class PairConfig(object):
         self.name = name
         self.name_a = options.pop('a')
         self.name_b = options.pop('b')
-        self.options = options
 
-        self._set_conflict_resolution()
-        self._set_partial_sync()
-        self._set_collections()
+        self._set_conflict_resolution(options)
+        self._set_partial_sync(options)
+        self._set_collections(options)
+        self.metadata = options.pop('metadata', None) or ()
 
-    def _set_conflict_resolution(self):
-        conflict_resolution = self.options.pop('conflict_resolution', None)
+        if options:
+            raise ValueError('Unknown options: {}'.format(', '.join(options)))
+
+        self.config_a = self._config.get_storage_args(self.name_a)
+        self.config_b = self._config.get_storage_args(self.name_b)
+
+    def _set_conflict_resolution(self, options):
+        conflict_resolution = options.pop('conflict_resolution', None)
         if conflict_resolution in (None, 'a wins', 'b wins'):
             self.conflict_resolution = conflict_resolution
         elif isinstance(conflict_resolution, list) and \
@@ -279,14 +285,14 @@ class PairConfig(object):
         else:
             raise ValueError('Invalid value for `conflict_resolution`.')
 
-    def _set_partial_sync(self):
-        self.partial_sync = self.options.pop('partial_sync', 'revert')
+    def _set_partial_sync(self, options):
+        self.partial_sync = options.pop('partial_sync', 'revert')
         if self.partial_sync not in ('ignore', 'revert', 'error'):
             raise ValueError('Invalid value for `partial_sync`.')
 
-    def _set_collections(self):
+    def _set_collections(self, options):
         try:
-            collections = self.options['collections']
+            self.collections = options.pop('collections')
         except KeyError:
             raise ValueError(
                 'collections parameter missing.\n\n'
@@ -294,10 +300,7 @@ class PairConfig(object):
                 'Set `collections = null` explicitly in your pair config.'
             )
         else:
-            _validate_collections_param(collections)
-
-        self.config_a = self._config.get_storage_args(self.name_a)
-        self.config_b = self._config.get_storage_args(self.name_b)
+            _validate_collections_param(self.collections)
 
 
 class CollectionConfig(object):

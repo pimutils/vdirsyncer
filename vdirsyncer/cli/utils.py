@@ -176,7 +176,7 @@ def _get_collections_cache_key(pair):
     m = hashlib.sha256()
     j = json.dumps([
         DISCOVERY_CACHE_VERSION,
-        pair.options.get('collections', None),
+        pair.collections,
         pair.config_a,
         pair.config_b,
     ], sort_keys=True)
@@ -325,7 +325,7 @@ def _print_collections(base_config, discovered):
 def _collections_for_pair_impl(status_path, pair, list_collections=False):
     handled_collections = set()
 
-    shortcuts = pair.options['collections']
+    shortcuts = pair.collections
     if shortcuts is None:
         shortcuts = [None]
 

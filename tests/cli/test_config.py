@@ -45,8 +45,6 @@ def test_read_config(read_config):
         [pair bob]
         a = bob_a
         b = bob_b
-        foo = bar
-        bam = true
         collections = null
 
         [storage bob_a]
@@ -64,7 +62,7 @@ def test_read_config(read_config):
 
     assert set(c.pairs) == {'bob'}
     bob = c.pairs['bob']
-    assert bob.options == {'bam': True, 'foo': 'bar', 'collections': None}
+    assert bob.collections is None
 
     assert c.storages == {
         'bob_a': {'type': 'filesystem', 'path': '/tmp/contacts/', 'fileext':

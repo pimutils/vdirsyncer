@@ -139,8 +139,8 @@ def metasync_collection(wq, collection, general):
 
         metasync(
             a, b, status,
-            conflict_resolution=pair.options.get('conflict_resolution', None),
-            keys=pair.options.get('metadata', None) or ()
+            conflict_resolution=pair.conflict_resolution,
+            keys=pair.metadata
         )
     except BaseException:
         handle_cli_error(status_name)
