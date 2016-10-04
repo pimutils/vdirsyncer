@@ -289,13 +289,13 @@ class PairConfig(object):
     def _set_partial_sync(self, options):
         partial_sync = options.pop('partial_sync', None)
         if partial_sync is not None:
-           cls_a, _  = storage_class_from_config(self.config_a)
-           cls_b, _  = storage_class_from_config(self.config_b)
+            cls_a, _ = storage_class_from_config(self.config_a)
+            cls_b, _ = storage_class_from_config(self.config_b)
 
-           if not cls_a.read_only and \
-              not self.config_a.get('read_only', False) and \
-              not cls_b.read_only and \
-              not self.config_b.get('read_only', False):
+            if not cls_a.read_only and \
+               not self.config_a.get('read_only', False) and \
+               not cls_b.read_only and \
+               not self.config_b.get('read_only', False):
                 raise ValueError('`partial_sync` is only effective if one '
                                  'storage is read-only.')
 
