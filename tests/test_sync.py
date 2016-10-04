@@ -21,6 +21,10 @@ def empty_storage(x):
     return list(x.list()) == []
 
 
+def items(s):
+    return set(x[1].raw for x in s.items.values())
+
+
 def test_irrelevant_status():
     a = MemoryStorage()
     b = MemoryStorage()
@@ -81,25 +85,25 @@ def test_read_only_and_prefetch():
 def test_partial_sync_ignore():
     a = MemoryStorage()
     b = MemoryStorage()
+    status = {}
+
+    item0 = Item('UID:0\nhehe')
+    a.upload(item0)
+    b.upload(item0)
+
     b.read_only = True
 
-    status = {}
-    item1 = Item(u'UID:1\nhaha')
-    item2 = Item(u'UID:2\nhoho')
-    meta1 = a.upload(item1)
-    meta2 = a.upload(item2)
+    item1 = Item('UID:1\nhaha')
+    a.upload(item1)
 
-    for _ in (1, 2):
-        sync(a, b, status, force_delete=True, partial_sync='ignore')
+    sync(a, b, status, partial_sync='ignore')
+    sync(a, b, status, partial_sync='ignore')
 
-    assert set(a.list()) == {meta1, meta2}
-    assert not list(b.list())
+    assert items(a) == {item0.raw, item1.raw}
+    assert items(b) == {item0.raw}
 
 
 def test_partial_sync_ignore2():
-    def items(s):
-        return set(x[1].raw for x in s.items.values())
-
     a = MemoryStorage()
     b = MemoryStorage()
     status = {}
