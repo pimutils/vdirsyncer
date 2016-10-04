@@ -28,12 +28,18 @@ def metasync(storage_a, storage_b, status, keys, conflict_resolution=None):
     def _resolve_conflict():
         if a == b:
             status[key] = a
-        elif conflict_resolution is None:
-            raise MetaSyncConflict(key=key)
         elif conflict_resolution == 'a wins':
             _a_to_b()
         elif conflict_resolution == 'b wins':
             _b_to_a()
+        else:
+            if callable(conflict_resolution):
+                logger.warning('Custom commands don\'t work on metasync.')
+            elif conflict_resolution is not None:
+                raise exceptions.UserError(
+                    'Invalid conflict resolution setting.'
+                )
+            raise MetaSyncConflict(key)
 
     for key in keys:
         a = storage_a.get_meta(key)
