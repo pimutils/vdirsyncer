@@ -38,12 +38,12 @@ cfg['script'] = [script("""
 matrix = []
 cfg['matrix'] = {'include': matrix}
 
-for python in ("3.3", "3.4", "3.5"):
-    matrix.append({
-        'python': python,
-        'env': 'BUILD=style BUILD_PRS=true'
-    })
+matrix.append({
+    'python': "3.5",
+    'env': 'BUILD=style BUILD_PRS=true'
+})
 
+for python in ("3.3", "3.4", "3.5"):
     if python == "3.5":
         dav_servers = ("radicale", "owncloud", "nextcloud", "baikal",
                        "davical")

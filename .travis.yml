@@ -16,39 +16,31 @@
     "include": [
       {
         "env": "BUILD=style BUILD_PRS=true",
-        "python": "3.3"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "3.3"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=false",
-        "python": "3.3"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=false",
-        "python": "3.3"
-      },
-      {
-        "env": "BUILD=style BUILD_PRS=true",
-        "python": "3.4"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "3.4"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=false",
-        "python": "3.4"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=false",
-        "python": "3.4"
-      },
-      {
-        "env": "BUILD=style BUILD_PRS=true",
         "python": "3.5"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=false",
+        "python": "3.3"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=false",
+        "python": "3.3"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=false",
+        "python": "3.3"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=false",
+        "python": "3.4"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=false",
+        "python": "3.4"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=false",
+        "python": "3.4"
       },
       {
         "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=devel BUILD_PRS=false",
