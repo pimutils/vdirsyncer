@@ -16,7 +16,7 @@ none of which have to know or worry about syncing to a server.
 It aims to be for CalDAV and CardDAV what `OfflineIMAP
 <http://offlineimap.org/>`_ is for IMAP.
 
-.. image:: https://travis-ci.org/pimutils/vdirsyncer.png?branch=master
+.. image:: https://travis-ci.org/pimutils/vdirsyncer.svg?branch=master
     :target: https://travis-ci.org/pimutils/vdirsyncer
 
 .. image:: https://codecov.io/github/pimutils/vdirsyncer/coverage.svg?branch=master
