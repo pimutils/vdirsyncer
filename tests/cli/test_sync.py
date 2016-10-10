@@ -510,3 +510,63 @@ def test_partial_sync(tmpdir, runner, partial_sync):
         assert not r.exception
         assert baritem.exists()
         assert fooitem.exists()
+
+
+def test_fetch_only_necessary_params(tmpdir, runner):
+    fetched_file = tmpdir.join('fetched_flag')
+    fetch_script = tmpdir.join('fetch_script')
+    fetch_script.write(dedent('''
+    set -e
+    touch "{}"
+    echo ".txt"
+    '''.format(str(fetched_file))))
+
+    runner.write_with_general(dedent('''
+    [pair foobar]
+    a = foo
+    b = bar
+    collections = null
+
+    [pair bambar]
+    a = bam
+    b = bar
+    collections = null
+
+    [storage foo]
+    type = filesystem
+    path = {path}
+    fileext = .txt
+
+    [storage bar]
+    type = filesystem
+    path = {path}
+    fileext = .txt
+
+    [storage bam]
+    type = filesystem
+    path = {path}
+    fileext.fetch = ["command", "sh", "{script}"]
+    '''.format(path=str(tmpdir.mkdir('bogus')), script=str(fetch_script))))
+
+    def fetched():
+        try:
+            fetched_file.remove()
+            return True
+        except Exception:
+            return False
+
+    r = runner.invoke(['discover'])
+    assert not r.exception
+    assert fetched()
+
+    r = runner.invoke(['sync', 'foobar'])
+    assert not r.exception
+    assert not fetched()
+
+    r = runner.invoke(['sync'])
+    assert not r.exception
+    assert fetched()
+
+    r = runner.invoke(['sync', 'bambar'])
+    assert not r.exception
+    assert fetched()

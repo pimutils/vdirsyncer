@@ -9,7 +9,7 @@ from . import cli_logger
 from .fetchparams import expand_fetch_params
 from .utils import storage_class_from_config
 from .. import PROJECT_HOME, exceptions
-from ..utils import expand_path
+from ..utils import cached_property, expand_path
 
 try:
     from ConfigParser import RawConfigParser
@@ -253,21 +253,30 @@ class PairConfig(object):
         self.name_a = options.pop('a')
         self.name_b = options.pop('b')
 
-        self.config_a = self._config.get_storage_args(self.name_a)
-        self.config_b = self._config.get_storage_args(self.name_b)
-
-        self._set_conflict_resolution(options)
-        self._set_partial_sync(options)
-        self._set_collections(options)
+        self._partial_sync = options.pop('partial_sync', None)
         self.metadata = options.pop('metadata', None) or ()
+
+        self.conflict_resolution = \
+            self._process_conflict_resolution_param(
+                options.pop('conflict_resolution', None))
+
+        try:
+            self.collections = options.pop('collections')
+        except KeyError:
+            raise ValueError(
+                'collections parameter missing.\n\n'
+                'As of 0.9.0 this parameter has no default anymore. '
+                'Set `collections = null` explicitly in your pair config.'
+            )
+        else:
+            _validate_collections_param(self.collections)
 
         if options:
             raise ValueError('Unknown options: {}'.format(', '.join(options)))
 
-    def _set_conflict_resolution(self, options):
-        conflict_resolution = options.pop('conflict_resolution', None)
+    def _process_conflict_resolution_param(self, conflict_resolution):
         if conflict_resolution in (None, 'a wins', 'b wins'):
-            self.conflict_resolution = conflict_resolution
+            return conflict_resolution
         elif isinstance(conflict_resolution, list) and \
                 len(conflict_resolution) > 1 and \
                 conflict_resolution[0] == 'command':
@@ -282,12 +291,25 @@ class PairConfig(object):
                 ui_worker = get_ui_worker()
                 return ui_worker.put(inner)
 
-            self.conflict_resolution = resolve
+            return resolve
         else:
             raise ValueError('Invalid value for `conflict_resolution`.')
 
-    def _set_partial_sync(self, options):
-        partial_sync = options.pop('partial_sync', None)
+    # The following parameters are lazily evaluated because evaluating
+    # self.config_a would expand all `x.fetch` parameters. This is costly and
+    # unnecessary if the pair is not actually synced.
+
+    @cached_property
+    def config_a(self):
+        return self._config.get_storage_args(self.name_a)
+
+    @cached_property
+    def config_b(self):
+        return self._config.get_storage_args(self.name_b)
+
+    @cached_property
+    def partial_sync(self):
+        partial_sync = self._partial_sync
         if partial_sync is not None:
             cls_a, _ = storage_class_from_config(self.config_a)
             cls_b, _ = storage_class_from_config(self.config_b)
@@ -305,19 +327,7 @@ class PairConfig(object):
         if partial_sync not in ('ignore', 'revert', 'error'):
             raise ValueError('Invalid value for `partial_sync`.')
 
-        self.partial_sync = partial_sync
-
-    def _set_collections(self, options):
-        try:
-            self.collections = options.pop('collections')
-        except KeyError:
-            raise ValueError(
-                'collections parameter missing.\n\n'
-                'As of 0.9.0 this parameter has no default anymore. '
-                'Set `collections = null` explicitly in your pair config.'
-            )
-        else:
-            _validate_collections_param(self.collections)
+        return partial_sync
 
 
 class CollectionConfig(object):
