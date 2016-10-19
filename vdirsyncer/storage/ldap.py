@@ -21,15 +21,15 @@ class LDAPStorage(Storage):
     fileext = '.vcf'
     item_mimetype = 'text/vcard'
 
-    def __init__(self, url='ldap://localhost', search_base=None, bind=None, password=None,
+    def __init__(self, url='ldap://localhost', search_base=None, bind=None,
+                 password=None,
                  filter='(&(objectCategory=person)(objectClass=user)'
                         '(sn=*)(givenName=*))',
-                 conn=None,
-                 **kwargs):
+                 _conn=None, **kwargs):
         super(LDAPStorage, self).__init__(**kwargs)
         self.search_base = search_base
         self.filter = filter
-        self.conn = conn
+        self.conn = _conn
         if self.conn is None:
             server = ldap3.Server(url, get_info=ldap3.DSA)
             if bind:
@@ -37,8 +37,9 @@ class LDAPStorage(Storage):
                                              password=password)
             else:
                 self.conn = ldap3.Connection(server)
-        self.conn.bind()
-        self.conn.start_tls()
+            self.conn.bind()
+            self.conn.start_tls()
+
         ldap_logger.debug('Connected to: {}'.format(self.conn))
 
         if self.search_base is None:
