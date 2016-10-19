@@ -12,6 +12,10 @@ class TestLDAPStorage(StorageTests):
     storage_class = LDAPStorage
     supports_collections = False
 
+    @pytest.fixture(params=['VCARD'])
+    def item_type(self, request):
+        return request.param
+
     @pytest.fixture
     def get_storage_args(self):
         url = 'ldap://localhost'
