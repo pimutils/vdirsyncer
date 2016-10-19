@@ -18,7 +18,6 @@ class LDAPStorage(Storage):
     :param filter: filter
     '''
     storage_name = 'ldap'
-    read_only = True
     fileext = '.vcf'
     item_mimetype = 'text/vcard'
 
@@ -107,3 +106,11 @@ class LDAPStorage(Storage):
         item = Item(vcard.serialize())
 
         return item, etag
+
+    def upload(self, item):
+        vcard = vobject.readOne(item.raw)
+        self.conn.strategy.add_entry('cn={},ou=test,o=lab'.format(vcard.fn), vcard)
+
+    def update(self, href, item, etag):
+        vcard = vobject.readOne(item.raw)
+        self.conn.strategy.add_entry(href, vcard)

@@ -21,5 +21,5 @@ class TestLDAPStorage(StorageTests):
         conn.strategy.add_entry('cn=user0,ou=test,o=lab', {'userPassword': 'test0000', 'sn': 'user0_sn', 'revision': 0})
 
         def inner(collection='test'):
-            return {'url': url, 'conn': conn}
+            return {'url': url, 'conn': conn, 'search_base': 'ou=test,o=lab'}
         return inner
