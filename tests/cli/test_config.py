@@ -4,7 +4,7 @@ from textwrap import dedent
 import pytest
 
 from vdirsyncer import cli, exceptions
-from vdirsyncer.cli.config import Config
+from vdirsyncer.cli.config import Config, _parse_config_value
 
 import vdirsyncer.cli.utils  # noqa
 
@@ -28,7 +28,7 @@ def read_config(tmpdir, monkeypatch):
 def parse_config_value(capsys):
     def inner(s):
         try:
-            rv = vdirsyncer.cli.config.parse_config_value(s)
+            rv = _parse_config_value(s)
         except ValueError:
             return invalid
         else:

@@ -50,8 +50,8 @@ def app(ctx, config):
     '''
 
     if not ctx.config:
-        from .config import Config
-        ctx.config = Config.from_filename_or_environment(config)
+        from .config import load_config
+        ctx.config = load_config(config)
 
 main = app
 

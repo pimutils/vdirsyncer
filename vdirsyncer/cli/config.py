@@ -129,8 +129,8 @@ class _ConfigReader:
             try:
                 self._parse_section(
                     section_type, name,
-                    dict(parse_options(self._parser.items(section),
-                                       section=section))
+                    dict(_parse_options(self._parser.items(section),
+                                        section=section))
                 )
             except ValueError as e:
                 raise exceptions.UserError(
@@ -146,7 +146,7 @@ class _ConfigReader:
         return self._general, self._pairs, self._storages
 
 
-def parse_config_value(value):
+def _parse_config_value(value):
     try:
         return json.loads(value)
     except ValueError:
@@ -179,10 +179,10 @@ def parse_config_value(value):
     return value
 
 
-def parse_options(items, section=None):
+def _parse_options(items, section=None):
     for key, value in items:
         try:
-            yield key, parse_config_value(value)
+            yield key, _parse_config_value(value)
         except ValueError as e:
             raise ValueError('Section "{}", option "{}": {}'
                              .format(section, key, e))
@@ -286,7 +286,7 @@ class PairConfig(object):
                 command = conflict_resolution[1:]
 
                 def inner():
-                    return resolve_conflict_via_command(a, b, command, a_name,
+                    return _resolve_conflict_via_command(a, b, command, a_name,
                                                         b_name)
                 ui_worker = get_ui_worker()
                 return ui_worker.put(inner)
@@ -339,7 +339,11 @@ class CollectionConfig(object):
         self.config_b = config_b
 
 
-def resolve_conflict_via_command(a, b, command, a_name, b_name):
+#: Public API. Khal's config wizard depends on this function.
+load_config = Config.from_filename_or_environment
+
+
+def _resolve_conflict_via_command(a, b, command, a_name, b_name):
     import tempfile
     import shutil
     import subprocess
