@@ -14,7 +14,8 @@ Version 0.14.0
 
 - ``vdirsyncer sync`` now continues other uploads if one upload failed.  The
   exit code in such situations is still non-zero.
-- Add ``partial_sync`` option to pair section.
+- Add ``partial_sync`` option to pair section. See :ref:`the config docs
+  <partial_sync_def>`.
 
 Version 0.13.1
 ==============

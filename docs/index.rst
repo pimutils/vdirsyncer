@@ -23,6 +23,7 @@ It aims to be for CalDAV and CardDAV what `OfflineIMAP
    tutorial
    ssl-tutorial
    keyring
+   partial-sync
    config
    supported
    problems
