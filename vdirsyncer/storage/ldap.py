@@ -60,7 +60,7 @@ class LDAPStorage(Storage):
             if getattr(entry, 'whenChanged'):
                 etag = str(entry.whenChanged)
             else:
-                entry = self.get(href)
+                item = self.get(href)
                 etag = item.hash
 
             yield href, etag
@@ -110,7 +110,8 @@ class LDAPStorage(Storage):
 
     def upload(self, item):
         vcard = vobject.readOne(item.raw)
-        self.conn.strategy.add_entry('cn={},ou=test,o=lab'.format(vcard.fn), vcard)
+        self.conn.strategy.add_entry('cn={},ou=test,o=lab'.format(vcard.fn),
+                                     vcard)
 
     def update(self, href, item, etag):
         vcard = vobject.readOne(item.raw)
