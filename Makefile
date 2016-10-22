@@ -68,10 +68,9 @@ release:
 	python setup.py sdist bdist_wheel upload
 
 install-dev:
-	set -xe && if [ "$$REMOTESTORAGE_SERVER" != "skip" ]; then \
+	pip install -e .[ldap]
+	if [ "$$REMOTESTORAGE_SERVER" != "skip" ]; then \
 		pip install -e .[remotestorage]; \
-	else \
-		pip install -e .; \
 	fi
 	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
 	    pip install -U --force-reinstall \
