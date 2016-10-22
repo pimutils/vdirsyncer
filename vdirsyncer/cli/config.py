@@ -287,7 +287,7 @@ class PairConfig(object):
 
                 def inner():
                     return _resolve_conflict_via_command(a, b, command, a_name,
-                                                        b_name)
+                                                         b_name)
                 ui_worker = get_ui_worker()
                 return ui_worker.put(inner)
 
