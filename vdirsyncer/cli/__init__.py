@@ -227,16 +227,3 @@ def repair(ctx, collection):
                        'synchronization features.')
     click.confirm('Do you want to continue?', abort=True)
     repair_collection(ctx.config, collection)
-
-# Not sure if useful. I originally wanted it because:
-# * my password manager has a timeout for caching the master password
-# * when calling vdirsyncer in a cronjob, the master password prompt would
-#   randomly pop up
-# So I planned on piping a FIFO to vdirsyncer, and writing to that FIFO from a
-# cronjob.
-
-try:
-    import click_repl
-    click_repl.register_repl(app)
-except ImportError:
-    pass
