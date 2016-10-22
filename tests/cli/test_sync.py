@@ -2,6 +2,7 @@
 
 import json
 import unicodedata
+import sys
 from textwrap import dedent
 
 import hypothesis.strategies as st
@@ -285,6 +286,7 @@ def test_multiple_pairs(tmpdir, runner):
     min_size=1
 ))
 @example(collections=[u'persönlich'])
+@example(collections=set('aA'))
 def test_create_collections(subtest, collections):
 
     @subtest
@@ -320,10 +322,12 @@ def test_create_collections(subtest, collections):
         #
         # Quoted from
         # https://stackoverflow.com/questions/18137554/how-to-convert-path-to-mac-os-x-path-the-almost-nfd-normal-form  # noqa
-        u = lambda xs: set(
-            unicodedata.normalize('NFKD', x)
-            for x in xs
-        )
+        def u(xs):
+            xs = (unicodedata.normalize('NFKD', x) for x in xs)
+            if sys.platform == 'darwin':
+                xs = (x.lower() for x in xs)
+            return set(xs)
+
         assert u(x.basename for x in tmpdir.join('foo').listdir()) == \
             u(x.basename for x in tmpdir.join('bar').listdir()) == \
             u(collections)
