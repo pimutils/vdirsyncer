@@ -71,7 +71,7 @@ def test_list(monkeypatch):
 
 
 def test_readonly_param():
-    url = u'http://example.com/'
+    url = 'http://example.com/'
     with pytest.raises(ValueError):
         HttpStorage(url=url, read_only=False)
 

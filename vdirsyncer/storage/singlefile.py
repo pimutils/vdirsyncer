@@ -53,11 +53,11 @@ class SingleFileStorage(Storage):
         collections = ["from a", "from b"]
 
         [storage my_calendar_local]
-        type = singlefile
+        type = "singlefile"
         path = ~/.calendars/%s.ics
 
         [storage my_calendar_remote]
-        type = caldav
+        type = "caldav"
         url = https://caldav.example.org/
         #username =
         #password =
@@ -69,11 +69,11 @@ class SingleFileStorage(Storage):
         b = my_calendar_remote
 
         [storage my_calendar_local]
-        type = singlefile
+        type = "singlefile"
         path = ~/my_calendar.ics
 
         [storage my_calendar_remote]
-        type = caldav
+        type = "caldav"
         url = https://caldav.example.org/username/my_calendar/
         #username =
         #password =

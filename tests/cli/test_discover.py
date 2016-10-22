@@ -1,3 +1,4 @@
+import json
 from textwrap import dedent
 
 import hypothesis.strategies as st
@@ -10,18 +11,18 @@ from vdirsyncer.storage.base import Storage
 def test_discover_command(tmpdir, runner):
     runner.write_with_general(dedent('''
     [storage foo]
-    type = filesystem
-    path = {0}/foo/
-    fileext = .txt
+    type = "filesystem"
+    path = "{0}/foo/"
+    fileext = ".txt"
 
     [storage bar]
-    type = filesystem
-    path = {0}/bar/
-    fileext = .txt
+    type = "filesystem"
+    path = "{0}/bar/"
+    fileext = ".txt"
 
     [pair foobar]
-    a = foo
-    b = bar
+    a = "foo"
+    b = "bar"
     collections = ["from a"]
     ''').format(str(tmpdir)))
 
@@ -68,18 +69,18 @@ def test_discover_different_collection_names(tmpdir, runner):
     bar = tmpdir.mkdir('bar')
     runner.write_with_general(dedent('''
     [storage foo]
-    type = filesystem
-    fileext = .txt
-    path = {foo}
+    type = "filesystem"
+    fileext = ".txt"
+    path = "{foo}"
 
     [storage bar]
-    type = filesystem
-    fileext = .txt
-    path = {bar}
+    type = "filesystem"
+    fileext = ".txt"
+    path = "{bar}"
 
     [pair foobar]
-    a = foo
-    b = bar
+    a = "foo"
+    b = "bar"
     collections = [
         ["coll1", "coll_a1", "coll_b1"],
         "coll2"
@@ -114,18 +115,18 @@ def test_discover_direct_path(tmpdir, runner):
 
     runner.write_with_general(dedent('''
     [storage foo]
-    type = filesystem
-    fileext = .txt
-    path = {foo}
+    type = "filesystem"
+    fileext = ".txt"
+    path = "{foo}"
 
     [storage bar]
-    type = filesystem
-    fileext = .txt
-    path = {bar}
+    type = "filesystem"
+    fileext = ".txt"
+    path = "{bar}"
 
     [pair foobar]
-    a = foo
-    b = bar
+    a = "foo"
+    b = "bar"
     collections = null
     ''').format(foo=str(foo), bar=str(bar)))
 
@@ -142,18 +143,18 @@ def test_discover_direct_path(tmpdir, runner):
 def test_null_collection_with_named_collection(tmpdir, runner):
     runner.write_with_general(dedent('''
     [pair foobar]
-    a = foo
-    b = bar
+    a = "foo"
+    b = "bar"
     collections = [["baz", "baz", null]]
 
     [storage foo]
-    type = filesystem
-    path = {base}/foo/
-    fileext = .txt
+    type = "filesystem"
+    path = "{base}/foo/"
+    fileext = ".txt"
 
     [storage bar]
-    type = singlefile
-    path = {base}/bar.txt
+    type = "singlefile"
+    path = "{base}/bar.txt"
     '''.format(base=str(tmpdir))))
 
     result = runner.invoke(['discover'], input='y\n' * 2)
@@ -192,18 +193,18 @@ def test_collection_required(a_requires, b_requires, tmpdir, runner,
 
     runner.write_with_general(dedent('''
     [pair foobar]
-    a = foo
-    b = bar
+    a = "foo"
+    b = "bar"
     collections = null
 
     [storage foo]
-    type = test
+    type = "test"
     require_collection = {a}
 
     [storage bar]
-    type = test
+    type = "test"
     require_collection = {b}
-    '''.format(a=a_requires, b=b_requires)))
+    '''.format(a=json.dumps(a_requires), b=json.dumps(b_requires))))
 
     result = runner.invoke(['discover'])
     if a_requires or b_requires:

@@ -9,9 +9,9 @@ import pytest
 def test_full(tmpdir, runner, collection):
     runner.write_with_general(dedent('''
         [storage foo]
-        type = filesystem
-        path = {base}/foo/
-        fileext = .txt
+        type = "filesystem"
+        path = "{base}/foo/"
+        fileext = ".txt"
         ''').format(base=str(tmpdir)))
 
     storage = tmpdir.mkdir('foo')

@@ -14,24 +14,24 @@ Command
 Say you have the following configuration::
 
     [storage foo]
-    type = caldav
+    type = "caldav"
     url = ...
-    username = foo
-    password = bar
+    username = "foo"
+    password = "bar"
 
 But it bugs you that the password is stored in cleartext in the config file.
 You can do this::
 
     [storage foo]
-    type = caldav
+    type = "caldav"
     url = ...
-    username = foo
+    username = "foo"
     password.fetch = ["command", "~/get-password.sh", "more", "args"]
 
 You can fetch the username as well::
 
     [storage foo]
-    type = caldav
+    type = "caldav"
     url = ...
     username.fetch = ["command", "~/get-username.sh"]
     password.fetch = ["command", "~/get-password.sh"]
@@ -62,6 +62,6 @@ Password Prompt
 You can also simply prompt for the password::
 
     [storage foo]
-    type = caldav
-    username = myusername
+    type = "caldav"
+    username = "myusername"
     password.fetch = ["prompt", "Password for CalDAV"]

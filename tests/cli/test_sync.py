@@ -13,19 +13,19 @@ import pytest
 def test_simple_run(tmpdir, runner):
     runner.write_with_general(dedent('''
     [pair my_pair]
-    a = my_a
-    b = my_b
+    a = "my_a"
+    b = "my_b"
     collections = null
 
     [storage my_a]
-    type = filesystem
-    path = {0}/path_a/
-    fileext = .txt
+    type = "filesystem"
+    path = "{0}/path_a/"
+    fileext = ".txt"
 
     [storage my_b]
-    type = filesystem
-    path = {0}/path_b/
-    fileext = .txt
+    type = "filesystem"
+    path = "{0}/path_b/"
+    fileext = ".txt"
     ''').format(str(tmpdir)))
 
     tmpdir.mkdir('path_a')
@@ -54,19 +54,19 @@ def test_sync_inexistant_pair(tmpdir, runner):
 def test_debug_connections(tmpdir, runner):
     runner.write_with_general(dedent('''
     [pair my_pair]
-    a = my_a
-    b = my_b
+    a = "my_a"
+    b = "my_b"
     collections = null
 
     [storage my_a]
-    type = filesystem
-    path = {0}/path_a/
-    fileext = .txt
+    type = "filesystem"
+    path = "{0}/path_a/"
+    fileext = ".txt"
 
     [storage my_b]
-    type = filesystem
-    path = {0}/path_b/
-    fileext = .txt
+    type = "filesystem"
+    path = "{0}/path_b/"
+    fileext = ".txt"
     ''').format(str(tmpdir)))
 
     tmpdir.mkdir('path_a')
@@ -85,19 +85,19 @@ def test_debug_connections(tmpdir, runner):
 def test_empty_storage(tmpdir, runner):
     runner.write_with_general(dedent('''
     [pair my_pair]
-    a = my_a
-    b = my_b
+    a = "my_a"
+    b = "my_b"
     collections = null
 
     [storage my_a]
-    type = filesystem
-    path = {0}/path_a/
-    fileext = .txt
+    type = "filesystem"
+    path = "{0}/path_a/"
+    fileext = ".txt"
 
     [storage my_b]
-    type = filesystem
-    path = {0}/path_b/
-    fileext = .txt
+    type = "filesystem"
+    path = "{0}/path_b/"
+    fileext = ".txt"
     ''').format(str(tmpdir)))
 
     tmpdir.mkdir('path_a')
@@ -137,18 +137,18 @@ def test_collections_cache_invalidation(tmpdir, runner):
 
     runner.write_with_general(dedent('''
     [storage foo]
-    type = filesystem
-    path = {0}/foo/
-    fileext = .txt
+    type = "filesystem"
+    path = "{0}/foo/"
+    fileext = ".txt"
 
     [storage bar]
-    type = filesystem
-    path = {0}/bar/
-    fileext = .txt
+    type = "filesystem"
+    path = "{0}/bar/"
+    fileext = ".txt"
 
     [pair foobar]
-    a = foo
-    b = bar
+    a = "foo"
+    b = "bar"
     collections = ["a", "b", "c"]
     ''').format(str(tmpdir)))
 
@@ -167,18 +167,18 @@ def test_collections_cache_invalidation(tmpdir, runner):
 
     runner.write_with_general(dedent('''
     [storage foo]
-    type = filesystem
-    path = {0}/foo/
-    fileext = .txt
+    type = "filesystem"
+    path = "{0}/foo/"
+    fileext = ".txt"
 
     [storage bar]
-    type = filesystem
-    path = {0}/bar2/
-    fileext = .txt
+    type = "filesystem"
+    path = "{0}/bar2/"
+    fileext = ".txt"
 
     [pair foobar]
-    a = foo
-    b = bar
+    a = "foo"
+    b = "bar"
     collections = ["a", "b", "c"]
     ''').format(str(tmpdir)))
 
@@ -207,18 +207,18 @@ def test_collections_cache_invalidation(tmpdir, runner):
 def test_invalid_pairs_as_cli_arg(tmpdir, runner):
     runner.write_with_general(dedent('''
     [storage foo]
-    type = filesystem
-    path = {0}/foo/
-    fileext = .txt
+    type = "filesystem"
+    path = "{0}/foo/"
+    fileext = ".txt"
 
     [storage bar]
-    type = filesystem
-    path = {0}/bar/
-    fileext = .txt
+    type = "filesystem"
+    path = "{0}/bar/"
+    fileext = ".txt"
 
     [pair foobar]
-    a = foo
-    b = bar
+    a = "foo"
+    b = "bar"
     collections = ["a", "b", "c"]
     ''').format(str(tmpdir)))
 
@@ -240,17 +240,17 @@ def test_multiple_pairs(tmpdir, runner):
         for name_a, name_b in ('foo', 'bar'), ('bam', 'baz'):
             yield dedent('''
             [pair {a}{b}]
-            a = {a}
-            b = {b}
+            a = "{a}"
+            b = "{b}"
             collections = null
             ''').format(a=name_a, b=name_b)
 
             for name in name_a, name_b:
                 yield dedent('''
                 [storage {name}]
-                type = filesystem
-                path = {path}
-                fileext = .txt
+                type = "filesystem"
+                path = "{path}"
+                fileext = ".txt"
                 ''').format(name=name, path=str(tmpdir.mkdir(name)))
 
     runner.write_with_general(''.join(get_cfg()))
@@ -291,19 +291,19 @@ def test_create_collections(subtest, collections):
     def test_inner(tmpdir, runner):
         runner.write_with_general(dedent('''
         [pair foobar]
-        a = foo
-        b = bar
+        a = "foo"
+        b = "bar"
         collections = {colls}
 
         [storage foo]
-        type = filesystem
-        path = {base}/foo/
-        fileext = .txt
+        type = "filesystem"
+        path = "{base}/foo/"
+        fileext = ".txt"
 
         [storage bar]
-        type = filesystem
-        path = {base}/bar/
-        fileext = .txt
+        type = "filesystem"
+        path = "{base}/bar/"
+        fileext = ".txt"
         '''.format(base=str(tmpdir), colls=json.dumps(list(collections)))))
 
         result = runner.invoke(
@@ -337,19 +337,19 @@ def test_create_collections(subtest, collections):
 def test_ident_conflict(tmpdir, runner):
     runner.write_with_general(dedent('''
     [pair foobar]
-    a = foo
-    b = bar
+    a = "foo"
+    b = "bar"
     collections = null
 
     [storage foo]
-    type = filesystem
-    path = {base}/foo/
-    fileext = .txt
+    type = "filesystem"
+    path = "{base}/foo/"
+    fileext = ".txt"
 
     [storage bar]
-    type = filesystem
-    path = {base}/bar/
-    fileext = .txt
+    type = "filesystem"
+    path = "{base}/bar/"
+    fileext = ".txt"
     '''.format(base=str(tmpdir))))
 
     foo = tmpdir.mkdir('foo')
@@ -380,14 +380,14 @@ def test_ident_conflict(tmpdir, runner):
 def test_unknown_storage(tmpdir, runner, existing, missing):
     runner.write_with_general(dedent('''
     [pair foobar]
-    a = foo
-    b = bar
+    a = "foo"
+    b = "bar"
     collections = null
 
     [storage {existing}]
-    type = filesystem
-    path = {base}/{existing}/
-    fileext = .txt
+    type = "filesystem"
+    path = "{base}/{existing}/"
+    fileext = ".txt"
     '''.format(base=str(tmpdir), existing=existing)))
 
     tmpdir.mkdir(existing)
@@ -418,20 +418,20 @@ def test_conflict_resolution(tmpdir, runner, resolution, expect_foo,
                              expect_bar):
     runner.write_with_general(dedent('''
     [pair foobar]
-    a = foo
-    b = bar
+    a = "foo"
+    b = "bar"
     collections = null
     conflict_resolution = {val}
 
     [storage foo]
-    type = filesystem
-    fileext = .txt
-    path = {base}/foo
+    type = "filesystem"
+    fileext = ".txt"
+    path = "{base}/foo"
 
     [storage bar]
-    type = filesystem
-    fileext = .txt
-    path = {base}/bar
+    type = "filesystem"
+    fileext = ".txt"
+    path = "{base}/bar"
     '''.format(base=str(tmpdir), val=json.dumps(resolution))))
 
     foo = tmpdir.join('foo')
@@ -455,21 +455,21 @@ def test_conflict_resolution(tmpdir, runner, resolution, expect_foo,
 def test_partial_sync(tmpdir, runner, partial_sync):
     runner.write_with_general(dedent('''
     [pair foobar]
-    a = foo
-    b = bar
+    a = "foo"
+    b = "bar"
     collections = null
     {partial_sync}
 
     [storage foo]
-    type = filesystem
-    fileext = .txt
-    path = {base}/foo
+    type = "filesystem"
+    fileext = ".txt"
+    path = "{base}/foo"
 
     [storage bar]
-    type = filesystem
+    type = "filesystem"
     read_only = true
-    fileext = .txt
-    path = {base}/bar
+    fileext = ".txt"
+    path = "{base}/bar"
     '''.format(
         partial_sync=('partial_sync = {}\n'.format(partial_sync)
                       if partial_sync else ''),
@@ -523,28 +523,28 @@ def test_fetch_only_necessary_params(tmpdir, runner):
 
     runner.write_with_general(dedent('''
     [pair foobar]
-    a = foo
-    b = bar
+    a = "foo"
+    b = "bar"
     collections = null
 
     [pair bambar]
-    a = bam
-    b = bar
+    a = "bam"
+    b = "bar"
     collections = null
 
     [storage foo]
-    type = filesystem
-    path = {path}
-    fileext = .txt
+    type = "filesystem"
+    path = "{path}"
+    fileext = ".txt"
 
     [storage bar]
-    type = filesystem
-    path = {path}
-    fileext = .txt
+    type = "filesystem"
+    path = "{path}"
+    fileext = ".txt"
 
     [storage bam]
-    type = filesystem
-    path = {path}
+    type = "filesystem"
+    path = "{path}"
     fileext.fetch = ["command", "sh", "{script}"]
     '''.format(path=str(tmpdir.mkdir('bogus')), script=str(fetch_script))))
 

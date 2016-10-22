@@ -16,6 +16,8 @@ Version 0.14.0
   exit code in such situations is still non-zero.
 - Add ``partial_sync`` option to pair section. See :ref:`the config docs
   <partial_sync_def>`.
+- Vdirsyner will now warn if there's a string without quotes in your config.
+  Please file issues if you find documentation that uses unquoted strings.
 
 Version 0.13.1
 ==============

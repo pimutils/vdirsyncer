@@ -41,18 +41,18 @@ def value_cache(monkeypatch):
 def test_get_password_from_command(tmpdir, runner):
     runner.write_with_general(dedent('''
         [pair foobar]
-        a = foo
-        b = bar
+        a = "foo"
+        b = "bar"
         collections = ["a", "b", "c"]
 
         [storage foo]
-        type = filesystem
-        path = {base}/foo/
+        type = "filesystem"
+        path = "{base}/foo/"
         fileext.fetch = ["command", "echo", ".txt"]
 
         [storage bar]
-        type = filesystem
-        path = {base}/bar/
+        type = "filesystem"
+        path = "{base}/bar/"
         fileext.fetch = ["prompt", "Fileext for bar"]
     '''.format(base=str(tmpdir))))
 

@@ -23,7 +23,7 @@ class _CustomRunner(object):
     def write_with_general(self, data):
         self.cfg.write(dedent('''
         [general]
-        status_path = {}/status/
+        status_path = "{}/status/"
         ''').format(str(self.tmpdir)))
         self.cfg.write(data, mode='a')
 

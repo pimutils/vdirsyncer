@@ -158,9 +158,9 @@ def _parse_config_value(value):
         (('none',), 'null')
     ]:
         if value.lower() in wrong + (right,):
-            cli_logger.warning('You probably meant {} instead of "{}", which '
-                               'will now be interpreted as a literal string.'
-                               .format(right, value))
+            raise ValueError('You probably meant {} instead of {}. Surround '
+                             'your string with double-quotes if not.'
+                             .format(right, value))
 
     if '#' in value:
         raise ValueError('Invalid value:{}\n'
@@ -175,6 +175,10 @@ def _parse_config_value(value):
         # foo = bar
         #  # my comment
         raise ValueError('No multiline-values allowed:\n{}'.format(value))
+
+    cli_logger.warning('Soon, all strings have to be in double quotes. Please '
+                       'replace {} with {}'
+                       .format(value, json.dumps(value)))
 
     return value
 

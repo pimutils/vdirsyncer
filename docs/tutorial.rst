@@ -56,22 +56,22 @@ The following example synchronizes ownCloud's addressbooks to ``~/.contacts/``::
 
 
     [pair my_contacts]
-    a = my_contacts_local
-    b = my_contacts_remote
+    a = "my_contacts_local"
+    b = "my_contacts_remote"
     collections = ["from a", "from b"]
 
     [storage my_contacts_local]
-    type = filesystem
-    path = ~/.contacts/
-    fileext = .vcf
+    type = "filesystem"
+    path = "~/.contacts/"
+    fileext = ".vcf"
 
     [storage my_contacts_remote]
-    type = carddav
+    type = "carddav"
 
     # We can simplify this URL here as well. In theory it shouldn't matter.
-    url = https://owncloud.example.com/remote.php/carddav/
-    username = bob
-    password = asdf
+    url = "https://owncloud.example.com/remote.php/carddav/"
+    username = "bob"
+    password = "asdf"
 
 .. note::
 
@@ -127,22 +127,22 @@ color associated with a calendar. For the purpose of explaining this feature,
 let's switch to a different base example. This time we'll synchronize calendars::
 
     [pair my_calendars]
-    a = my_calendars_local
-    b = my_calendars_remote
+    a = "my_calendars_local"
+    b = "my_calendars_remote"
     collections = ["from a", "from b"]
     metadata = ["color"]
 
     [storage my_calendars_local]
-    type = filesystem
-    path = ~/.calendars/
-    fileext = .ics
+    type = "filesystem"
+    path = "~/.calendars/"
+    fileext = ".ics"
 
     [storage my_calendars_remote]
-    type = caldav
+    type = "caldav"
 
-    url = https://owncloud.example.com/remote.php/caldav/
-    username = bob
-    password = asdf
+    url = "https://owncloud.example.com/remote.php/caldav/"
+    username = "bob"
+    password = "asdf"
 
 Run ``vdirsyncer discover`` for discovery. Then you can use ``vdirsyncer
 metasync`` to synchronize the ``color`` property between your local calendars
@@ -179,19 +179,19 @@ The last one requires a bit more explanation.  Assume this config which
 synchronizes two directories of addressbooks::
 
     [pair foobar]
-    a = foo
-    b = bar
+    a = "foo"
+    b = "bar"
     collections = ["from a", "from b"]
 
     [storage foo]
-    type = filesystem
-    fileext = .vcf
-    path = ./contacts_foo/
+    type = "filesystem"
+    fileext = ".vcf"
+    path = "./contacts_foo/"
 
     [storage bar]
-    type = filesystem
-    fileext = .vcf
-    path = ./contacts_bar/
+    type = "filesystem"
+    fileext = ".vcf"
+    path = "./contacts_bar/"
 
 As we saw previously this will synchronize all collections in
 ``./contacts_foo/`` with each same-named collection in ``./contacts_bar/``. If

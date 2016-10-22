@@ -25,17 +25,17 @@ Step 2: Creating the config
 Paste this into your vdirsyncer config::
 
     [pair holidays]
-    a = holidays_public
-    b = holidays_private
+    a = "holidays_public"
+    b = "holidays_private"
     collections = null
 
     [storage holidays_public]
-    type = http
+    type = "http"
     # The URL to your iCalendar file.
     url = ...
 
     [storage holidays_private]
-    type = caldav
+    type = "caldav"
     # The direct URL to your calendar.
     url = ...
     # The credentials to your CalDAV server
@@ -60,8 +60,8 @@ doesn't have the rights to do so.
 For such purposes you can set the ``partial_sync`` parameter to ``ignore``::
 
     [pair holidays]
-    a = holidays_public
-    b = holidays_private
+    a = "holidays_public"
+    b = "holidays_private"
     collections = null
     partial_sync = ignore
 

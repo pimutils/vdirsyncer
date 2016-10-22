@@ -43,19 +43,19 @@ def test_read_config(read_config):
         status_path = /tmp/status/
 
         [pair bob]
-        a = bob_a
-        b = bob_b
+        a = "bob_a"
+        b = "bob_b"
         collections = null
 
         [storage bob_a]
-        type = filesystem
-        path = /tmp/contacts/
-        fileext = .vcf
+        type = "filesystem"
+        path = "/tmp/contacts/"
+        fileext = ".vcf"
         yesno = false
         number = 42
 
         [storage bob_b]
-        type = carddav
+        type = "carddav"
         ''')
 
     assert c.general == {'status_path': '/tmp/status/'}
@@ -79,14 +79,14 @@ def test_missing_collections_param(read_config):
             status_path = /tmp/status/
 
             [pair bob]
-            a = bob_a
-            b = bob_b
+            a = "bob_a"
+            b = "bob_b"
 
             [storage bob_a]
-            type = lmao
+            type = "lmao"
 
             [storage bob_b]
-            type = lmao
+            type = "lmao"
             ''')
 
     assert 'collections parameter missing' in str(excinfo.value)
@@ -120,19 +120,19 @@ def test_missing_general_section(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
         read_config(u'''
             [pair my_pair]
-            a = my_a
-            b = my_b
+            a = "my_a"
+            b = "my_b"
             collections = null
 
             [storage my_a]
-            type = filesystem
-            path = {base}/path_a/
-            fileext = .txt
+            type = "filesystem"
+            path = "{base}/path_a/"
+            fileext = ".txt"
 
             [storage my_b]
-            type = filesystem
-            path = {base}/path_b/
-            fileext = .txt
+            type = "filesystem"
+            path = "{base}/path_b/"
+            fileext = ".txt"
             ''')
 
     assert 'Invalid general section.' in str(excinfo.value)
@@ -171,19 +171,19 @@ def test_invalid_collections_arg(read_config):
         status_path = /tmp/status/
 
         [pair foobar]
-        a = foo
-        b = bar
+        a = "foo"
+        b = "bar"
         collections = [null]
 
         [storage foo]
-        type = filesystem
-        path = /tmp/foo/
-        fileext = .txt
+        type = "filesystem"
+        path = "/tmp/foo/"
+        fileext = ".txt"
 
         [storage bar]
-        type = filesystem
-        path = /tmp/bar/
-        fileext = .txt
+        type = "filesystem"
+        path = "/tmp/bar/"
+        fileext = ".txt"
         ''')
 
     assert 'Expected string' in str(excinfo.value)
@@ -196,19 +196,19 @@ def test_duplicate_sections(read_config):
         status_path = /tmp/status/
 
         [pair foobar]
-        a = foobar
-        b = bar
+        a = "foobar"
+        b = "bar"
         collections = null
 
         [storage foobar]
-        type = filesystem
-        path = /tmp/foo/
-        fileext = .txt
+        type = "filesystem"
+        path = "/tmp/foo/"
+        fileext = ".txt"
 
         [storage bar]
-        type = filesystem
-        path = /tmp/bar/
-        fileext = .txt
+        type = "filesystem"
+        path = "/tmp/bar/"
+        fileext = ".txt"
         ''')
 
     assert 'Name "foobar" already used' in str(excinfo.value)
@@ -219,10 +219,10 @@ def test_parse_config_value(parse_config_value):
 
     assert x('123  # comment!') is invalid
 
-    assert x('True') == ('True', 1)
-    assert x('False') == ('False', 1)
-    assert x('Yes') == ('Yes', 1)
-    assert x('None') == ('None', 1)
+    assert x('True') is invalid
+    assert x('False') is invalid
+    assert x('Yes') is invalid
+    assert x('None') is invalid
     assert x('"True"') == ('True', 0)
     assert x('"False"') == ('False', 0)
 
@@ -231,7 +231,7 @@ def test_parse_config_value(parse_config_value):
     assert x('false') == (False, 0)
     assert x('null') == (None, 0)
     assert x('3.14') == (3.14, 0)
-    assert x('') == ('', 0)
+    assert x('') == ('', 1)
     assert x('""') == ('', 0)
 
 

@@ -117,12 +117,12 @@ class HttpStorage(Storage):
         collections = null
 
         [storage holidays_local]
-        type = filesystem
+        type = "filesystem"
         path = ~/.config/vdir/calendars/holidays/
         fileext = .ics
 
         [storage holidays_remote]
-        type = http
+        type = "http"
         url = https://example.com/holidays_from_hicksville.ics
     '''
 

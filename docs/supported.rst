@@ -99,14 +99,14 @@ ownCloud
 Vdirsyncer is continuously tested against the latest version of ownCloud_::
 
     [storage cal]
-    type = caldav
-    url = https://example.com/owncloud/remote.php/caldav/
+    type = "caldav"
+    url = "https://example.com/owncloud/remote.php/caldav/"
     username = ...
     password = ...
 
     [storage card]
-    type = carddav
-    url = https://example.com/owncloud/remote.php/carddav/
+    type = "carddav"
+    url = "https://example.com/owncloud/remote.php/carddav/"
     username = ...
     password = ...
 
@@ -123,14 +123,14 @@ nextCloud
 Vdirsyncer is continuously tested against the latest version of nextCloud_::
 
     [storage cal]
-    type = caldav
-    url = https://nextcloud.example.com/
+    type = "caldav"
+    url = "https://nextcloud.example.com/"
     username = ...
     password = ...
 
     [storage card]
-    type = carddav
-    url = https://nextcloud.example.com/
+    type = "carddav"
+    url = "https://nextcloud.example.com/"
 
 - WebCAL-subscriptions can't be discovered by vdirsyncer. See `this relevant
   issue <https://github.com/nextcloud/calendar/issues/63>`_.
@@ -147,14 +147,14 @@ with it. `FastMail's support pages
 the settings to use::
 
     [storage cal]
-    type = caldav
-    url = https://caldav.messagingengine.com/
+    type = "caldav"
+    url = "https://caldav.messagingengine.com/"
     username = ...
     password = ...
 
     [storage card]
-    type = carddav
-    url = https://carddav.messagingengine.com/
+    type = "carddav"
+    url = "https://carddav.messagingengine.com/"
     username = ...
     password = ...
 
@@ -170,14 +170,14 @@ Vdirsyncer is irregularly tested against iCloud_.
 ::
 
     [storage cal]
-    type = caldav
-    url = https://caldav.icloud.com/
+    type = "caldav"
+    url = "https://caldav.icloud.com/"
     username = ...
     password = ...
 
     [storage card]
-    type = carddav
-    url = https://contacts.icloud.com/
+    type = "carddav"
+    url = "https://contacts.icloud.com/"
     username = ...
     password = ...
 
@@ -202,9 +202,9 @@ special characters and/or using an old DavMail version.
 **Make absolutely sure you use the latest DavMail**::
 
     [storage outlook]
-    type = caldav
-    url = http://localhost:1080/
-    username = user@example.com
+    type = "caldav"
+    url = "http://localhost:1080/"
+    username = "user@example.com"
     password = ...
 
 - Older versions of DavMail handle URLs case-insensitively. See :gh:`144`.
