@@ -18,6 +18,7 @@ Version 0.14.0
   <partial_sync_def>`.
 - Vdirsyner will now warn if there's a string without quotes in your config.
   Please file issues if you find documentation that uses unquoted strings.
+- Fix an issue that would break khal's config setup wizard.
 
 Version 0.13.1
 ==============
