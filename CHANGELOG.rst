@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.14.0
 ==============
 
+*released on 26 October 2016*
+
 - ``vdirsyncer sync`` now continues other uploads if one upload failed.  The
   exit code in such situations is still non-zero.
 - Add ``partial_sync`` option to pair section. See :ref:`the config docs
