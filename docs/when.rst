@@ -42,7 +42,7 @@ program chosen:
   
   This is a good idea if the user is directly interfacing with the file system
   and is able to resolve conflicts themselves.  Here it might lead to
-  errorneous behavior with e.g. ``khal``, since there are now two events with
+  erroneous behavior with e.g. ``khal``, since there are now two events with
   the same UID.
 
   This point doesn't apply to git: It has very good merging capabilities,
