@@ -30,8 +30,6 @@ del _check_python_version
 
 
 def _detect_faulty_requests():  # pragma: no cover
-    import requests
-
     text = (
         'Error during import: {e}\n\n'
         'If you have installed vdirsyncer from a distro package, please file '
