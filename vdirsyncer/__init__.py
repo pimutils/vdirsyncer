@@ -36,7 +36,7 @@ def _detect_faulty_requests():  # pragma: no cover
         'Error during import: {e}\n\n'
         'If you have installed vdirsyncer from a distro package, please file '
         'a bug against that package, not vdirsyncer.\n\n'
-        'Consult {d}/problems.html#requests-related-importerrors-on-debian'
+        'Consult {d}/problems.html#requests-related-importerrors'
         '-based-distributions on how to work around this.'
     )
 
