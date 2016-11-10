@@ -31,16 +31,13 @@ del _check_python_version
 
 def _detect_faulty_requests():  # pragma: no cover
     import requests
-    if 'dist-packages' not in requests.__file__:
-        return
 
     text = (
-        '{e}\n\n'
-        'This most likely means you are running into a bug specific to '
-        'Debian-based distributions.\n\n'
+        'Error during import: {e}\n\n'
+        'If you have installed vdirsyncer from a distro package, please file '
+        'a bug against that package, not vdirsyncer.\n\n'
         'Consult {d}/problems.html#requests-related-importerrors-on-debian'
-        '-based-distributions on how to deal with this, or use a different '
-        'operating system.'
+        '-based-distributions on how to work around this.'
     )
 
     try:
