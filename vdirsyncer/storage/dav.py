@@ -84,6 +84,8 @@ def _parse_xml(content):
 
 
 def _merge_xml(items):
+    if not items:
+        return []
     rv = items[0]
     for item in items[1:]:
         rv.extend(item.getiterator())
