@@ -10,6 +10,10 @@ from inspect import getfullargspec
 from .. import exceptions
 
 
+# This is only a subset of the chars allowed per the spec. In particular `@` is
+# not included, because there are some servers that (incorrectly) encode it to
+# `%40` when it's part of a URL path, and reject or "repair" URLs that contain
+# `@` in the path. So it's better to just avoid it.
 SAFE_UID_CHARS = ('abcdefghijklmnopqrstuvwxyz'
                   'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                   '0123456789_.-+')
