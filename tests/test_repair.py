@@ -28,7 +28,7 @@ def test_repair_uids(uid):
     uid1, uid2 = [s.get(href)[0].uid for href, etag in s.list()]
     assert uid1 == uid2
 
-    repair_storage(s)
+    repair_storage(s, repair_unsafe_uid=False)
 
     uid1, uid2 = [s.get(href)[0].uid for href, etag in s.list()]
     assert uid1 != uid2
@@ -44,7 +44,7 @@ def test_repair_unsafe_uids(uid):
     assert s.get(href)[0].uid == uid
     assert not href_safe(uid)
 
-    repair_storage(s)
+    repair_storage(s, repair_unsafe_uid=True)
 
     new_href = list(s.list())[0][0]
     assert href_safe(new_href)

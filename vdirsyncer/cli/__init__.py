@@ -207,16 +207,20 @@ def discover(ctx, pairs, max_workers, list):
 
 @app.command()
 @click.argument('collection')
+@click.option('--repair-unsafe-uid/--no-repair-unsafe-uid', default=False,
+              help=('Some characters in item UIDs and URLs may cause problems '
+                    'with buggy software. Adding this option will reassign '
+                    'new UIDs to those items.'))
 @pass_context
 @catch_errors
-def repair(ctx, collection):
+def repair(ctx, collection, repair_unsafe_uid):
     '''
     Repair a given collection.
 
     Runs a few checks on the collection and applies some fixes to individual
     items that may improve general stability, also with other CalDAV/CardDAV
     clients. In particular, if you encounter URL-encoding-related issues with
-    other clients, this command might help.
+    other clients, this command with --repair-unsafe-uid might help.
 
     Example: `vdirsyncer repair calendars_local/foo` repairs the `foo`
     collection of the `calendars_local` storage.
@@ -224,7 +228,8 @@ def repair(ctx, collection):
     from .tasks import repair_collection
 
     cli_logger.warning('This operation will take a very long time.')
-    cli_logger.warning('It\'s recommended to turn off other client\'s '
-                       'synchronization features.')
+    cli_logger.warning('It\'s recommended to make a backup and '
+                       'turn off other client\'s synchronization features.')
     click.confirm('Do you want to continue?', abort=True)
-    repair_collection(ctx.config, collection)
+    repair_collection(ctx.config, collection,
+                      repair_unsafe_uid=repair_unsafe_uid)

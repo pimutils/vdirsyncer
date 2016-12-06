@@ -93,7 +93,7 @@ def discover_collections(wq, pair, **kwargs):
                     .format(pair.name, json.dumps(collections)))
 
 
-def repair_collection(config, collection):
+def repair_collection(config, collection, repair_unsafe_uid):
     from ..repair import repair_storage
 
     storage_name, collection = collection, None
@@ -120,7 +120,7 @@ def repair_collection(config, collection):
 
     cli_logger.info('Repairing {}/{}'.format(storage_name, collection))
     cli_logger.warning('Make sure no other program is talking to the server.')
-    repair_storage(storage)
+    repair_storage(storage, repair_unsafe_uid=repair_unsafe_uid)
 
 
 def metasync_collection(wq, collection, general):

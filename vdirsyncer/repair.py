@@ -8,7 +8,7 @@ from .utils import generate_href, href_safe
 logger = logging.getLogger(__name__)
 
 
-def repair_storage(storage):
+def repair_storage(storage, repair_unsafe_uid):
     seen_uids = set()
     all_hrefs = list(storage.list())
     for i, (href, _) in enumerate(all_hrefs):
@@ -30,8 +30,12 @@ def repair_storage(storage):
             logger.warning('Duplicate UID, assigning random one.')
             new_item = item.with_uid(generate_href())
         elif not href_safe(item.uid) or not href_safe(basename(href)):
-            logger.warning('UID or href is unsafe, assigning random UID.')
-            new_item = item.with_uid(generate_href(item.uid))
+            if not repair_unsafe_uid:
+                logger.warning('UID or href may cause problems, add '
+                               '--repair-unsafe-hrefs to repair.')
+            else:
+                logger.warning('UID or href is unsafe, assigning random UID.')
+                new_item = item.with_uid(generate_href(item.uid))
 
         if not new_item.uid:
             logger.error('Item {!r} is malformed beyond repair. '
