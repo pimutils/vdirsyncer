@@ -10,6 +10,7 @@ if [ "$BUILD_PRS" = "true" ] || [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
 fi
     """.strip().format(x.strip())
 
+
 cfg = {}
 
 cfg['sudo'] = True

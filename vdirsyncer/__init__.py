@@ -25,6 +25,7 @@ def _check_python_version():  # pragma: no cover
         print('vdirsyncer requires Python 3.')
         sys.exit(1)
 
+
 _check_python_version()
 del _check_python_version
 
@@ -44,6 +45,7 @@ def _detect_faulty_requests():  # pragma: no cover
         import sys
         print(text.format(e=str(e), d=DOCS_HOME), file=sys.stderr)
         sys.exit(1)
+
 
 _detect_faulty_requests()
 del _detect_faulty_requests

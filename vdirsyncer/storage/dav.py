@@ -27,6 +27,7 @@ def _generate_path_reserved_chars():
         yield x.upper()
         yield x.lower()
 
+
 _path_reserved_chars = frozenset(_generate_path_reserved_chars())
 del _generate_path_reserved_chars
 

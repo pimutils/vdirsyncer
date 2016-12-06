@@ -52,6 +52,7 @@ class PrintRequirements(Command):
         for requirement in requirements:
             print(requirement.replace(">", "=").replace(" ", ""))
 
+
 setup(
     # General metadata
     name='vdirsyncer',

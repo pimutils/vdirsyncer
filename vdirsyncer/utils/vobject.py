@@ -154,6 +154,7 @@ def split_collection(text):
         item.subcomponents.extend(inline)
         yield u'\r\n'.join(item.dump_lines())
 
+
 _default_join_wrappers = {
     u'VCALENDAR': u'VCALENDAR',
     u'VEVENT': u'VCALENDAR',
