@@ -48,7 +48,7 @@ for python in ("3.3", "3.4", "3.5"):
     if python == "3.5":
         dav_servers = ("radicale", "owncloud", "nextcloud", "baikal",
                        "davical")
-        rs_servers = ("mysteryshack",)
+        rs_servers = ()
     else:
         dav_servers = ("radicale",)
         rs_servers = ()
