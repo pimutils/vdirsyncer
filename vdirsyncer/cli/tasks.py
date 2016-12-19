@@ -38,7 +38,7 @@ def prepare_pair(wq, pair_name, collections, config, callback, **kwargs):
         wq.put(functools.partial(callback, collection=collection,
                                  general=config.general, **kwargs))
 
-    for i in range(new_workers):
+    for _ in range(new_workers):
         wq.spawn_worker()
 
 

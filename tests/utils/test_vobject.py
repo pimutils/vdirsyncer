@@ -131,7 +131,7 @@ def test_split_contacts():
     bare = '\r\n'.join([VCARD_TEMPLATE.format(r=x, uid=x) for x in range(4)])
     with_wrapper = 'BEGIN:VADDRESSBOOK\r\n' + bare + '\nEND:VADDRESSBOOK\r\n'
 
-    for x in (bare, with_wrapper):
+    for _ in (bare, with_wrapper):
         split = list(vobject.split_collection(bare))
         assert len(split) == 4
         assert vobject.join_collection(split).splitlines() == \

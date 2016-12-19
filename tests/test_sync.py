@@ -211,7 +211,7 @@ def test_already_synced():
     a.update = b.update = a.upload = b.upload = \
         lambda *a, **kw: pytest.fail('Method shouldn\'t have been called.')
 
-    for i in (1, 2):
+    for _ in (1, 2):
         sync(a, b, status)
         assert status == old_status
         assert items(a) == items(b) == {item.raw}

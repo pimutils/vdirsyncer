@@ -150,7 +150,7 @@ class RemoteStorage(Storage):
         except exceptions.NotFoundError:
             return
 
-        for name, info in _iter_listing(r.json()):
+        for name, _info in _iter_listing(r.json()):
             if not name.endswith('/'):
                 continue  # not a folder
 

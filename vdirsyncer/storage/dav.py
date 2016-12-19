@@ -601,7 +601,7 @@ class DAVStorage(Storage):
         root = _parse_xml(response.content)
 
         rv = self._parse_prop_responses(root)
-        for href, etag, prop in rv:
+        for href, etag, _prop in rv:
             yield href, etag
 
     def get_meta(self, key):
@@ -817,7 +817,7 @@ class CalDAVStorage(DAVStorage):
                                             headers=headers)
             root = _parse_xml(response.content)
             rv = self._parse_prop_responses(root)
-            for href, etag, prop in rv:
+            for href, etag, _prop in rv:
                 yield href, etag
 
 

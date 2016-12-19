@@ -256,7 +256,7 @@ class _Component(object):
         stack = []
         rv = []
         try:
-            for i, line in enumerate(lines):
+            for _i, line in enumerate(lines):
                 if line.startswith(u'BEGIN:'):
                     c_name = line[len(u'BEGIN:'):].strip().upper()
                     stack.append(cls(c_name, [], []))
@@ -271,7 +271,7 @@ class _Component(object):
                         stack[-1].props.append(line)
         except IndexError:
             raise ValueError('Parsing error at line {}. Check the debug log '
-                             'for more information.'.format(i + 1))
+                             'for more information.'.format(_i + 1))
 
         if multiple:
             return rv

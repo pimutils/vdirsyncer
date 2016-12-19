@@ -30,7 +30,7 @@ class MemoryStorage(Storage):
         return item.ident + self.fileext
 
     def list(self):
-        for href, (etag, item) in self.items.items():
+        for href, (etag, _item) in self.items.items():
             yield href, etag
 
     def get(self, href):
