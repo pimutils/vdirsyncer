@@ -175,8 +175,8 @@ def metasync(ctx, collections, max_workers):
     '--list/--no-list', default=True,
     help=(
         'Whether to list all collections from both sides during discovery, '
-        'for debugging. This is quite slow. For faster discovery, disable '
-        'with --no-list.'
+        'for debugging. This is slow, but enabled by default for usability '
+        'reasons. '
     )
 )
 @max_workers_option(default=1)
