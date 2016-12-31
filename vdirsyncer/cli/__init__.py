@@ -210,7 +210,8 @@ def discover(ctx, pairs, max_workers, list):
 @click.option('--repair-unsafe-uid/--no-repair-unsafe-uid', default=False,
               help=('Some characters in item UIDs and URLs may cause problems '
                     'with buggy software. Adding this option will reassign '
-                    'new UIDs to those items.'))
+                    'new UIDs to those items. This is disabled by default, '
+                    'which is equivalent to `--no-repair-unsafe-uid`.'))
 @pass_context
 @catch_errors
 def repair(ctx, collection, repair_unsafe_uid):
