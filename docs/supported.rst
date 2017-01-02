@@ -100,13 +100,13 @@ Vdirsyncer is continuously tested against the latest version of ownCloud_::
 
     [storage cal]
     type = "caldav"
-    url = "https://example.com/owncloud/remote.php/caldav/"
+    url = "https://example.com/remote.php/dav/"
     username = ...
     password = ...
 
     [storage card]
     type = "carddav"
-    url = "https://example.com/owncloud/remote.php/carddav/"
+    url = "https://example.com/remote.php/dav/"
     username = ...
     password = ...
 
