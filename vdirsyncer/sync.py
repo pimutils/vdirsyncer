@@ -201,6 +201,8 @@ def _migrate_status(status):
             a, b = value
             a.setdefault('hash', '')
             b.setdefault('hash', '')
+
+
 def sync(storage_a, storage_b, status, conflict_resolution=None,
          force_delete=False, error_callback=None, partial_sync='revert'):
     '''Synchronizes two storages.
