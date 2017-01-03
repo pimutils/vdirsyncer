@@ -195,26 +195,26 @@ Problems:
 DavMail (Exchange, Outlook)
 ---------------------------
 
-Using vdirsyncer with DavMail_ is possible, but you might get confronted with
-weird errors coming from old Exchange servers, malformed calendar entries with
-special characters and/or using an old DavMail version.
+DavMail_ is a proxy program that allows you to use Card- and CalDAV clients
+with Outlook. That allows you to use vdirsyncer with Outlook.
+
+In practice your success with DavMail may wildly vary. Depending on your
+Exchange server you might get confronted with weird errors of all sorts
+(including data-loss).
 
 **Make absolutely sure you use the latest DavMail**::
 
     [storage outlook]
     type = "caldav"
-    url = "http://localhost:1080/"
+    url = "http://localhost:1080/users/user@example.com/calendar/"
     username = "user@example.com"
     password = ...
 
 - Older versions of DavMail handle URLs case-insensitively. See :gh:`144`.
-- DavMail is handling old broken events very poorly. In such cases the
-  `Calendar Checking Tool for Outlook
+- DavMail is handling malformed data on the Exchange server very poorly. In
+  such cases the `Calendar Checking Tool for Outlook
   <https://www.microsoft.com/en-us/download/details.aspx?id=28786>`_ might
   help.
-
-If you encounter any problems, do report them to me, but it's probably not
-vdirsyncer's fault.
 
 .. _DavMail: http://davmail.sourceforge.net/
 
