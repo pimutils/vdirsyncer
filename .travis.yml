@@ -16,91 +16,103 @@
     "include": [
       {
         "env": "BUILD=style BUILD_PRS=true",
+        "python": "3.6"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=false",
+        "python": "3.3"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=false",
+        "python": "3.3"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=false",
+        "python": "3.3"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=false",
+        "python": "3.4"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=false",
+        "python": "3.4"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=false",
+        "python": "3.4"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=false",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "3.3"
-      },
-      {
         "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=false",
-        "python": "3.3"
+        "python": "3.5"
       },
       {
         "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=false",
-        "python": "3.3"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "3.4"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=false",
-        "python": "3.4"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=false",
-        "python": "3.4"
+        "python": "3.5"
       },
       {
         "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=true",
-        "python": "3.5"
+        "python": "3.6"
       },
       {
         "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=true",
-        "python": "3.5"
+        "python": "3.6"
       },
       {
         "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=true",
-        "python": "3.5"
+        "python": "3.6"
       },
       {
         "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "3.5"
+        "python": "3.6"
       },
       {
         "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=release BUILD_PRS=false",
-        "python": "3.5"
+        "python": "3.6"
       },
       {
         "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=minimal BUILD_PRS=false",
-        "python": "3.5"
+        "python": "3.6"
       },
       {
         "env": "BUILD=test DAV_SERVER=nextcloud REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "3.5"
+        "python": "3.6"
       },
       {
         "env": "BUILD=test DAV_SERVER=nextcloud REQUIREMENTS=release BUILD_PRS=false",
-        "python": "3.5"
+        "python": "3.6"
       },
       {
         "env": "BUILD=test DAV_SERVER=nextcloud REQUIREMENTS=minimal BUILD_PRS=false",
-        "python": "3.5"
+        "python": "3.6"
       },
       {
         "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "3.5"
+        "python": "3.6"
       },
       {
         "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=release BUILD_PRS=false",
-        "python": "3.5"
+        "python": "3.6"
       },
       {
         "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=minimal BUILD_PRS=false",
-        "python": "3.5"
+        "python": "3.6"
       },
       {
         "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=devel BUILD_PRS=false",
-        "python": "3.5"
+        "python": "3.6"
       },
       {
         "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=release BUILD_PRS=false",
-        "python": "3.5"
+        "python": "3.6"
       },
       {
         "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=minimal BUILD_PRS=false",
-        "python": "3.5"
+        "python": "3.6"
       },
       {
         "env": "BUILD=test",

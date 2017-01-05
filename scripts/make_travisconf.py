@@ -2,6 +2,9 @@ import itertools
 import json
 import sys
 
+python_versions = ("3.3", "3.4", "3.5", "3.6")
+latest_python = "3.6"
+
 
 def script(x):
     return """
@@ -40,12 +43,13 @@ matrix = []
 cfg['matrix'] = {'include': matrix}
 
 matrix.append({
-    'python': "3.5",
+    'python': latest_python,
     'env': 'BUILD=style BUILD_PRS=true'
 })
 
-for python in ("3.3", "3.4", "3.5"):
-    if python == "3.5":
+
+for python in python_versions:
+    if python == latest_python:
         dav_servers = ("radicale", "owncloud", "nextcloud", "baikal",
                        "davical")
         rs_servers = ()
@@ -61,7 +65,7 @@ for python in ("3.3", "3.4", "3.5"):
         ("devel", "release", "minimal")
     ):
         build_prs = (
-            python == "3.5" and
+            python == latest_python and
             server_type == 'DAV' and
             server == 'radicale'
         )
