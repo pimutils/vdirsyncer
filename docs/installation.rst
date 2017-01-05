@@ -18,8 +18,8 @@ your distribution:
 - `homebrew <http://braumeister.org/formula/vdirsyncer>`_
 - `Gentoo <https://packages.gentoo.org/packages/dev-python/vdirsyncer>`_
 - `Debian Sid <https://packages.debian.org/search?keywords=vdirsyncer&searchon=names&exact=1&suite=all&section=all>`_.
-- Debian stable and Ubuntu don't have packages, but make a manual installation
-  especially hard. See :ref:`debian-urllib3`.
+- Debian and Ubuntu also have packages, but those are not supported in any way.
+  See also :ref:`debian-urllib3`.
 
 If there is no package for your distribution, you'll need to :ref:`install
 vdirsyncer manually <manual-installation>`. There is an easy command to
