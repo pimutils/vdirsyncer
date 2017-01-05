@@ -211,11 +211,11 @@ class Discover(object):
         for response in root.findall('{DAV:}response'):
             props = _merge_xml(response.findall('{DAV:}propstat/{DAV:}prop'))
             if not props:
-                logger.debug('Skipping, missing <prop>: %s', response)
+                dav_logger.debug('Skipping, missing <prop>: %s', response)
                 continue
             if props.find('{DAV:}resourcetype/' + self._resourcetype) is None:
-                logger.debug('Skipping, not of resource type %s: %s',
-                             self._resourcetype, response)
+                dav_logger.debug('Skipping, not of resource type %s: %s',
+                                 self._resourcetype, response)
                 continue
 
             href = response.find('{DAV:}href')
