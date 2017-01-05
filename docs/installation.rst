@@ -12,14 +12,21 @@ your distribution:
 
 - `ArchLinux (AUR) <https://aur.archlinux.org/packages/vdirsyncer>`_
 - `pkgsrc <http://pkgsrc.se/time/py-vdirsyncer>`_
-- `Fedora <https://apps.fedoraproject.org/packages/vdirsyncer>`_
 - `nixpkg <https://github.com/NixOS/nixpkgs/tree/master/pkgs/tools/misc/vdirsyncer>`_
 - `GNU Guix <https://www.gnu.org/software/guix/package-list.html#vdirsyncer>`_
 - `homebrew <http://braumeister.org/formula/vdirsyncer>`_
 - `Gentoo <https://packages.gentoo.org/packages/dev-python/vdirsyncer>`_
-- `Debian Sid <https://packages.debian.org/search?keywords=vdirsyncer&searchon=names&exact=1&suite=all&section=all>`_.
-- Debian and Ubuntu also have packages, but those are not supported in any way.
-  See also :ref:`debian-urllib3`.
+
+Some distros have multiple release channels. The following **may not contain
+the latest version:**
+
+- `Fedora <https://apps.fedoraproject.org/packages/vdirsyncer>`_
+- `Debian <https://packages.debian.org/sid/vdirsyncer>`_ (likewise for Ubuntu)
+
+Note that we only support the latest version of vdirsyncer, but you may still
+find older versions in some distro's repositories. You should have recieved
+information on how to file bugs against those packages. Please do not file bugs
+against vdirsyncer.
 
 If there is no package for your distribution, you'll need to :ref:`install
 vdirsyncer manually <manual-installation>`. There is an easy command to
@@ -65,8 +72,8 @@ installed as dependencies of vdirsyncer and which ones were not, should you
 decide to uninstall it. In other words, using pip that way would pollute your
 home directory.
 
-The clean but hard way
-~~~~~~~~~~~~~~~~~~~~~~
+The clean, hard way
+~~~~~~~~~~~~~~~~~~~
 
 There is a way to install Python software without scattering stuff across
 your filesystem: virtualenv_. There are a lot of resources on how to use it,
@@ -85,8 +92,8 @@ This method has two advantages:
   distro-specific issues.
 - You can delete ``~/vdirsyncer_env/`` to uninstall vdirsyncer entirely.
 
-The new, perfect way
-~~~~~~~~~~~~~~~~~~~~
+The clean, easy way
+~~~~~~~~~~~~~~~~~~~
 
 pipsi_ is a new package manager for Python-based software that automatically
 sets up a virtualenv for each program you install. Assuming you have it
