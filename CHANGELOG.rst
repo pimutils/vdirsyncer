@@ -12,8 +12,11 @@ may want to subscribe to `GitHub's tag feed
 Version 0.14.1
 ==============
 
+*released on 05 January 2017*
+
 - ``vdirsyncer repair`` no longer changes "unsafe" UIDs by default, an extra
   option has to be specified. See :gh:`527`.
+- A lot of important documentation updates.
 
 Version 0.14.0
 ==============
