@@ -86,7 +86,7 @@ def _parse_xml(content):
 
 def _merge_xml(items):
     if not items:
-        return []
+        return None
     rv = items[0]
     for item in items[1:]:
         rv.extend(item.getiterator())
@@ -210,7 +210,12 @@ class Discover(object):
         done = set()
         for response in root.findall('{DAV:}response'):
             props = _merge_xml(response.findall('{DAV:}propstat/{DAV:}prop'))
+            if not props:
+                logger.debug('Skipping, missing <prop>: %s', response)
+                continue
             if props.find('{DAV:}resourcetype/' + self._resourcetype) is None:
+                logger.debug('Skipping, not of resource type %s: %s',
+                             self._resourcetype, response)
                 continue
 
             href = response.find('{DAV:}href')
