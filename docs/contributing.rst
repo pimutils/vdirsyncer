@@ -39,8 +39,10 @@ Reporting bugs
 
 * Make sure your problem isn't already listed in :doc:`problems`.
 
-* Make sure you have the latest version by executing ``pip install --user
-  --upgrade vdirsyncer``.
+* Make sure you have the absolutely latest version of vdirsyncer. For users of
+  some Linux distributions such as Debian or Fedora this may not be the version
+  that your distro offers. In those cases please file a bug against the distro
+  package, not against upstream vdirsyncer.
 
 * Use ``--verbosity=DEBUG`` when including output from vdirsyncer.
 
