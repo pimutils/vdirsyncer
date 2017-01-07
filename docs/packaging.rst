@@ -57,6 +57,11 @@ tests, set the ``DETERMINISTIC_TESTS`` variable to ``"true"``::
 
     make DETERMINISTIC_TESTS=true test
 
+There are a lot of additional variables that allow you to test vdirsyncer
+against a particular server. Those variables are not "stable" and may change
+drastically between minor versions. Just don't use them, you are unlikely to
+find bugs that vdirsyncer's CI hasn't found.
+
 Documentation
 =============
 
