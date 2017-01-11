@@ -500,6 +500,20 @@ class SyncMachine(RuleBasedStateMachine):
         s.update = action_failure
         s.delete = action_failure
 
+    @rule(s=Storage)
+    def none_as_etag(self, s):
+        _old_upload = s.upload
+        _old_update = s.update
+
+        def upload(item):
+            return _old_upload(item)[0], None
+
+        def update(href, item, etag):
+            _old_update(href, item, etag)
+
+        s.upload = upload
+        s.update = update
+
     @rule(target=Status)
     def newstatus(self):
         return {}
