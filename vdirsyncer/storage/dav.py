@@ -509,7 +509,7 @@ class DAVStorage(Storage):
         #
         # In such cases we return a constant etag. The next synchronization
         # will then detect an etag change and will download the new item.
-        etag = response.headers.get('etag', 'NULL')
+        etag = response.headers.get('etag', None)
         href = self._normalize_href(response.url)
         return href, etag
 

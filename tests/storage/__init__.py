@@ -76,7 +76,10 @@ class StorageTests(object):
         items = [get_item() for i in range(1, 10)]
         hrefs = []
         for item in items:
-            hrefs.append(s.upload(item))
+            href, etag = s.upload(item)
+            if etag is None:
+                _, etag = s.get(href)
+            hrefs.append((href, etag))
         hrefs.sort()
         assert hrefs == sorted(s.list())
         for href, etag in hrefs:
@@ -91,6 +94,8 @@ class StorageTests(object):
 
     def test_get_multi_duplicates(self, s, get_item):
         href, etag = s.upload(get_item())
+        if etag is None:
+            _, etag = s.get(href)
         (href2, item, etag2), = s.get_multi([href] * 2)
         assert href2 == href
         assert etag2 == etag
@@ -109,10 +114,14 @@ class StorageTests(object):
     def test_update(self, s, get_item):
         item = get_item()
         href, etag = s.upload(item)
+        if etag is None:
+            _, etag = s.get(href)
         assert_item_equals(s.get(href)[0], item)
 
         new_item = get_item(uid=item.uid)
         new_etag = s.update(href, new_item, etag)
+        if new_etag is None:
+            _, new_etag = s.get(href)
         # See https://github.com/pimutils/vdirsyncer/issues/48
         assert isinstance(new_etag, (bytes, str))
         assert_item_equals(s.get(href)[0], new_item)
@@ -142,6 +151,8 @@ class StorageTests(object):
     def test_list(self, s, get_item):
         assert not list(s.list())
         href, etag = s.upload(get_item())
+        if etag is None:
+            _, etag = s.get(href)
         assert list(s.list()) == [(href, etag)]
 
     def test_has(self, s, get_item):
@@ -153,12 +164,12 @@ class StorageTests(object):
         assert not s.has(href)
 
     def test_update_others_stay_the_same(self, s, get_item):
-        info = dict([
-            s.upload(get_item()),
-            s.upload(get_item()),
-            s.upload(get_item()),
-            s.upload(get_item())
-        ])
+        info = {}
+        for _ in range(4):
+            href, etag = s.upload(get_item())
+            if etag is None:
+                _, etag = s.get(href)
+            info[href] = etag
 
         assert dict(
             (href, etag) for href, item, etag
@@ -197,8 +208,8 @@ class StorageTests(object):
             **self.storage_class.create_collection(**args)
         )
 
-        item = s.upload(get_item())
-        assert item in set(s.list())
+        href = s.upload(get_item())[0]
+        assert href in set(href for href, etag in s.list())
 
     def test_discover_collection_arg(self, requires_collections,
                                      get_storage_args):
@@ -243,18 +254,12 @@ class StorageTests(object):
 
         href, etag = s.upload(item)
         item2, etag2 = s.get(href)
-        assert etag2 == etag
-        assert_item_equals(item2, item)
+        if etag is not None:
+            assert etag2 == etag
+            assert_item_equals(item2, item)
 
-        (href2, etag2), = s.list()
-        assert etag2 == etag
-
-        # https://github.com/owncloud/contacts/issues/581
-        assert href2.replace('%2B', '%20') == href
-
-        item2, etag2 = s.get(href)
-        assert etag2 == etag
-        assert_item_equals(item2, item)
+        (_, etag3), = s.list()
+        assert etag2 == etag3
 
         assert collection in urlunquote(s.collection)
         if self.storage_class.storage_name.endswith('dav'):

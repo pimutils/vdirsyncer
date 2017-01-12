@@ -108,9 +108,10 @@ class TestCalDAVStorage(DAVStorageTests):
 
         s.upload(too_old_item)
         s.upload(too_new_item)
-        href, etag = s.upload(good_item)
+        expected_href, _ = s.upload(good_item)
 
-        assert list(s.list()) == [(href, etag)]
+        (actual_href, _), = s.list()
+        assert actual_href == expected_href
 
     def test_invalid_resource(self, monkeypatch, get_storage_args):
         calls = []
@@ -133,13 +134,17 @@ class TestCalDAVStorage(DAVStorageTests):
         assert len(calls) == 1
 
     def test_item_types_general(self, s):
-        event = s.upload(format_item(EVENT_TEMPLATE))
-        task = s.upload(format_item(TASK_TEMPLATE))
+        event = s.upload(format_item(EVENT_TEMPLATE))[0]
+        task = s.upload(format_item(TASK_TEMPLATE))[0]
         s.item_types = ('VTODO', 'VEVENT')
-        assert set(s.list()) == set([event, task])
+
+        def l():
+            return set(href for href, etag in s.list())
+
+        assert l() == {event, task}
         s.item_types = ('VTODO',)
-        assert set(s.list()) == set([task])
+        assert l() == {task}
         s.item_types = ('VEVENT',)
-        assert set(s.list()) == set([event])
+        assert l() == {event}
         s.item_types = ()
-        assert set(s.list()) == set([event, task])
+        assert l() == {event, task}

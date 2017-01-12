@@ -354,7 +354,6 @@ class Update(Action):
             meta = self.dest.new_status[self.ident]
             meta.etag = \
                 self.dest.storage.update(meta.href, self.item, meta.etag)
-            assert isinstance(meta.etag, (bytes, str))
 
         self.dest.new_status[self.ident] = meta
 
