@@ -61,6 +61,9 @@ If you found my work useful, please consider donating. Thank you!
     <https://salt.bountysource.com/teams/vdirsyncer>`_, for one-time and
     recurring donations.
 
+  - Donations via Bountysource are publicly listed. Use PayPal if you dislike
+    that.
+
 
 - Flattr can be used for recurring donations:
 
