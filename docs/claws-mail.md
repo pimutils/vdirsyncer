@@ -1,12 +1,12 @@
 # vdirsyncer with Claws Mail
 
-First of all, you must know that you can **not** edit CardDav contacts only **watch** CardDav contacts with Claws-Mail
+First of all, Claws-Mail only supports **read-only** functions for vCards.
 
 ## Preparation
-First of al you need to install vdirsyncer, for that look [here](https://vdirsyncer.pimutils.org/en/stable/installation.html).
+We need to install vdirsyncer, for that look [here](https://vdirsyncer.pimutils.org/en/stable/installation.html).
 Then we need to create some folders:
 
-    mkdir -p ~/.vdirsyncer/status
+    mkdir ~/.vdirsyncer
     mkdir ~/.contacts
 
 ## Configuration
@@ -36,7 +36,7 @@ collections = ["from a", "from b"]
 conflict_resolution = "b wins"
 ```
 
-First of all in the general section, we define the status folder path, for some logging information from vdirsyncer. 
+First of all in the general section, we define the status folder path, for discovered collections and generally stuff that needs to persist between syncs. 
 In the local section we define, that all contacts should be sync in a single file, because claws-mail save all contacts in singlefiles,
 and the path for the contacts.
 In the online section you must change the url, username and password to your setup. In the last section we configurate that in conflict situation, the online contacts win.
@@ -61,9 +61,9 @@ Click ok, and you we will see your conatcts.
 **Important:** Claws-Mail shows only the contacts with a mail address.
 
 ## Crontab
-At the end we create a crontab, so that vdirsyncer syncs automatically every 30 minutes our contacts:
+On the end we create a crontab, so that vdirsyncer syncs automatically every 30 minutes our contacts:
 
-    contrab -e
+    contab -e
   
 On the end of that file enter this line
 
