@@ -166,9 +166,10 @@ class Storage(metaclass=StorageMeta):
     def upload(self, item):
         '''Upload a new item.
 
-        In cases where the new etag is not known, this method may return `None`
-        as etag. This special case only exists because of DAV. Avoid this
-        situation whenever possible.
+        In cases where the new etag cannot be atomically determined (i.e. in
+        the same "transaction" as the upload itself), this method may return
+        `None` as etag. This special case only exists because of DAV. Avoid
+        this situation whenever possible.
 
         :raises: :exc:`vdirsyncer.exceptions.PreconditionFailed` if there is
             already an item with that href.
@@ -180,9 +181,7 @@ class Storage(metaclass=StorageMeta):
     def update(self, href, item, etag):
         '''Update an item.
 
-        In cases where the new etag is not known, this method may return `None`
-        as etag. This special case only exists because of DAV. Avoid this
-        situation whenever possible.
+        The etag may be none in some cases, see `upload`.
 
         :raises: :exc:`vdirsyncer.exceptions.PreconditionFailed` if the etag on
             the server doesn't match the given etag or if the item doesn't
