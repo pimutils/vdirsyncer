@@ -26,7 +26,7 @@ class StorageMeta(type):
 
 class Storage(metaclass=StorageMeta):
 
-    '''Superclass of all storages, mainly useful to summarize the interface to
+    '''Superclass of all storages, interface that all storages have to
     implement.
 
     Terminology:
