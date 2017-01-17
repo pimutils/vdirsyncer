@@ -26,6 +26,7 @@ It aims to be for CalDAV and CardDAV what `OfflineIMAP
    partial-sync
    config
    supported
+   tutorials/index
    problems
 
 .. toctree::
