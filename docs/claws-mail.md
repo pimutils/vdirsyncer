@@ -67,6 +67,6 @@ On the end we create a crontab, so that vdirsyncer syncs automatically every 30 
   
 On the end of that file enter this line
 
-    */30 * * * * /usr/local/bin/vdirsyncer sync > /dev/null 2>&1
+    */30 * * * * /usr/local/bin/vdirsyncer sync > /dev/null
     
 That's all!
