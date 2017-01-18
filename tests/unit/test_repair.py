@@ -1,13 +1,12 @@
 
 from hypothesis import given, settings
 
+from tests import uid_strategy
 
 from vdirsyncer.repair import repair_storage
 from vdirsyncer.storage.memory import MemoryStorage
 from vdirsyncer.utils import href_safe
 from vdirsyncer.utils.vobject import Item
-
-from . import uid_strategy
 
 
 @given(uid=uid_strategy)

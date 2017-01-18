@@ -5,11 +5,11 @@ from hypothesis import example, given
 
 import pytest
 
+from tests import blow_up
+
 from vdirsyncer.metasync import MetaSyncConflict, metasync
 from vdirsyncer.storage.base import normalize_meta_value
 from vdirsyncer.storage.memory import MemoryStorage
-
-from . import blow_up
 
 
 def test_irrelevant_status():

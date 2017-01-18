@@ -2,10 +2,11 @@
 
 from textwrap import dedent
 
+from tests import BARE_EVENT_TEMPLATE, EVENT_TEMPLATE, VCARD_TEMPLATE, \
+    normalize_item
+
 import vdirsyncer.utils.vobject as vobject
 
-from .. import BARE_EVENT_TEMPLATE, EVENT_TEMPLATE, VCARD_TEMPLATE, \
-    normalize_item
 
 _simple_split = [
     VCARD_TEMPLATE.format(r=123, uid=123),
