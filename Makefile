@@ -32,7 +32,7 @@ install-test: install-servers
 
 test:
 	if [ "$(CI)" = "true" ]; then \
-		coverage run --source=vdirsyncer/ --module pytest; \
+		coverage run --branch --concurrency=thread --source=vdirsyncer/ --module pytest; \
 	else \
 		py.test; \
 	fi; \
