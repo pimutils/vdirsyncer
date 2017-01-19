@@ -89,4 +89,21 @@ Then you can run::
 
 If you have any questions, feel free to open issues about it.
 
+Structure of the testsuite
+--------------------------
+
+Within ``tests/``, there are three main folders:
+
+- ``system`` contains system- and also integration tests. A rough rule is: If
+  the test is using temporary files, put it here.
+
+- ``unit``, where each testcase tests a single class or function.
+
+- ``storage`` runs a generic storage testsuite against all storages.
+
+The reason for this separation is: We are planning to generate separate
+coverage reports for each of those testsuites. Ideally ``unit`` would generate
+palatable coverage of the entire codebase *on its own*, and the *combination*
+of ``system`` and ``storage`` as well.
+
 .. _virtualenv: http://virtualenv.readthedocs.io/
