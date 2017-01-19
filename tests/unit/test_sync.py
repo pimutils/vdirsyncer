@@ -80,6 +80,18 @@ def test_read_only_and_prefetch():
     assert not items(a) and not items(b)
 
 
+def test_partial_sync_error():
+    a = MemoryStorage()
+    b = MemoryStorage()
+    status = {}
+
+    a.upload(Item('UID:0'))
+    b.read_only = True
+
+    with pytest.raises(PartialSync):
+        sync(a, b, status, partial_sync='error')
+
+
 def test_partial_sync_ignore():
     a = MemoryStorage()
     b = MemoryStorage()
@@ -357,20 +369,37 @@ def test_both_readonly():
         sync(a, b, status)
 
 
-def test_readonly():
+def test_partial_sync_revert():
     a = MemoryStorage(instance_name='a')
     b = MemoryStorage(instance_name='b')
     status = {}
-    href_a, _ = a.upload(Item(u'UID:1'))
-    href_b, _ = b.upload(Item(u'UID:2'))
+    a.upload(Item(u'UID:1'))
+    b.upload(Item(u'UID:2'))
     b.read_only = True
-    with pytest.raises(exceptions.ReadOnlyError):
-        b.upload(Item(u'UID:3'))
 
     sync(a, b, status, partial_sync='revert')
-    assert len(status) == 2 and a.has(href_a) and not b.has(href_a)
+    assert len(status) == 2
+    assert items(a) == {'UID:1', 'UID:2'}
+    assert items(b) == {'UID:2'}
+
     sync(a, b, status, partial_sync='revert')
-    assert len(status) == 1 and not a.has(href_a) and not b.has(href_a)
+    assert len(status) == 1
+    assert items(a) == {'UID:2'}
+    assert items(b) == {'UID:2'}
+
+    # Check that updates get reverted
+    a.items[next(iter(a.items))] = ('foo', Item('UID:2\nupdated'))
+    assert items(a) == {'UID:2\nupdated'}
+    sync(a, b, status, partial_sync='revert')
+    assert items(a) == {'UID:2\nupdated'}
+    sync(a, b, status, partial_sync='revert')
+    assert items(a) == {'UID:2'}
+
+    # Check that deletions get reverted
+    a.items.clear()
+    sync(a, b, status, partial_sync='revert', force_delete=True)
+    sync(a, b, status, partial_sync='revert', force_delete=True)
+    assert items(a) == {'UID:2'}
 
 
 @pytest.mark.parametrize('sync_inbetween', (True, False))
@@ -472,12 +501,10 @@ class SyncMachine(RuleBasedStateMachine):
     Storage = Bundle('storage')
 
     @rule(target=Storage,
-          read_only=st.booleans(),
           flaky_etags=st.booleans(),
           null_etag_on_upload=st.booleans())
-    def newstorage(self, read_only, flaky_etags, null_etag_on_upload):
+    def newstorage(self, flaky_etags, null_etag_on_upload):
         s = MemoryStorage()
-        s.read_only = read_only
         if flaky_etags:
             def get(href):
                 old_etag, item = s.items[href]
@@ -493,6 +520,11 @@ class SyncMachine(RuleBasedStateMachine):
             s.update = lambda h, i, e: _old_update(h, i, e) and 'NULL'
 
         return s
+
+    @rule(s=Storage, read_only=st.booleans())
+    def is_read_only(self, s, read_only):
+        assume(s.read_only != read_only)
+        s.read_only = read_only
 
     @rule(s=Storage)
     def actions_fail(self, s):

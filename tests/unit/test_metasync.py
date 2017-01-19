@@ -7,7 +7,8 @@ import pytest
 
 from tests import blow_up
 
-from vdirsyncer.metasync import MetaSyncConflict, metasync
+from vdirsyncer.exceptions import UserError
+from vdirsyncer.metasync import MetaSyncConflict, logger, metasync
 from vdirsyncer.storage.base import normalize_meta_value
 from vdirsyncer.storage.memory import MemoryStorage
 
@@ -46,19 +47,50 @@ def test_basic(monkeypatch):
     assert not a.get_meta('foo') and not b.get_meta('foo')
 
 
-def test_conflict():
+@pytest.fixture
+def conflict_state(request):
     a = MemoryStorage()
     b = MemoryStorage()
     status = {}
     a.set_meta('foo', 'bar')
     b.set_meta('foo', 'baz')
 
+    def cleanup():
+        assert a.get_meta('foo') == 'bar'
+        assert b.get_meta('foo') == 'baz'
+        assert not status
+
+    request.addfinalizer(cleanup)
+
+    return a, b, status
+
+
+def test_conflict(conflict_state):
+    a, b, status = conflict_state
+
     with pytest.raises(MetaSyncConflict):
         metasync(a, b, status, keys=['foo'])
 
-    assert a.get_meta('foo') == 'bar'
-    assert b.get_meta('foo') == 'baz'
-    assert not status
+
+def test_invalid_conflict_resolution(conflict_state):
+    a, b, status = conflict_state
+
+    with pytest.raises(UserError) as excinfo:
+        metasync(a, b, status, keys=['foo'], conflict_resolution='foo')
+
+    assert 'Invalid conflict resolution setting' in str(excinfo.value)
+
+
+def test_warning_on_custom_conflict_commands(conflict_state, monkeypatch):
+    a, b, status = conflict_state
+    warnings = []
+    monkeypatch.setattr(logger, 'warning', warnings.append)
+
+    with pytest.raises(MetaSyncConflict):
+        metasync(a, b, status, keys=['foo'],
+                 conflict_resolution=lambda *a, **kw: None)
+
+    assert warnings == ['Custom commands don\'t work on metasync.']
 
 
 def test_conflict_same_content():

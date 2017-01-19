@@ -197,10 +197,6 @@ def _migrate_status(status):
                 'href': href_b,
                 'etag': etag_b,
             })
-        elif len(value) == 2:
-            a, b = value
-            a.setdefault('hash', '')
-            b.setdefault('hash', '')
 
 
 def sync(storage_a, storage_b, status, conflict_resolution=None,
@@ -283,7 +279,7 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
 
 
 class Action:
-    def _run_impl(self, a, b):
+    def _run_impl(self, a, b):  # pragma: no cover
         raise NotImplementedError()
 
     def run(self, a, b, conflict_resolution, partial_sync):
@@ -345,7 +341,6 @@ class Update(Action):
         self.dest = dest
 
     def _run_impl(self, a, b):
-
         if self.dest.storage.read_only:
             meta = _ItemMetadata(item=self.item)
         else:
