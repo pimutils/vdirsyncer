@@ -125,34 +125,36 @@ def split_collection(text):
     items = {}  # uid => item
     ungrouped_items = []
 
-    def inner(item, main):
-        if item.name == u'VTIMEZONE':
-            inline.append(item)
-        elif item.name == u'VCARD':
-            ungrouped_items.append(item)
-        elif item.name in (u'VTODO', u'VEVENT', u'VJOURNAL'):
-            uid = item.get(u'UID', u'')
-            wrapper = _Component(main.name, main.props[:], [])
-
-            if uid.strip():
-                wrapper = items.setdefault(uid, wrapper)
-            else:
-                ungrouped_items.append(wrapper)
-
-            wrapper.subcomponents.append(item)
-        elif item.name in (u'VCALENDAR', u'VADDRESSBOOK'):
-            for subitem in item.subcomponents:
-                inner(subitem, item)
-        else:
-            raise ValueError('Unknown component: {}'
-                             .format(item.name))
-
     for main in _Component.parse(text, multiple=True):
-        inner(main, main)
+        _split_collection_impl(main, main, inline, items, ungrouped_items)
 
     for item in chain(items.values(), ungrouped_items):
         item.subcomponents.extend(inline)
         yield u'\r\n'.join(item.dump_lines())
+
+
+def _split_collection_impl(item, main, inline, items, ungrouped_items):
+    if item.name == u'VTIMEZONE':
+        inline.append(item)
+    elif item.name == u'VCARD':
+        ungrouped_items.append(item)
+    elif item.name in (u'VTODO', u'VEVENT', u'VJOURNAL'):
+        uid = item.get(u'UID', u'')
+        wrapper = _Component(main.name, main.props[:], [])
+
+        if uid.strip():
+            wrapper = items.setdefault(uid, wrapper)
+        else:
+            ungrouped_items.append(wrapper)
+
+        wrapper.subcomponents.append(item)
+    elif item.name in (u'VCALENDAR', u'VADDRESSBOOK'):
+        for subitem in item.subcomponents:
+            _split_collection_impl(subitem, item, inline, items,
+                                   ungrouped_items)
+    else:
+        raise ValueError('Unknown component: {}'
+                         .format(item.name))
 
 
 _default_join_wrappers = {
