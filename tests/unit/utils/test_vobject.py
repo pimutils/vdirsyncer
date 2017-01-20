@@ -2,8 +2,14 @@
 
 from textwrap import dedent
 
-from tests import BARE_EVENT_TEMPLATE, EVENT_TEMPLATE, VCARD_TEMPLATE, \
-    normalize_item
+import hypothesis.strategies as st
+from hypothesis import given
+
+import pytest
+
+from tests import BARE_EVENT_TEMPLATE, EVENT_TEMPLATE, \
+    EVENT_WITH_TIMEZONE_TEMPLATE, VCARD_TEMPLATE, normalize_item, \
+    uid_strategy
 
 import vdirsyncer.utils.vobject as vobject
 
@@ -195,3 +201,16 @@ def test_multiline_uid_complex():
     assert vobject.Item(a).uid == (u'040000008200E00074C5B7101A82E008000000005'
                                    u'0AAABEEF50DCF001000000062548482FA830A46B9'
                                    u'EA62114AC9F0EF')
+
+
+@pytest.mark.parametrize('template', [EVENT_TEMPLATE,
+                                      EVENT_WITH_TIMEZONE_TEMPLATE,
+                                      VCARD_TEMPLATE])
+@given(uid=st.one_of(st.none(), uid_strategy))
+def test_replace_uid(template, uid):
+    item = vobject.Item(template.format(r=123, uid=123)).with_uid(uid)
+    assert item.uid == uid
+    if uid:
+        assert item.raw.count('\nUID:{}'.format(uid)) == 1
+    else:
+        assert '\nUID:' not in item.raw
