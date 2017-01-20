@@ -10,7 +10,6 @@ import pytest
 
 from tests import blow_up, uid_strategy
 
-import vdirsyncer.exceptions as exceptions
 from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.memory import MemoryStorage, _random_string
 from vdirsyncer.sync import BothReadOnly, IdentConflict, PartialSync, \
