@@ -257,18 +257,18 @@ def test_multiple_pairs(tmpdir, runner):
     runner.write_with_general(''.join(get_cfg()))
 
     result = runner.invoke(['discover'])
+    assert not result.exception
     assert set(result.output.splitlines()) > set([
         'Discovering collections for pair bambaz',
         'Discovering collections for pair foobar'
     ])
-    assert not result.exception
 
     result = runner.invoke(['sync'])
+    assert not result.exception
     assert set(result.output.splitlines()) == set([
         'Syncing bambaz',
         'Syncing foobar',
     ])
-    assert not result.exception
 
 
 @given(collections=st.sets(
@@ -475,7 +475,7 @@ def test_partial_sync(tmpdir, runner, partial_sync):
     fileext = ".txt"
     path = "{base}/bar"
     '''.format(
-        partial_sync=('partial_sync = {}\n'.format(partial_sync)
+        partial_sync=('partial_sync = "{}"\n'.format(partial_sync)
                       if partial_sync else ''),
         base=str(tmpdir)
     )))

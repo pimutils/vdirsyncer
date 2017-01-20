@@ -9,6 +9,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.15
+============
+
+- Deprecated syntax for configuration values is now completely rejected. All
+  values now have to be valid JSON.
+
 Version 0.14.1
 ==============
 

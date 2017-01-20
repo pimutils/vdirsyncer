@@ -4,7 +4,7 @@ from textwrap import dedent
 import pytest
 
 from vdirsyncer import cli, exceptions
-from vdirsyncer.cli.config import Config, _parse_config_value
+from vdirsyncer.cli.config import Config
 
 import vdirsyncer.cli.utils  # noqa
 
@@ -24,23 +24,10 @@ def read_config(tmpdir, monkeypatch):
     return inner
 
 
-@pytest.fixture
-def parse_config_value(capsys):
-    def inner(s):
-        try:
-            rv = _parse_config_value(s)
-        except ValueError:
-            return invalid
-        else:
-            warnings = capsys.readouterr()[1]
-            return rv, len(warnings.splitlines())
-    return inner
-
-
 def test_read_config(read_config):
     errors, c = read_config(u'''
         [general]
-        status_path = /tmp/status/
+        status_path = "/tmp/status/"
 
         [pair bob]
         a = "bob_a"
@@ -76,7 +63,7 @@ def test_missing_collections_param(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
         read_config(u'''
             [general]
-            status_path = /tmp/status/
+            status_path = "/tmp/status/"
 
             [pair bob]
             a = "bob_a"
@@ -96,7 +83,7 @@ def test_invalid_section_type(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
         read_config(u'''
             [general]
-            status_path = /tmp/status/
+            status_path = "/tmp/status/"
 
             [bogus]
         ''')
@@ -156,7 +143,7 @@ def test_invalid_storage_name(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
         read_config(u'''
         [general]
-        status_path = {base}/status/
+        status_path = "{base}/status/"
 
         [storage foo.bar]
         ''')
@@ -168,7 +155,7 @@ def test_invalid_collections_arg(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
         read_config(u'''
         [general]
-        status_path = /tmp/status/
+        status_path = "/tmp/status/"
 
         [pair foobar]
         a = "foo"
@@ -193,7 +180,7 @@ def test_duplicate_sections(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
         read_config(u'''
         [general]
-        status_path = /tmp/status/
+        status_path = "/tmp/status/"
 
         [pair foobar]
         a = "foobar"
@@ -212,27 +199,6 @@ def test_duplicate_sections(read_config):
         ''')
 
     assert 'Name "foobar" already used' in str(excinfo.value)
-
-
-def test_parse_config_value(parse_config_value):
-    x = parse_config_value
-
-    assert x('123  # comment!') is invalid
-
-    assert x('True') is invalid
-    assert x('False') is invalid
-    assert x('Yes') is invalid
-    assert x('None') is invalid
-    assert x('"True"') == ('True', 0)
-    assert x('"False"') == ('False', 0)
-
-    assert x('"123  # comment!"') == ('123  # comment!', 0)
-    assert x('true') == (True, 0)
-    assert x('false') == (False, 0)
-    assert x('null') == (None, 0)
-    assert x('3.14') == (3.14, 0)
-    assert x('') == ('', 1)
-    assert x('""') == ('', 0)
 
 
 def test_validate_collections_param():

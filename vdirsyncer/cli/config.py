@@ -5,7 +5,6 @@ from itertools import chain
 
 from click_threading import get_ui_worker
 
-from . import cli_logger
 from .fetchparams import expand_fetch_params
 from .utils import storage_class_from_config
 from .. import PROJECT_HOME, exceptions
@@ -146,47 +145,10 @@ class _ConfigReader:
         return self._general, self._pairs, self._storages
 
 
-def _parse_config_value(value):
-    try:
-        return json.loads(value)
-    except ValueError:
-        pass
-
-    for wrong, right in [
-        (('on', 'yes'), 'true'),
-        (('off', 'no'), 'false'),
-        (('none',), 'null')
-    ]:
-        if value.lower() in wrong + (right,):
-            raise ValueError('You probably meant {} instead of {}. Surround '
-                             'your string with double-quotes if not.'
-                             .format(right, value))
-
-    if '#' in value:
-        raise ValueError('Invalid value:{}\n'
-                         'Use double quotes (") if you want to use hashes in '
-                         'your value.')
-
-    if len(value.splitlines()) > 1:
-        # ConfigParser's barrier for mistaking an arbitrary line for the
-        # continuation of a value is awfully low. The following example will
-        # also contain the second line in the value:
-        #
-        # foo = bar
-        #  # my comment
-        raise ValueError('No multiline-values allowed:\n{}'.format(value))
-
-    cli_logger.warning('Soon, all strings have to be in double quotes. Please '
-                       'replace {} with {}'
-                       .format(value, json.dumps(value)))
-
-    return value
-
-
 def _parse_options(items, section=None):
     for key, value in items:
         try:
-            yield key, _parse_config_value(value)
+            yield key, json.loads(value)
         except ValueError as e:
             raise ValueError('Section "{}", option "{}": {}'
                              .format(section, key, e))
