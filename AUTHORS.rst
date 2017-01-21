@@ -8,6 +8,7 @@ In alphabetical order:
 - Clément Mondon
 - Hugo Osvaldo Barrera
 - Julian Mehne
+- Malte Kiefer
 - Marek Marczykowski-Górecki
 - Markus Unterwaditzer
 - Michael Adler
