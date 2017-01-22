@@ -226,6 +226,7 @@ def test_broken_item():
     item = vobject.Item('END:FOO')
     assert item.parsed is None
 
+
 def test_multiple_items():
     with pytest.raises(ValueError) as excinfo:
         vobject._Component.parse([
@@ -263,7 +264,6 @@ value_strategy = st.text(
     ), blacklist_characters=':='),
     min_size=1
 ).filter(lambda x: x.strip() == x)
-
 
 
 class VobjectMachine(RuleBasedStateMachine):
