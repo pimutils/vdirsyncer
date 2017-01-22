@@ -300,3 +300,6 @@ class VobjectMachine(RuleBasedStateMachine):
     def sanity_check(self, c):
         c1 = vobject._Component.parse(c.dump_lines())
         assert c1 == c
+
+
+TestVobjectMachine = VobjectMachine.TestCase

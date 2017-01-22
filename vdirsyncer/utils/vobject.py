@@ -358,7 +358,7 @@ class _Component(object):
     def __eq__(self, other):
         return (
             isinstance(other, type(self)) and
-            self.name != other.name and
-            self.props != other.props and
-            self.subcomponents != other.subcomponents
+            self.name == other.name and
+            self.props == other.props and
+            self.subcomponents == other.subcomponents
         )
