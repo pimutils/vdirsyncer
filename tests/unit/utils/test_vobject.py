@@ -256,6 +256,16 @@ def test_input_types():
         assert not c.subcomponents
 
 
+value_strategy = st.text(
+    st.characters(blacklist_categories=(
+        'Zs', 'Zl', 'Zp',
+        'Cc', 'Cs'
+    ), blacklist_characters=':='),
+    min_size=1
+).filter(lambda x: x.strip() == x)
+
+
+
 class VobjectMachine(RuleBasedStateMachine):
     Unparsed = Bundle('unparsed')
     Parsed = Bundle('parsed')
@@ -287,8 +297,21 @@ class VobjectMachine(RuleBasedStateMachine):
     def add_prop(self, c, key, value):
         c[key] = value
         assert c[key] == value
+        assert key in c
+        assert c.get(key) == value
         dump = '\r\n'.join(c.dump_lines())
         assert key in dump and value in dump
+
+    @rule(c=Parsed,
+          key=uid_strategy,
+          value=uid_strategy,
+          params=st.lists(st.tuples(value_strategy, value_strategy)))
+    def add_prop_raw(self, c, key, value, params):
+        params_str = ','.join(k + '=' + v for k, v in params)
+        c.props.append('{};{}:{}'.format(key, params_str, value))
+        assert c[key] == value
+        assert key in c
+        assert c.get(key) == value
 
     @rule(c=Parsed, sub_c=Parsed)
     def add_component(self, c, sub_c):
@@ -303,3 +326,17 @@ class VobjectMachine(RuleBasedStateMachine):
 
 
 TestVobjectMachine = VobjectMachine.TestCase
+
+
+def test_component_contains():
+    item = vobject._Component.parse([
+        'BEGIN:FOO',
+        'FOO:YES',
+        'END:FOO'
+    ])
+
+    assert 'FOO' in item
+    assert 'BAZ' not in item
+
+    with pytest.raises(ValueError):
+        42 in item
