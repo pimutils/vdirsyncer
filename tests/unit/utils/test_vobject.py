@@ -3,7 +3,8 @@
 from textwrap import dedent
 
 import hypothesis.strategies as st
-from hypothesis import given
+from hypothesis import assume, given
+from hypothesis.stateful import Bundle, RuleBasedStateMachine, rule
 
 import pytest
 
@@ -214,3 +215,88 @@ def test_replace_uid(template, uid):
         assert item.raw.count('\nUID:{}'.format(uid)) == 1
     else:
         assert '\nUID:' not in item.raw
+
+
+def test_broken_item():
+    with pytest.raises(ValueError) as excinfo:
+        vobject._Component.parse('END:FOO')
+
+    assert 'Parsing error at line 1' in str(excinfo.value)
+
+    item = vobject.Item('END:FOO')
+    assert item.parsed is None
+
+def test_multiple_items():
+    with pytest.raises(ValueError) as excinfo:
+        vobject._Component.parse([
+            'BEGIN:FOO',
+            'END:FOO',
+            'BEGIN:FOO',
+            'END:FOO',
+        ])
+
+    assert 'Found 2 components, expected one' in str(excinfo.value)
+
+    c1, c2 = vobject._Component.parse([
+        'BEGIN:FOO',
+        'END:FOO',
+        'BEGIN:FOO',
+        'END:FOO',
+    ], multiple=True)
+    assert c1.name == c2.name == 'FOO'
+
+
+def test_input_types():
+    lines = ['BEGIN:FOO', 'FOO:BAR', 'END:FOO']
+
+    for x in (lines, '\r\n'.join(lines), '\r\n'.join(lines).encode('ascii')):
+        c = vobject._Component.parse(x)
+        assert c.name == 'FOO'
+        assert c.props == ['FOO:BAR']
+        assert not c.subcomponents
+
+
+class VobjectMachine(RuleBasedStateMachine):
+    Unparsed = Bundle('unparsed')
+    Parsed = Bundle('parsed')
+
+    @rule(target=Unparsed,
+          joined=st.booleans(),
+          encoded=st.booleans())
+    def get_unparsed_lines(self, joined, encoded):
+        rv = ['BEGIN:FOO', 'FOO:YES', 'END:FOO']
+        if joined:
+            rv = '\r\n'.join(rv)
+            if encoded:
+                rv = rv.encode('utf-8')
+        elif encoded:
+            assume(False)
+        return rv
+
+    @rule(unparsed=Unparsed, target=Parsed)
+    def parse(self, unparsed):
+        return vobject._Component.parse(unparsed)
+
+    @rule(parsed=Parsed, target=Unparsed)
+    def serialize(self, parsed):
+        return list(parsed.dump_lines())
+
+    @rule(c=Parsed,
+          key=uid_strategy,
+          value=uid_strategy)
+    def add_prop(self, c, key, value):
+        c[key] = value
+        assert c[key] == value
+        dump = '\r\n'.join(c.dump_lines())
+        assert key in dump and value in dump
+
+    @rule(c=Parsed, sub_c=Parsed)
+    def add_component(self, c, sub_c):
+        assume(sub_c is not c and sub_c not in c)
+        c.subcomponents.append(sub_c)
+        assert '\r\n'.join(sub_c.dump_lines()) in '\r\n'.join(c.dump_lines())
+
+    @rule(c=Parsed)
+    def sanity_check(self, c):
+        c1 = vobject._Component.parse(c.dump_lines())
+        assert c1 == c
