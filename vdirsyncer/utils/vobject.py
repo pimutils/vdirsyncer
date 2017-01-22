@@ -272,8 +272,7 @@ class _Component(object):
                     if line.strip():
                         stack[-1].props.append(line)
         except IndexError:
-            raise ValueError('Parsing error at line {}. Check the debug log '
-                             'for more information.'.format(_i + 1))
+            raise ValueError('Parsing error at line {}'.format(_i + 1))
 
         if multiple:
             return rv
@@ -319,12 +318,25 @@ class _Component(object):
         line = u'{}:{}'.format(key, val)
         self.props.append(line)
 
+    def __contains__(self, obj):
+        if isinstance(obj, type(self)):
+            return obj not in self.subcomponents and \
+                not any(obj in x for x in self.subcomponents)
+        elif isinstance(obj, str):
+            return self.get(obj, None) is not None
+        else:
+            raise ValueError(obj)
+
     def __getitem__(self, key):
-        prefix = (u'{}:'.format(key), u'{};'.format(key))
+        prefix_without_params = '{}:'.format(key)
+        prefix_with_params = '{};'.format(key)
         iterlines = iter(self.props)
         for line in iterlines:
-            if line.startswith(prefix):
-                rv = line.split(u':', 1)[-1]
+            if line.startswith(prefix_without_params):
+                rv = line[len(prefix_without_params):]
+                break
+            elif line.startswith(prefix_with_params):
+                rv = line[len(prefix_with_params):].split(':', 1)[-1]
                 break
         else:
             raise KeyError()
@@ -342,3 +354,11 @@ class _Component(object):
             return self[key]
         except KeyError:
             return default
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, type(self)) and
+            self.name == other.name and
+            self.props == other.props and
+            self.subcomponents == other.subcomponents
+        )
