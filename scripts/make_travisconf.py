@@ -5,15 +5,6 @@ import sys
 python_versions = ("3.3", "3.4", "3.5", "3.6")
 latest_python = "3.6"
 
-
-def script(x):
-    return """
-if [ "$BUILD_PRS" = "true" ] || [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-    {}
-fi
-    """.strip().format(x.strip())
-
-
 cfg = {}
 
 cfg['sudo'] = True
@@ -27,17 +18,15 @@ cfg['branches'] = {
     'only': ['auto', 'master']
 }
 
-cfg['install'] = [script("""
-    . scripts/travis-install.sh;
-    pip install -U pip;
-    pip install wheel;
-    make -e install-dev;
-    make -e install-$BUILD;
-""")]
+cfg['install'] = ["""
+. scripts/travis-install.sh;
+pip install -U pip;
+pip install wheel;
+make -e install-dev;
+make -e install-$BUILD;
+"""]
 
-cfg['script'] = [script("""
-    make -e $BUILD;
-""")]
+cfg['script'] = ["make -e $BUILD"]
 
 matrix = []
 cfg['matrix'] = {'include': matrix}

@@ -9,7 +9,7 @@
     "submodules": false
   },
   "install": [
-    "if [ \"$BUILD_PRS\" = \"true\" ] || [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ]; then\n    . scripts/travis-install.sh;\n    pip install -U pip;\n    pip install wheel;\n    make -e install-dev;\n    make -e install-$BUILD;\nfi"
+    "\n. scripts/travis-install.sh;\npip install -U pip;\npip install wheel;\nmake -e install-dev;\nmake -e install-$BUILD;\n"
   ],
   "language": "python",
   "matrix": {
@@ -122,7 +122,7 @@
     ]
   },
   "script": [
-    "if [ \"$BUILD_PRS\" = \"true\" ] || [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ]; then\n    make -e $BUILD;\nfi"
+    "make -e $BUILD"
   ],
   "sudo": true
 }
