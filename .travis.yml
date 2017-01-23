@@ -62,6 +62,10 @@
         "python": "3.6"
       },
       {
+        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=release ",
+        "python": "3.6"
+      },
+      {
         "env": "BUILD=test DAV_SERVER=skip REQUIREMENTS=release ",
         "python": "3.6"
       },

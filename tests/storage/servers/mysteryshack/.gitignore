@@ -1,1 +1,3 @@
 mysteryshack
+*.pyc
+__pycache__
