@@ -70,7 +70,6 @@ class JobFailed(RuntimeError):
     pass
 
 
-# TODO: Making this a decorator would be nice
 def handle_cli_error(status_name=None, e=None):
     '''
     Print a useful error message for the current exception.
