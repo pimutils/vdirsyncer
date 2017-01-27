@@ -14,6 +14,8 @@ Version 0.15
 
 - Deprecated syntax for configuration values is now completely rejected. All
   values now have to be valid JSON.
+- The default of ``--list`` for ``vdirsyncer discover`` has changed to
+  ``false``. See :ghpr:`543`.
 
 Version 0.14.1
 ==============
