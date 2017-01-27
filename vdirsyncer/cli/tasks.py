@@ -4,9 +4,10 @@ import functools
 import json
 
 from .config import CollectionConfig
-from .utils import JobFailed, cli_logger, collections_for_pair, \
-    get_status_name, handle_cli_error, load_status, save_status, \
-    storage_class_from_config, storage_instance_from_config
+from .discover import collections_for_pair, storage_class_from_config, \
+    storage_instance_from_config
+from .utils import JobFailed, cli_logger, get_status_name, handle_cli_error, \
+    load_status, save_status
 
 from .. import exceptions
 from ..sync import sync

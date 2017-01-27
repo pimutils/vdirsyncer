@@ -6,8 +6,6 @@ import pytest
 from vdirsyncer import cli, exceptions
 from vdirsyncer.cli.config import Config
 
-import vdirsyncer.cli.utils  # noqa
-
 
 invalid = object()
 
@@ -90,17 +88,6 @@ def test_invalid_section_type(read_config):
 
     assert 'Unknown section' in str(excinfo.value)
     assert 'bogus' in str(excinfo.value)
-
-
-def test_storage_instance_from_config(monkeypatch):
-    def lol(**kw):
-        assert kw == {'foo': 'bar', 'baz': 1}
-        return 'OK'
-
-    monkeypatch.setitem(cli.utils.storage_names._storages,
-                        'lol', lol)
-    config = {'type': 'lol', 'foo': 'bar', 'baz': 1}
-    assert cli.utils.storage_instance_from_config(config) == 'OK'
 
 
 def test_missing_general_section(read_config):

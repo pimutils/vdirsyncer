@@ -2,7 +2,6 @@
 
 import contextlib
 import errno
-import hashlib
 import importlib
 import itertools
 import json
@@ -28,10 +27,6 @@ except ImportError:
 
 STATUS_PERMISSIONS = 0o600
 STATUS_DIR_PERMISSIONS = 0o700
-
-# Increase whenever upgrade potentially breaks discovery cache and collections
-# should be re-discovered
-DISCOVERY_CACHE_VERSION = 1
 
 
 class _StorageIndex(object):
@@ -171,215 +166,13 @@ def get_status_name(pair, collection):
     return pair + '/' + collection
 
 
-def _get_collections_cache_key(pair):
-    m = hashlib.sha256()
-    j = json.dumps([
-        DISCOVERY_CACHE_VERSION,
-        pair.collections,
-        pair.config_a,
-        pair.config_b,
-    ], sort_keys=True)
-    m.update(j.encode('utf-8'))
-    return m.hexdigest()
-
-
-def collections_for_pair(status_path, pair, from_cache=True,
-                         list_collections=False):
-    '''Determine all configured collections for a given pair. Takes care of
-    shortcut expansion and result caching.
-
-    :param status_path: The path to the status directory.
-    :param from_cache: Whether to load from cache (aborting on cache miss) or
-        discover and save to cache.
-
-    :returns: iterable of (collection, (a_args, b_args))
-    '''
-    cache_key = _get_collections_cache_key(pair)
-    if from_cache:
-        rv = load_status(status_path, pair.name, data_type='collections')
-        if rv and rv.get('cache_key', None) == cache_key:
-            return list(_expand_collections_cache(
-                rv['collections'], pair.config_a, pair.config_b
-            ))
-        elif rv:
-            raise exceptions.UserError('Detected change in config file, '
-                                       'please run `vdirsyncer discover {}`.'
-                                       .format(pair.name))
-        else:
-            raise exceptions.UserError('Please run `vdirsyncer discover {}` '
-                                       ' before synchronization.'
-                                       .format(pair.name))
-
-    cli_logger.info('Discovering collections for pair {}'
-                    .format(pair.name))
-
-    # We have to use a list here because the special None/null value would get
-    # mangled to string (because JSON objects always have string keys).
-    rv = list(_collections_for_pair_impl(status_path, pair,
-                                         list_collections=list_collections))
-
-    save_status(status_path, pair.name, data_type='collections',
-                data={
-                    'collections': list(
-                        _compress_collections_cache(rv, pair.config_a,
-                                                    pair.config_b)
-                    ),
-                    'cache_key': cache_key
-                })
-    return rv
-
-
-def _compress_collections_cache(collections, config_a, config_b):
-    def deduplicate(x, y):
-        rv = {}
-        for key, value in x.items():
-            if key not in y or y[key] != value:
-                rv[key] = value
-
-        return rv
-
-    for name, (a, b) in collections:
-        yield name, (deduplicate(a, config_a), deduplicate(b, config_b))
-
-
-def _expand_collections_cache(collections, config_a, config_b):
-    for name, (a_delta, b_delta) in collections:
-        a = dict(config_a)
-        a.update(a_delta)
-
-        b = dict(config_b)
-        b.update(b_delta)
-
-        yield name, (a, b)
-
-
-def _discover_from_config(config):
-    storage_type = config['type']
-    cls, config = storage_class_from_config(config)
-
-    discovered = []
-
-    try:
-        discovered.extend(cls.discover(**config))
-    except NotImplementedError:
-        pass
-    except Exception:
-        return handle_storage_init_error(cls, config)
-
-    rv = {}
-    for args in discovered:
-        args['type'] = storage_type
-        rv[args['collection']] = args
-    return rv
-
-
-def _handle_collection_not_found(config, collection, e=None):
-    storage_name = config.get('instance_name', None)
-
-    cli_logger.warning('{}No collection {} found for storage {}.'
-                       .format('{}\n'.format(e) if e else '',
-                               json.dumps(collection), storage_name))
-
-    if click.confirm('Should vdirsyncer attempt to create it?'):
-        storage_type = config['type']
-        cls, config = storage_class_from_config(config)
-        config['collection'] = collection
-        try:
-            args = cls.create_collection(**config)
-            args['type'] = storage_type
-            return args
-        except NotImplementedError as e:
-            cli_logger.error(e)
-
-    raise exceptions.UserError(
-        'Unable to find or create collection "{collection}" for '
-        'storage "{storage}". Please create the collection '
-        'yourself.'.format(collection=collection,
-                           storage=storage_name))
-
-
-def _print_collections(base_config, discovered):
-    instance_name = base_config['instance_name']
-    cli_logger.info('{}:'.format(instance_name))
-    for args in discovered.values():
-        collection = args['collection']
-        if collection is None:
-            continue
-
-        args['instance_name'] = instance_name
-        try:
-            storage = storage_instance_from_config(args, create=False)
-            displayname = storage.get_meta('displayname')
-        except Exception:
-            displayname = u''
-
-        cli_logger.info('  - {}{}'.format(
-            json.dumps(collection),
-            ' ("{}")'.format(displayname)
-            if displayname and displayname != collection
-            else ''
-        ))
-
-
-def _collections_for_pair_impl(status_path, pair, list_collections=False):
-    handled_collections = set()
-
-    shortcuts = pair.collections
-    if shortcuts is None:
-        shortcuts = [None]
-
-    a_discovered = _discover_from_config(pair.config_a)
-    b_discovered = _discover_from_config(pair.config_b)
-
-    if list_collections:
-        _print_collections(pair.config_a, a_discovered)
-        _print_collections(pair.config_b, b_discovered)
-
-    for shortcut in shortcuts:
-        if shortcut == 'from a':
-            collections = a_discovered
-        elif shortcut == 'from b':
-            collections = b_discovered
-        else:
-            collections = [shortcut]
-
-        for collection in collections:
-            if isinstance(collection, list):
-                collection, collection_a, collection_b = collection
-            else:
-                collection_a = collection_b = collection
-
-            if collection in handled_collections:
-                continue
-            handled_collections.add(collection)
-
-            a_args = _collection_from_discovered(a_discovered, collection_a,
-                                                 pair.config_a)
-            b_args = _collection_from_discovered(b_discovered, collection_b,
-                                                 pair.config_b)
-
-            yield collection, (a_args, b_args)
-
-
-def _collection_from_discovered(discovered, collection, config):
-    if collection is None:
-        args = dict(config)
-        args['collection'] = None
-        storage_instance_from_config(args)
-        return args
-
-    try:
-        return discovered[collection]
-    except KeyError:
-        return _handle_collection_not_found(config, collection)
-
-
 def load_status(base_path, pair, collection=None, data_type=None):
     assert data_type is not None
     status_name = get_status_name(pair, collection)
     path = expand_path(os.path.join(base_path, status_name))
     if os.path.isfile(path) and data_type == 'items':
         new_path = path + '.items'
+        # XXX: Legacy migration
         cli_logger.warning('Migrating statuses: Renaming {} to {}'
                            .format(path, new_path))
         os.rename(path, new_path)
@@ -441,7 +234,7 @@ def storage_instance_from_config(config, create=True):
         return cls(**new_config)
     except exceptions.CollectionNotFound as e:
         if create:
-            config = _handle_collection_not_found(
+            config = handle_collection_not_found(
                 config, config.get('collection', None), e=str(e))
             return storage_instance_from_config(config, create=False)
         else:
@@ -592,3 +385,28 @@ def assert_permissions(path, wanted):
         cli_logger.warning('Correcting permissions of {} from {:o} to {:o}'
                            .format(path, permissions, wanted))
         os.chmod(path, wanted)
+
+
+def handle_collection_not_found(config, collection, e=None):
+    storage_name = config.get('instance_name', None)
+
+    cli_logger.warning('{}No collection {} found for storage {}.'
+                       .format('{}\n'.format(e) if e else '',
+                               json.dumps(collection), storage_name))
+
+    if click.confirm('Should vdirsyncer attempt to create it?'):
+        storage_type = config['type']
+        cls, config = storage_class_from_config(config)
+        config['collection'] = collection
+        try:
+            args = cls.create_collection(**config)
+            args['type'] = storage_type
+            return args
+        except NotImplementedError as e:
+            cli_logger.error(e)
+
+    raise exceptions.UserError(
+        'Unable to find or create collection "{collection}" for '
+        'storage "{storage}". Please create the collection '
+        'yourself.'.format(collection=collection,
+                           storage=storage_name))
