@@ -3,6 +3,7 @@
 import hashlib
 import json
 import logging
+import sys
 
 from .utils import handle_collection_not_found, handle_storage_init_error, \
     load_status, save_status, storage_class_from_config, \
@@ -65,9 +66,9 @@ def collections_for_pair(status_path, pair, from_cache=True,
 
     if list_collections:
         _print_collections(pair.config_a['instance_name'],
-                           a_discovered.get_self())
+                           a_discovered.get_self)
         _print_collections(pair.config_b['instance_name'],
-                           b_discovered.get_self())
+                           b_discovered.get_self)
 
     # We have to use a list here because the special None/null value would get
     # mangled to string (because JSON objects always have string keys).
@@ -94,7 +95,7 @@ def collections_for_pair(status_path, pair, from_cache=True,
 
 
 def _sanity_check_collections(collections):
-    for collection, (a_args, b_args) in collections:
+    for _, (a_args, b_args) in collections:
         storage_instance_from_config(a_args)
         storage_instance_from_config(b_args)
 
@@ -169,7 +170,8 @@ def expand_collections(shortcuts, config_a, config_b, get_a_discovered,
             else:
                 collection_a = collection_b = collection
 
-            assert collection not in handled_collections
+            if collection in handled_collections:
+                continue
             handled_collections.add(collection)
 
             a_args = _collection_from_discovered(
@@ -197,7 +199,14 @@ def _collection_from_discovered(get_discovered, collection, config,
         return _handle_collection_not_found(config, collection)
 
 
-def _print_collections(instance_name, discovered):
+def _print_collections(instance_name, get_discovered):
+    try:
+        discovered = get_discovered()
+    except Exception:
+        import traceback
+        logger.debug(''.join(traceback.format_tb(sys.exc_info()[2])))
+        logger.warning('Failed to discover collections for {}, use `-vdebug` '
+                       'to see the full traceback.'.format(instance_name))
     logger.info('{}:'.format(instance_name))
     for args in discovered.values():
         collection = args['collection']
