@@ -587,7 +587,7 @@ class DAVStorage(Storage):
 
     def list(self):
         headers = self.session.get_default_headers()
-        headers['Depth'] = '1'
+        headers['Depth'] = 'infinity'
 
         data = '''<?xml version="1.0" encoding="utf-8" ?>
             <D:propfind xmlns:D="DAV:">
