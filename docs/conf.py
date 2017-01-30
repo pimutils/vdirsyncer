@@ -90,8 +90,8 @@ def format_storage_config(cls, header=True):
         yield '[storage example_for_{}]'.format(cls.storage_name)
     yield 'type = {}'.format(cls.storage_name)
 
-    from ..storage.base import Storage
-    from ..utils import get_storage_init_specs
+    from vdirsyncer.storage.base import Storage
+    from vdirsyncer.utils import get_storage_init_specs
     handled = set()
     for spec in get_storage_init_specs(cls, stop_at=Storage):
         defaults = spec.defaults or ()
