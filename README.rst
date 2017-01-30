@@ -52,12 +52,10 @@ If you found my work useful, please consider donating. Thank you!
 
 - `PayPal.me <https://www.paypal.me/untitaker>`_
 
-- Bountysource is useful for funding work on a specific GitHub issue:
+- `Bountysource <https://www.bountysource.com/teams/vdirsyncer>`_ is useful for
+  funding work on a specific GitHub issue.
 
-  .. image:: https://img.shields.io/bountysource/team/vdirsyncer/activity.svg
-      :target: https://www.bountysource.com/teams/vdirsyncer
-
-  - There's also Bountysource `Salt
+  - There's also `Bountysource Salt
     <https://salt.bountysource.com/teams/vdirsyncer>`_, for one-time and
     recurring donations.
 
@@ -65,12 +63,5 @@ If you found my work useful, please consider donating. Thank you!
     that.
 
 
-- Flattr can be used for recurring donations:
-
-  .. image:: https://api.flattr.com/button/flattr-badge-large.png
-      :target: https://flattr.com/submit/auto?user_id=untitaker&url=https%3A%2F%2Fgithub.com%2Fpimutils%2Fvdirsyncer
-
-- Gratipay can be used for recurring donations:
-
-  .. image:: https://img.shields.io/gratipay/team/vdirsyncer.svg
-      :target: https://gratipay.com/vdirsyncer/
+- `Flattr <https://api.flattr.com/button/flattr-badge-large.png>`_ or `Gratipay
+  <https://gratipay.com/vdirsyncer/>`_ can be used for recurring donations.
