@@ -27,6 +27,7 @@ make -e install-$BUILD;
 """]
 
 cfg['script'] = ["make -e $BUILD"]
+cfg['after_script'] = ["make -e after-$BUILD"]
 
 matrix = []
 cfg['matrix'] = {'include': matrix}

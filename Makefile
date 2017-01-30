@@ -28,19 +28,19 @@ install-test: install-servers
 			git+https://github.com/DRMacIver/hypothesis \
 			git+https://github.com/pytest-dev/pytest; \
 	fi
-	[ $(CI) != "true" ] || pip install coverage codecov
+	[ $(CI) != "true" ] || pip install pytest-cov codecov
 
 test:
+	set -e; \
 	if [ "$(CI)" = "true" ]; then \
-		coverage run --branch --concurrency=thread --source=vdirsyncer/ --module pytest; \
+		py.test --cov-config .coveragerc; \
 	else \
 		py.test; \
-	fi; \
-	STATUS="$$?"; \
-	set -e; \
-	[ "$(CI)" != "true" ] || codecov; \
-	[ "$(CI)" != "true" ] || scripts/upload-hypothesis-db.sh; \
-	[ "$$STATUS" = "0" ]
+	fi
+
+after-test:
+	[ "$(CI)" != "true" ] || codecov
+	[ "$(CI)" != "true" ] || scripts/upload-hypothesis-db.sh
 
 install-style: install-docs
 	pip install flake8 flake8-import-order flake8-bugbear
@@ -52,6 +52,9 @@ style:
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
 	python3 scripts/make_travisconf.py | diff -b .travis.yml -
 
+after-style:
+	true
+
 travis-conf:
 	python3 scripts/make_travisconf.py > .travis.yml
 
@@ -60,6 +63,9 @@ install-docs:
 
 docs:
 	cd docs && make html
+
+after-docs:
+	true
 
 sh:  # open subshell with default test config
 	$$SHELL;

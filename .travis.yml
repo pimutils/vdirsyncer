@@ -1,4 +1,7 @@
 {
+  "after_script": [
+    "make -e after-$BUILD"
+  ],
   "branches": {
     "only": [
       "auto",
