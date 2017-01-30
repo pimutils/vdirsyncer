@@ -6,6 +6,7 @@ export RADICALE_BACKEND := filesystem
 export REQUIREMENTS := release
 export TESTSERVER_BASE := ./tests/storage/servers/
 export CI := false
+export COVERAGE := $(CI)
 export DETERMINISTIC_TESTS := false
 
 all:
@@ -32,7 +33,7 @@ install-test: install-servers
 
 test:
 	set -e; \
-	if [ "$(CI)" = "true" ]; then \
+	if [ "$(COVERAGE)" = "true" ]; then \
 		py.test --cov-config .coveragerc; \
 	else \
 		py.test; \

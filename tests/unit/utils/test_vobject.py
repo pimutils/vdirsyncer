@@ -308,7 +308,7 @@ class VobjectMachine(RuleBasedStateMachine):
           params=st.lists(st.tuples(value_strategy, value_strategy)))
     def add_prop_raw(self, c, key, value, params):
         params_str = ','.join(k + '=' + v for k, v in params)
-        c.props.append('{};{}:{}'.format(key, params_str, value))
+        c.props.insert(0, '{};{}:{}'.format(key, params_str, value))
         assert c[key] == value
         assert key in c
         assert c.get(key) == value
