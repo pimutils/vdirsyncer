@@ -358,27 +358,6 @@ class WorkerQueue(object):
         return self._queue.put(f)
 
 
-def format_storage_config(cls, header=True):
-    if header is True:
-        yield '[storage example_for_{}]'.format(cls.storage_name)
-    yield 'type = {}'.format(cls.storage_name)
-
-    from ..storage.base import Storage
-    from ..utils import get_storage_init_specs
-    handled = set()
-    for spec in get_storage_init_specs(cls, stop_at=Storage):
-        defaults = spec.defaults or ()
-        defaults = dict(zip(spec.args[-len(defaults):], defaults))
-        for key in spec.args[1:]:
-            if key in handled:
-                continue
-            handled.add(key)
-
-            comment = '' if key not in defaults else '#'
-            value = defaults.get(key, '...')
-            yield '{}{} = {}'.format(comment, key, json.dumps(value))
-
-
 def assert_permissions(path, wanted):
     permissions = os.stat(path).st_mode & 0o777
     if permissions > wanted:
