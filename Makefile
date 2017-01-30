@@ -34,7 +34,7 @@ install-test: install-servers
 test:
 	set -e; \
 	if [ "$(COVERAGE)" = "true" ]; then \
-		py.test --cov-config .coveragerc; \
+		py.test --cov-config .coveragerc --cov vdirsyncer; \
 	else \
 		py.test; \
 	fi
