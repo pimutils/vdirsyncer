@@ -61,7 +61,9 @@ If you found my work useful, please consider donating. Thank you!
 
   - Donations via Bountysource are publicly listed. Use PayPal if you dislike
     that.
+-
 
-
-- `Flattr <https://api.flattr.com/button/flattr-badge-large.png>`_ or `Gratipay
-  <https://gratipay.com/vdirsyncer/>`_ can be used for recurring donations.
+- `Flattr
+  <https://flattr.com/submit/auto?user_id=untitaker&url=https%3A%2F%2Fgithub.com%2Fpimutils%2Fvdirsyncer>`_
+  or `Gratipay <https://gratipay.com/vdirsyncer/>`_ can be used for
+  recurring donations.
