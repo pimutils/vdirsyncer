@@ -61,7 +61,6 @@ If you found my work useful, please consider donating. Thank you!
 
   - Donations via Bountysource are publicly listed. Use PayPal if you dislike
     that.
--
 
 - `Flattr
   <https://flattr.com/submit/auto?user_id=untitaker&url=https%3A%2F%2Fgithub.com%2Fpimutils%2Fvdirsyncer>`_
