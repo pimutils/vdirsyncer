@@ -88,7 +88,7 @@ def github_issue_role(name, rawtext, text, lineno, inliner,
 def format_storage_config(cls, header=True):
     if header is True:
         yield '[storage example_for_{}]'.format(cls.storage_name)
-    yield 'type = {}'.format(cls.storage_name)
+    yield 'type = "{}"'.format(cls.storage_name)
 
     from vdirsyncer.storage.base import Storage
     from vdirsyncer.utils import get_storage_init_specs
