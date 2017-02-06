@@ -1,6 +1,7 @@
 import json
 import os
 import string
+from configparser import RawConfigParser
 from itertools import chain
 
 from click_threading import get_ui_worker
@@ -10,10 +11,6 @@ from .utils import storage_class_from_config
 from .. import PROJECT_HOME, exceptions
 from ..utils import cached_property, expand_path
 
-try:
-    from ConfigParser import RawConfigParser
-except ImportError:
-    from configparser import RawConfigParser
 
 GENERAL_ALL = frozenset(['status_path'])
 GENERAL_REQUIRED = frozenset(['status_path'])
