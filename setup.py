@@ -37,9 +37,7 @@ requirements = [
 
 
 class PrintRequirements(Command):
-
     description = 'Prints minimal requirements'
-
     user_options = []
 
     def initialize_options(self):
@@ -53,6 +51,10 @@ class PrintRequirements(Command):
             print(requirement.replace(">", "=").replace(" ", ""))
 
 
+with open('README.rst') as f:
+    long_description = f.read()
+
+
 setup(
     # General metadata
     name='vdirsyncer',
@@ -61,7 +63,7 @@ setup(
     url='https://github.com/pimutils/vdirsyncer',
     description='Synchronize calendars and contacts',
     license='MIT',
-    long_description=open('README.rst').read(),
+    long_description=long_description,
 
     # Runtime dependencies
     install_requires=requirements,
