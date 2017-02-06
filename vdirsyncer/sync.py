@@ -7,7 +7,10 @@ not only to synchronize a local vdir with a CalDAV server, but also synchronize
 two CalDAV servers or two local vdirs.
 
 The algorithm is based on the blogpost "How OfflineIMAP works" by Edward Z.
-Yang. http://blog.ezyang.com/2012/08/how-offlineimap-works/
+Yang: http://blog.ezyang.com/2012/08/how-offlineimap-works/
+
+Some modifications to it are explained in
+https://unterwaditzer.net/2016/sync-algorithm.html
 '''
 import contextlib
 import itertools
