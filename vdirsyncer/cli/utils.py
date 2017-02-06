@@ -6,6 +6,7 @@ import importlib
 import itertools
 import json
 import os
+import queue
 import sys
 
 from atomicwrites import atomic_write
@@ -18,11 +19,6 @@ from . import cli_logger
 from .. import BUGTRACKER_HOME, DOCS_HOME, exceptions
 from ..sync import IdentConflict, PartialSync, StorageEmpty, SyncConflict
 from ..utils import expand_path, get_storage_init_args
-
-try:
-    import Queue as queue
-except ImportError:
-    import queue
 
 
 STATUS_PERMISSIONS = 0o600
