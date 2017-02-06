@@ -30,7 +30,8 @@ interest:
 If you just want to get started with contributing, the "ready" issues are an
 option. Issues that are still in "Planning" are also an option, but require
 more upfront thinking and may turn out to be impossible to solve, or at least
-harder than anticipated.
+harder than anticipated. On the flip side those tend to be the more interesting
+issues as well, depending on how one looks at it.
 
 All of those labels are also available as a kanban board on `waffles.io
 <https://waffle.io/pimutils/vdirsyncer>`_. It is really just an alternative
