@@ -27,6 +27,11 @@ interest:
 
 * "Ready" contains issues that are ready to work on.
 
+If you just want to get started with contributing, the "ready" issues are an
+option. Issues that are still in "Planning" are also an option, but require
+more upfront thinking and may turn out to be impossible to solve, or at least
+harder than anticipated.
+
 All of those labels are also available as a kanban board on `waffles.io
 <https://waffle.io/pimutils/vdirsyncer>`_. It is really just an alternative
 overview over all issues, but might be easier to comprehend.
