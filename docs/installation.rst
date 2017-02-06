@@ -23,10 +23,8 @@ the latest version:**
 - `Fedora <https://apps.fedoraproject.org/packages/vdirsyncer>`_
 - `Debian <https://packages.debian.org/sid/vdirsyncer>`_ (likewise for Ubuntu)
 
-Note that we only support the latest version of vdirsyncer, but you may still
-find older versions in some distro's repositories. You should have recieved
-information on how to file bugs against those packages. Please do not file bugs
-against vdirsyncer.
+We only support the latest version of vdirsyncer. Please do not file bugs if
+you use an older version.
 
 If there is no package for your distribution, you'll need to :ref:`install
 vdirsyncer manually <manual-installation>`. There is an easy command to
