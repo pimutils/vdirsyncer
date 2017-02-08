@@ -11,9 +11,9 @@ import requests
 from requests.exceptions import HTTPError
 
 from .base import Item, Storage, normalize_meta_value
-from .http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
-    prepare_client_cert, prepare_verify
 from .. import exceptions, utils
+from ..utils.http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
+    prepare_client_cert, prepare_verify
 
 
 dav_logger = logging.getLogger(__name__)

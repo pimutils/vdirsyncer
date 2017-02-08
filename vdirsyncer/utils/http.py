@@ -3,10 +3,114 @@ import logging
 
 import requests
 
-from .. import exceptions
+from . import expand_path
+from .. import DOCS_HOME, exceptions
 
 
 logger = logging.getLogger(__name__)
+USERAGENT = 'vdirsyncer'
+
+
+def _detect_faulty_requests():  # pragma: no cover
+    text = (
+        'Error during import: {e}\n\n'
+        'If you have installed vdirsyncer from a distro package, please file '
+        'a bug against that package, not vdirsyncer.\n\n'
+        'Consult {d}/problems.html#requests-related-importerrors'
+        '-based-distributions on how to work around this.'
+    )
+
+    try:
+        from requests_toolbelt.auth.guess import GuessAuth  # noqa
+    except ImportError as e:
+        import sys
+        print(text.format(e=str(e), d=DOCS_HOME), file=sys.stderr)
+        sys.exit(1)
+
+
+_detect_faulty_requests()
+del _detect_faulty_requests
+
+
+def prepare_auth(auth, username, password):
+    if username and password:
+        if auth == 'basic' or auth is None:
+            return (username, password)
+        elif auth == 'digest':
+            from requests.auth import HTTPDigestAuth
+            return HTTPDigestAuth(username, password)
+        elif auth == 'guess':
+            try:
+                from requests_toolbelt.auth.guess import GuessAuth
+            except ImportError:
+                raise exceptions.UserError(
+                    'Your version of requests_toolbelt is too '
+                    'old for `guess` authentication. At least '
+                    'version 0.4.0 is required.'
+                )
+            else:
+                return GuessAuth(username, password)
+        else:
+            raise exceptions.UserError('Unknown authentication method: {}'
+                                       .format(auth))
+    elif auth:
+        raise exceptions.UserError('You need to specify username and password '
+                                   'for {} authentication.'.format(auth))
+    else:
+        return None
+
+
+def prepare_verify(verify, verify_fingerprint):
+    if isinstance(verify, (str, bytes)):
+        verify = expand_path(verify)
+    elif not isinstance(verify, bool):
+        raise exceptions.UserError('Invalid value for verify ({}), '
+                                   'must be a path to a PEM-file or boolean.'
+                                   .format(verify))
+
+    if verify_fingerprint is not None:
+        if not isinstance(verify_fingerprint, (bytes, str)):
+            raise exceptions.UserError('Invalid value for verify_fingerprint '
+                                       '({}), must be a string or null.'
+                                       .format(verify_fingerprint))
+    elif not verify:
+        raise exceptions.UserError(
+            'Disabling all SSL validation is forbidden. Consider setting '
+            'verify_fingerprint if you have a broken or self-signed cert.'
+        )
+
+    return {
+        'verify': verify,
+        'verify_fingerprint': verify_fingerprint,
+    }
+
+
+def prepare_client_cert(cert):
+    if isinstance(cert, (str, bytes)):
+        cert = expand_path(cert)
+    elif isinstance(cert, list):
+        cert = tuple(map(prepare_client_cert, cert))
+    return cert
+
+
+HTTP_STORAGE_PARAMETERS = '''
+    :param username: Username for authentication.
+    :param password: Password for authentication.
+    :param verify: Verify SSL certificate, default True. This can also be a
+        local path to a self-signed SSL certificate. See :ref:`ssl-tutorial`
+        for more information.
+    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
+        expected server certificate. See :ref:`ssl-tutorial` for more
+        information.
+    :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. The
+        default is preemptive Basic auth, sending credentials even if server
+        didn't request them. This saves from an additional roundtrip per
+        request. Consider setting ``guess`` if this causes issues with your
+        server.
+    :param auth_cert: Optional. Either a path to a certificate with a client
+        certificate and the key or a list of paths to the files with them.
+    :param useragent: Default ``vdirsyncer``.
+'''
 
 
 def _install_fingerprint_adapter(session, fingerprint):

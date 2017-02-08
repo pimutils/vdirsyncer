@@ -28,24 +28,3 @@ def _check_python_version():  # pragma: no cover
 
 _check_python_version()
 del _check_python_version
-
-
-def _detect_faulty_requests():  # pragma: no cover
-    text = (
-        'Error during import: {e}\n\n'
-        'If you have installed vdirsyncer from a distro package, please file '
-        'a bug against that package, not vdirsyncer.\n\n'
-        'Consult {d}/problems.html#requests-related-importerrors'
-        '-based-distributions on how to work around this.'
-    )
-
-    try:
-        from requests_toolbelt.auth.guess import GuessAuth  # noqa
-    except ImportError as e:
-        import sys
-        print(text.format(e=str(e), d=DOCS_HOME), file=sys.stderr)
-        sys.exit(1)
-
-
-_detect_faulty_requests()
-del _detect_faulty_requests
