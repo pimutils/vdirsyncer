@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import json
-import sys
-import unicodedata
+import pathlib
 from textwrap import dedent
 
 import hypothesis.strategies as st
 from hypothesis import example, given
+
 
 import pytest
 
@@ -328,15 +328,12 @@ def test_create_collections(subtest, collections):
         #
         # Quoted from
         # https://stackoverflow.com/questions/18137554/how-to-convert-path-to-mac-os-x-path-the-almost-nfd-normal-form  # noqa
-        def u(xs):
-            xs = (unicodedata.normalize('NFKD', x) for x in xs)
-            if sys.platform == 'darwin':
-                xs = (x.lower() for x in xs)
-            return set(xs)
 
-        assert u(x.basename for x in tmpdir.join('foo').listdir()) == \
-            u(x.basename for x in tmpdir.join('bar').listdir()) == \
-            u(collections)
+        assert set(pathlib.Path(x.basename)
+                   for x in tmpdir.join('foo').listdir()) == \
+            set(pathlib.Path(x.basename)
+                for x in tmpdir.join('bar').listdir()) == \
+            set(pathlib.Path(x) for x in collections)
 
 
 def test_ident_conflict(tmpdir, runner):
