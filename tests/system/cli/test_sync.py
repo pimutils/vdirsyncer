@@ -320,23 +320,8 @@ def test_create_collections(subtest, collections):
         )
         assert not result.exception, result.output
 
-        # Macs normally operate on the HFS+ file system which normalizes paths.
-        # That is, if you save a file with accented é in it (u'\xe9') for
-        # example, and then do a os.listdir you will see that the filename got
-        # converted to u'e\u0301'. This is normal unicode NFD normalization
-        # that the Python unicodedata module can handle.
-        #
-        # Quoted from
-        # https://stackoverflow.com/questions/18137554/how-to-convert-path-to-mac-os-x-path-the-almost-nfd-normal-form  # noqa
-        def u(xs):
-            xs = (unicodedata.normalize('NFKD', x) for x in xs)
-            if sys.platform == 'darwin':
-                xs = (x.lower() for x in xs)
-            return set(xs)
-
-        assert u(x.basename for x in tmpdir.join('foo').listdir()) == \
-            u(x.basename for x in tmpdir.join('bar').listdir()) == \
-            u(collections)
+        assert set(x.basename for x in tmpdir.join('foo').listdir()) == \
+            set(x.basename for x in tmpdir.join('bar').listdir())
 
 
 def test_ident_conflict(tmpdir, runner):
