@@ -4,7 +4,7 @@ import pytest
 
 from tests import uid_strategy
 
-from vdirsyncer.repair import repair_item, repair_storage
+from vdirsyncer.repair import IrreparableItem, repair_item, repair_storage
 from vdirsyncer.storage.memory import MemoryStorage
 from vdirsyncer.utils import href_safe
 from vdirsyncer.utils.vobject import Item
@@ -67,3 +67,15 @@ def test_repair_do_nothing():
     item = Item('BEGIN:VCARD\nUID:justfine\nEND:VCARD')
     assert repair_item('fine', item, set(), True) is item
     assert repair_item('@@@@/fine', item, set(), True) is item
+
+
+@pytest.mark.parametrize('raw', [
+    'AYYY',
+    '',
+    '@@@@',
+    'BEGIN:VCARD',
+    'BEGIN:FOO\nEND:FOO'
+])
+def test_repair_irreparable(raw):
+    with pytest.raises(IrreparableItem):
+        repair_item('fine', Item(raw), set(), True)
