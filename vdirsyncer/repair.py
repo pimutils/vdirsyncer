@@ -32,14 +32,11 @@ def repair_storage(storage, repair_unsafe_uid):
 
         seen_uids.add(new_item.uid)
         if new_item.raw != item.raw:
-            try:
-                if new_item.uid != item.uid:
-                    storage.upload(new_item)
-                    storage.delete(href, etag)
-                else:
-                    storage.update(href, new_item, etag)
-            except Exception:
-                logger.exception('Server rejected new item.')
+            if new_item.uid != item.uid:
+                storage.upload(new_item)
+                storage.delete(href, etag)
+            else:
+                storage.update(href, new_item, etag)
 
 
 def repair_item(href, item, seen_uids, repair_unsafe_uid):
