@@ -8,6 +8,10 @@ from .utils import generate_href, href_safe
 logger = logging.getLogger(__name__)
 
 
+class IrreparableItem(Exception):
+    pass
+
+
 def repair_storage(storage, repair_unsafe_uid):
     seen_uids = set()
     all_hrefs = list(storage.list())
@@ -16,30 +20,12 @@ def repair_storage(storage, repair_unsafe_uid):
         logger.info(u'[{}/{}] Processing {}'
                     .format(i, len(all_hrefs), href))
 
-        new_item = item
-
-        if item.parsed is None:
-            logger.warning('Item {} can\'t be parsed, skipping.'
-                           .format(href))
-            continue
-
-        if not item.uid:
-            logger.warning('No UID, assigning random one.')
-            new_item = item.with_uid(generate_href())
-        elif item.uid in seen_uids:
-            logger.warning('Duplicate UID, assigning random one.')
-            new_item = item.with_uid(generate_href())
-        elif not href_safe(item.uid) or not href_safe(basename(href)):
-            if not repair_unsafe_uid:
-                logger.warning('UID or href may cause problems, add '
-                               '--repair-unsafe-hrefs to repair.')
-            else:
-                logger.warning('UID or href is unsafe, assigning random UID.')
-                new_item = item.with_uid(generate_href(item.uid))
-
-        if not new_item.uid:
+        try:
+            new_item = repair_item(href, item, seen_uids, repair_unsafe_uid)
+        except IrreparableItem:
             logger.error('Item {!r} is malformed beyond repair. '
-                         'This is a serverside bug.'
+                         'The PRODID property may indicate which software '
+                         'created this item.'
                          .format(href))
             logger.error('Item content: {!r}'.format(item.raw))
             continue
@@ -54,3 +40,29 @@ def repair_storage(storage, repair_unsafe_uid):
                     storage.update(href, new_item, etag)
             except Exception:
                 logger.exception('Server rejected new item.')
+
+
+def repair_item(href, item, seen_uids, repair_unsafe_uid):
+    if item.parsed is None:
+        raise IrreparableItem()
+
+    new_item = item
+
+    if not item.uid:
+        logger.warning('No UID, assigning random UID.')
+        new_item = item.with_uid(generate_href())
+    elif item.uid in seen_uids:
+        logger.warning('Duplicate UID, assigning random UID.')
+        new_item = item.with_uid(generate_href())
+    elif not href_safe(item.uid) or not href_safe(basename(href)):
+        if not repair_unsafe_uid:
+            logger.warning('UID may cause problems, add '
+                           '--repair-unsafe-uid to repair.')
+        else:
+            logger.warning('UID or href is unsafe, assigning random UID.')
+            new_item = item.with_uid(generate_href(item.uid))
+
+    if not new_item.uid:
+        raise IrreparableItem()
+
+    return new_item
