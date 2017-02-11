@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import json
-import sys
-import unicodedata
 from textwrap import dedent
 
 import hypothesis.strategies as st
