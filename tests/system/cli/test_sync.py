@@ -315,6 +315,11 @@ def test_create_collections(subtest, collections):
         )
         assert not result.exception, result.output
 
+        result = runner.invoke(
+            ['sync'] + ['foobar/' + x for x in collections]
+        )
+        assert not result.exception, result.output
+
         # Macs normally operate on the HFS+ file system which normalizes paths.
         # That is, if you save a file with accented é in it (u'\xe9') for
         # example, and then do a os.listdir you will see that the filename got
@@ -332,11 +337,6 @@ def test_create_collections(subtest, collections):
         assert u(x.basename for x in tmpdir.join('foo').listdir()) == \
             u(x.basename for x in tmpdir.join('bar').listdir()) == \
             u(collections)
-
-        result = runner.invoke(
-            ['sync'] + ['foobar/' + x for x in collections]
-        )
-        assert not result.exception, result.output
 
 
 def test_ident_conflict(tmpdir, runner):
