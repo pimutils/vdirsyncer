@@ -286,7 +286,8 @@ def test_multiple_pairs(tmpdir, runner):
     min_size=1
 ))
 @example(collections=[u'persönlich'])
-@example(collections=set('aA'))
+@example(collections={'a', 'A'})
+@example(collections={'\ufffe'})
 def test_create_collections(subtest, collections):
 
     @subtest
