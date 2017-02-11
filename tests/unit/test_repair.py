@@ -1,9 +1,10 @@
-
 from hypothesis import given, settings
+
+import pytest
 
 from tests import uid_strategy
 
-from vdirsyncer.repair import repair_storage
+from vdirsyncer.repair import repair_item, repair_storage
 from vdirsyncer.storage.memory import MemoryStorage
 from vdirsyncer.utils import href_safe
 from vdirsyncer.utils.vobject import Item
@@ -38,7 +39,6 @@ def test_repair_uids(uid):
 def test_repair_unsafe_uids(uid):
     s = MemoryStorage()
     item = Item(u'BEGIN:VCARD\nUID:{}\nEND:VCARD'.format(uid))
-    print(repr(item.raw))
     href, etag = s.upload(item)
     assert s.get(href)[0].uid == uid
     assert not href_safe(uid)
@@ -49,3 +49,21 @@ def test_repair_unsafe_uids(uid):
     assert href_safe(new_href)
     newuid = s.get(new_href)[0].uid
     assert href_safe(newuid)
+
+
+@pytest.mark.parametrize('uid,href', [
+    ('b@dh0mbr3', 'perfectly-fine'),
+    ('perfectly-fine', 'b@dh0mbr3')
+])
+def test_repair_unsafe_href(uid, href):
+    item = Item('BEGIN:VCARD\nUID:{}\nEND:VCARD'.format(uid))
+    new_item = repair_item(href, item, set(), True)
+    assert new_item.raw != item.raw
+    assert new_item.uid != item.uid
+    assert href_safe(new_item.uid)
+
+
+def test_repair_do_nothing():
+    item = Item('BEGIN:VCARD\nUID:justfine\nEND:VCARD')
+    assert repair_item('fine', item, set(), True) is item
+    assert repair_item('@@@@/fine', item, set(), True) is item
