@@ -41,7 +41,6 @@ test:
 
 after-test:
 	[ "$(CI)" != "true" ] || codecov
-	[ "$(CI)" != "true" ] || scripts/upload-hypothesis-db.sh
 
 install-style: install-docs
 	pip install flake8 flake8-import-order flake8-bugbear
