@@ -34,17 +34,17 @@ cfg['matrix'] = {'include': matrix}
 
 matrix.append({
     'python': latest_python,
-    'env': 'BUILD=style BUILD_PRS=true'
+    'env': 'BUILD=style'
 })
 
 
 for python in python_versions:
     if python == latest_python:
-        dav_servers = ("radicale", "owncloud", "nextcloud", "baikal",
+        dav_servers = ("skip", "radicale", "owncloud", "nextcloud", "baikal",
                        "davical")
         rs_servers = ()
     else:
-        dav_servers = ("radicale",)
+        dav_servers = ("skip", "radicale")
         rs_servers = ()
 
     for (server_type, server), requirements in itertools.product(
@@ -54,22 +54,14 @@ for python in python_versions:
         ),
         ("devel", "release", "minimal")
     ):
-        build_prs = (
-            python == latest_python and
-            server_type == 'DAV' and
-            server == 'radicale'
-        )
-
         matrix.append({
             'python': python,
             'env': ("BUILD=test "
                     "{server_type}_SERVER={server} "
                     "REQUIREMENTS={requirements} "
-                    "BUILD_PRS={build_prs}"
                     .format(server_type=server_type,
                             server=server,
-                            requirements=requirements,
-                            build_prs='true' if build_prs else 'false'))
+                            requirements=requirements))
         })
 
 matrix.append({
