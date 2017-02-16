@@ -90,7 +90,7 @@ setup(
         'console_scripts': ['vdirsyncer = vdirsyncer.cli:main']
     },
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 4 - Beta',
         'Environment :: Console',
         'License :: OSI Approved :: MIT License',
         'Operating System :: POSIX',
@@ -100,7 +100,6 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Topic :: Internet',
-        'Topic :: Office/Business :: Groupware',
         'Topic :: Utilities',
     ],
 )
