@@ -89,4 +89,17 @@ setup(
     entry_points={
         'console_scripts': ['vdirsyncer = vdirsyncer.cli:main']
     },
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Environment :: Console',
+        'License :: OSI Approved :: MIT License',
+        'Operating System :: POSIX',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Topic :: Internet',
+        'Topic :: Utilities',
+    ],
 )
