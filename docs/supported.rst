@@ -218,6 +218,26 @@ Exchange server you might get confronted with weird errors of all sorts
 
 .. _DavMail: http://davmail.sourceforge.net/
 
+**If you run into duplicate events**::
+
+In some cases, you may see errors about duplicate events. It may look something
+like this::
+
+    error: my_calendar/calendar: Storage "my_calendar_remote/calendar" contains multiple items with the same UID or even content. Vdirsyncer will now abort the synchronization of this collection, because the fix for this is not clear; It could be the result of a badly behaving server. You can try running:
+    error:
+    error:     vdirsyncer repair my_calendar_remote/calendar
+    error:
+    error: But make sure to have a backup of your data in some form. The offending hrefs are:
+    error:
+    error: '/users/user@server.com/calendar/AAMkAGJmNWQ4YzExLTMzYmMtNDEyMC05ODA0LTk1ZjcwNjljMjAxMABGAAAAAAD1lXHjU9HeT6W-zBQ2GN5mBwCukf4qpm_KQIZj0IntEuuyAAAAAAEOAACukf4qpm_KQIZj0IntEuuyAAHRr_UQAAA%3D.EML'
+    error: '/users/user@server.com/calendar/AAMkAGJmNWQ4YzExLTMzYmMtNDEyMC05ODA0LTk1ZjcwNjljMjAxMABGAAAAAAD1lXHjU9HeT6W-zBQ2GN5mBwCukf4qpm_KQIZj0IntEuuyAAAAAAEOAACukf4qpm_KQIZj0IntEuuyAAHRr_UTAAA%3D.EML'
+    error: 1 out of 2 tasks failed.
+
+In order to fix this, you can try the Remove-DuplicateAppointments.ps1_
+PowerShell script that Microsoft has come up with in order to remove duplicates.
+
+.. _Remove-DuplicateAppointments.ps1: https://blogs.msdn.microsoft.com/emeamsgdev/2015/02/12/powershell-remove-duplicate-calendar-appointments/
+
 Baikal
 ------
 
