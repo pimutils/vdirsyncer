@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 import urllib.parse as urlparse
 
 from atomicwrites import atomic_write
