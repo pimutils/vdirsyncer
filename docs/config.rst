@@ -187,7 +187,7 @@ Service to hardcode those into opensource software
 
 The ``token_file`` parameter should be a filepath where vdirsyncer can later
 store authentication-related data. You do not need to create the file itself
-(or write anything to it), only the folder around it.
+or write anything to it.
 
 You can select which calendars to sync on `CalDav settings page
 <https://calendar.google.com/calendar/syncselect>`_.
