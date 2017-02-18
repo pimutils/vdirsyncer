@@ -51,6 +51,11 @@ class GoogleSession(dav.DAVSession):
                 token = json.load(f)
         except (OSError, IOError):
             pass
+        except ValueError as e:
+            raise exceptions.UserError(
+                'Failed to load token file {}, try deleting it. '
+                'Original error: {}'.format(token_file, e)
+            )
 
         def _save_token(token):
             with atomic_write(token_file, mode='w', overwrite=True) as f:
