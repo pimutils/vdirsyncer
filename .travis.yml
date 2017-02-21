@@ -166,6 +166,30 @@
         "python": "3.6"
       },
       {
+        "env": "BUILD=test DAV_SERVER=skip REQUIREMENTS=devel ",
+        "python": "pypy3"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=skip REQUIREMENTS=release ",
+        "python": "pypy3"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=skip REQUIREMENTS=minimal ",
+        "python": "pypy3"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel ",
+        "python": "pypy3"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release ",
+        "python": "pypy3"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal ",
+        "python": "pypy3"
+      },
+      {
         "env": "BUILD=test",
         "language": "generic",
         "os": "osx"
