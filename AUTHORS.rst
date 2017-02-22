@@ -11,5 +11,6 @@ In alphabetical order:
 - Malte Kiefer
 - Marek Marczykowski-Górecki
 - Markus Unterwaditzer
+- Martin Krafft
 - Michael Adler
 - Thomas Weißschuh
