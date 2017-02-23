@@ -10,8 +10,8 @@ if [ "$TRAVIS_PYTHON_VERSION" = "pypy3" ]; then
     PYENV_ROOT="$HOME/.pyenv";
     PATH="$PYENV_ROOT/bin:$PATH";
     eval "$(pyenv init -)";
-    pyenv install pypy3-5.5-alpha;
-    pyenv global pypy3-5.5-alpha;
+    pyenv install pypy3.3-5.5-alpha;
+    pyenv global pypy3.3-5.5-alpha;
     python --version;
     pip --version;
 fi
