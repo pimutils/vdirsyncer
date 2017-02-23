@@ -2,7 +2,7 @@ import itertools
 import json
 import sys
 
-python_versions = ("3.3", "3.4", "3.5", "3.6")
+python_versions = ("3.3", "3.4", "3.5", "3.6", "pypy3")
 latest_python = "3.6"
 
 cfg = {}
