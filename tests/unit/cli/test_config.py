@@ -3,6 +3,7 @@ import os
 from vdirsyncer.cli.config import _resolve_conflict_via_command
 from vdirsyncer.utils.vobject import Item
 
+
 def test_conflict_resolution_command():
     def check_call(command):
         command, a_tmp, b_tmp = command
