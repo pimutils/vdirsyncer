@@ -216,6 +216,7 @@ class Discover(object):
             dav_logger.debug('Skipping, not of resource type %s: %s',
                              self._resourcetype, response)
             return False
+        return True
 
     def _find_collections_impl(self, url):
         headers = self.session.get_default_headers()
