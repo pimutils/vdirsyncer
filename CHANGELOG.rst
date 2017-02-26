@@ -15,6 +15,7 @@ Version 0.15
 - Deprecated syntax for configuration values is now completely rejected. All
   values now have to be valid JSON.
 - A few UX improvements for Google storages, see :gh:`549` and :gh:`552`.
+- Fix collection discovery for :storage:`google_contacts`, see :gh:`564`.
 
 Version 0.14.1
 ==============
