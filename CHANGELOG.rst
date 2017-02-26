@@ -15,6 +15,9 @@ Version 0.15
 - Deprecated syntax for configuration values is now completely rejected. All
   values now have to be valid JSON.
 - A few UX improvements for Google storages, see :gh:`549` and :gh:`552`.
+- Conflict resolution commands now get path-expanded, i.e. "~/bin/myresolver"
+  is now acceptable, whereas before one had to specify the absolute path
+  including the home directory, see :gh:`563`.
 
 Version 0.14.1
 ==============

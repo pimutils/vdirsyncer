@@ -246,6 +246,8 @@ class PairConfig(object):
             def resolve(a, b):
                 a_name = self.config_a['instance_name']
                 b_name = self.config_b['instance_name']
+                conflict_resolution[1] = \
+                        os.path.expanduser(conflict_resolution[1])
                 command = conflict_resolution[1:]
 
                 def inner():
