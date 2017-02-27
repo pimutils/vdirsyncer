@@ -166,6 +166,18 @@
         "python": "3.6"
       },
       {
+        "env": "BUILD=test DAV_SERVER=icloud REQUIREMENTS=devel ",
+        "python": "3.6"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=icloud REQUIREMENTS=release ",
+        "python": "3.6"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=icloud REQUIREMENTS=minimal ",
+        "python": "3.6"
+      },
+      {
         "env": "BUILD=test DAV_SERVER=skip REQUIREMENTS=devel ",
         "python": "pypy3"
       },
