@@ -13,6 +13,8 @@ class ServerMixin(object):
 
     @pytest.fixture
     def get_storage_args(self, item_type, request):
+        # We need to properly clean up because otherwise we will run into
+        # iCloud's storage limit.
         collections_to_delete = []
 
         def delete_collections():
@@ -22,6 +24,8 @@ class ServerMixin(object):
         request.addfinalizer(delete_collections)
 
         if item_type != 'VEVENT':
+            # For some reason the collections created by vdirsyncer are not
+            # usable as task lists.
             pytest.skip('iCloud doesn\'t support anything else than VEVENT')
 
         def inner(collection='test'):
