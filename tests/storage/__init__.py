@@ -11,8 +11,9 @@ from hypothesis import given
 
 import pytest
 
-import vdirsyncer.exceptions as exceptions
-from vdirsyncer.storage.base import Item, normalize_meta_value
+from vdirsyncer import exceptions
+from vdirsyncer.storage.base import normalize_meta_value
+from vdirsyncer.vobject import Item
 
 from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
     assert_item_equals, normalize_item, printable_characters_strategy

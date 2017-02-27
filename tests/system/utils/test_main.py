@@ -8,11 +8,7 @@ import pytest
 
 import requests
 
-from vdirsyncer import utils
-
-# These modules might be uninitialized and unavailable if not explicitly
-# imported
-import vdirsyncer.utils.http  # noqa
+from vdirsyncer import http, utils
 
 
 @pytest.fixture(autouse=True)
@@ -33,10 +29,10 @@ def test_request_ssl(httpsserver):
     httpsserver.serve_content('')  # we need to serve something
 
     with pytest.raises(requests.exceptions.SSLError) as excinfo:
-        utils.http.request('GET', httpsserver.url)
+        http.request('GET', httpsserver.url)
     assert 'certificate verify failed' in str(excinfo.value)
 
-    utils.http.request('GET', httpsserver.url, verify=False)
+    http.request('GET', httpsserver.url, verify=False)
 
 
 def _fingerprints_broken():
@@ -54,15 +50,15 @@ def _fingerprints_broken():
 def test_request_ssl_fingerprints(httpsserver, fingerprint):
     httpsserver.serve_content('')  # we need to serve something
 
-    utils.http.request('GET', httpsserver.url, verify=False,
-                       verify_fingerprint=fingerprint)
+    http.request('GET', httpsserver.url, verify=False,
+                 verify_fingerprint=fingerprint)
     with pytest.raises(requests.exceptions.SSLError) as excinfo:
-        utils.http.request('GET', httpsserver.url,
-                           verify_fingerprint=fingerprint)
+        http.request('GET', httpsserver.url,
+                     verify_fingerprint=fingerprint)
 
     with pytest.raises(requests.exceptions.SSLError) as excinfo:
-        utils.http.request('GET', httpsserver.url, verify=False,
-                           verify_fingerprint=''.join(reversed(fingerprint)))
+        http.request('GET', httpsserver.url, verify=False,
+                     verify_fingerprint=''.join(reversed(fingerprint)))
     assert 'Fingerprints did not match' in str(excinfo.value)
 
 

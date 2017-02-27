@@ -314,7 +314,7 @@ def _resolve_conflict_via_command(a, b, command, a_name, b_name,
     if _check_call is None:
         from subprocess import check_call as _check_call
 
-    from ..utils.vobject import Item
+    from ..vobject import Item
 
     dir = tempfile.mkdtemp(prefix='vdirsyncer-conflict.')
     try:

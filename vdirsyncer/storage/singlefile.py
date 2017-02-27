@@ -9,10 +9,10 @@ import os
 
 from atomicwrites import atomic_write
 
-from .base import Item, Storage
+from .base import Storage
 from .. import exceptions
 from ..utils import checkfile, expand_path
-from ..utils.vobject import join_collection, split_collection
+from ..vobject import Item, join_collection, split_collection
 
 logger = logging.getLogger(__name__)
 

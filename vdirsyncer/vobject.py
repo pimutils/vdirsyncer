@@ -3,7 +3,7 @@
 import hashlib
 from itertools import chain, tee
 
-from . import cached_property, uniq
+from .utils import cached_property, uniq
 
 
 IGNORE_PROPS = (

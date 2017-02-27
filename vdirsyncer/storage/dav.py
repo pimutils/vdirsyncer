@@ -10,10 +10,11 @@ from inspect import getfullargspec
 import requests
 from requests.exceptions import HTTPError
 
-from .base import Item, Storage, normalize_meta_value
-from .. import exceptions, utils
-from ..utils.http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
+from .base import Storage, normalize_meta_value
+from .. import exceptions, http, utils
+from ..http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
+from ..vobject import Item
 
 
 dav_logger = logging.getLogger(__name__)
@@ -362,7 +363,7 @@ class DAVSession(object):
 
         more = dict(self._settings)
         more.update(kwargs)
-        return utils.http.request(method, url, session=self._session, **more)
+        return http.request(method, url, session=self._session, **more)
 
     def get_default_headers(self):
         return {

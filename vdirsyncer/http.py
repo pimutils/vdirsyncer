@@ -3,8 +3,8 @@ import logging
 
 import requests
 
-from . import expand_path
-from .. import DOCS_HOME, exceptions
+from .utils import expand_path
+from . import DOCS_HOME, exceptions
 
 
 logger = logging.getLogger(__name__)

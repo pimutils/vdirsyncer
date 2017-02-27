@@ -2,11 +2,11 @@
 
 import urllib.parse as urlparse
 
-from .base import Item, Storage
+from .base import Storage
 from .. import exceptions
-from ..utils.http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
+from ..http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify, request
-from ..utils.vobject import split_collection
+from ..vobject import Item, split_collection
 
 
 class HttpStorage(Storage):

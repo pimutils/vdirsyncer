@@ -5,7 +5,6 @@ import functools
 
 from .. import exceptions
 from ..utils import uniq
-from ..utils.vobject import Item  # noqa
 
 
 def mutating_storage_method(f):

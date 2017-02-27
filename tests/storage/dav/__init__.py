@@ -9,8 +9,8 @@ import requests.exceptions
 
 from tests import assert_item_equals
 
-import vdirsyncer.exceptions as exceptions
-from vdirsyncer.storage.base import Item
+from vdirsyncer import exceptions
+from vdirsyncer.vobject import Item
 
 from .. import StorageTests, get_server_mixin
 

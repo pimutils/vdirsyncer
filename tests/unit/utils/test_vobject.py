@@ -12,7 +12,7 @@ from tests import BARE_EVENT_TEMPLATE, EVENT_TEMPLATE, \
     EVENT_WITH_TIMEZONE_TEMPLATE, VCARD_TEMPLATE, normalize_item, \
     uid_strategy
 
-import vdirsyncer.utils.vobject as vobject
+import vdirsyncer.vobject as vobject
 
 
 _simple_split = [
