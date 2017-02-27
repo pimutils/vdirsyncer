@@ -41,7 +41,7 @@ matrix.append({
 for python in python_versions:
     if python == latest_python:
         dav_servers = ("skip", "radicale", "owncloud", "nextcloud", "baikal",
-                       "davical")
+                       "davical", "icloud")
         rs_servers = ()
     else:
         dav_servers = ("skip", "radicale")
