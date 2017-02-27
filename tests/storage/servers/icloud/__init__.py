@@ -1,5 +1,4 @@
 import os
-import uuid
 
 import pytest
 
@@ -12,7 +11,10 @@ def _clear_collection(s):
 class ServerMixin(object):
 
     @pytest.fixture
-    def get_storage_args(self):
+    def get_storage_args(self, item_type):
+        if item_type != 'VEVENT':
+            pytest.skip('iCloud doesn\'t support anything else than VEVENT')
+
         def inner(collection='test'):
             args = {
                 'username': os.environ['ICLOUD_USERNAME'],
@@ -26,15 +28,16 @@ class ServerMixin(object):
             else:
                 raise RuntimeError()
 
-            assert collection.startswith('test')
-            # iCloud requires a minimum length for collection names
-            collection += str(uuid.uuid4())
+            if collection is not None:
+                assert collection.startswith('test')
+                # iCloud requires a minimum length for collection names
+                collection += '-vdirsyncer-ci'
 
-            args = self.storage_class.create_collection(collection,
-                                                           **args)
-            s = self.storage_class(**args)
-            _clear_collection(s)
-            assert not list(s.list())
+                args = self.storage_class.create_collection(collection,
+                                                               **args)
+                s = self.storage_class(**args)
+                _clear_collection(s)
+                assert not list(s.list())
 
             return args
         return inner
