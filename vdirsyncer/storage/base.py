@@ -243,4 +243,6 @@ class Storage(metaclass=StorageMeta):
 
 
 def normalize_meta_value(value):
-    return (value or u'').strip()
+    if not value or value == 'None':
+        value = ''
+    return value.strip()

@@ -247,7 +247,9 @@ class StorageTests(object):
     def test_specialchars(self, monkeypatch, requires_collections,
                           get_storage_args, get_item):
         if getattr(self, 'dav_server', '') == 'radicale':
-            pytest.xfail('Radicale is fundamentally broken.')
+            pytest.skip('Radicale is fundamentally broken.')
+        if getattr(self, 'dav_server', '') == 'icloud':
+            pytest.skip('iCloud rejects uploads.')
 
         monkeypatch.setattr('vdirsyncer.utils.generate_href', lambda x: x)
 
