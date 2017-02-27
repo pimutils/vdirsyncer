@@ -107,12 +107,25 @@ def normalize_item(item, ignore_props=IGNORE_PROPS):
     if not isinstance(item, Item):
         item = Item(item)
 
+    item = _strip_timezones(item)
+
     x = _Component('TEMP', item.raw.splitlines(), [])
     for prop in IGNORE_PROPS:
         del x[prop]
 
     x.props.sort()
     return u'\r\n'.join(filter(bool, (line.strip() for line in x.props)))
+
+
+def _strip_timezones(item):
+    parsed = item.parsed
+    if not parsed or parsed.name != 'VCALENDAR':
+        return item
+
+    parsed.subcomponents = [c for c in parsed.subcomponents
+                            if c.name != 'VTIMEZONE']
+
+    return Item('\r\n'.join(parsed.dump_lines()))
 
 
 def hash_item(text):
