@@ -1,4 +1,5 @@
 import os
+import uuid
 
 import pytest
 
@@ -26,6 +27,9 @@ class ServerMixin(object):
                 raise RuntimeError()
 
             assert collection.startswith('test')
+            # iCloud requires a minimum length for collection names
+            collection += str(uuid.uuid4())
+
             args = self.storage_class.create_collection(collection,
                                                            **args)
             s = self.storage_class(**args)
