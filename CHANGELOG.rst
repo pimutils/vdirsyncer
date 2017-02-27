@@ -16,6 +16,7 @@ Version 0.15
   values now have to be valid JSON.
 - A few UX improvements for Google storages, see :gh:`549` and :gh:`552`.
 - Fix collection discovery for :storage:`google_contacts`, see :gh:`564`.
+- iCloud is now tested on Travis, see :gh:`567`.
 
 Version 0.14.1
 ==============
