@@ -164,6 +164,10 @@ class GoogleContactsStorage(dav.CardDAVStorage):
         url = 'https://www.googleapis.com/.well-known/carddav'
         scope = ['https://www.googleapis.com/auth/carddav']
 
+    class discovery_class(dav.CardDAVStorage.discovery_class):
+        # Google CardDAV doesn't return any resourcetype prop.
+        _resourcetype = None
+
     storage_name = 'google_contacts'
 
     def __init__(self, token_file, client_id, client_secret, **kwargs):

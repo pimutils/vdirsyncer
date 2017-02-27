@@ -201,6 +201,23 @@ class Discover(object):
         dav_logger.debug('Given URL is not a homeset URL')
         return self._find_collections_impl(self.find_home())
 
+    def _check_collection_resource_type(self, response):
+        if self._resourcetype is None:
+            return True
+
+        props = _merge_xml(response.findall(
+            '{DAV:}propstat/{DAV:}prop'
+        ))
+        if not props:
+            dav_logger.debug('Skipping, missing <prop>: %s', response)
+            return False
+        if props.find('{DAV:}resourcetype/' + self._resourcetype) \
+           is None:
+            dav_logger.debug('Skipping, not of resource type %s: %s',
+                             self._resourcetype, response)
+            return False
+        return True
+
     def _find_collections_impl(self, url):
         headers = self.session.get_default_headers()
         headers['Depth'] = '1'
@@ -209,13 +226,7 @@ class Discover(object):
         root = _parse_xml(r.content)
         done = set()
         for response in root.findall('{DAV:}response'):
-            props = _merge_xml(response.findall('{DAV:}propstat/{DAV:}prop'))
-            if not props:
-                dav_logger.debug('Skipping, missing <prop>: %s', response)
-                continue
-            if props.find('{DAV:}resourcetype/' + self._resourcetype) is None:
-                dav_logger.debug('Skipping, not of resource type %s: %s',
-                                 self._resourcetype, response)
+            if not self._check_collection_resource_type(response):
                 continue
 
             href = response.find('{DAV:}href')
