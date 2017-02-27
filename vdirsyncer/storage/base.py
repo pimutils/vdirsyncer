@@ -243,6 +243,7 @@ class Storage(metaclass=StorageMeta):
 
 
 def normalize_meta_value(value):
+    # `None` is returned by iCloud for empty properties.
     if not value or value == 'None':
         value = ''
     return value.strip()
