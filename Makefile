@@ -8,6 +8,14 @@ export CI := false
 export COVERAGE := $(CI)
 export DETERMINISTIC_TESTS := false
 
+PYTEST_ARGS =
+ifneq ($(DAV_SERVER), skip)
+	PYTEST_ARGS += tests/storage/dav
+endif
+ifneq ($(REMOTESTORAGE_SERVER), skip)
+	PYTEST_ARGS += tests/storage/test_remotestorage.py
+endif
+
 all:
 	$(error Take a look at https://vdirsyncer.pimutils.org/en/stable/tutorial.html#installation)
 
@@ -33,9 +41,9 @@ install-test: install-servers
 test:
 	set -e; \
 	if [ "$(COVERAGE)" = "true" ]; then \
-		py.test --cov-config .coveragerc --cov vdirsyncer; \
+		py.test --cov-config .coveragerc --cov vdirsyncer $(PYTEST_ARGS); \
 	else \
-		py.test; \
+		py.test $(PYTEST_ARGS); \
 	fi
 
 after-test:

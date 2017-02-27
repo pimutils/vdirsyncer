@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import random
+import uuid
 
 import textwrap
 from urllib.parse import quote as urlquote, unquote as urlunquote
@@ -10,8 +11,9 @@ from hypothesis import given
 
 import pytest
 
-import vdirsyncer.exceptions as exceptions
-from vdirsyncer.storage.base import Item, normalize_meta_value
+from vdirsyncer import exceptions
+from vdirsyncer.storage.base import normalize_meta_value
+from vdirsyncer.vobject import Item
 
 from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
     assert_item_equals, normalize_item, printable_characters_strategy
@@ -199,7 +201,10 @@ class StorageTests(object):
     def test_create_collection(self, requires_collections, get_storage_args,
                                get_item):
         if getattr(self, 'dav_server', '') == 'radicale':
-            pytest.xfail('MKCOL is broken under Radicale 1.x')
+            pytest.skip('MKCOL is broken under Radicale 1.x')
+
+        if getattr(self, 'dav_server', '') == 'icloud':
+            pytest.skip('iCloud requires a minimum-length for collection name')
 
         args = get_storage_args(collection=None)
         args['collection'] = 'test'
@@ -233,8 +238,9 @@ class StorageTests(object):
         if s.storage_name == 'filesystem':
             pytest.skip('Behavior depends on the filesystem.')
 
-        s.upload(get_item(uid='A' * 42))
-        s.upload(get_item(uid='a' * 42))
+        uid = str(uuid.uuid4())
+        s.upload(get_item(uid=uid.upper()))
+        s.upload(get_item(uid=uid.lower()))
         items = list(href for href, etag in s.list())
         assert len(items) == 2
         assert len(set(items)) == 2
@@ -242,7 +248,9 @@ class StorageTests(object):
     def test_specialchars(self, monkeypatch, requires_collections,
                           get_storage_args, get_item):
         if getattr(self, 'dav_server', '') == 'radicale':
-            pytest.xfail('Radicale is fundamentally broken.')
+            pytest.skip('Radicale is fundamentally broken.')
+        if getattr(self, 'dav_server', '') == 'icloud':
+            pytest.skip('iCloud rejects uploads.')
 
         monkeypatch.setattr('vdirsyncer.utils.generate_href', lambda x: x)
 

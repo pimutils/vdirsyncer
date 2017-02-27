@@ -185,6 +185,10 @@ Service to hardcode those into opensource software
 4. Finally you should have a Client ID and a Client secret. Provide these in
    your storage config.
 
+The ``token_file`` parameter should be a filepath where vdirsyncer can later
+store authentication-related data. You do not need to create the file itself
+or write anything to it.
+
 You can select which calendars to sync on `CalDav settings page
 <https://calendar.google.com/calendar/syncselect>`_.
 

@@ -5,7 +5,7 @@ Test suite for vdirsyncer.
 
 import hypothesis.strategies as st
 
-from vdirsyncer.utils.vobject import normalize_item
+from vdirsyncer.vobject import normalize_item
 
 
 def blow_up(*a, **kw):

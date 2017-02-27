@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 import urllib.parse as urlparse
 
 from atomicwrites import atomic_write
@@ -12,7 +13,7 @@ from click_threading import get_ui_worker
 
 from . import base, dav
 from .. import exceptions
-from ..utils import expand_path, open_graphical_browser
+from ..utils import checkdir, expand_path, open_graphical_browser
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +52,14 @@ class GoogleSession(dav.DAVSession):
                 token = json.load(f)
         except (OSError, IOError):
             pass
+        except ValueError as e:
+            raise exceptions.UserError(
+                'Failed to load token file {}, try deleting it. '
+                'Original error: {}'.format(token_file, e)
+            )
 
         def _save_token(token):
+            checkdir(os.path.dirname(token_file), create=True)
             with atomic_write(token_file, mode='w', overwrite=True) as f:
                 json.dump(token, f)
 
@@ -156,6 +163,10 @@ class GoogleContactsStorage(dav.CardDAVStorage):
         # URL, instead of looking for a redirect.
         url = 'https://www.googleapis.com/.well-known/carddav'
         scope = ['https://www.googleapis.com/auth/carddav']
+
+    class discovery_class(dav.CardDAVStorage.discovery_class):
+        # Google CardDAV doesn't return any resourcetype prop.
+        _resourcetype = None
 
     storage_name = 'google_contacts'
 

@@ -10,10 +10,10 @@ import pytest
 
 from tests import blow_up, uid_strategy
 
-from vdirsyncer.storage.base import Item
 from vdirsyncer.storage.memory import MemoryStorage, _random_string
 from vdirsyncer.sync import BothReadOnly, IdentConflict, PartialSync, \
     StorageEmpty, SyncConflict, sync
+from vdirsyncer.vobject import Item
 
 
 def empty_storage(x):

@@ -5,13 +5,13 @@
 # temporary pyenv installation to get pypy-2.6 before container infra
 # upgrade
 # Taken from werkzeug, which took it from pyca/cryptography
-if [ "$TRAVIS_PYTHON_VERSION" = "pypy" ]; then
+if [ "$TRAVIS_PYTHON_VERSION" = "pypy3" ]; then
     git clone https://github.com/yyuu/pyenv.git ~/.pyenv;
     PYENV_ROOT="$HOME/.pyenv";
     PATH="$PYENV_ROOT/bin:$PATH";
     eval "$(pyenv init -)";
-    pyenv install pypy-4.0.1;
-    pyenv global pypy-4.0.1;
+    pyenv install pypy3.3-5.5-alpha;
+    pyenv global pypy3.3-5.5-alpha;
     python --version;
     pip --version;
 fi

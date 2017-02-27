@@ -133,6 +133,8 @@ class TestCalDAVStorage(DAVStorageTests):
             list(s.list())
         assert len(calls) == 1
 
+    @pytest.mark.skipif(dav_server == 'icloud',
+                        reason='iCloud only accepts VEVENT')
     def test_item_types_general(self, s):
         event = s.upload(format_item(EVENT_TEMPLATE))[0]
         task = s.upload(format_item(TASK_TEMPLATE))[0]

@@ -10,10 +10,11 @@ from inspect import getfullargspec
 import requests
 from requests.exceptions import HTTPError
 
-from .base import Item, Storage, normalize_meta_value
-from .. import exceptions, utils
-from ..utils.http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
+from .base import Storage, normalize_meta_value
+from .. import exceptions, http, utils
+from ..http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
+from ..vobject import Item
 
 
 dav_logger = logging.getLogger(__name__)
@@ -201,6 +202,23 @@ class Discover(object):
         dav_logger.debug('Given URL is not a homeset URL')
         return self._find_collections_impl(self.find_home())
 
+    def _check_collection_resource_type(self, response):
+        if self._resourcetype is None:
+            return True
+
+        props = _merge_xml(response.findall(
+            '{DAV:}propstat/{DAV:}prop'
+        ))
+        if not props:
+            dav_logger.debug('Skipping, missing <prop>: %s', response)
+            return False
+        if props.find('{DAV:}resourcetype/' + self._resourcetype) \
+           is None:
+            dav_logger.debug('Skipping, not of resource type %s: %s',
+                             self._resourcetype, response)
+            return False
+        return True
+
     def _find_collections_impl(self, url):
         headers = self.session.get_default_headers()
         headers['Depth'] = '1'
@@ -209,13 +227,7 @@ class Discover(object):
         root = _parse_xml(r.content)
         done = set()
         for response in root.findall('{DAV:}response'):
-            props = _merge_xml(response.findall('{DAV:}propstat/{DAV:}prop'))
-            if not props:
-                dav_logger.debug('Skipping, missing <prop>: %s', response)
-                continue
-            if props.find('{DAV:}resourcetype/' + self._resourcetype) is None:
-                dav_logger.debug('Skipping, not of resource type %s: %s',
-                                 self._resourcetype, response)
+            if not self._check_collection_resource_type(response):
                 continue
 
             href = response.find('{DAV:}href')
@@ -351,7 +363,7 @@ class DAVSession(object):
 
         more = dict(self._settings)
         more.update(kwargs)
-        return utils.http.request(method, url, session=self._session, **more)
+        return http.request(method, url, session=self._session, **more)
 
     def get_default_headers(self):
         return {

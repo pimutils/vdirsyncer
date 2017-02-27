@@ -11,10 +11,11 @@ from urllib.parse import quote as urlquote, urljoin
 
 import click
 
-from .base import Item, Storage, normalize_meta_value
+from .base import Storage, normalize_meta_value
 from .http import HTTP_STORAGE_PARAMETERS, prepare_client_cert, \
     prepare_verify
-from .. import exceptions, utils
+from .. import exceptions, utils, http
+from ..vobject import Item
 
 REDIRECT_URI = 'https://vdirsyncer.5apps.com/'
 CLIENT_ID = 'https://vdirsyncer.5apps.com'
@@ -77,8 +78,7 @@ class Session(object):
         settings = dict(self._settings)
         settings.update(kwargs)
 
-        return utils.http.request(method, url,
-                                  session=self._session, **settings)
+        return http.request(method, url, session=self._session, **settings)
 
     def _get_access_token(self):
         authorization_url, state = \
@@ -94,7 +94,7 @@ class Session(object):
         raise exceptions.UserError('Aborted!')
 
     def _discover_endpoints(self, subpath):
-        r = utils.http.request(
+        r = http.request(
             'GET', 'https://{host}/.well-known/webfinger?resource=acct:{user}'
             .format(host=self.host, user=self.user),
             **self._settings

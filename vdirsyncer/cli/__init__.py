@@ -172,11 +172,10 @@ def metasync(ctx, collections, max_workers):
 @app.command()
 @click.argument('pairs', nargs=-1)
 @click.option(
-    '--list/--no-list', default=False,
+    '--list/--no-list', default=True,
     help=(
         'Whether to list all collections from both sides during discovery, '
-        'for debugging. This is slow and may crash for broken servers, so it '
-        'is disabled by default.'
+        'for debugging. This is slow and may crash for broken servers.'
     )
 )
 @max_workers_option(default=1)

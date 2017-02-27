@@ -306,12 +306,15 @@ class CollectionConfig(object):
 load_config = Config.from_filename_or_environment
 
 
-def _resolve_conflict_via_command(a, b, command, a_name, b_name):
+def _resolve_conflict_via_command(a, b, command, a_name, b_name,
+                                  _check_call=None):
     import tempfile
     import shutil
-    import subprocess
 
-    from ..utils.vobject import Item
+    if _check_call is None:
+        from subprocess import check_call as _check_call
+
+    from ..vobject import Item
 
     dir = tempfile.mkdtemp(prefix='vdirsyncer-conflict.')
     try:
@@ -323,7 +326,8 @@ def _resolve_conflict_via_command(a, b, command, a_name, b_name):
         with open(b_tmp, 'w') as f:
             f.write(b.raw)
 
-        subprocess.check_call(command + [a_tmp, b_tmp])
+        command[0] = expand_path(command[0])
+        _check_call(command + [a_tmp, b_tmp])
 
         with open(a_tmp) as f:
             new_a = f.read()

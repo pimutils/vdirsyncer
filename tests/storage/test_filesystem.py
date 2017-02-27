@@ -5,7 +5,7 @@ import subprocess
 import pytest
 
 from vdirsyncer.storage.filesystem import FilesystemStorage
-from vdirsyncer.utils.vobject import Item
+from vdirsyncer.vobject import Item
 
 from . import StorageTests
 

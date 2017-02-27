@@ -5,7 +5,6 @@ import functools
 
 from .. import exceptions
 from ..utils import uniq
-from ..utils.vobject import Item  # noqa
 
 
 def mutating_storage_method(f):
@@ -243,4 +242,7 @@ class Storage(metaclass=StorageMeta):
 
 
 def normalize_meta_value(value):
-    return (value or u'').strip()
+    # `None` is returned by iCloud for empty properties.
+    if not value or value == 'None':
+        value = ''
+    return value.strip()
