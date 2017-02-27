@@ -153,8 +153,8 @@ def request(method, url, session=None, latin1_fallback=True,
     func = session.request
 
     logger.debug(u'{} {}'.format(method, url))
-    logger.debug(kwargs.get('headers', {}))
-    logger.debug(kwargs.get('data', None))
+    logger.debug(str(kwargs.get('headers', {})))
+    logger.debug(kwargs.get('data', None).decode('utf8'))
     logger.debug('Sending request...')
 
     assert isinstance(kwargs.get('data', b''), bytes)
@@ -169,9 +169,9 @@ def request(method, url, session=None, latin1_fallback=True,
         logger.debug('Removing latin1 fallback')
         r.encoding = None
 
-    logger.debug(r.status_code)
-    logger.debug(r.headers)
-    logger.debug(r.content)
+    logger.debug(str(r.status_code))
+    logger.debug(str(r.headers))
+    logger.debug(r.content.decode('utf8'))
 
     if r.status_code == 412:
         raise exceptions.PreconditionFailed(r.reason)
