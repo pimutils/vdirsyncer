@@ -199,7 +199,10 @@ class StorageTests(object):
     def test_create_collection(self, requires_collections, get_storage_args,
                                get_item):
         if getattr(self, 'dav_server', '') == 'radicale':
-            pytest.xfail('MKCOL is broken under Radicale 1.x')
+            pytest.skip('MKCOL is broken under Radicale 1.x')
+
+        if getattr(self, 'dav_server', '') == 'icloud':
+            pytest.skip('iCloud requires a minimum-length for collection name')
 
         args = get_storage_args(collection=None)
         args['collection'] = 'test'
