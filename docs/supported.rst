@@ -54,7 +54,7 @@ Contacts
 
 .. _khard: https://github.com/scheibler/khard/
 .. _contactquery.c: https://github.com/t-8ch/snippets/blob/master/contactquery.c
-.. _mates: https://github.com/untitaker/mates.rs
+.. _mates: https://github.com/pimutils/mates.rs
 .. _vdirel: https://github.com/DamienCassou/vdirel
 
 .. _supported-servers:
