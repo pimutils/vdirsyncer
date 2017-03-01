@@ -178,6 +178,18 @@
         "python": "3.6"
       },
       {
+        "env": "BUILD=test DAV_SERVER=fastmail REQUIREMENTS=devel ",
+        "python": "3.6"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=fastmail REQUIREMENTS=release ",
+        "python": "3.6"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=fastmail REQUIREMENTS=minimal ",
+        "python": "3.6"
+      },
+      {
         "env": "BUILD=test DAV_SERVER=skip REQUIREMENTS=devel ",
         "python": "pypy3"
       },
