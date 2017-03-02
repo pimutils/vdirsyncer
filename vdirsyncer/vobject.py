@@ -162,6 +162,8 @@ def _split_collection_impl(item, main, inline, items, ungrouped_items):
 
         wrapper.subcomponents.append(item)
     elif item.name in (u'VCALENDAR', u'VADDRESSBOOK'):
+        if item.name == 'VCALENDAR':
+            del item['METHOD']
         for subitem in item.subcomponents:
             _split_collection_impl(subitem, item, inline, items,
                                    ungrouped_items)

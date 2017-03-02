@@ -9,6 +9,11 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.16.0
+==============
+
+- Strip ``METHOD:PUBLISH`` added by some calendar providers.
+
 Version 0.15.0
 ==============
 
