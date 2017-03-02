@@ -9,6 +9,9 @@ from .utils import cached_property, uniq
 IGNORE_PROPS = (
     # PRODID is changed by radicale for some reason after upload
     'PRODID',
+    # Sometimes METHOD:PUBLISH is added by WebCAL providers, for us it doesn't
+    # make a difference
+    'METHOD',
     # X-RADICALE-NAME is used by radicale, because hrefs don't really exist in
     # their filesystem backend
     'X-RADICALE-NAME',
