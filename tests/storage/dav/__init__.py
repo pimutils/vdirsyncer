@@ -44,7 +44,9 @@ class DAVStorageTests(ServerMixin, StorageTests):
 
     def test_dav_unicode_href(self, s, get_item, monkeypatch):
         if self.dav_server == 'radicale':
-            pytest.xfail('Radicale is unable to deal with unicode hrefs')
+            pytest.skip('Radicale is unable to deal with unicode hrefs')
+        if self.dav_server == 'fastmail':
+            pytest.skip('FastMail rejects this upload')
 
         monkeypatch.setattr(s, '_get_href',
                             lambda item: item.ident + s.fileext)
