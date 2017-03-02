@@ -203,8 +203,9 @@ class StorageTests(object):
         if getattr(self, 'dav_server', '') == 'radicale':
             pytest.skip('MKCOL is broken under Radicale 1.x')
 
-        if getattr(self, 'dav_server', '') == 'icloud':
-            pytest.skip('iCloud requires a minimum-length for collection name')
+        if getattr(self, 'dav_server', '') in \
+           ('icloud', 'fastmail', 'davical'):
+            pytest.skip('Manual cleanup would be necessary.')
 
         args = get_storage_args(collection=None)
         args['collection'] = 'test'
