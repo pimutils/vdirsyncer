@@ -250,8 +250,8 @@ class StorageTests(object):
                           get_storage_args, get_item):
         if getattr(self, 'dav_server', '') == 'radicale':
             pytest.skip('Radicale is fundamentally broken.')
-        if getattr(self, 'dav_server', '') == 'icloud':
-            pytest.skip('iCloud rejects uploads.')
+        if getattr(self, 'dav_server', '') in ('icloud', 'fastmail'):
+            pytest.skip('iCloud and FastMail reject this name.')
 
         monkeypatch.setattr('vdirsyncer.utils.generate_href', lambda x: x)
 
