@@ -310,7 +310,7 @@ class StorageTests(object):
         if item_type != 'VEVENT':
             pytest.skip('This storage instance doesn\'t support iCalendar.')
 
-        uid = u'abc123'
+        uid = str(uuid.uuid4())
         item = Item(textwrap.dedent(u'''
         BEGIN:VCALENDAR
         VERSION:2.0
