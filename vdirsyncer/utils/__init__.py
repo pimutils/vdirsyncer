@@ -108,10 +108,14 @@ def get_storage_init_args(cls, stop_at=object):
         requires.
     '''
     all, required = set(), set()
+
+    def _filter_args(args):
+        return (a for a in args if not a.startswith('_'))
+
     for spec in get_storage_init_specs(cls, stop_at=stop_at):
-        all.update(spec.args[1:])
+        all.update(_filter_args(spec.args[1:]))
         last = -len(spec.defaults) if spec.defaults else len(spec.args)
-        required.update(spec.args[1:last])
+        required.update(_filter_args(spec.args[1:last]))
 
     return all, required
 
