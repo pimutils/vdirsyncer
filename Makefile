@@ -51,7 +51,7 @@ after-test:
 	[ "$(CI)" != "true" ] || codecov
 
 install-style: install-docs
-	pip install flake8 flake8-import-order flake8-bugbear
+	pip install flake8 flake8-import-order flake8-bugbear>=17.3.0
 	
 style:
 	flake8
