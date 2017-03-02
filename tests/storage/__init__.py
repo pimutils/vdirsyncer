@@ -203,8 +203,9 @@ class StorageTests(object):
         if getattr(self, 'dav_server', '') == 'radicale':
             pytest.skip('MKCOL is broken under Radicale 1.x')
 
-        if getattr(self, 'dav_server', '') == 'icloud':
-            pytest.skip('iCloud requires a minimum-length for collection name')
+        if getattr(self, 'dav_server', '') in \
+           ('icloud', 'fastmail', 'davical'):
+            pytest.skip('Manual cleanup would be necessary.')
 
         args = get_storage_args(collection=None)
         args['collection'] = 'test'
@@ -249,8 +250,8 @@ class StorageTests(object):
                           get_storage_args, get_item):
         if getattr(self, 'dav_server', '') == 'radicale':
             pytest.skip('Radicale is fundamentally broken.')
-        if getattr(self, 'dav_server', '') == 'icloud':
-            pytest.skip('iCloud rejects uploads.')
+        if getattr(self, 'dav_server', '') in ('icloud', 'fastmail'):
+            pytest.skip('iCloud and FastMail reject this name.')
 
         monkeypatch.setattr('vdirsyncer.utils.generate_href', lambda x: x)
 
@@ -309,7 +310,7 @@ class StorageTests(object):
         if item_type != 'VEVENT':
             pytest.skip('This storage instance doesn\'t support iCalendar.')
 
-        uid = u'abc123'
+        uid = str(uuid.uuid4())
         item = Item(textwrap.dedent(u'''
         BEGIN:VCALENDAR
         VERSION:2.0
