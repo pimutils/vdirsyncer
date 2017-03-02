@@ -7,7 +7,7 @@ import uuid
 
 from inspect import getfullargspec
 
-from .. import exceptions
+from . import exceptions
 
 
 # This is only a subset of the chars allowed per the spec. In particular `@` is
