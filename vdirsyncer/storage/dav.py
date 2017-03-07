@@ -134,23 +134,7 @@ class Discover(object):
         _, collection = url.rstrip('/').rsplit('/', 1)
         return urlparse.unquote(collection)
 
-    def find_dav(self):
-        try:
-            response = self.session.request(
-                'GET', self._well_known_uri, allow_redirects=True,
-                headers=self.session.get_default_headers()
-            )
-            return response.url
-        except (HTTPError, exceptions.Error):
-            # The user might not have well-known URLs set up and instead points
-            # vdirsyncer directly to the DAV server.
-            dav_logger.debug('Server does not support well-known URIs.')
-            return ''
-
-    def find_principal(self, url=None):
-        if url is None:
-            url = self.find_dav()
-
+    def find_principal(self):
         headers = self.session.get_default_headers()
         headers['Depth'] = '0'
         body = b"""
@@ -160,8 +144,15 @@ class Discover(object):
             </d:prop>
         </d:propfind>
         """
-        response = self.session.request('PROPFIND', url, headers=headers,
-                                        data=body)
+
+        try:
+            response = self.session.request('PROPFIND', '',
+                                            headers=headers, data=body)
+        except (HTTPError, exceptions.Error):
+            dav_logger.debug('Trying out well-known URIs.')
+            response = self.session.request('PROPFIND', self._well_known_uri,
+                                            headers=headers, data=body)
+
         root = _parse_xml(response.content)
         rv = root.find('.//{DAV:}current-user-principal/{DAV:}href')
         if rv is None:
@@ -174,9 +165,8 @@ class Discover(object):
             return response.url
         return urlparse.urljoin(response.url, rv.text)
 
-    def find_home(self, url=None):
-        if url is None:
-            url = self.find_principal()
+    def find_home(self):
+        url = self.find_principal()
         headers = self.session.get_default_headers()
         headers['Depth'] = '0'
         response = self.session.request('PROPFIND', url,
