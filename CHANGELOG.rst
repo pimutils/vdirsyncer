@@ -14,6 +14,7 @@ Version 0.16.0
 
 - Strip ``METHOD:PUBLISH`` added by some calendar providers.
 - Fix crash of Google storages when saving token file.
+- Make DAV discovery more RFC-conformant, see :ghpr:`585`.
 
 Version 0.15.0
 ==============
