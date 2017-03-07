@@ -59,7 +59,7 @@ class GoogleSession(dav.DAVSession):
             )
 
         def _save_token(token):
-            checkdir(os.path.dirname(token_file), create=True)
+            checkdir(expand_path(os.path.dirname(token_file)), create=True)
             with atomic_write(token_file, mode='w', overwrite=True) as f:
                 json.dump(token, f)
 
