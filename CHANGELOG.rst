@@ -64,7 +64,7 @@ Version 0.13.0
 - Config sections are now checked for duplicate names. This also means that you
   cannot have a storage section ``[storage foo]`` and a pair ``[pair foo]`` in
   your config, they have to have different names. This is done such that
-  console output is always unambigous. See :gh:`459`.
+  console output is always unambiguous. See :gh:`459`.
 - Custom commands can now be used for conflict resolution during sync. See
   :gh:`127`.
 - :storage:`http` now completely ignores UIDs. This avoids a lot of unnecessary
@@ -134,7 +134,7 @@ Version 0.11.0
   - The ``keyring`` fetching strategy has been dropped some versions ago, but
     the specialized error message has been dropped.
 
-  - A old status format from version 0.4 is no longer supported. If you're
+  - An old status format from version 0.4 is no longer supported. If you're
     experiencing problems, just delete your status folder.
 
 Version 0.10.0
@@ -233,7 +233,7 @@ Version 0.7.4
 - Improved error messages instead of faulty server behavior, see :gh:`290` and
   :gh:`300`.
 - Safer shutdown of threadpool, avoid exceptions, see :gh:`291`.
-- Fix a sync bug for read-only storages see commmit
+- Fix a sync bug for read-only storages see commit
   ``ed22764921b2e5bf6a934cf14aa9c5fede804d8e``.
 - Etag changes are no longer sufficient to trigger sync operations. An actual
   content change is also necessary. See :gh:`257`.
