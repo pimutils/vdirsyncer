@@ -90,7 +90,7 @@ class Item(object):
 
         # We hash the item instead of directly using its raw content, because
         #
-        # 1. The raw content might be really large, e.g. when its a contact
+        # 1. The raw content might be really large, e.g. when it's a contact
         #    with a picture, which bloats the status file.
         #
         # 2. The status file would contain really sensitive information.

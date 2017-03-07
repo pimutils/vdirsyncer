@@ -217,7 +217,7 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
     :param conflict_resolution: A function that, given two conflicting item
         versions A and B, returns a new item with conflicts resolved. The UID
         must be the same. The strings `"a wins"` and `"b wins"` are also
-        accepted to mean that that side's version will always be taken. If none
+        accepted to mean that side's version will always be taken. If none
         is provided, the sync function will raise :py:exc:`SyncConflict`.
     :param force_delete: When one storage got completely emptied between two
         syncs, :py:exc:`StorageEmpty` is raised for

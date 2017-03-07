@@ -72,7 +72,7 @@ Open Claws-Mail. Got to **Tools** => **Addressbook**.
 Click on **Addressbook** => **New vCard**. Choose a name for the book.
 
 Then search for the for the vCard in the folder **~/.contacts/**. Click
-ok, and you we will see your conatcts.
+ok, and you we will see your contacts.
 
 .. note::
     
