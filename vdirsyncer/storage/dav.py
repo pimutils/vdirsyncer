@@ -135,6 +135,13 @@ class Discover(object):
         return urlparse.unquote(collection)
 
     def find_principal(self):
+        try:
+            return self._find_principal_impl('')
+        except (HTTPError, exceptions.Error):
+            dav_logger.debug('Trying out well-known URI')
+            return self._find_principal_impl(self._well_known_uri)
+
+    def _find_principal_impl(self, url):
         headers = self.session.get_default_headers()
         headers['Depth'] = '0'
         body = b"""
@@ -145,13 +152,8 @@ class Discover(object):
         </d:propfind>
         """
 
-        try:
-            response = self.session.request('PROPFIND', '',
-                                            headers=headers, data=body)
-        except (HTTPError, exceptions.Error):
-            dav_logger.debug('Trying out well-known URIs.')
-            response = self.session.request('PROPFIND', self._well_known_uri,
-                                            headers=headers, data=body)
+        response = self.session.request('PROPFIND', url, headers=headers,
+                                        data=body)
 
         root = _parse_xml(response.content)
         rv = root.find('.//{DAV:}current-user-principal/{DAV:}href')
