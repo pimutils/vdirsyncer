@@ -193,6 +193,9 @@ def _fix_redirects(r, *args, **kwargs):
     https://github.com/kennethreitz/requests/issues/3915
     https://github.com/pimutils/vdirsyncer/pull/585
     https://github.com/pimutils/vdirsyncer/issues/586
+
+    FIXME: This solution isn't very nice. A new hook in requests would be
+    better.
     '''
     if r.is_redirect:
         logger.debug('Rewriting status code from %s to 307', r.status_code)
