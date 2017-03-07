@@ -150,6 +150,8 @@ def request(method, url, session=None, latin1_fallback=True,
     if verify_fingerprint is not None:
         _install_fingerprint_adapter(session, verify_fingerprint)
 
+    session.hooks = dict(response=_fix_redirects)
+
     func = session.request
 
     logger.debug(u'{} {}'.format(method, url))
@@ -180,3 +182,18 @@ def request(method, url, session=None, latin1_fallback=True,
 
     r.raise_for_status()
     return r
+
+
+def _fix_redirects(r, *args, **kwargs):
+    '''
+    Requests discards of the body content when it is following a redirect that
+    is not a 307 or 308. We never want that to happen.
+
+    See:
+    https://github.com/kennethreitz/requests/issues/3915
+    https://github.com/pimutils/vdirsyncer/pull/585
+    https://github.com/pimutils/vdirsyncer/issues/586
+    '''
+    if r.is_redirect:
+        logger.debug('Rewriting status code from %s to 307', r.status_code)
+        r.status_code = 307
