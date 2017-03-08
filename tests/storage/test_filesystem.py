@@ -79,7 +79,6 @@ class TestFilesystemStorage(StorageTests):
         assert calls
 
     def test_ignore_git_dirs(self, tmpdir):
-        s = self.storage_class(str(tmpdir), '.txt')
         tmpdir.mkdir('.git').mkdir('foo')
         tmpdir.mkdir('a')
         tmpdir.mkdir('b')
