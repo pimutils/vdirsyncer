@@ -159,8 +159,13 @@ class GoogleContactsStorage(dav.CardDAVStorage):
     ''' + GOOGLE_PARAMS_DOCS
 
     class session_class(GoogleSession):
-        # Apparently Google wants us to submit a PROPFIND to the well-known
-        # URL, instead of looking for a redirect.
+        # Google CardDAV is completely bonkers. Collection discovery doesn't
+        # work properly, well-known URI takes us directly to single collection
+        # from where we can't discover principal or homeset URIs (the PROPFINDs
+        # 404).
+        #
+        # So we configure the well-known URI here again, such that discovery
+        # tries collection enumeration on it directly. That appears to work.
         url = 'https://www.googleapis.com/.well-known/carddav'
         scope = ['https://www.googleapis.com/auth/carddav']
 
