@@ -1,7 +1,6 @@
 import os
 import pytest
 import uuid
-import requests
 
 try:
     caldav_args = {
