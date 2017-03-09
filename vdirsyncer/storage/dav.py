@@ -322,7 +322,7 @@ class CalDiscover(Discover):
                 </C:supported-calendar-component-set>
                 </D:prop>
             </D:set>
-        </C:mkcalendar>'''.format(self._get_collections_from_url(url))
+        </C:mkcalendar>'''.format(self._get_collection_from_url(url))
 
         response = self.session.request(
             'MKCALENDAR',
