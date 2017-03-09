@@ -77,3 +77,10 @@ class TestFilesystemStorage(StorageTests):
         s = self.storage_class(str(tmpdir), '.txt', post_hook=exe)
         s.upload(Item(u'UID:a/b/c'))
         assert calls
+
+    def test_ignore_git_dirs(self, tmpdir):
+        tmpdir.mkdir('.git').mkdir('foo')
+        tmpdir.mkdir('a')
+        tmpdir.mkdir('b')
+        assert set(c['collection'] for c
+                   in self.storage_class.discover(str(tmpdir))) == {'a', 'b'}
