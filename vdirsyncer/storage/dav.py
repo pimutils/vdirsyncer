@@ -311,7 +311,7 @@ class CalDiscover(Discover):
     _well_known_uri = '/.well-known/caldav'
 
     def _create_collection_impl(self, url):
-        data = '''<?xml version="1.0" encoding="utf-8" ?>
+        data = b'''<?xml version="1.0" encoding="utf-8" ?>
         <C:mkcalendar xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
             <D:set>
                 <D:prop>
