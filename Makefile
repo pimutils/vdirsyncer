@@ -10,6 +10,16 @@ export COVERAGE := $(CI)
 export DETERMINISTIC_TESTS := false
 
 PYTEST_ARGS =
+TEST_EXTRA_PACKAGES =
+ifeq ($(COVERAGE), true)
+	TEST_EXTRA_PACKAGES += pytest-cov
+	PYTEST_ARGS += --cov-config .coveragerc --cov vdirsyncer
+endif
+
+ifeq ($(CI), true)
+	TEST_EXTRA_PACKAGES += codecov
+endif
+
 ifneq ($(DAV_SERVER), skip)
 	PYTEST_ARGS += tests/storage/dav
 endif
@@ -37,15 +47,10 @@ install-test: install-servers
 			git+https://github.com/DRMacIver/hypothesis \
 			git+https://github.com/pytest-dev/pytest; \
 	fi
-	[ $(CI) != "true" ] || pip install pytest-cov codecov
+	[ -z "$(TEST_EXTRA_PACKAGES)" ] || pip install $(TEST_EXTRA_PACKAGES)
 
 test:
-	set -e; \
-	if [ "$(COVERAGE)" = "true" ]; then \
-		py.test --cov-config .coveragerc --cov vdirsyncer $(PYTEST_ARGS); \
-	else \
-		py.test $(PYTEST_ARGS); \
-	fi
+	py.test $(PYTEST_ARGS)
 
 after-test:
 	[ "$(CI)" != "true" ] || codecov
@@ -85,16 +90,16 @@ release:
 	python setup.py sdist bdist_wheel upload
 
 install-dev:
-	set -xe && if [ "$$REMOTESTORAGE_SERVER" != "skip" ]; then \
+	set -xe && if [ "$(REMOTESTORAGE_SERVER)" != "skip" ]; then \
 		pip install -e .[remotestorage]; \
 	else \
 		pip install -e .; \
 	fi
-	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
+	set -xe && if [ "$(REQUIREMENTS)" = "devel" ]; then \
 	    pip install -U --force-reinstall \
 			git+https://github.com/mitsuhiko/click \
 			git+https://github.com/kennethreitz/requests; \
-	elif [ "$$REQUIREMENTS" = "minimal" ]; then \
+	elif [ "$(REQUIREMENTS)" = "minimal" ]; then \
 		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
 	fi
 
