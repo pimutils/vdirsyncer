@@ -120,14 +120,18 @@ def sync(ctx, collections, force_delete, max_workers):
     This command will not synchronize metadata, use `vdirsyncer metasync` for
     that.
 
-    Examples:
+    \b
+    \b\bExamples:
+    # Sync everything configured
+    vdirsyncer sync
 
-        `vdirsyncer sync` will sync everything configured.
+    \b
+    # Sync the pairs "bob" and "frank"
+    vdirsyncer sync bob frank
 
-        `vdirsyncer sync bob frank` will sync the pairs "bob" and "frank".
-
-        `vdirsyncer sync bob/first_collection` will sync "first_collection"
-        from the pair "bob".
+    \b
+    # Sync only "first_collection" from the pair "bob"
+    vdirsyncer sync bob/first_collection
     '''
     from .tasks import prepare_pair, sync_collection
     from .utils import WorkerQueue
@@ -222,8 +226,10 @@ def repair(ctx, collection, repair_unsafe_uid):
     clients. In particular, if you encounter URL-encoding-related issues with
     other clients, this command with --repair-unsafe-uid might help.
 
-    Example: `vdirsyncer repair calendars_local/foo` repairs the `foo`
-    collection of the `calendars_local` storage.
+    \b
+    \b\bExamples:
+    # Repair the `foo` collection of the `calendars_local` storage
+    vdirsyncer repair calendars_local/foo
     '''
     from .tasks import repair_collection
 
