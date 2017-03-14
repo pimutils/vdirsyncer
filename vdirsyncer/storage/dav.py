@@ -165,7 +165,7 @@ class Discover(object):
                 'No current-user-principal returned, re-using URL {}'
                 .format(response.url))
             return response.url
-        return urlparse.urljoin(response.url, rv.text)
+        return urlparse.urljoin(response.url, rv.text).rstrip('/') + '/'
 
     def find_home(self):
         url = self.find_principal()
@@ -180,7 +180,7 @@ class Discover(object):
         rv = root.find('.//' + self._homeset_tag + '/{DAV:}href')
         if rv is None:
             raise InvalidXMLResponse('Couldn\'t find home-set.')
-        return urlparse.urljoin(response.url, rv.text)
+        return urlparse.urljoin(response.url, rv.text).rstrip('/') + '/'
 
     def find_collections(self):
         rv = None
