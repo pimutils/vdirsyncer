@@ -1,6 +1,6 @@
 {
   "after_script": [
-    "make -e after-$BUILD"
+    "\nif [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ] || [ \"$BUILD_PRS\" != \"false\" ];\nthen make -e after-$BUILD;\nfi"
   ],
   "branches": {
     "only": [
@@ -18,106 +18,106 @@
   "matrix": {
     "include": [
       {
-        "env": "BUILD=style",
+        "env": "BUILD=style BUILD_PRS=true",
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel ",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=true ",
         "python": "3.3"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release ",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=true ",
         "python": "3.3"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal ",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=true ",
         "python": "3.3"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel ",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=true ",
         "python": "3.4"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release ",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=true ",
         "python": "3.4"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal ",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=true ",
         "python": "3.4"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel ",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=true ",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release ",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=true ",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal ",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=true ",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel ",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=true ",
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=skip REQUIREMENTS=release ",
+        "env": "BUILD=test DAV_SERVER=skip REQUIREMENTS=release BUILD_PRS=true ",
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release ",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=true ",
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=release ",
+        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=release BUILD_PRS=true ",
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=nextcloud REQUIREMENTS=release ",
+        "env": "BUILD=test DAV_SERVER=nextcloud REQUIREMENTS=release BUILD_PRS=true ",
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=release ",
+        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=release BUILD_PRS=true ",
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=release ",
+        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=release BUILD_PRS=false ",
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=icloud REQUIREMENTS=release ",
+        "env": "BUILD=test DAV_SERVER=icloud REQUIREMENTS=release BUILD_PRS=false ",
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=fastmail REQUIREMENTS=release ",
+        "env": "BUILD=test DAV_SERVER=fastmail REQUIREMENTS=release BUILD_PRS=false ",
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal ",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=true ",
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel ",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=true ",
         "python": "pypy3"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release ",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=true ",
         "python": "pypy3"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal ",
+        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal BUILD_PRS=true ",
         "python": "pypy3"
       },
       {
-        "env": "BUILD=test",
+        "env": "BUILD=test BUILD_PRS=true",
         "language": "generic",
         "os": "osx"
       }
     ]
   },
   "script": [
-    "make -e $BUILD"
+    "\nif [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ] || [ \"$BUILD_PRS\" != \"false\" ];\nthen make -e $BUILD;\nfi"
   ],
   "sudo": true
 }
