@@ -198,8 +198,11 @@ The ``token_file`` parameter should be a filepath where vdirsyncer can later
 store authentication-related data. You do not need to create the file itself
 or write anything to it.
 
-You can select which calendars to sync on `CalDav settings page
-<https://calendar.google.com/calendar/syncselect>`_.
+.. note::
+
+    You need to configure which calendars Google should offer vdirsyncer using
+    a rather hidden `settings page
+    <https://calendar.google.com/calendar/syncselect>`_.
 
 .. autostorage:: vdirsyncer.storage.google.GoogleCalendarStorage
 
