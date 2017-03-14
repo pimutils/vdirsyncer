@@ -23,8 +23,8 @@ class ServerMixin(object):
         request.addfinalizer(teardown)
 
         def inner(collection='test'):
-            url = 'http://127.0.0.1:8080/'
-            args = {'url': url, 'username': 'bob', 'password': 'bob'}
+            url = 'http://127.0.0.1:8080/user/'
+            args = {'url': url}
 
             if collection is not None:
                 args = slow_create_collection(self.storage_class, args,
