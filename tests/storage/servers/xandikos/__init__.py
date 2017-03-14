@@ -1,14 +1,17 @@
+import pytest
+
 from xandikos.web import XandikosApp, XandikosBackend
 
 import wsgi_intercept
 import wsgi_intercept.requests_intercept
+
 
 class ServerMixin(object):
     @pytest.fixture
     def get_storage_args(self, request, tmpdir, slow_create_collection):
         backend = XandikosBackend(path=str(tmpdir.mkdir('xandikos')))
         cup = '/user/'
-        backend._mark_as_pricipal(cup)
+        backend._mark_as_principal(cup)
         app = XandikosApp(backend, cup)
 
         wsgi_intercept.requests_intercept.install()
@@ -21,8 +24,7 @@ class ServerMixin(object):
 
         def inner(collection='test'):
             url = 'http://127.0.0.1:8080/'
-            args = {'url': url, 'username': 'bob', 'password': 'bob',
-                    'collection': collection}
+            args = {'url': url, 'username': 'bob', 'password': 'bob'}
 
             if collection is not None:
                 args = slow_create_collection(self.storage_class, args,
