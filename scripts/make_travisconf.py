@@ -46,11 +46,11 @@ matrix.append({
 for python, requirements in itertools.product(python_versions,
                                               ("devel", "release", "minimal")):
     if python == latest_python and requirements == "release":
-        dav_servers = ("skip", "radicale", "owncloud", "nextcloud", "baikal",
-                       "davical", "icloud", "fastmail")
+        dav_servers = ("skip", "radicale", "xandikos", "owncloud", "nextcloud",
+                       "baikal", "davical", "icloud", "fastmail")
         rs_servers = ()
     else:
-        dav_servers = ("radicale",)
+        dav_servers = ("radicale", "xandikos")
         rs_servers = ()
 
     for server_type, server in itertools.chain(
