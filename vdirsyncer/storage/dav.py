@@ -302,6 +302,30 @@ class CalDiscover(Discover):
     _homeset_tag = '{%s}calendar-home-set' % _namespace
     _well_known_uri = '/.well-known/caldav'
 
+    def _create_collection_impl(self, url):
+        data = '''<?xml version="1.0" encoding="utf-8" ?>
+        <C:mkcalendar xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
+            <D:set>
+                <D:prop>
+                <D:displayname>{}</D:displayname>
+                <C:supported-calendar-component-set>
+                    <C:comp name="VEVENT"/>
+                    <C:comp name="VTODO"/>
+                </C:supported-calendar-component-set>
+                </D:prop>
+            </D:set>
+        </C:mkcalendar>'''.format(
+            self._get_collection_from_url(url)
+        ).encode()
+
+        response = self.session.request(
+            'MKCALENDAR',
+            url,
+            data=data,
+            headers=self.session.get_default_headers()
+        )
+        return response.url
+
 
 class CardDiscover(Discover):
     _namespace = 'urn:ietf:params:xml:ns:carddav'
