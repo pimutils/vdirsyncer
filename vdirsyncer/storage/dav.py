@@ -201,7 +201,7 @@ class Discover(object):
         props = _merge_xml(response.findall(
             '{DAV:}propstat/{DAV:}prop'
         ))
-        if not props:
+        if props is None or not len(props):
             dav_logger.debug('Skipping, missing <prop>: %s', response)
             return False
         if props.find('{DAV:}resourcetype/' + self._resourcetype) \
@@ -561,7 +561,7 @@ class DAVStorage(Storage):
                 continue
 
             props = response.findall('{DAV:}propstat/{DAV:}prop')
-            if not props:
+            if props is None or not len(props):
                 dav_logger.warning('Skipping {!r}, properties are missing.'
                                    .format(href))
                 continue
