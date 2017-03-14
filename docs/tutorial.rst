@@ -41,7 +41,7 @@ where the only required parameter is ``status_path``. The following is a
 minimal example::
 
     [general]
-    status_path = ~/.vdirsyncer/status/
+    status_path = "~/.vdirsyncer/status/"
 
 After the general section, an arbitrary amount of *pair and storage sections*
 might come.
