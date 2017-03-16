@@ -30,11 +30,9 @@ The iCalendar format also supports saving tasks in form of ``VTODO``-entries,
 with the same file extension as normal events: ``.ics``. All CalDAV servers
 support synchronizing tasks, vdirsyncer does too.
 
-- todoman_, a CLI task manager supporting :doc:`vdir <vdir>`.  You can use
+- todoman_, a CLI task manager supporting :doc:`vdir <vdir>`. Its interface is
+  similar to the ones of Taskwarrior or the todo.txt CLI app. You can use
   :storage:`filesystem` with it.
-
-  Its interface is similar to the ones of Taskwarrior or the todo.txt CLI app
-  and should be intuitively usable.
 
 .. _todoman: https://hugo.barrera.io/journal/2015/03/30/introducing-todoman/
 
