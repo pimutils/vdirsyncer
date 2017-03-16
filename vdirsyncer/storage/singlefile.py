@@ -62,7 +62,7 @@ class SingleFileStorage(Storage):
         #username =
         #password =
 
-    Example for syncing with :storage:`caldav` using a ``null`` collection:
+    Example for syncing with :storage:`caldav` using a ``null`` collection::
 
         [pair my_calendar]
         a = my_calendar_local
