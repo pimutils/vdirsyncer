@@ -27,11 +27,9 @@ class ServerMixin(object):
 
         def inner(collection='test'):
             url = 'http://127.0.0.1:8080/'
-            args = {'url': url}
+            args = {'url': url, 'collection': collection}
 
             if collection is not None:
-                args = self.storage_class.create_collection(
-                    **args, collection=collection
-                )
+                args = self.storage_class.create_collection(**args)
             return args
         return inner
