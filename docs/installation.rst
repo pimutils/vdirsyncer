@@ -7,24 +7,22 @@ Installation
 OS/distro packages
 ------------------
 
-Unless you want to contribute to vdirsyncer, you should use the packages from
-your distribution:
+The following packages are user-contributed. They may or may not be up-to-date:
 
 - `ArchLinux (AUR) <https://aur.archlinux.org/packages/vdirsyncer>`_
-- `pkgsrc <http://pkgsrc.se/time/py-vdirsyncer>`_
-- `nixpkg <https://github.com/NixOS/nixpkgs/tree/master/pkgs/tools/misc/vdirsyncer>`_
-- `GNU Guix <https://www.gnu.org/software/guix/package-list.html#vdirsyncer>`_
-- `homebrew <http://braumeister.org/formula/vdirsyncer>`_
-- `Gentoo <https://packages.gentoo.org/packages/dev-python/vdirsyncer>`_
-
-Some distros have multiple release channels. The following **may not contain
-the latest version:**
-
+- `Debian <https://packages.debian.org/sid/vdirsyncer>`_
 - `Fedora <https://apps.fedoraproject.org/packages/vdirsyncer>`_
-- `Debian <https://packages.debian.org/sid/vdirsyncer>`_ (likewise for Ubuntu)
+- `GNU Guix <https://www.gnu.org/software/guix/package-list.html#vdirsyncer>`_
+- `Gentoo <https://packages.gentoo.org/packages/dev-python/vdirsyncer>`_
+- `Ubuntu <http://packages.ubuntu.com/search?keywords=vdirsyncer>`_
+- `OS X (homebrew) <http://braumeister.org/formula/vdirsyncer>`_
+- `NixOS/Nix <https://github.com/NixOS/nixpkgs/tree/master/pkgs/tools/misc/vdirsyncer>`_
+- `BSD (pkgsrc) <http://pkgsrc.se/time/py-vdirsyncer>`_
 
-We only support the latest version of vdirsyncer. Please do not file bugs if
-you use an older version.
+.. note::
+
+    We only support the latest version of vdirsyncer. Please do not file bugs
+    if you use an older version.
 
 If there is no package for your distribution, you'll need to :ref:`install
 vdirsyncer manually <manual-installation>`. There is an easy command to
