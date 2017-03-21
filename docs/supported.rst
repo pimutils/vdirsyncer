@@ -69,7 +69,7 @@ Radicale_ is a very lightweight server, however, it intentionally doesn't
 implement the CalDAV and CardDAV standards completely, which might lead to
 issues even with very well-written clients. Apart from its non-conformity with
 standards, there are multiple other problems with its code quality and the way
-it is maintained.
+it is maintained. Consider using e.g. Xandikos_ instead.
 
 That said, vdirsyncer is continuously tested against the git version and the
 latest PyPI release of Radicale.
@@ -252,3 +252,26 @@ tested frequently. You can use :storage:`google_contacts` and
 :storage:`google_calendar`.
 
 For more information see :gh:`202` and :gh:`8`.
+
+Xandikos
+--------
+
+Xandikos_ is a lightweight, yet complete CalDAV and CardDAV server, backed by
+git. Vdirsyncer is continuously tested against its latest version.
+
+After running ``./bin/xandikos --defaults -d $HOME/dav``, you should be able to
+point vdirsyncer against the root of Xandikos like this::
+
+    [storage cal]
+    type = "caldav"
+    url = "https://xandikos.example.com/"
+    username = ...
+    password = ...
+
+    [storage card]
+    type = "carddav"
+    url = "https://xandikos.example.com/"
+    username = ...
+    password = ...
+
+.. _Xandikos: https://github.com/jelmer/xandikos
