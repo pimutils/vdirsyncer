@@ -99,7 +99,7 @@ class _IdentAlreadyExists(SyncError):
                              hrefs=[self.old_href, self.new_href])
 
 
-class _Status(object):
+class _SubStatus(object):
     def __init__(self, ident_to_props=None):
         self._ident_to_props = ident_to_props or {}
         self._new_ident_to_props = {}
@@ -181,11 +181,10 @@ class _StorageInfo(object):
         self.storage = storage
 
         #: Represents the status as given. Must not be modified.
-        self.status = _Status(status)
+        self.status = _SubStatus(status)
 
     def prepare_new_status(self):
         prefetch = []
-        self.new_status = _Status()
 
         def _store_props(ident, props):
             try:
