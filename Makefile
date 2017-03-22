@@ -18,13 +18,17 @@ endif
 
 ifeq ($(CI), true)
 	TEST_EXTRA_PACKAGES += codecov
-endif
 
-ifneq ($(DAV_SERVER), skip)
-	PYTEST_ARGS += tests/storage/dav
-endif
-ifneq ($(REMOTESTORAGE_SERVER), skip)
-	PYTEST_ARGS += tests/storage/test_remotestorage.py
+test:
+	py.test $(PYTEST_ARGS) tests/unit/
+	codecov -F unit
+	py.test $(PYTEST_ARGS) tests/system/
+	codecov -F system
+	py.test $(PYTEST_ARGS) tests/storage/
+	codecov -F storage
+else
+test:
+	py.test $(PYTEST_ARGS)
 endif
 
 all:
@@ -49,12 +53,6 @@ install-test: install-servers
 	fi
 	[ -z "$(TEST_EXTRA_PACKAGES)" ] || pip install $(TEST_EXTRA_PACKAGES)
 
-test:
-	py.test $(PYTEST_ARGS)
-
-after-test:
-	[ "$(CI)" != "true" ] || codecov
-
 install-style: install-docs
 	pip install flake8 flake8-import-order flake8-bugbear>=17.3.0
 	
@@ -65,9 +63,6 @@ style:
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
 	python3 scripts/make_travisconf.py | diff -b .travis.yml -
 
-after-style:
-	true
-
 travis-conf:
 	python3 scripts/make_travisconf.py > .travis.yml
 
@@ -76,9 +71,6 @@ install-docs:
 
 docs:
 	cd docs && make html
-
-after-docs:
-	true
 
 sh:  # open subshell with default test config
 	$$SHELL;

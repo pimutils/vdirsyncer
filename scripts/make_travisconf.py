@@ -32,7 +32,6 @@ then {};
 fi""".format
 
 cfg['script'] = [script("make -e $BUILD")]
-cfg['after_script'] = [script("make -e after-$BUILD")]
 
 matrix = []
 cfg['matrix'] = {'include': matrix}

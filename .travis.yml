@@ -1,7 +1,4 @@
 {
-  "after_script": [
-    "\nif [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ] || [ \"$BUILD_PRS\" != \"false\" ];\nthen make -e after-$BUILD;\nfi"
-  ],
   "branches": {
     "only": [
       "auto",
