@@ -99,36 +99,71 @@ class _IdentAlreadyExists(SyncError):
                              hrefs=[self.old_href, self.new_href])
 
 
-class _SubStatus(object):
-    def __init__(self, ident_to_props=None):
-        self._ident_to_props = ident_to_props or {}
+class _Status(object):
+    def __init__(self, ident_to_props):
+        self._ident_to_props = ident_to_props
         self._new_ident_to_props = {}
 
-        self._href_to_status = dict((meta.href, (ident, meta))
-                                    for ident, meta
-                                    in self._ident_to_props.items())
+        self._href_to_status_a = dict((meta['href'], (ident, meta))
+                                      for ident, (meta, _)
+                                      in self._ident_to_props.items())
 
-    def insert_ident(self, ident, props):
-        new_props = self._new_ident_to_props.setdefault(ident, props)
-        if new_props is not props:
+        self._href_to_status_b = dict((meta['href'], (ident, meta))
+                                      for ident, (_, meta)
+                                      in self._ident_to_props.items())
+
+    def insert_ident_a(self, ident, props):
+        props_a, props_b = self._new_ident_to_props.get(ident, (None, None))
+        if props_a is not None:
             raise _IdentAlreadyExists(old_href=props.href,
-                                      new_href=new_props.href)
+                                      new_href=props_a['href'])
+        self._new_ident_to_props[ident] = props.to_status(), props_b
 
-    def update_ident(self, ident, props):
-        assert ident in self._new_ident_to_props
-        self._new_ident_to_props[ident] = props
+    def insert_ident_b(self, ident, props):
+        props_a, props_b = self._new_ident_to_props.get(ident, (None, None))
+        if props_b is not None:
+            raise _IdentAlreadyExists(old_href=props.href,
+                                      new_href=props_b['href'])
+        self._new_ident_to_props[ident] = props_a, props.to_status()
+
+    def update_ident_a(self, ident, props):
+        self._new_ident_to_props[ident] = (
+            props.to_status(),
+            self._new_ident_to_props[ident][1],
+        )
+
+    def update_ident_b(self, ident, props):
+        self._new_ident_to_props[ident] = (
+            self._new_ident_to_props[ident][0],
+            props.to_status(),
+        )
 
     def remove_ident(self, ident):
         del self._new_ident_to_props[ident]
 
-    def get_by_href(self, href, default=(None, None)):
-        return self._href_to_status.get(href, default)
+    def get_a(self, ident):
+        rv = self._ident_to_props[ident][0]
+        if rv is None:
+            raise KeyError()
+        return _ItemMetadata(**rv)
 
-    def get(self, ident):
-        return self._ident_to_props[ident]
+    def get_b(self, ident):
+        rv = self._ident_to_props[ident][1]
+        if rv is None:
+            raise KeyError()
+        return _ItemMetadata(**rv)
 
-    def get_new(self, ident):
-        return self._new_ident_to_props[ident]
+    def get_new_a(self, ident):
+        rv = self._new_ident_to_props[ident][0]
+        if rv is None:
+            raise KeyError()
+        return _ItemMetadata(**rv)
+
+    def get_new_b(self, ident):
+        rv = self._new_ident_to_props[ident][1]
+        if rv is None:
+            raise KeyError()
+        return _ItemMetadata(**rv)
 
     def iter_old(self):
         return iter(self._ident_to_props)
@@ -142,10 +177,54 @@ class _SubStatus(object):
         else:
             self._new_ident_to_props.pop(ident, None)
 
+    def get_by_href_a(self, href, default=(None, None)):
+        try:
+            ident, meta = self._href_to_status_a[href]
+        except KeyError:
+            return default
+        else:
+            return ident, _ItemMetadata(**meta)
+
+    def get_by_href_b(self, href, default=(None, None)):
+        try:
+            ident, meta = self._href_to_status_b[href]
+        except KeyError:
+            return default
+        else:
+            return ident, _ItemMetadata(**meta)
+
+    def new_to_old_status(self):
+        for meta_a, meta_b in self._new_ident_to_props.values():
+            assert meta_a is not None
+            assert meta_b is not None
+
+        self._ident_to_props.clear()
+        self._ident_to_props.update(self._new_ident_to_props)
+
+
+class _SubStatus(object):
+    def __init__(self, parent, side):
+        self.parent = parent
+        assert side in 'ab'
+
+        self.remove_ident = parent.remove_ident
+
+        if side == 'a':
+            self.insert_ident = parent.insert_ident_a
+            self.update_ident = parent.update_ident_a
+            self.get = parent.get_a
+            self.get_new = parent.get_new_a
+            self.get_by_href = parent.get_by_href_a
+        else:
+            self.insert_ident = parent.insert_ident_b
+            self.update_ident = parent.update_ident_b
+            self.get = parent.get_b
+            self.get_new = parent.get_new_b
+            self.get_by_href = parent.get_by_href_b
+
 
 class _ItemMetadata:
     href = None
-    _item = None
     hash = None
     etag = None
 
@@ -153,15 +232,6 @@ class _ItemMetadata:
         for k, v in kwargs.items():
             assert hasattr(self, k)
             setattr(self, k, v)
-
-    @property
-    def item(self):
-        return self._item
-
-    @item.setter
-    def item(self, item):
-        self._item = item
-        self.hash = item.hash
 
     def to_status(self):
         return {
@@ -175,18 +245,18 @@ class _StorageInfo(object):
     '''A wrapper class that holds prefetched items, the status and other
     things.'''
     def __init__(self, storage, status):
-        '''
-        :param status: {ident: {'href': href, 'etag': etag}}
-        '''
         self.storage = storage
-
-        #: Represents the status as given. Must not be modified.
-        self.status = _SubStatus(status)
+        self.status = status
+        self._item_cache = {}
 
     def prepare_new_status(self):
+        storage_nonempty = False
         prefetch = []
 
         def _store_props(ident, props):
+            nonlocal storage_nonempty
+            storage_nonempty = True
+
             try:
                 self.status.insert_ident(ident, props)
             except _IdentAlreadyExists as e:
@@ -211,9 +281,12 @@ class _StorageInfo(object):
                                  if prefetch else ()):
             _store_props(item.ident, _ItemMetadata(
                 href=href,
-                etag=etag,
-                item=item
+                hash=item.hash,
+                etag=etag
             ))
+            self.set_item_cache(item.ident, item)
+
+        return storage_nonempty
 
     def is_changed(self, ident):
         try:
@@ -231,6 +304,14 @@ class _StorageInfo(object):
             else:
                 # only etag changed
                 return False
+
+    def set_item_cache(self, ident, item):
+        assert self.status.get_new(ident).hash == item.hash
+        self._item_cache[ident] = item
+
+    def get_item_cache(self, ident):
+        return self._item_cache[ident]
+
 
 
 def _migrate_status(status):
@@ -287,25 +368,19 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
         conflict_resolution = lambda a, b: b
 
     _migrate_status(status)
+    status_nonempty = bool(status)
+    status = _Status(status)
 
-    a_status = {}
-    b_status = {}
-    for ident, (meta_a, meta_b) in status.items():
-        a_status[ident] = _ItemMetadata(**meta_a)
-        b_status[ident] = _ItemMetadata(**meta_b)
+    a_info = _StorageInfo(storage_a, _SubStatus(status, 'a'))
+    b_info = _StorageInfo(storage_b, _SubStatus(status, 'b'))
 
-    a_info = _StorageInfo(storage_a, a_status)
-    b_info = _StorageInfo(storage_b, b_status)
+    a_nonempty = a_info.prepare_new_status()
+    b_nonempty = b_info.prepare_new_status()
 
-    a_info.prepare_new_status()
-    b_info.prepare_new_status()
-
-    if status and not force_delete:
-        if next(a_info.status.iter_new(), None) and \
-           not next(b_info.status.iter_new(), None):
+    if status_nonempty and not force_delete:
+        if a_nonempty and not b_nonempty:
             raise StorageEmpty(empty_storage=storage_b)
-        elif not next(a_info.status.iter_new(), None) and \
-                next(b_info.status.iter_new(), None):
+        elif not a_nonempty and b_nonempty:
             raise StorageEmpty(empty_storage=storage_a)
 
     actions = list(_get_actions(a_info, b_info))
@@ -320,13 +395,7 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
                 else:
                     raise
 
-    status.clear()
-    for ident in uniq(itertools.chain(a_info.status.iter_new(),
-                                      b_info.status.iter_new())):
-        status[ident] = (
-            a_info.status.get_new(ident).to_status(),
-            b_info.status.get_new(ident).to_status()
-        )
+    status.new_to_old_status()
 
 
 class Action:
@@ -355,8 +424,7 @@ class Action:
             raise e
 
     def rollback(self, a, b):
-        for info in (a, b):
-            info.status.rollback(self.ident)
+        a.status.parent.rollback(self.ident)
 
 
 class Upload(Action):
@@ -389,7 +457,7 @@ class Update(Action):
 
     def _run_impl(self, a, b):
         if self.dest.storage.read_only:
-            meta = _ItemMetadata(item=self.item)
+            meta = _ItemMetadata(hash=self.item.hash)
         else:
             sync_logger.info(u'Copying (updating) item {} to {}'
                              .format(self.ident, self.dest.storage))
@@ -433,7 +501,9 @@ class ResolveConflict(Action):
                 raise SyncConflict(ident=self.ident, href_a=meta_a.href,
                                    href_b=meta_b.href)
             elif callable(conflict_resolution):
-                new_item = conflict_resolution(meta_a.item, meta_b.item)
+                item_a = a.get_item_cache(self.ident)
+                item_b = b.get_item_cache(self.ident)
+                new_item = conflict_resolution(item_a, item_b)
                 if new_item.hash != meta_a.hash:
                     Update(new_item, a).run(a, b, conflict_resolution,
                                             partial_sync)
@@ -447,9 +517,8 @@ class ResolveConflict(Action):
 
 
 def _get_actions(a_info, b_info):
-    for ident in uniq(itertools.chain(a_info.status.iter_new(),
-                                      b_info.status.iter_new(),
-                                      a_info.status.iter_old())):
+    for ident in uniq(itertools.chain(a_info.status.parent.iter_new(),
+                                      a_info.status.parent.iter_old())):
         try:
             a = a_info.status.get_new(ident)
         except KeyError:
@@ -469,15 +538,15 @@ def _get_actions(a_info, b_info):
                 yield ResolveConflict(ident)
             elif a_changed and not b_changed:
                 # item was only modified in a
-                yield Update(a.item, b_info)
+                yield Update(a_info.get_item_cache(ident), b_info)
             elif not a_changed and b_changed:
                 # item was only modified in b
-                yield Update(b.item, a_info)
+                yield Update(b_info.get_item_cache(ident), a_info)
         elif a and not b:
             if a_info.is_changed(ident):
                 # was deleted from b but modified on a
                 # OR: new item was created in a
-                yield Upload(a.item, b_info)
+                yield Upload(a_info.get_item_cache(ident), b_info)
             else:
                 # was deleted from b and not modified on a
                 yield Delete(ident, a_info)
@@ -485,7 +554,7 @@ def _get_actions(a_info, b_info):
             if b_info.is_changed(ident):
                 # was deleted from a but modified on b
                 # OR: new item was created in b
-                yield Upload(b.item, a_info)
+                yield Upload(b_info.get_item_cache(ident), a_info)
             else:
                 # was deleted from a and not changed on b
                 yield Delete(ident, b_info)
