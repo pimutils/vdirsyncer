@@ -26,6 +26,10 @@
         "python": "3.3"
       },
       {
+        "env": "BUILD=test DAV_SERVER=xandikos REQUIREMENTS=devel BUILD_PRS=true ",
+        "python": "3.3"
+      },
+      {
         "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=true ",
         "python": "3.3"
       },
@@ -38,6 +42,10 @@
         "python": "3.4"
       },
       {
+        "env": "BUILD=test DAV_SERVER=xandikos REQUIREMENTS=devel BUILD_PRS=true ",
+        "python": "3.4"
+      },
+      {
         "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=true ",
         "python": "3.4"
       },
@@ -47,6 +55,10 @@
       },
       {
         "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=true ",
+        "python": "3.5"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=xandikos REQUIREMENTS=devel BUILD_PRS=true ",
         "python": "3.5"
       },
       {
@@ -62,7 +74,7 @@
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=skip REQUIREMENTS=release BUILD_PRS=true ",
+        "env": "BUILD=test DAV_SERVER=xandikos REQUIREMENTS=devel BUILD_PRS=true ",
         "python": "3.6"
       },
       {
@@ -99,6 +111,10 @@
       },
       {
         "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel BUILD_PRS=true ",
+        "python": "pypy3"
+      },
+      {
+        "env": "BUILD=test DAV_SERVER=xandikos REQUIREMENTS=devel BUILD_PRS=true ",
         "python": "pypy3"
       },
       {
