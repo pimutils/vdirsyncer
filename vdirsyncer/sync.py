@@ -88,6 +88,61 @@ class PartialSync(SyncError):
     storage = None
 
 
+class _IdentAlreadyExists(SyncError):
+    '''Like IdentConflict, but for internal state. If this bubbles up, we don't
+    have a data race, but a bug.'''
+    old_href = None
+    new_href = None
+
+    def to_ident_conflict(self, storage):
+        return IdentConflict(storage=storage,
+                             hrefs=[self.old_href, self.new_href])
+
+
+class _Status(object):
+    def __init__(self, ident_to_props=None):
+        self._ident_to_props = ident_to_props or {}
+        self._new_ident_to_props = {}
+
+        self._href_to_status = dict((meta.href, (ident, meta))
+                                    for ident, meta
+                                    in self._ident_to_props.items())
+
+    def insert_ident(self, ident, props):
+        new_props = self._new_ident_to_props.setdefault(ident, props)
+        if new_props is not props:
+            raise _IdentAlreadyExists(old_href=props.href,
+                                      new_href=new_props.href)
+
+    def update_ident(self, ident, props):
+        assert ident in self._new_ident_to_props
+        self._new_ident_to_props[ident] = props
+
+    def remove_ident(self, ident):
+        del self._new_ident_to_props[ident]
+
+    def get_by_href(self, href, default=(None, None)):
+        return self._href_to_status.get(href, default)
+
+    def get(self, ident):
+        return self._ident_to_props[ident]
+
+    def get_new(self, ident):
+        return self._new_ident_to_props[ident]
+
+    def iter_old(self):
+        return iter(self._ident_to_props)
+
+    def iter_new(self):
+        return iter(self._new_ident_to_props)
+
+    def rollback(self, ident):
+        if ident in self._ident_to_props:
+            self._new_ident_to_props[ident] = self._ident_to_props[ident]
+        else:
+            self._new_ident_to_props.pop(ident, None)
+
+
 class _ItemMetadata:
     href = None
     _item = None
@@ -126,29 +181,20 @@ class _StorageInfo(object):
         self.storage = storage
 
         #: Represents the status as given. Must not be modified.
-        self.status = status
-
-        #: Represents the current state of the storage and is modified as items
-        #: are uploaded and downloaded. Will be dumped into status.
-        self.new_status = None
+        self.status = _Status(status)
 
     def prepare_new_status(self):
-        href_to_status = dict((meta.href, (ident, meta))
-                              for ident, meta
-                              in self.status.items())
-
         prefetch = []
-        self.new_status = {}
+        self.new_status = _Status()
 
         def _store_props(ident, props):
-            new_props = self.new_status.setdefault(ident, props)
-            if new_props is not props:
-                raise IdentConflict(storage=self.storage,
-                                    hrefs=[new_props.href,
-                                           props.href])
+            try:
+                self.status.insert_ident(ident, props)
+            except _IdentAlreadyExists as e:
+                raise e.to_ident_conflict(self.storage)
 
         for href, etag in self.storage.list():
-            ident, meta = href_to_status.get(href, (None, None))
+            ident, meta = self.status.get_by_href(href)
             if meta is None:
                 meta = _ItemMetadata()
 
@@ -171,11 +217,12 @@ class _StorageInfo(object):
             ))
 
     def is_changed(self, ident):
-        status = self.status.get(ident, None)
-        meta = self.new_status[ident]
-
-        if status is None:  # new item
+        try:
+            status = self.status.get(ident)
+        except KeyError:  # new item
             return True
+
+        meta = self.status.get_new(ident)
 
         if meta.etag != status.etag:  # etag changed
             old_hash = status.hash
@@ -255,9 +302,11 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
     b_info.prepare_new_status()
 
     if status and not force_delete:
-        if a_info.new_status and not b_info.new_status:
+        if next(a_info.status.iter_new(), None) and \
+           not next(b_info.status.iter_new(), None):
             raise StorageEmpty(empty_storage=storage_b)
-        elif b_info.new_status and not a_info.new_status:
+        elif not next(a_info.status.iter_new(), None) and \
+                next(b_info.status.iter_new(), None):
             raise StorageEmpty(empty_storage=storage_a)
 
     actions = list(_get_actions(a_info, b_info))
@@ -273,11 +322,11 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
                     raise
 
     status.clear()
-    for ident in uniq(itertools.chain(a_info.new_status,
-                                      b_info.new_status)):
+    for ident in uniq(itertools.chain(a_info.status.iter_new(),
+                                      b_info.status.iter_new())):
         status[ident] = (
-            a_info.new_status[ident].to_status(),
-            b_info.new_status[ident].to_status()
+            a_info.status.get_new(ident).to_status(),
+            b_info.status.get_new(ident).to_status()
         )
 
 
@@ -308,10 +357,7 @@ class Action:
 
     def rollback(self, a, b):
         for info in (a, b):
-            if self.ident in info.status:
-                info.new_status[self.ident] = info.status[self.ident]
-            else:
-                info.new_status.pop(self.ident, None)
+            info.status.rollback(self.ident)
 
 
 class Upload(Action):
@@ -329,12 +375,11 @@ class Upload(Action):
                              .format(self.ident, self.dest.storage))
             href, etag = self.dest.storage.upload(self.item)
 
-        assert self.ident not in self.dest.new_status
-        self.dest.new_status[self.ident] = _ItemMetadata(
+        self.dest.status.insert_ident(self.ident, _ItemMetadata(
             href=href,
             hash=self.item.hash,
             etag=etag
-        )
+        ))
 
 
 class Update(Action):
@@ -349,11 +394,11 @@ class Update(Action):
         else:
             sync_logger.info(u'Copying (updating) item {} to {}'
                              .format(self.ident, self.dest.storage))
-            meta = self.dest.new_status[self.ident]
+            meta = self.dest.status.get_new(self.ident)
             meta.etag = \
                 self.dest.storage.update(meta.href, self.item, meta.etag)
 
-        self.dest.new_status[self.ident] = meta
+        self.dest.status.update_ident(self.ident, meta)
 
 
 class Delete(Action):
@@ -362,12 +407,13 @@ class Delete(Action):
         self.dest = dest
 
     def _run_impl(self, a, b):
-        meta = self.dest.new_status[self.ident]
+        meta = self.dest.status.get_new(self.ident)
         if not self.dest.storage.read_only:
             sync_logger.info(u'Deleting item {} from {}'
                              .format(self.ident, self.dest.storage))
             self.dest.storage.delete(meta.href, meta.etag)
-        del self.dest.new_status[self.ident]
+
+        self.dest.status.remove_ident(self.ident)
 
 
 class ResolveConflict(Action):
@@ -378,8 +424,9 @@ class ResolveConflict(Action):
         with self.auto_rollback(a, b):
             sync_logger.info(u'Doing conflict resolution for item {}...'
                              .format(self.ident))
-            meta_a = a.new_status[self.ident]
-            meta_b = b.new_status[self.ident]
+
+            meta_a = a.status.get_new(self.ident)
+            meta_b = b.status.get_new(self.ident)
 
             if meta_a.hash == meta_b.hash:
                 sync_logger.info(u'...same content on both sides.')
@@ -401,10 +448,18 @@ class ResolveConflict(Action):
 
 
 def _get_actions(a_info, b_info):
-    for ident in uniq(itertools.chain(a_info.new_status, b_info.new_status,
-                                      a_info.status)):
-        a = a_info.new_status.get(ident, None)  # item exists in a
-        b = b_info.new_status.get(ident, None)  # item exists in b
+    for ident in uniq(itertools.chain(a_info.status.iter_new(),
+                                      b_info.status.iter_new(),
+                                      a_info.status.iter_old())):
+        try:
+            a = a_info.status.get_new(ident)
+        except KeyError:
+            a = None
+
+        try:
+            b = b_info.status.get_new(ident)
+        except KeyError:
+            b = None
 
         if a and b:
             a_changed = a_info.is_changed(ident)
