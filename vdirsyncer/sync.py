@@ -313,7 +313,6 @@ class _StorageInfo(object):
         return self._item_cache[ident]
 
 
-
 def _migrate_status(status):
     for ident in list(status):
         value = status[ident]
