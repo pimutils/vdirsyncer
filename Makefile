@@ -9,6 +9,8 @@ export CI := false
 export COVERAGE := $(CI)
 export DETERMINISTIC_TESTS := false
 
+CODECOV_PATH = /tmp/codecov.sh
+
 PYTEST_ARGS =
 TEST_EXTRA_PACKAGES =
 ifeq ($(COVERAGE), true)
@@ -17,15 +19,14 @@ ifeq ($(COVERAGE), true)
 endif
 
 ifeq ($(CI), true)
-	TEST_EXTRA_PACKAGES += codecov
-
 test:
+	curl -s https://codecov.io/bash > $(CODECOV_PATH)
 	py.test $(PYTEST_ARGS) tests/unit/
-	codecov -F unit
+	bash $(CODECOV_PATH) -c -F unit
 	py.test $(PYTEST_ARGS) tests/system/
-	codecov -F system
+	bash $(CODECOV_PATH) -c -F system
 	py.test $(PYTEST_ARGS) tests/storage/
-	codecov -F storage
+	bash $(CODECOV_PATH) -c -F storage
 else
 test:
 	py.test $(PYTEST_ARGS)
