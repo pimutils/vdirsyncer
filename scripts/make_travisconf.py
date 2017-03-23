@@ -9,6 +9,7 @@ cfg = {}
 
 cfg['sudo'] = True
 cfg['language'] = 'python'
+cfg['cache'] = 'pip'
 
 cfg['git'] = {
     'submodules': False

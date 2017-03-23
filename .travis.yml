@@ -5,6 +5,7 @@
       "master"
     ]
   },
+  "cache": "pip",
   "git": {
     "submodules": false
   },
