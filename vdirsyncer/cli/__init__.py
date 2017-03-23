@@ -8,7 +8,7 @@ import click
 
 import click_log
 
-from .. import __version__
+from .. import BUGTRACKER_HOME, __version__
 
 
 cli_logger = logging.getLogger(__name__)
@@ -48,6 +48,12 @@ def app(ctx, config):
     '''
     Synchronize calendars and contacts
     '''
+
+    if sys.platform == 'win32':
+        cli_logger.warning('Vdirsyncer currently does not support Windows. '
+                           'You will likely encounter bugs. '
+                           'See {}/535 for more information.'
+                           .format(BUGTRACKER_HOME))
 
     if not ctx.config:
         from .config import load_config
