@@ -21,8 +21,8 @@ except ImportError:  # pragma: no cover
 
 def _check_python_version():  # pragma: no cover
     import sys
-    if sys.version_info[0] < 3:
-        print('vdirsyncer requires Python 3.')
+    if sys.version_info[0] < (3, 3):
+        print('vdirsyncer requires at least Python 3.3.')
         sys.exit(1)
 
 
