@@ -12,9 +12,12 @@ Yang: http://blog.ezyang.com/2012/08/how-offlineimap-works/
 Some modifications to it are explained in
 https://unterwaditzer.net/2016/sync-algorithm.html
 '''
+import abc
 import contextlib
+import functools
 import itertools
 import logging
+import sqlite3
 
 from . import exceptions
 from .utils import uniq
@@ -99,107 +102,328 @@ class _IdentAlreadyExists(SyncError):
                              hrefs=[self.old_href, self.new_href])
 
 
-class _Status(object):
-    def __init__(self, ident_to_props):
-        self._ident_to_props = ident_to_props
-        self._new_ident_to_props = {}
+class _StatusBase(metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def transaction(self):
+        raise NotImplementedError()
 
-        self._href_to_status_a = dict((meta['href'], (ident, meta))
-                                      for ident, (meta, _)
-                                      in self._ident_to_props.items())
+    @abc.abstractmethod
+    def insert_ident_a(self, ident, props):
+        raise NotImplementedError()
 
-        self._href_to_status_b = dict((meta['href'], (ident, meta))
-                                      for ident, (_, meta)
-                                      in self._ident_to_props.items())
+    @abc.abstractmethod
+    def insert_ident_b(self, ident, props):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def update_ident_a(self, ident, props):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def update_ident_b(self, ident, props):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def remove_ident(self, ident):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_a(self, ident):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_b(self, ident):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_new_a(self, ident):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_new_b(self, ident):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def iter_old(self):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def iter_new(self):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_by_href_a(self, href, default=(None, None)):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_by_href_b(self, href, default=(None, None)):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def rollback(self, ident):
+        raise NotImplementedError()
+
+
+class _SqliteStatus(_StatusBase):
+    SCHEMA_VERSION = 1
+
+    def __init__(self, path):
+        self._path = path
+        self._conn = sqlite3.connect(path)
+        self._conn.row_factory = sqlite3.Row
+        self._c = None
+
+        if self._is_latest_version():
+            return
+
+        self._conn.execute('DROP TABLE IF EXISTS status')
+        self._conn.execute('DROP TABLE IF EXISTS new_status')
+        self._conn.execute('DROP TABLE IF EXISTS meta')
+
+        self._conn.execute('''CREATE TABLE meta (
+            "version" INTEGER PRIMARY KEY
+        ); ''')
+        self._conn.execute('INSERT INTO meta (version) VALUES (?)',
+                           (self.SCHEMA_VERSION,))
+
+        self._conn.execute('''CREATE TABLE status (
+            "ident" TEXT PRIMARY KEY NOT NULL,
+            "href_a" TEXT NOT NULL,
+            "href_b" TEXT NOT NULL,
+            "hash_a" TEXT NOT NULL,
+            "hash_b" TEXT NOT NULL,
+            "etag_a" TEXT NOT NULL,
+            "etag_b" TEXT NOT NULL
+        ); ''')
+        self._conn.execute('CREATE UNIQUE INDEX by_href_a ON status(href_a)')
+        self._conn.execute('CREATE UNIQUE INDEX by_href_b ON status(href_b)')
+
+        # We cannot add NOT NULL here because data is first fetched for the
+        # storage a, then storage b. Inbetween the `_b`-columns are filled with
+        # NULL.
+        self._conn.execute('''CREATE TABLE new_status (
+            "ident" TEXT PRIMARY KEY NOT NULL,
+            "href_a" TEXT,
+            "href_b" TEXT,
+            "hash_a" TEXT,
+            "hash_b" TEXT,
+            "etag_a" TEXT,
+            "etag_b" TEXT
+        ); ''')
+
+    def _is_latest_version(self):
+        try:
+            return bool(self._conn.execute(
+                'SELECT version FROM meta WHERE version = ?',
+                (self.SCHEMA_VERSION,)
+            ).fetchone())
+        except sqlite3.OperationalError:
+            return False
+
+    @contextlib.contextmanager
+    def transaction(self):
+        assert self._c is None
+        self._c = self._conn
+        yield
+        self._c.execute('DELETE FROM status')
+        self._c.execute('INSERT INTO status '
+                        'SELECT * FROM new_status')
 
     def insert_ident_a(self, ident, props):
-        props_a, props_b = self._new_ident_to_props.get(ident, (None, None))
-        if props_a is not None:
-            raise _IdentAlreadyExists(old_href=props.href,
-                                      new_href=props_a['href'])
-        self._new_ident_to_props[ident] = props.to_status(), props_b
+        # FIXME: Super inefficient
+        old_props = self.get_new_a(ident)
+        if old_props is not None:
+            raise _IdentAlreadyExists(old_href=old_props.href,
+                                      new_href=props.href)
+
+        self._c.execute('WITH new (ident, href_a, hash_a, etag_a) AS ( VALUES(?, ?, ?, ?) )'
+                        'INSERT OR REPLACE INTO new_status '
+                        'SELECT new.ident, new.href_a, old.href_b, new.hash_a, old.hash_b, new.etag_a, old.etag_b '
+                        'FROM new LEFT JOIN new_status AS old ON old.ident = new.ident',
+                        (ident, props.href, props.hash, props.etag))
 
     def insert_ident_b(self, ident, props):
-        props_a, props_b = self._new_ident_to_props.get(ident, (None, None))
-        if props_b is not None:
-            raise _IdentAlreadyExists(old_href=props.href,
-                                      new_href=props_b['href'])
-        self._new_ident_to_props[ident] = props_a, props.to_status()
+        # FIXME: Super inefficient
+        old_props = self.get_new_b(ident)
+        if old_props is not None:
+            raise _IdentAlreadyExists(old_href=old_props.href,
+                                      new_href=props.href)
+        self._c.execute('WITH new (ident, href_b, hash_b, etag_b) AS ( VALUES(?, ?, ?, ?) )'
+                        'INSERT OR REPLACE INTO new_status '
+                        'SELECT new.ident, old.href_a, new.href_b, old.hash_a, new.hash_b, old.etag_a, new.etag_b '
+                        'FROM new LEFT JOIN new_status AS old ON old.ident = new.ident',
+                        (ident, props.href, props.hash, props.etag))
 
     def update_ident_a(self, ident, props):
-        self._new_ident_to_props[ident] = (
-            props.to_status(),
-            self._new_ident_to_props[ident][1],
+        c = self._c.cursor()
+        c.execute(
+            'UPDATE new_status'
+            ' SET href_a=?, hash_a=?, etag_a=?'
+            ' WHERE ident=?',
+            (props.href, props.hash, props.etag, ident)
         )
+        self._c.commit()
+        assert c.rowcount > 0
 
     def update_ident_b(self, ident, props):
-        self._new_ident_to_props[ident] = (
-            self._new_ident_to_props[ident][0],
-            props.to_status(),
+        c = self._c.cursor()
+        c.execute(
+            'UPDATE new_status'
+            ' SET href_b=?, hash_b=?, etag_b=?'
+            ' WHERE ident=?',
+            (props.href, props.hash, props.etag, ident)
         )
+        self._c.commit()
+        assert c.rowcount > 0
 
     def remove_ident(self, ident):
-        del self._new_ident_to_props[ident]
+        self._c.execute('DELETE FROM new_status WHERE ident=?', (ident,))
+
+    def _get_impl(self, ident, side, table):
+        res = self._c.execute('SELECT href_{side} AS href,'
+                              '       hash_{side} AS hash,'
+                              '       etag_{side} AS etag '
+                              'FROM {table} WHERE ident=?'
+                              .format(side=side, table=table),
+                              (ident,)).fetchone()
+        if res is None or res['hash'] is None:
+            return None
+        res = dict(res)
+        assert None not in res.values()
+        return _ItemMetadata(**res)
+
 
     def get_a(self, ident):
-        rv = self._ident_to_props[ident][0]
-        if rv is None:
-            raise KeyError()
-        return _ItemMetadata(**rv)
+        return self._get_impl(ident, side='a', table='status')
 
     def get_b(self, ident):
-        rv = self._ident_to_props[ident][1]
-        if rv is None:
-            raise KeyError()
-        return _ItemMetadata(**rv)
+        return self._get_impl(ident, side='b', table='status')
 
     def get_new_a(self, ident):
-        rv = self._new_ident_to_props[ident][0]
-        if rv is None:
-            raise KeyError()
-        return _ItemMetadata(**rv)
+        return self._get_impl(ident, side='a', table='new_status')
 
     def get_new_b(self, ident):
-        rv = self._new_ident_to_props[ident][1]
-        if rv is None:
-            raise KeyError()
-        return _ItemMetadata(**rv)
+        return self._get_impl(ident, side='b', table='new_status')
 
     def iter_old(self):
-        return iter(self._ident_to_props)
+        return iter(res['ident'] for res in
+                    self._c.execute('SELECT ident FROM status').fetchall())
 
     def iter_new(self):
-        return iter(self._new_ident_to_props)
+        return iter(res['ident'] for res in
+                    self._c.execute('SELECT ident FROM new_status').fetchall())
 
     def rollback(self, ident):
-        if ident in self._ident_to_props:
-            self._new_ident_to_props[ident] = self._ident_to_props[ident]
-        else:
-            self._new_ident_to_props.pop(ident, None)
+        a = self.get_a(ident)
+        b = self.get_b(ident)
+        assert (a is None) == (b is None)
+
+        if a is None and b is None:
+            self.remove_ident(ident)
+            return
+
+        for meta in (a, b):
+            assert meta.href is not None
+            assert meta.hash is not None
+            assert meta.etag is not None
+
+        self._c.execute(
+            'INSERT OR REPLACE INTO new_status'
+            ' VALUES (?, ?, ?, ?, ?, ?, ?)',
+            (ident, a.href, b.href, a.hash, b.hash, a.etag, b.etag)
+        )
+
+    def _get_by_href_impl(self, href, default=(None, None), side=None):
+        res = self._c.execute(
+            'SELECT ident, hash_{side} AS hash, etag_{side} AS etag '
+            'FROM status WHERE href_{side}=?'.format(side=side),
+            (href,)).fetchone()
+        if not res:
+            return default
+        return res['ident'], _ItemMetadata(
+            href=href,
+            hash=res['hash'],
+            etag=res['etag'],
+        )
+
+    def get_by_href_a(self, *a, **kw):
+        return self._get_by_href_impl(*a, **kw, side='a')
+
+    def get_by_href_b(self, *a, **kw):
+        return self._get_by_href_impl(*a, **kw, side='b')
+
+
+class _Status(_StatusBase):
+
+    def __init__(self, ident_to_props):
+        self._db = _SqliteStatus(':memory:')
+        self._ident_to_props = ident_to_props
+
+    def insert_ident_a(self, ident, props):
+        return self._db.insert_ident_a(ident, props)
+
+    def insert_ident_b(self, ident, props):
+        return self._db.insert_ident_b(ident, props)
+
+    def update_ident_a(self, ident, props):
+        return self._db.update_ident_a(ident, props)
+
+    def update_ident_b(self, ident, props):
+        return self._db.update_ident_b(ident, props)
+
+    def remove_ident(self, ident):
+        return self._db.remove_ident(ident)
+
+    def get_a(self, ident):
+        return self._db.get_a(ident)
+
+    def get_b(self, ident):
+        return self._db.get_b(ident)
+
+    def get_new_a(self, ident):
+        return self._db.get_new_a(ident)
+
+    def get_new_b(self, ident):
+        return self._db.get_new_b(ident)
+
+    def iter_old(self):
+        return self._db.iter_old()
+
+    def iter_new(self):
+        return self._db.iter_new()
 
     def get_by_href_a(self, href, default=(None, None)):
-        try:
-            ident, meta = self._href_to_status_a[href]
-        except KeyError:
-            return default
-        else:
-            return ident, _ItemMetadata(**meta)
+        return self._db.get_by_href_a(href, default)
 
     def get_by_href_b(self, href, default=(None, None)):
-        try:
-            ident, meta = self._href_to_status_b[href]
-        except KeyError:
-            return default
-        else:
-            return ident, _ItemMetadata(**meta)
+        return self._db.get_by_href_b(href, default)
 
-    def new_to_old_status(self):
-        for meta_a, meta_b in self._new_ident_to_props.values():
-            assert meta_a is not None
-            assert meta_b is not None
+    def rollback(self, ident):
+        return self._db.rollback(ident)
+
+    @contextlib.contextmanager
+    def transaction(self):
+        with self._db.transaction():
+            for ident, (a, b) in self._ident_to_props.items():
+                params = (ident, a.get('href'), a.get('hash'), a.get('etag'),
+                          b.get('href'), b.get('hash'), b.get('etag'))
+                if None in params:
+                    continue
+
+                self._db._c.execute(
+                    'INSERT INTO status'
+                    ' (ident, href_a, hash_a, etag_a,'
+                    '  href_b, hash_b, etag_b)'
+                    ' VALUES (?, ?, ?, ?, ?, ?, ?)',
+                    params
+                )
+            yield
 
         self._ident_to_props.clear()
-        self._ident_to_props.update(self._new_ident_to_props)
+        for ident in self._db.iter_old():
+            a = self._db.get_a(ident)
+            b = self._db.get_b(ident)
+            self._ident_to_props[ident] = a.to_status(), b.to_status()
 
 
 class _SubStatus(object):
@@ -232,6 +456,8 @@ class _ItemMetadata:
         for k, v in kwargs.items():
             assert hasattr(self, k)
             setattr(self, k, v)
+        assert self.href is not None
+        assert self.etag is not None
 
     def to_status(self):
         return {
@@ -264,16 +490,11 @@ class _StorageInfo(object):
 
         for href, etag in self.storage.list():
             ident, meta = self.status.get_by_href(href)
-            if meta is None:
-                meta = _ItemMetadata()
-
-            if meta.href != href or meta.etag != etag:
+            if meta is None or meta.href != href or meta.etag != etag:
                 # Either the item is completely new, or updated
                 # In both cases we should prefetch
                 prefetch.append(href)
             else:
-                meta.href = href
-                meta.etag = etag
                 _store_props(ident, meta)
 
         # Prefetch items
@@ -289,9 +510,8 @@ class _StorageInfo(object):
         return storage_nonempty
 
     def is_changed(self, ident):
-        try:
-            status = self.status.get(ident)
-        except KeyError:  # new item
+        status = self.status.get(ident)
+        if status is None:  # new item
             return True
 
         meta = self.status.get_new(ident)
@@ -306,7 +526,8 @@ class _StorageInfo(object):
                 return False
 
     def set_item_cache(self, ident, item):
-        assert self.status.get_new(ident).hash == item.hash
+        actual_hash = self.status.get_new(ident).hash
+        assert actual_hash == item.hash
         self._item_cache[ident] = item
 
     def get_item_cache(self, ident):
@@ -370,31 +591,35 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
     status_nonempty = bool(status)
     status = _Status(status)
 
-    a_info = _StorageInfo(storage_a, _SubStatus(status, 'a'))
-    b_info = _StorageInfo(storage_b, _SubStatus(status, 'b'))
+    with status.transaction():
+        a_info = _StorageInfo(storage_a, _SubStatus(status, 'a'))
+        b_info = _StorageInfo(storage_b, _SubStatus(status, 'b'))
 
-    a_nonempty = a_info.prepare_new_status()
-    b_nonempty = b_info.prepare_new_status()
+        a_nonempty = a_info.prepare_new_status()
+        b_nonempty = b_info.prepare_new_status()
 
-    if status_nonempty and not force_delete:
-        if a_nonempty and not b_nonempty:
-            raise StorageEmpty(empty_storage=storage_b)
-        elif not a_nonempty and b_nonempty:
-            raise StorageEmpty(empty_storage=storage_a)
+        if status_nonempty and not force_delete:
+            if a_nonempty and not b_nonempty:
+                raise StorageEmpty(empty_storage=storage_b)
+            elif not a_nonempty and b_nonempty:
+                raise StorageEmpty(empty_storage=storage_a)
 
-    actions = list(_get_actions(a_info, b_info))
+        actions = list(_get_actions(a_info, b_info))
 
-    with storage_a.at_once(), storage_b.at_once():
-        for action in actions:
-            try:
-                action.run(a_info, b_info, conflict_resolution, partial_sync)
-            except Exception as e:
-                if error_callback:
-                    error_callback(e)
-                else:
-                    raise
-
-    status.new_to_old_status()
+        with storage_a.at_once(), storage_b.at_once():
+            for action in actions:
+                try:
+                    action.run(
+                        a_info,
+                        b_info,
+                        conflict_resolution,
+                        partial_sync
+                    )
+                except Exception as e:
+                    if error_callback:
+                        error_callback(e)
+                    else:
+                        raise
 
 
 class Action:
@@ -435,16 +660,17 @@ class Upload(Action):
     def _run_impl(self, a, b):
 
         if self.dest.storage.read_only:
-            href = etag = None
+            href = etag = 'NULL'
         else:
             sync_logger.info(u'Copying (uploading) item {} to {}'
                              .format(self.ident, self.dest.storage))
             href, etag = self.dest.storage.upload(self.item)
+            assert href is not None
 
         self.dest.status.insert_ident(self.ident, _ItemMetadata(
             href=href,
             hash=self.item.hash,
-            etag=etag
+            etag=etag or 'NULL'
         ))
 
 
@@ -455,15 +681,15 @@ class Update(Action):
         self.dest = dest
 
     def _run_impl(self, a, b):
+        meta = self.dest.status.get_new(self.ident)
         if self.dest.storage.read_only:
-            meta = _ItemMetadata(hash=self.item.hash)
+            etag = None
         else:
             sync_logger.info(u'Copying (updating) item {} to {}'
                              .format(self.ident, self.dest.storage))
-            meta = self.dest.status.get_new(self.ident)
-            meta.etag = \
-                self.dest.storage.update(meta.href, self.item, meta.etag)
+            etag = self.dest.storage.update(meta.href, self.item, meta.etag)
 
+        meta.etag = etag or 'NULL'
         self.dest.status.update_ident(self.ident, meta)
 
 
@@ -518,15 +744,8 @@ class ResolveConflict(Action):
 def _get_actions(a_info, b_info):
     for ident in uniq(itertools.chain(a_info.status.parent.iter_new(),
                                       a_info.status.parent.iter_old())):
-        try:
-            a = a_info.status.get_new(ident)
-        except KeyError:
-            a = None
-
-        try:
-            b = b_info.status.get_new(ident)
-        except KeyError:
-            b = None
+        a = a_info.status.get_new(ident)
+        b = b_info.status.get_new(ident)
 
         if a and b:
             a_changed = a_info.is_changed(ident)
