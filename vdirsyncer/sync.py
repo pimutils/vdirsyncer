@@ -176,9 +176,8 @@ class _SqliteStatus(_StatusBase):
         if self._is_latest_version():
             return
 
-        self._conn.execute('DROP TABLE IF EXISTS status')
-        self._conn.execute('DROP TABLE IF EXISTS new_status')
-        self._conn.execute('DROP TABLE IF EXISTS meta')
+        # If we ever bump the schema version, we will need a way to migrate
+        # data.
 
         self._conn.execute('''CREATE TABLE meta (
             "version" INTEGER PRIMARY KEY
