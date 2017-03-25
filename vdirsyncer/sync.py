@@ -224,10 +224,14 @@ class _SqliteStatus(_StatusBase):
     def transaction(self):
         assert self._c is None
         self._c = self._conn
-        yield
-        self._c.execute('DELETE FROM status')
-        self._c.execute('INSERT INTO status '
-                        'SELECT * FROM new_status')
+        try:
+            with self._c:
+                yield
+                self._c.execute('INSERT INTO status '
+                                'SELECT * FROM new_status')
+        finally:
+            self._c.execute('DELETE FROM status')
+            self._c = None
 
     def insert_ident_a(self, ident, props):
         # FIXME: Super inefficient
