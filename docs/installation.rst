@@ -18,6 +18,7 @@ The following packages are user-contributed. They may or may not be up-to-date:
 - `OS X (homebrew) <http://braumeister.org/formula/vdirsyncer>`_
 - `NixOS/Nix <https://github.com/NixOS/nixpkgs/tree/master/pkgs/tools/misc/vdirsyncer>`_
 - `BSD (pkgsrc) <http://pkgsrc.se/time/py-vdirsyncer>`_
+- `OpenBSD <http://ports.su/productivity/vdirsyncer>`_
 
 .. note::
 
