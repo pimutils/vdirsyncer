@@ -14,7 +14,6 @@ https://unterwaditzer.net/2016/sync-algorithm.html
 '''
 import abc
 import contextlib
-import functools
 import itertools
 import logging
 import sqlite3
@@ -239,11 +238,15 @@ class _SqliteStatus(_StatusBase):
             raise _IdentAlreadyExists(old_href=old_props.href,
                                       new_href=props.href)
 
-        self._c.execute('WITH new (ident, href_a, hash_a, etag_a) AS ( VALUES(?, ?, ?, ?) )'
-                        'INSERT OR REPLACE INTO new_status '
-                        'SELECT new.ident, new.href_a, old.href_b, new.hash_a, old.hash_b, new.etag_a, old.etag_b '
-                        'FROM new LEFT JOIN new_status AS old ON old.ident = new.ident',
-                        (ident, props.href, props.hash, props.etag))
+        self._c.execute(
+            'WITH new (ident, href_a, hash_a, etag_a) '
+            '  AS ( VALUES(?, ?, ?, ?) )'
+            'INSERT OR REPLACE INTO new_status '
+            'SELECT new.ident, new.href_a, old.href_b, new.hash_a, old.hash_b,'
+            '  new.etag_a, old.etag_b '
+            'FROM new LEFT JOIN new_status AS old ON old.ident = new.ident',
+            (ident, props.href, props.hash, props.etag)
+        )
 
     def insert_ident_b(self, ident, props):
         # FIXME: Super inefficient
@@ -251,11 +254,15 @@ class _SqliteStatus(_StatusBase):
         if old_props is not None:
             raise _IdentAlreadyExists(old_href=old_props.href,
                                       new_href=props.href)
-        self._c.execute('WITH new (ident, href_b, hash_b, etag_b) AS ( VALUES(?, ?, ?, ?) )'
-                        'INSERT OR REPLACE INTO new_status '
-                        'SELECT new.ident, old.href_a, new.href_b, old.hash_a, new.hash_b, old.etag_a, new.etag_b '
-                        'FROM new LEFT JOIN new_status AS old ON old.ident = new.ident',
-                        (ident, props.href, props.hash, props.etag))
+        self._c.execute(
+            'WITH new (ident, href_b, hash_b, etag_b) '
+            '  AS ( VALUES(?, ?, ?, ?) )'
+            'INSERT OR REPLACE INTO new_status '
+            'SELECT new.ident, old.href_a, new.href_b, old.hash_a, new.hash_b,'
+            '  old.etag_a, new.etag_b '
+            'FROM new LEFT JOIN new_status AS old ON old.ident = new.ident',
+            (ident, props.href, props.hash, props.etag)
+        )
 
     def update_ident_a(self, ident, props):
         c = self._c.cursor()
@@ -294,7 +301,6 @@ class _SqliteStatus(_StatusBase):
         res = dict(res)
         assert None not in res.values()
         return _ItemMetadata(**res)
-
 
     def get_a(self, ident):
         return self._get_impl(ident, side='a', table='status')
