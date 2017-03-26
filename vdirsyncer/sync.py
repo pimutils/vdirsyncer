@@ -695,14 +695,14 @@ class Update(Action):
         self.dest = dest
 
     def _run_impl(self, a, b):
-        meta = self.dest.status.get_new(self.ident)
         if self.dest.storage.read_only:
-            meta.etag = None
+            meta = _ItemMetadata(hash=self.item.hash)
         else:
             sync_logger.info(u'Copying (updating) item {} to {}'
                              .format(self.ident, self.dest.storage))
-            meta.etag = self.dest.storage.update(meta.href, self.item,
-                                                 meta.etag)
+            meta = self.dest.status.get_new(self.ident)
+            meta.etag = \
+                self.dest.storage.update(meta.href, self.item, meta.etag)
 
         self.dest.status.update_ident(self.ident, meta)
 
