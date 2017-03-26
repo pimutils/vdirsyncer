@@ -509,6 +509,7 @@ class _StorageInfo(object):
                 # In both cases we should prefetch
                 prefetch.append(href)
             else:
+                # Metadata is completely identical
                 _store_props(ident, meta)
 
         # Prefetch items
