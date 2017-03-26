@@ -184,7 +184,7 @@ def test_deletion():
     assert items(a) == items(b) == {item2.raw}
 
 
-def test_insert_hash():
+def test_broken_status():
     a = MemoryStorage()
     b = MemoryStorage()
     status = {}
@@ -197,8 +197,8 @@ def test_insert_hash():
         del d['hash']
 
     a.update(href, Item('UID:1\nHAHA:YES'), etag)
-    sync(a, b, status)
-    assert 'hash' in status['1'][0] and 'hash' in status['1'][1]
+    with pytest.raises(SyncConflict):
+        sync(a, b, status)
 
 
 def test_already_synced():
@@ -390,6 +390,7 @@ def test_partial_sync_revert():
     a.items[next(iter(a.items))] = ('foo', Item('UID:2\nupdated'))
     assert items(a) == {'UID:2\nupdated'}
     sync(a, b, status, partial_sync='revert')
+    assert len(status) == 1
     assert items(a) == {'UID:2\nupdated'}
     sync(a, b, status, partial_sync='revert')
     assert items(a) == {'UID:2'}
