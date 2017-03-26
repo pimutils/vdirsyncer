@@ -524,20 +524,17 @@ class _StorageInfo(object):
         return storage_nonempty
 
     def is_changed(self, ident):
-        status = self.status.get(ident)
-        if status is None:  # new item
+        old_meta = self.status.get(ident)
+        if old_meta is None:  # new item
             return True
 
-        meta = self.status.get_new(ident)
+        new_meta = self.status.get_new(ident)
 
-        if meta.etag != status.etag:  # etag changed
-            old_hash = status.hash
-            if old_hash is None or meta.hash != old_hash:
-                # item actually changed
-                return True
-            else:
-                # only etag changed
-                return False
+        return (
+            new_meta.etag != old_meta.etag and  # etag changed
+            # item actually changed
+            (old_meta.hash is None or new_meta.hash != old_meta.hash)
+        )
 
     def set_item_cache(self, ident, item):
         actual_hash = self.status.get_new(ident).hash
