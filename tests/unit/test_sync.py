@@ -390,6 +390,7 @@ def test_partial_sync_revert():
     a.items[next(iter(a.items))] = ('foo', Item('UID:2\nupdated'))
     assert items(a) == {'UID:2\nupdated'}
     sync(a, b, status, partial_sync='revert')
+    assert len(status) == 1
     assert items(a) == {'UID:2\nupdated'}
     sync(a, b, status, partial_sync='revert')
     assert items(a) == {'UID:2'}
