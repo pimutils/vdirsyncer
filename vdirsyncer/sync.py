@@ -183,6 +183,8 @@ class _SqliteStatus(_StatusBase):
         self._c.execute('INSERT INTO meta (version) VALUES (?)',
                         (self.SCHEMA_VERSION,))
 
+        # I know that this is a bad schema, but right there is just too little
+        # gain in deduplicating the .._a and .._b columns.
         self._c.execute('''CREATE TABLE status (
             "ident" TEXT PRIMARY KEY NOT NULL,
             "href_a" TEXT,
@@ -198,6 +200,15 @@ class _SqliteStatus(_StatusBase):
         # We cannot add NOT NULL here because data is first fetched for the
         # storage a, then storage b. Inbetween the `_b`-columns are filled with
         # NULL.
+        #
+        # In an ideal world we would be able to start a transaction with one
+        # cursor, write our new data into status and simultaneously query the
+        # old status data using a different cursor.  Unfortunately sqlite
+        # enforces NOT NULL constraints immediately, not just at commit. Since
+        # there is also no way to alter constraints on a table (disable
+        # constraints on start of transaction and reenable on end), it's a
+        # separate table now that just gets copied over before we commit.
+        # That's a lot of copying, sadly.
         self._c.execute('''CREATE TABLE new_status (
             "ident" TEXT PRIMARY KEY NOT NULL,
             "href_a" TEXT,
