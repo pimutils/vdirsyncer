@@ -301,8 +301,14 @@ class _SqliteStatus(_StatusBase):
                               'FROM {table} WHERE ident=?'
                               .format(side=side, table=table),
                               (ident,)).fetchone()
-        if res is None or res['hash'] is None:
+        if res is None:
             return None
+
+        if res['hash'] is None:
+            assert res['href'] is None
+            assert res['etag'] is None
+            return None
+
         res = dict(res)
         return _ItemMetadata(**res)
 
