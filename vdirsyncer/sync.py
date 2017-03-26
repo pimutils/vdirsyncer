@@ -304,7 +304,7 @@ class _SqliteStatus(_StatusBase):
         if res is None:
             return None
 
-        if res['hash'] is None:
+        if res['hash'] is None:  # FIXME: Implement as constraint in db
             assert res['href'] is None
             assert res['etag'] is None
             return None
