@@ -358,10 +358,12 @@ class _SqliteStatus(_StatusBase):
         )
 
     def get_by_href_a(self, *a, **kw):
-        return self._get_by_href_impl(*a, **kw, side='a')
+        kw['side'] = 'a'
+        return self._get_by_href_impl(*a, **kw)
 
     def get_by_href_b(self, *a, **kw):
-        return self._get_by_href_impl(*a, **kw, side='b')
+        kw['side'] = 'b'
+        return self._get_by_href_impl(*a, **kw)
 
 
 class _Status(_StatusBase):
