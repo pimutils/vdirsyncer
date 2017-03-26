@@ -170,7 +170,9 @@ class _SqliteStatus(_StatusBase):
         self._path = path
         self._c = sqlite3.connect(path)
         self._c.row_factory = sqlite3.Row
+        self._update_schema()
 
+    def _update_schema(self):
         if self._is_latest_version():
             return
 
@@ -413,10 +415,10 @@ class _Status(_StatusBase):
     def transaction(self):
         with self._db.transaction():
             for ident, (a, b) in self._ident_to_props.items():
+                if a.get('hash') is None or b.get('hash') is None:
+                    continue
                 params = (ident, a.get('href'), a.get('hash'), a.get('etag'),
                           b.get('href'), b.get('hash'), b.get('etag'))
-                if None in params:
-                    continue
 
                 self._db._c.execute(
                     'INSERT INTO status'
