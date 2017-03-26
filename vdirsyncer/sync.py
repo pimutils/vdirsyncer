@@ -168,9 +168,8 @@ class _SqliteStatus(_StatusBase):
 
     def __init__(self, path):
         self._path = path
-        self._conn = sqlite3.connect(path)
-        self._conn.row_factory = sqlite3.Row
-        self._c = None
+        self._c = sqlite3.connect(path)
+        self._c.row_factory = sqlite3.Row
 
         if self._is_latest_version():
             return
@@ -178,28 +177,28 @@ class _SqliteStatus(_StatusBase):
         # If we ever bump the schema version, we will need a way to migrate
         # data.
 
-        self._conn.execute('''CREATE TABLE meta (
+        self._c.execute('''CREATE TABLE meta (
             "version" INTEGER PRIMARY KEY
         ); ''')
-        self._conn.execute('INSERT INTO meta (version) VALUES (?)',
-                           (self.SCHEMA_VERSION,))
+        self._c.execute('INSERT INTO meta (version) VALUES (?)',
+                        (self.SCHEMA_VERSION,))
 
-        self._conn.execute('''CREATE TABLE status (
+        self._c.execute('''CREATE TABLE status (
             "ident" TEXT PRIMARY KEY NOT NULL,
-            "href_a" TEXT NOT NULL,
-            "href_b" TEXT NOT NULL,
+            "href_a" TEXT,
+            "href_b" TEXT,
             "hash_a" TEXT NOT NULL,
             "hash_b" TEXT NOT NULL,
-            "etag_a" TEXT NOT NULL,
-            "etag_b" TEXT NOT NULL
+            "etag_a" TEXT,
+            "etag_b" TEXT
         ); ''')
-        self._conn.execute('CREATE UNIQUE INDEX by_href_a ON status(href_a)')
-        self._conn.execute('CREATE UNIQUE INDEX by_href_b ON status(href_b)')
+        self._c.execute('CREATE UNIQUE INDEX by_href_a ON status(href_a)')
+        self._c.execute('CREATE UNIQUE INDEX by_href_b ON status(href_b)')
 
         # We cannot add NOT NULL here because data is first fetched for the
         # storage a, then storage b. Inbetween the `_b`-columns are filled with
         # NULL.
-        self._conn.execute('''CREATE TABLE new_status (
+        self._c.execute('''CREATE TABLE new_status (
             "ident" TEXT PRIMARY KEY NOT NULL,
             "href_a" TEXT,
             "href_b" TEXT,
@@ -211,7 +210,7 @@ class _SqliteStatus(_StatusBase):
 
     def _is_latest_version(self):
         try:
-            return bool(self._conn.execute(
+            return bool(self._c.execute(
                 'SELECT version FROM meta WHERE version = ?',
                 (self.SCHEMA_VERSION,)
             ).fetchone())
@@ -220,16 +219,14 @@ class _SqliteStatus(_StatusBase):
 
     @contextlib.contextmanager
     def transaction(self):
-        assert self._c is None
-        self._c = self._conn
-        try:
-            with self._c:
+        with self._c:
+            try:
                 yield
+                self._c.execute('DELETE FROM status')
                 self._c.execute('INSERT INTO status '
                                 'SELECT * FROM new_status')
-        finally:
-            self._c.execute('DELETE FROM status')
-            self._c = None
+            finally:
+                self._c.execute('DELETE FROM new_status')
 
     def insert_ident_a(self, ident, props):
         # FIXME: Super inefficient
@@ -299,7 +296,6 @@ class _SqliteStatus(_StatusBase):
         if res is None or res['hash'] is None:
             return None
         res = dict(res)
-        assert None not in res.values()
         return _ItemMetadata(**res)
 
     def get_a(self, ident):
@@ -330,11 +326,6 @@ class _SqliteStatus(_StatusBase):
         if a is None and b is None:
             self.remove_ident(ident)
             return
-
-        for meta in (a, b):
-            assert meta.href is not None
-            assert meta.hash is not None
-            assert meta.etag is not None
 
         self._c.execute(
             'INSERT OR REPLACE INTO new_status'
@@ -465,8 +456,6 @@ class _ItemMetadata:
         for k, v in kwargs.items():
             assert hasattr(self, k)
             setattr(self, k, v)
-        assert self.href is not None
-        assert self.etag is not None
 
     def to_status(self):
         return {
@@ -669,7 +658,7 @@ class Upload(Action):
     def _run_impl(self, a, b):
 
         if self.dest.storage.read_only:
-            href = etag = 'NULL'
+            href = etag = None
         else:
             sync_logger.info(u'Copying (uploading) item {} to {}'
                              .format(self.ident, self.dest.storage))
@@ -679,7 +668,7 @@ class Upload(Action):
         self.dest.status.insert_ident(self.ident, _ItemMetadata(
             href=href,
             hash=self.item.hash,
-            etag=etag or 'NULL'
+            etag=etag
         ))
 
 
@@ -692,13 +681,13 @@ class Update(Action):
     def _run_impl(self, a, b):
         meta = self.dest.status.get_new(self.ident)
         if self.dest.storage.read_only:
-            etag = None
+            meta.etag = None
         else:
             sync_logger.info(u'Copying (updating) item {} to {}'
                              .format(self.ident, self.dest.storage))
-            etag = self.dest.storage.update(meta.href, self.item, meta.etag)
+            meta.etag = self.dest.storage.update(meta.href, self.item,
+                                                 meta.etag)
 
-        meta.etag = etag or 'NULL'
         self.dest.status.update_ident(self.ident, meta)
 
 
