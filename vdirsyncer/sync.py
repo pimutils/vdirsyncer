@@ -239,37 +239,32 @@ class _SqliteStatus(_StatusBase):
             finally:
                 self._c.execute('DELETE FROM new_status')
 
-    def insert_ident_a(self, ident, props):
+    def insert_ident_a(self, ident, a_props):
         # FIXME: Super inefficient
         old_props = self.get_new_a(ident)
         if old_props is not None:
             raise _IdentAlreadyExists(old_href=old_props.href,
-                                      new_href=props.href)
-
+                                      new_href=a_props.href)
+        b_props = self.get_new_b(ident) or _ItemMetadata()
         self._c.execute(
-            'WITH new (ident, href_a, hash_a, etag_a) '
-            '  AS ( VALUES(?, ?, ?, ?) )'
             'INSERT OR REPLACE INTO new_status '
-            'SELECT new.ident, new.href_a, old.href_b, new.hash_a, old.hash_b,'
-            '  new.etag_a, old.etag_b '
-            'FROM new LEFT JOIN new_status AS old ON old.ident = new.ident',
-            (ident, props.href, props.hash, props.etag)
+            'VALUES(?, ?, ?, ?, ?, ?, ?)',
+            (ident, a_props.href, b_props.href, a_props.hash, b_props.hash,
+             a_props.etag, b_props.etag)
         )
 
-    def insert_ident_b(self, ident, props):
+    def insert_ident_b(self, ident, b_props):
         # FIXME: Super inefficient
         old_props = self.get_new_b(ident)
         if old_props is not None:
             raise _IdentAlreadyExists(old_href=old_props.href,
-                                      new_href=props.href)
+                                      new_href=b_props.href)
+        a_props = self.get_new_a(ident) or _ItemMetadata()
         self._c.execute(
-            'WITH new (ident, href_b, hash_b, etag_b) '
-            '  AS ( VALUES(?, ?, ?, ?) )'
             'INSERT OR REPLACE INTO new_status '
-            'SELECT new.ident, old.href_a, new.href_b, old.hash_a, new.hash_b,'
-            '  old.etag_a, new.etag_b '
-            'FROM new LEFT JOIN new_status AS old ON old.ident = new.ident',
-            (ident, props.href, props.hash, props.etag)
+            'VALUES(?, ?, ?, ?, ?, ?, ?)',
+            (ident, a_props.href, b_props.href, a_props.hash, b_props.hash,
+             a_props.etag, b_props.etag)
         )
 
     def update_ident_a(self, ident, props):
