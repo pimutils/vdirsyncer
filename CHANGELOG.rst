@@ -16,6 +16,9 @@ Version 0.16.0
 - Fix crash of Google storages when saving token file.
 - Make DAV discovery more RFC-conformant, see :ghpr:`585`.
 - Vdirsyncer is now tested against Xandikos, see :ghpr:`601`.
+- Statuses are now stored in a sqlite database. Users with really large
+  datasets should encounter performance improvements. This means that **sqlite3
+  is now a dependency of vdirsyncer**.
 
 Version 0.15.0
 ==============

@@ -12,8 +12,17 @@ from tests import blow_up, uid_strategy
 
 from vdirsyncer.storage.memory import MemoryStorage, _random_string
 from vdirsyncer.sync import BothReadOnly, IdentConflict, PartialSync, \
-    StorageEmpty, SyncConflict, sync
+    StorageEmpty, SqliteStatus, SyncConflict, sync as _sync
 from vdirsyncer.vobject import Item
+
+
+def sync(a, b, status, *args, **kwargs):
+    new_status = SqliteStatus(':memory:')
+    new_status.load_legacy_status(status)
+    rv = _sync(a, b, new_status, *args, **kwargs)
+    status.clear()
+    status.update(new_status.to_legacy_status())
+    return rv
 
 
 def empty_storage(x):
@@ -184,7 +193,7 @@ def test_deletion():
     assert items(a) == items(b) == {item2.raw}
 
 
-def test_broken_status():
+def test_insert_hash():
     a = MemoryStorage()
     b = MemoryStorage()
     status = {}
@@ -197,8 +206,8 @@ def test_broken_status():
         del d['hash']
 
     a.update(href, Item('UID:1\nHAHA:YES'), etag)
-    with pytest.raises(SyncConflict):
-        sync(a, b, status)
+    sync(a, b, status)
+    assert 'hash' in status['1'][0] and 'hash' in status['1'][1]
 
 
 def test_already_synced():

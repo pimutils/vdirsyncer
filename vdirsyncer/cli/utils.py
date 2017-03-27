@@ -17,7 +17,8 @@ import click_threading
 
 from . import cli_logger
 from .. import BUGTRACKER_HOME, DOCS_HOME, exceptions
-from ..sync import IdentConflict, PartialSync, StorageEmpty, SyncConflict
+from ..sync import IdentConflict, PartialSync, StorageEmpty, SyncConflict, \
+    SqliteStatus
 from ..utils import expand_path, get_storage_init_args
 
 
@@ -162,7 +163,7 @@ def get_status_name(pair, collection):
     return pair + '/' + collection
 
 
-def load_status(base_path, pair, collection=None, data_type=None):
+def get_status_path(base_path, pair, collection=None, data_type=None):
     assert data_type is not None
     status_name = get_status_name(pair, collection)
     path = expand_path(os.path.join(base_path, status_name))
@@ -174,9 +175,13 @@ def load_status(base_path, pair, collection=None, data_type=None):
         os.rename(path, new_path)
 
     path += '.' + data_type
+    return path
+
+
+def load_status(base_path, pair, collection=None, data_type=None):
+    path = get_status_path(base_path, pair, collection, data_type)
     if not os.path.exists(path):
         return None
-
     assert_permissions(path, STATUS_PERMISSIONS)
 
     with open(path) as f:
@@ -188,11 +193,7 @@ def load_status(base_path, pair, collection=None, data_type=None):
     return {}
 
 
-def save_status(base_path, pair, collection=None, data_type=None, data=None):
-    assert data_type is not None
-    assert data is not None
-    status_name = get_status_name(pair, collection)
-    path = expand_path(os.path.join(base_path, status_name)) + '.' + data_type
+def prepare_status_path(path):
     dirname = os.path.dirname(path)
 
     try:
@@ -200,6 +201,39 @@ def save_status(base_path, pair, collection=None, data_type=None, data=None):
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
+
+
+@contextlib.contextmanager
+def manage_sync_status(base_path, pair_name, collection_name):
+    path = get_status_path(base_path, pair_name, collection_name, 'items')
+    status = None
+    legacy_status = None
+    try:
+        with open(path, 'rb') as f:
+            if f.read(1) == b'{':
+                f.seek(0)
+                legacy_status = dict(json.load(f))
+    except (OSError, IOError, ValueError):
+        pass
+
+    if legacy_status is not None:
+        cli_logger.warning('Migrating legacy status to sqlite')
+        os.remove(path)
+        status = SqliteStatus(path)
+        status.load_legacy_status(legacy_status)
+    else:
+        prepare_status_path(path)
+        status = SqliteStatus(path)
+
+    yield status
+
+
+def save_status(base_path, pair, collection=None, data_type=None, data=None):
+    assert data_type is not None
+    assert data is not None
+    status_name = get_status_name(pair, collection)
+    path = expand_path(os.path.join(base_path, status_name)) + '.' + data_type
+    prepare_status_path(path)
 
     with atomic_write(path, mode='w', overwrite=True) as f:
         json.dump(data, f)
