@@ -17,6 +17,7 @@ import contextlib
 import itertools
 import logging
 import sqlite3
+import sys
 
 from . import exceptions
 from .utils import uniq
@@ -169,6 +170,7 @@ class SqliteStatus(_StatusBase):
     def __init__(self, path):
         self._path = path
         self._c = sqlite3.connect(path)
+        self._c.isolation_level = None  # turn off idiocy of DB-API
         self._c.row_factory = sqlite3.Row
         self._update_schema()
 
@@ -260,14 +262,21 @@ class SqliteStatus(_StatusBase):
 
     @contextlib.contextmanager
     def transaction(self):
-        with self._c:
-            try:
-                yield
-                self._c.execute('DELETE FROM status')
-                self._c.execute('INSERT INTO status '
-                                'SELECT * FROM new_status')
-            finally:
-                self._c.execute('DELETE FROM new_status')
+        try:
+            old_c, self._c = self._c, self._c.cursor()
+            self._c.execute('BEGIN EXCLUSIVE TRANSACTION')
+            yield
+            self._c.execute('DELETE FROM status')
+            self._c.execute('INSERT INTO status '
+                            'SELECT * FROM new_status')
+            self._c.execute('DELETE FROM new_status')
+            self._c.execute('COMMIT')
+        except BaseException:
+            _, e, tb = sys.exc_info()
+            self._c.execute('ROLLBACK')
+            raise e.with_traceback(tb)
+        finally:
+            self._c = old_c
 
     def insert_ident_a(self, ident, a_props):
         # FIXME: Super inefficient
@@ -298,26 +307,22 @@ class SqliteStatus(_StatusBase):
         )
 
     def update_ident_a(self, ident, props):
-        c = self._c.cursor()
-        c.execute(
+        self._c.execute(
             'UPDATE new_status'
             ' SET href_a=?, hash_a=?, etag_a=?'
             ' WHERE ident=?',
             (props.href, props.hash, props.etag, ident)
         )
-        self._c.commit()
-        assert c.rowcount > 0
+        assert self._c.rowcount > 0
 
     def update_ident_b(self, ident, props):
-        c = self._c.cursor()
-        c.execute(
+        self._c.execute(
             'UPDATE new_status'
             ' SET href_b=?, hash_b=?, etag_b=?'
             ' WHERE ident=?',
             (props.href, props.hash, props.etag, ident)
         )
-        self._c.commit()
-        assert c.rowcount > 0
+        assert self._c.rowcount > 0
 
     def remove_ident(self, ident):
         self._c.execute('DELETE FROM new_status WHERE ident=?', (ident,))
