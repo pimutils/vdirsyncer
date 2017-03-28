@@ -50,6 +50,9 @@ Contacts
 
 - vdirel_, access :doc:`vdir <vdir>` contacts from Emacs.
 
+- Claws-Mail's addressbook can be fed by a ``.vcf`` file. See :ref:`here
+  <claws-mail-tutorial>` for a tutorial.
+
 .. _khard: https://github.com/scheibler/khard/
 .. _contactquery.c: https://github.com/t-8ch/snippets/blob/master/contactquery.c
 .. _mates: https://github.com/pimutils/mates.rs

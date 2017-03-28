@@ -1,3 +1,5 @@
+.. _claws-mail-tutorial:
+
 Vdirsyncer with Claws Mail
 ==========================
 
