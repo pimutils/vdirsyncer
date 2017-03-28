@@ -25,6 +25,18 @@ from .utils import uniq
 sync_logger = logging.getLogger(__name__)
 
 
+@contextlib.contextmanager
+def _exclusive_transaction(conn):
+    try:
+        c = conn.execute('BEGIN EXCLUSIVE TRANSACTION')
+        yield c
+        c.execute('COMMIT')
+    except BaseException:
+        _, e, tb = sys.exc_info()
+        c.execute('ROLLBACK')
+        raise e.with_traceback(tb)
+
+
 class SyncError(exceptions.Error):
     '''Errors related to synchronization.'''
 
@@ -208,48 +220,47 @@ class SqliteStatus(_StatusBase):
 
         # If we ever bump the schema version, we will need a way to migrate
         # data.
+        with _exclusive_transaction(self._c) as c:
+            c.execute('CREATE TABLE meta ( "version" INTEGER PRIMARY KEY )')
+            c.execute('INSERT INTO meta (version) VALUES (?)',
+                      (self.SCHEMA_VERSION,))
 
-        self._c.execute('''CREATE TABLE meta (
-            "version" INTEGER PRIMARY KEY
-        ); ''')
-        self._c.execute('INSERT INTO meta (version) VALUES (?)',
-                        (self.SCHEMA_VERSION,))
+            # I know that this is a bad schema, but right there is just too
+            # little gain in deduplicating the .._a and .._b columns.
+            c.execute('''CREATE TABLE status (
+                "ident" TEXT PRIMARY KEY NOT NULL,
+                "href_a" TEXT,
+                "href_b" TEXT,
+                "hash_a" TEXT NOT NULL,
+                "hash_b" TEXT NOT NULL,
+                "etag_a" TEXT,
+                "etag_b" TEXT
+            ); ''')
+            c.execute('CREATE UNIQUE INDEX by_href_a ON status(href_a)')
+            c.execute('CREATE UNIQUE INDEX by_href_b ON status(href_b)')
 
-        # I know that this is a bad schema, but right there is just too little
-        # gain in deduplicating the .._a and .._b columns.
-        self._c.execute('''CREATE TABLE status (
-            "ident" TEXT PRIMARY KEY NOT NULL,
-            "href_a" TEXT,
-            "href_b" TEXT,
-            "hash_a" TEXT NOT NULL,
-            "hash_b" TEXT NOT NULL,
-            "etag_a" TEXT,
-            "etag_b" TEXT
-        ); ''')
-        self._c.execute('CREATE UNIQUE INDEX by_href_a ON status(href_a)')
-        self._c.execute('CREATE UNIQUE INDEX by_href_b ON status(href_b)')
-
-        # We cannot add NOT NULL here because data is first fetched for the
-        # storage a, then storage b. Inbetween the `_b`-columns are filled with
-        # NULL.
-        #
-        # In an ideal world we would be able to start a transaction with one
-        # cursor, write our new data into status and simultaneously query the
-        # old status data using a different cursor.  Unfortunately sqlite
-        # enforces NOT NULL constraints immediately, not just at commit. Since
-        # there is also no way to alter constraints on a table (disable
-        # constraints on start of transaction and reenable on end), it's a
-        # separate table now that just gets copied over before we commit.
-        # That's a lot of copying, sadly.
-        self._c.execute('''CREATE TABLE new_status (
-            "ident" TEXT PRIMARY KEY NOT NULL,
-            "href_a" TEXT,
-            "href_b" TEXT,
-            "hash_a" TEXT,
-            "hash_b" TEXT,
-            "etag_a" TEXT,
-            "etag_b" TEXT
-        ); ''')
+            # We cannot add NOT NULL here because data is first fetched for the
+            # storage a, then storage b. Inbetween the `_b`-columns are filled
+            # with NULL.
+            #
+            # In an ideal world we would be able to start a transaction with
+            # one cursor, write our new data into status and simultaneously
+            # query the old status data using a different cursor.
+            # Unfortunately sqlite enforces NOT NULL constraints immediately,
+            # not just at commit. Since there is also no way to alter
+            # constraints on a table (disable constraints on start of
+            # transaction and reenable on end), it's a separate table now that
+            # just gets copied over before we commit.  That's a lot of copying,
+            # sadly.
+            c.execute('''CREATE TABLE new_status (
+                "ident" TEXT PRIMARY KEY NOT NULL,
+                "href_a" TEXT,
+                "href_b" TEXT,
+                "hash_a" TEXT,
+                "hash_b" TEXT,
+                "etag_a" TEXT,
+                "etag_b" TEXT
+            ); ''')
 
     def _is_latest_version(self):
         try:
@@ -262,19 +273,15 @@ class SqliteStatus(_StatusBase):
 
     @contextlib.contextmanager
     def transaction(self):
+        old_c = self._c
         try:
-            old_c = self._c
-            self._c = self._c.execute('BEGIN EXCLUSIVE TRANSACTION')
-            yield
-            self._c.execute('DELETE FROM status')
-            self._c.execute('INSERT INTO status '
-                            'SELECT * FROM new_status')
-            self._c.execute('DELETE FROM new_status')
-            self._c.execute('COMMIT')
-        except BaseException:
-            _, e, tb = sys.exc_info()
-            self._c.execute('ROLLBACK')
-            raise e.with_traceback(tb)
+            with _exclusive_transaction(self._c) as new_c:
+                self._c = new_c
+                yield
+                self._c.execute('DELETE FROM status')
+                self._c.execute('INSERT INTO status '
+                                'SELECT * FROM new_status')
+                self._c.execute('DELETE FROM new_status')
         finally:
             self._c = old_c
 
