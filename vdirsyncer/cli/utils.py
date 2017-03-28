@@ -209,10 +209,12 @@ def manage_sync_status(base_path, pair_name, collection_name):
     status = None
     legacy_status = None
     try:
+        # XXX: Legacy migration
         with open(path, 'rb') as f:
             if f.read(1) == b'{':
                 f.seek(0)
-                legacy_status = dict(json.load(f))
+                # json.load doesn't work on binary files for Python 3.4/3.5
+                legacy_status = dict(json.loads(f.read().decode('utf-8')))
     except (OSError, IOError, ValueError):
         pass
 
