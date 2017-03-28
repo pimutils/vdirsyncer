@@ -6,11 +6,10 @@ import json
 from .config import CollectionConfig
 from .discover import collections_for_pair, storage_class_from_config, \
     storage_instance_from_config
-from .utils import JobFailed, cli_logger, get_status_name, handle_cli_error, \
-    load_status, save_status
+from .utils import JobFailed, cli_logger, get_status_name, \
+    handle_cli_error, load_status, manage_sync_status, save_status
 
-from .. import exceptions
-from ..sync import sync
+from .. import exceptions, sync
 
 
 def prepare_pair(wq, pair_name, collections, config, callback, **kwargs):
@@ -50,11 +49,6 @@ def sync_collection(wq, collection, general, force_delete):
     try:
         cli_logger.info('Syncing {}'.format(status_name))
 
-        status = load_status(general['status_path'], pair.name,
-                             collection.name, data_type='items') or {}
-        cli_logger.debug('Loaded status for {}'
-                         .format(status_name))
-
         a = storage_instance_from_config(collection.config_a)
         b = storage_instance_from_config(collection.config_b)
 
@@ -65,16 +59,15 @@ def sync_collection(wq, collection, general, force_delete):
             sync_failed = True
             handle_cli_error(status_name, e)
 
-        sync(
-            a, b, status,
-            conflict_resolution=pair.conflict_resolution,
-            force_delete=force_delete,
-            error_callback=error_callback,
-            partial_sync=pair.partial_sync
-        )
-
-        save_status(general['status_path'], pair.name, collection.name,
-                    data_type='items', data=status)
+        with manage_sync_status(general['status_path'], pair.name,
+                                collection.name) as status:
+            sync.sync(
+                a, b, status,
+                conflict_resolution=pair.conflict_resolution,
+                force_delete=force_delete,
+                error_callback=error_callback,
+                partial_sync=pair.partial_sync
+            )
 
         if sync_failed:
             raise JobFailed()

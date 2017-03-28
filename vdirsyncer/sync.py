@@ -17,6 +17,7 @@ import contextlib
 import itertools
 import logging
 import sqlite3
+import sys
 
 from . import exceptions
 from .utils import uniq
@@ -163,14 +164,43 @@ class _StatusBase(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
 
-class _SqliteStatus(_StatusBase):
+class SqliteStatus(_StatusBase):
     SCHEMA_VERSION = 1
 
     def __init__(self, path):
         self._path = path
         self._c = sqlite3.connect(path)
+        self._c.isolation_level = None  # turn off idiocy of DB-API
         self._c.row_factory = sqlite3.Row
         self._update_schema()
+
+    def load_legacy_status(self, status):
+        for ident, metadata in status.items():
+            if len(metadata) == 4:
+                href_a, etag_a, href_b, etag_b = metadata
+                params = (ident, href_a, 'UNDEFINED', etag_a, href_b,
+                          'UNDEFINED', etag_b)
+            else:
+                a, b = metadata
+                params = (ident,
+                          a.get('href'), a.get('hash', 'UNDEFINED'),
+                          a.get('etag'),
+                          b.get('href'), b.get('hash', 'UNDEFINED'),
+                          b.get('etag'))
+
+            self._c.execute(
+                'INSERT INTO status'
+                ' (ident, href_a, hash_a, etag_a,'
+                '  href_b, hash_b, etag_b)'
+                ' VALUES (?, ?, ?, ?, ?, ?, ?)',
+                params
+            )
+
+    def to_legacy_status(self):
+        for ident in self.iter_old():
+            a = self.get_a(ident)
+            b = self.get_b(ident)
+            yield ident, (a.to_status(), b.to_status())
 
     def _update_schema(self):
         if self._is_latest_version():
@@ -232,14 +262,21 @@ class _SqliteStatus(_StatusBase):
 
     @contextlib.contextmanager
     def transaction(self):
-        with self._c:
-            try:
-                yield
-                self._c.execute('DELETE FROM status')
-                self._c.execute('INSERT INTO status '
-                                'SELECT * FROM new_status')
-            finally:
-                self._c.execute('DELETE FROM new_status')
+        try:
+            old_c = self._c
+            self._c = self._c.execute('BEGIN EXCLUSIVE TRANSACTION')
+            yield
+            self._c.execute('DELETE FROM status')
+            self._c.execute('INSERT INTO status '
+                            'SELECT * FROM new_status')
+            self._c.execute('DELETE FROM new_status')
+            self._c.execute('COMMIT')
+        except BaseException:
+            _, e, tb = sys.exc_info()
+            self._c.execute('ROLLBACK')
+            raise e.with_traceback(tb)
+        finally:
+            self._c = old_c
 
     def insert_ident_a(self, ident, a_props):
         # FIXME: Super inefficient
@@ -270,26 +307,22 @@ class _SqliteStatus(_StatusBase):
         )
 
     def update_ident_a(self, ident, props):
-        c = self._c.cursor()
-        c.execute(
+        self._c.execute(
             'UPDATE new_status'
             ' SET href_a=?, hash_a=?, etag_a=?'
             ' WHERE ident=?',
             (props.href, props.hash, props.etag, ident)
         )
-        self._c.commit()
-        assert c.rowcount > 0
+        assert self._c.rowcount > 0
 
     def update_ident_b(self, ident, props):
-        c = self._c.cursor()
-        c.execute(
+        self._c.execute(
             'UPDATE new_status'
             ' SET href_b=?, hash_b=?, etag_b=?'
             ' WHERE ident=?',
             (props.href, props.hash, props.etag, ident)
         )
-        self._c.commit()
-        assert c.rowcount > 0
+        assert self._c.rowcount > 0
 
     def remove_ident(self, ident):
         self._c.execute('DELETE FROM new_status WHERE ident=?', (ident,))
@@ -367,79 +400,6 @@ class _SqliteStatus(_StatusBase):
     def get_by_href_b(self, *a, **kw):
         kw['side'] = 'b'
         return self._get_by_href_impl(*a, **kw)
-
-
-class _Status(_StatusBase):
-
-    def __init__(self, ident_to_props):
-        self._db = _SqliteStatus(':memory:')
-        self._ident_to_props = ident_to_props
-
-    def insert_ident_a(self, ident, props):
-        return self._db.insert_ident_a(ident, props)
-
-    def insert_ident_b(self, ident, props):
-        return self._db.insert_ident_b(ident, props)
-
-    def update_ident_a(self, ident, props):
-        return self._db.update_ident_a(ident, props)
-
-    def update_ident_b(self, ident, props):
-        return self._db.update_ident_b(ident, props)
-
-    def remove_ident(self, ident):
-        return self._db.remove_ident(ident)
-
-    def get_a(self, ident):
-        return self._db.get_a(ident)
-
-    def get_b(self, ident):
-        return self._db.get_b(ident)
-
-    def get_new_a(self, ident):
-        return self._db.get_new_a(ident)
-
-    def get_new_b(self, ident):
-        return self._db.get_new_b(ident)
-
-    def iter_old(self):
-        return self._db.iter_old()
-
-    def iter_new(self):
-        return self._db.iter_new()
-
-    def get_by_href_a(self, href, default=(None, None)):
-        return self._db.get_by_href_a(href, default)
-
-    def get_by_href_b(self, href, default=(None, None)):
-        return self._db.get_by_href_b(href, default)
-
-    def rollback(self, ident):
-        return self._db.rollback(ident)
-
-    @contextlib.contextmanager
-    def transaction(self):
-        with self._db.transaction():
-            for ident, (a, b) in self._ident_to_props.items():
-                if a.get('hash') is None or b.get('hash') is None:
-                    continue
-                params = (ident, a.get('href'), a.get('hash'), a.get('etag'),
-                          b.get('href'), b.get('hash'), b.get('etag'))
-
-                self._db._c.execute(
-                    'INSERT INTO status'
-                    ' (ident, href_a, hash_a, etag_a,'
-                    '  href_b, hash_b, etag_b)'
-                    ' VALUES (?, ?, ?, ?, ?, ?, ?)',
-                    params
-                )
-            yield
-
-        self._ident_to_props.clear()
-        for ident in self._db.iter_old():
-            a = self._db.get_a(ident)
-            b = self._db.get_b(ident)
-            self._ident_to_props[ident] = a.to_status(), b.to_status()
 
 
 class _SubStatus(object):
@@ -546,21 +506,6 @@ class _StorageInfo(object):
         return self._item_cache[ident]
 
 
-def _migrate_status(status):
-    for ident in list(status):
-        value = status[ident]
-        if len(value) == 4:
-            href_a, etag_a, href_b, etag_b = value
-
-            status[ident] = ({
-                'href': href_a,
-                'etag': etag_a,
-            }, {
-                'href': href_b,
-                'etag': etag_b,
-            })
-
-
 def sync(storage_a, storage_b, status, conflict_resolution=None,
          force_delete=False, error_callback=None, partial_sync='revert'):
     '''Synchronizes two storages.
@@ -599,9 +544,7 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
     elif conflict_resolution == 'b wins':
         conflict_resolution = lambda a, b: b
 
-    _migrate_status(status)
-    status_nonempty = bool(status)
-    status = _Status(status)
+    status_nonempty = bool(next(status.iter_old(), None))
 
     with status.transaction():
         a_info = _StorageInfo(storage_a, _SubStatus(status, 'a'))
