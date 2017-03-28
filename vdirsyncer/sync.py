@@ -263,8 +263,8 @@ class SqliteStatus(_StatusBase):
     @contextlib.contextmanager
     def transaction(self):
         try:
-            old_c, self._c = self._c, self._c.cursor()
-            self._c.execute('BEGIN EXCLUSIVE TRANSACTION')
+            old_c = self._c
+            self._c = self._c.execute('BEGIN EXCLUSIVE TRANSACTION')
             yield
             self._c.execute('DELETE FROM status')
             self._c.execute('INSERT INTO status '
