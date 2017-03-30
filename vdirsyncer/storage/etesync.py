@@ -101,9 +101,9 @@ class EtesyncStorage(Storage):
 
     def list(self):
         self._session.etesync.sync_journal(self.collection)
-        for entry in self._journal.list():
+        for entry in self._journal.collection.list():
             item = Item(entry.content.decode('utf-8'))
-            yield entry.uid, item.hash
+            yield str(entry.uid), item.hash
 
     def get(self, href):
         item = Item(self._journal.collection.get(href).content.decode('utf-8'))
