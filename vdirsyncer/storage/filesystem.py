@@ -23,6 +23,9 @@ class FilesystemStorage(Storage):
     Can be used with `khal <http://lostpackets.de/khal/>`_. See :doc:`vdir` for
     a more formal description of the format.
 
+    Directories with a leading dot are ignored to make usage of e.g. version
+    control easier.
+
     :param path: Absolute path to a vdir/collection. If this is used in
         combination with the ``collections`` parameter in a pair-section, this
         should point to a directory of vdirs instead.
@@ -72,10 +75,8 @@ class FilesystemStorage(Storage):
     def _validate_collection(cls, path):
         if not os.path.isdir(path):
             return False
-        for item in os.listdir(path):
-            item_path = os.path.join(path, item)
-            if os.path.isdir(item_path):
-                return False
+        if os.path.basename(path).startswith('.'):
+            return False
         return True
 
     @classmethod
