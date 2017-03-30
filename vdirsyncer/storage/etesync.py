@@ -80,7 +80,7 @@ class EtesyncStorage(Storage):
             raise ValueError('Collection argument required')
 
         self._session = _Session(email, secrets_dir, server_url)
-        self._items_cache = {}  # XXX: Slow
+        self._journal = self._session.etesync.get(self.collection)
         super(EtesyncStorage, self).__init__(**kwargs)
 
     @classmethod
@@ -101,15 +101,12 @@ class EtesyncStorage(Storage):
 
     def list(self):
         self._session.etesync.sync_journal(self.collection)
-        self._items_cache.clear()
-        journal = self._session.etesync.get(self.collection)
         for entry in journal.list():
-            self._items_cache[entry.uid] = item = \
-                Item(entry.content.decode('utf-8'))
+            item = Item(entry.content.decode('utf-8'))
             yield entry.uid, item.hash
 
     def get(self, href):
-        item = self._items_cache[href]
+        item = Item(self._journal.get(href).content.decode('utf-8'))
         return item, item.hash
 
 
