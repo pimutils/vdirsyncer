@@ -21,6 +21,8 @@ Version 0.16.0
 - Statuses are now stored in a sqlite database. Old data is automatically
   migrated. Users with really large datasets should encounter performance
   improvements. This means that **sqlite3 is now a dependency of vdirsyncer**.
+- Vdirsyncer now ignores folders with a leading dot. This makes it easier to
+  combine it with version control.
 
 Version 0.15.0
 ==============
