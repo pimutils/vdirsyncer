@@ -1,6 +1,7 @@
 import contextlib
 import functools
 import logging
+import json
 import os
 import uuid
 
@@ -116,6 +117,24 @@ class EtesyncStorage(Storage):
                 )
             else:
                 logger.debug('Skipping collection: {!r}'.format(entry))
+
+    @classmethod
+    def create_collection(cls, collection, email, secrets_dir, server_url=None,
+                          **kwargs):
+        session = _Session(email, secrets_dir, server_url)
+        content = {
+            'displayName': collection,
+        }
+        collection = collection + '-' + str(uuid.uuid4())
+        cls._collection_type.create(session.etesync, collection, content)
+        session.etesync.sync_journal_list()
+        return dict(
+            collection=collection,
+            email=email,
+            secrets_dir=secrets_dir,
+            server_url=server_url,
+            **kwargs
+        )
 
     def list(self):
         self._sync_journal()
