@@ -1,13 +1,13 @@
 import contextlib
 import functools
 import logging
-import json
 import os
+import binascii
 import uuid
 
 import atomicwrites
 import click
-from pyetesync import api as etesync
+import pyetesync as etesync
 
 from .. import exceptions
 from ..cli.utils import assert_permissions
@@ -49,7 +49,9 @@ class _Session:
                 .get_auth_token(self.email, password)
             self._set_auth_token(auth_token)
 
-        self.etesync = etesync.EteSync(email, auth_token, remote=server_url)
+        self._db_path = os.path.join(self.secrets_dir, 'db.sqlite')
+        self.etesync = etesync.EteSync(email, auth_token, remote=server_url,
+                                       db_path=self._db_path)
 
         key = self._get_key()
         if not key:
@@ -122,14 +124,16 @@ class EtesyncStorage(Storage):
     def create_collection(cls, collection, email, secrets_dir, server_url=None,
                           **kwargs):
         session = _Session(email, secrets_dir, server_url)
-        content = {
-            'displayName': collection,
-        }
-        collection = collection + '-' + str(uuid.uuid4())
-        cls._collection_type.create(session.etesync, collection, content)
+        content = {'displayName': collection}
+        c = cls._collection_type.create(
+            session.etesync,
+            binascii.hexlify(os.urandom(32)).decode(),
+            content
+        )
+        c.save()
         session.etesync.sync_journal_list()
         return dict(
-            collection=collection,
+            collection=c.journal.uid,
             email=email,
             secrets_dir=secrets_dir,
             server_url=server_url,
