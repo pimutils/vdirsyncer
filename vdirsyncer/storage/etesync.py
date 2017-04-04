@@ -7,7 +7,7 @@ import uuid
 
 import atomicwrites
 import click
-import pyetesync as etesync
+import etesync
 
 from .. import exceptions
 from ..cli.utils import assert_permissions
@@ -157,11 +157,9 @@ class EtesyncStorage(Storage):
 
     @_writing_op
     def upload(self, item):
-        href = uuid.uuid4()
-        entry = self._item_type.create(self._journal.collection, href,
-                                       item.raw)
+        entry = self._item_type.create(self._journal.collection, item.raw)
         entry.save()
-        return str(href), item.hash
+        return item.uid, item.hash
 
     @_writing_op
     def update(self, href, item, etag):

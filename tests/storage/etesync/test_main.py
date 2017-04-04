@@ -20,6 +20,9 @@ from .. import StorageTests
 
 
 class EtesyncTests(StorageTests):
+
+    supports_metadata = False
+
     @pytest.fixture
     def get_storage_args(self, request, get_item, tmpdir):
         if os.getenv('ETESYNC_TESTS', '') != 'true':
