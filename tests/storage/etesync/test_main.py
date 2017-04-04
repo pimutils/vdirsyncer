@@ -8,12 +8,14 @@ from urllib.parse import quote as urlquote
 
 import pytest
 
-import wsgi_intercept
-import wsgi_intercept.requests_intercept
 
 from vdirsyncer.storage.etesync import EtesyncContacts, EtesyncCalendars
 
 from .. import StorageTests
+
+
+pytestmark = pytest.mark.skipif(os.getenv('ETESYNC_TESTS', '') != 'true',
+                                reason='etesync tests disabled')
 
 
 @pytest.fixture(scope='session')
@@ -39,8 +41,8 @@ class EtesyncTests(StorageTests):
 
     @pytest.fixture
     def get_storage_args(self, request, get_item, tmpdir, etesync_app):
-        if os.getenv('ETESYNC_TESTS', '') != 'true':
-            pytest.skip('ETESYNC_TESTS != true')
+        import wsgi_intercept
+        import wsgi_intercept.requests_intercept
         wsgi_intercept.requests_intercept.install()
         wsgi_intercept.add_wsgi_intercept('127.0.0.1', 8000,
                                           lambda: etesync_app)
