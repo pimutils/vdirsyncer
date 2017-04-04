@@ -33,7 +33,7 @@ def _writing_op(f):
 
 
 class _Session:
-    def __init__(self, email, secrets_dir, server_url=None):
+    def __init__(self, email, secrets_dir, server_url=None, db_path=None):
         server_url = server_url or etesync.API_URL
         self.email = email
         self.secrets_dir = os.path.join(secrets_dir, email + '/')
@@ -49,7 +49,7 @@ class _Session:
                 .get_auth_token(self.email, password)
             self._set_auth_token(auth_token)
 
-        self._db_path = os.path.join(self.secrets_dir, 'db.sqlite')
+        self._db_path = db_path or os.path.join(self.secrets_dir, 'db.sqlite')
         self.etesync = etesync.EteSync(email, auth_token, remote=server_url,
                                        db_path=self._db_path)
 
@@ -93,11 +93,12 @@ class EtesyncStorage(Storage):
     _collection_type = None
     _item_type = None
 
-    def __init__(self, email, secrets_dir, server_url=None, **kwargs):
+    def __init__(self, email, secrets_dir, server_url=None, db_path=None,
+                 **kwargs):
         if kwargs.get('collection', None) is None:
             raise ValueError('Collection argument required')
 
-        self._session = _Session(email, secrets_dir, server_url)
+        self._session = _Session(email, secrets_dir, server_url, db_path)
         super(EtesyncStorage, self).__init__(**kwargs)
         self._journal = self._session.etesync.get(self.collection)
 
@@ -105,15 +106,17 @@ class EtesyncStorage(Storage):
         self._session.etesync.sync_journal(self.collection)
 
     @classmethod
-    def discover(cls, email, secrets_dir, server_url=None, **kwargs):
+    def discover(cls, email, secrets_dir, server_url=None, db_path=None,
+                 **kwargs):
         assert cls._collection_type
-        session = _Session(email, secrets_dir, server_url)
+        session = _Session(email, secrets_dir, server_url, db_path)
         session.etesync.sync_journal_list()
         for entry in session.etesync.list():
             if isinstance(entry.collection, cls._collection_type):
                 yield dict(
                     email=email,
                     secrets_dir=secrets_dir,
+                    db_path=db_path,
                     collection=entry.uid,
                     **kwargs
                 )
@@ -122,8 +125,8 @@ class EtesyncStorage(Storage):
 
     @classmethod
     def create_collection(cls, collection, email, secrets_dir, server_url=None,
-                          **kwargs):
-        session = _Session(email, secrets_dir, server_url)
+                          db_path=None, **kwargs):
+        session = _Session(email, secrets_dir, server_url, db_path)
         content = {'displayName': collection}
         c = cls._collection_type.create(
             session.etesync,
@@ -136,6 +139,7 @@ class EtesyncStorage(Storage):
             collection=c.journal.uid,
             email=email,
             secrets_dir=secrets_dir,
+            db_path=db_path,
             server_url=server_url,
             **kwargs
         )
