@@ -54,8 +54,6 @@ class EtesyncTests(StorageTests):
         request.addfinalizer(teardown)
 
         def inner(collection='test'):
-            assert collection is not None
-
             rv = {
                 'email': 'test@localhost',
                 'db_path': str(tmpdir.join('etesync.db')),
@@ -63,8 +61,9 @@ class EtesyncTests(StorageTests):
                 'server_url': 'http://127.0.0.1:8000/',
                 'collection': collection
             }
-
-            return self.storage_class.create_collection(**rv)
+            if collection is not None:
+                rv = self.storage_class.create_collection(**rv)
+            return rv
         return inner
 
 
