@@ -8,6 +8,7 @@ export TESTSERVER_BASE := ./tests/storage/servers/
 export CI := false
 export COVERAGE := $(CI)
 export DETERMINISTIC_TESTS := false
+export ETESYNC_TESTS := false
 
 CODECOV_PATH = /tmp/codecov.sh
 
@@ -16,6 +17,12 @@ TEST_EXTRA_PACKAGES =
 ifeq ($(COVERAGE), true)
 	TEST_EXTRA_PACKAGES += pytest-cov
 	PYTEST_ARGS += --cov-config .coveragerc --cov vdirsyncer
+endif
+
+ifeq ($(ETESYNC_TESTS), true)
+	TEST_EXTRA_PACKAGES += git+https://github.com/etesync/journal-manager
+	TEST_EXTRA_PACKAGES += git+https://github.com/etesync/pyetesync
+	TEST_EXTRA_PACKAGES += django djangorestframework
 endif
 
 ifeq ($(CI), true)
@@ -83,11 +90,9 @@ release:
 	python setup.py sdist bdist_wheel upload
 
 install-dev:
-	set -xe && if [ "$(REMOTESTORAGE_SERVER)" != "skip" ]; then \
-		pip install -e .[remotestorage]; \
-	else \
-		pip install -e .; \
-	fi
+	pip install -e .
+	[ "$(REMOTESTORAGE_SERVER)" = "skip" ] || pip install -e .[remotestorage]
+	[ "$(ETESYNC_TESTS)" = "false" ] || pip install -e .[etesync]
 	set -xe && if [ "$(REQUIREMENTS)" = "devel" ]; then \
 	    pip install -U --force-reinstall \
 			git+https://github.com/mitsuhiko/click \
