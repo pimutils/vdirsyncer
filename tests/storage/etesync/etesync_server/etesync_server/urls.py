@@ -35,6 +35,4 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += url(r'^reset/$', views.reset, name='reset_debug'),
 
-urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-]
+urlpatterns += url(r'^admin/', admin.site.urls),

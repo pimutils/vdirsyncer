@@ -92,6 +92,7 @@ class _Session:
 class EtesyncStorage(Storage):
     _collection_type = None
     _item_type = None
+    _at_once = False
 
     def __init__(self, email, secrets_dir, server_url=None, db_path=None,
                  **kwargs):
@@ -157,7 +158,9 @@ class EtesyncStorage(Storage):
     @_writing_op
     def upload(self, item):
         href = uuid.uuid4()
-        self._item_type.create(self._journal, href, item.raw)
+        entry = self._item_type.create(self._journal.collection, href,
+                                       item.raw)
+        entry.save()
         return str(href), item.hash
 
     @_writing_op
