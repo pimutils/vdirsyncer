@@ -1,16 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import shutil
 import os
 import sys
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__),
-                                'etesync_server'))
 
 from urllib.parse import quote as urlquote
 
 import pytest
 
-from etesync_server.wsgi import application
 import wsgi_intercept
 import wsgi_intercept.requests_intercept
 
@@ -19,17 +16,34 @@ from vdirsyncer.storage.etesync import EtesyncContacts, EtesyncCalendars
 from .. import StorageTests
 
 
+@pytest.fixture(scope='session')
+def etesync_app(tmpdir_factory):
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__),
+                                    'etesync_server'))
+
+    db = tmpdir_factory.mktemp('etesync').join('etesync.sqlite')
+    shutil.copy(
+        os.path.join(os.path.dirname(__file__), 'etesync_server',
+                     'db.sqlite3'),
+        str(db)
+    )
+
+    os.environ['ETESYNC_DB_PATH'] = str(db)
+    from etesync_server.wsgi import application
+    return application
+
+
 class EtesyncTests(StorageTests):
 
     supports_metadata = False
 
     @pytest.fixture
-    def get_storage_args(self, request, get_item, tmpdir):
+    def get_storage_args(self, request, get_item, tmpdir, etesync_app):
         if os.getenv('ETESYNC_TESTS', '') != 'true':
             pytest.skip('ETESYNC_TESTS != true')
         wsgi_intercept.requests_intercept.install()
         wsgi_intercept.add_wsgi_intercept('127.0.0.1', 8000,
-                                          lambda: application)
+                                          lambda: etesync_app)
 
         def teardown():
             wsgi_intercept.remove_wsgi_intercept('127.0.0.1', 8000)
