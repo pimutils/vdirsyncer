@@ -148,11 +148,11 @@ class EtesyncStorage(Storage):
     def list(self):
         self._sync_journal()
         for entry in self._journal.collection.list():
-            item = Item(entry.content.decode('utf-8'))
+            item = Item(entry.content)
             yield str(entry.uid), item.hash
 
     def get(self, href):
-        item = Item(self._journal.collection.get(href).content.decode('utf-8'))
+        item = Item(self._journal.collection.get(href).content)
         return item, item.hash
 
     @_writing_op
@@ -164,7 +164,7 @@ class EtesyncStorage(Storage):
     @_writing_op
     def update(self, href, item, etag):
         entry = self._journal.collection.get(href)
-        old_item = Item(entry.content.decode('utf-8'))
+        old_item = Item(entry.content)
         if old_item.hash != etag:
             raise exceptions.WrongEtagError(etag, old_item.hash)
         entry.content = item.raw
@@ -174,7 +174,7 @@ class EtesyncStorage(Storage):
     @_writing_op
     def delete(self, href, etag):
         entry = self._journal.collection.get(href)
-        old_item = Item(entry.content.decode('utf-8'))
+        old_item = Item(entry.content)
         if old_item.hash != etag:
             raise exceptions.WrongEtagError(etag, old_item.hash)
         entry.delete()

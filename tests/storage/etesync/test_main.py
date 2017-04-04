@@ -7,7 +7,7 @@ import sys
 from urllib.parse import quote as urlquote
 
 import pytest
-
+import requests
 
 from vdirsyncer.storage.etesync import EtesyncContacts, EtesyncCalendars
 
@@ -52,6 +52,14 @@ class EtesyncTests(StorageTests):
             wsgi_intercept.requests_intercept.uninstall()
 
         request.addfinalizer(teardown)
+
+        with open(os.path.join(os.path.dirname(__file__),
+                               'test@localhost/auth_token')) as f:
+            token = f.read().strip()
+        headers = {'Authorization': 'Token ' + token}
+        r = requests.post('http://127.0.0.1:8000/reset/', headers=headers,
+                          allow_redirects=False)
+        assert r.status_code == 200
 
         def inner(collection='test'):
             rv = {
