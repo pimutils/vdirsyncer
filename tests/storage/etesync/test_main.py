@@ -22,6 +22,8 @@ from .. import StorageTests
 class EtesyncTests(StorageTests):
     @pytest.fixture
     def get_storage_args(self, request, get_item, tmpdir):
+        if os.getenv('ETESYNC_TESTS', '') != 'true':
+            pytest.skip('ETESYNC_TESTS != true')
         wsgi_intercept.requests_intercept.install()
         wsgi_intercept.add_wsgi_intercept('127.0.0.1', 8000,
                                           lambda: application)
