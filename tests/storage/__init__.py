@@ -270,6 +270,10 @@ class StorageTests(object):
         (_, etag3), = s.list()
         assert etag2 == etag3
 
+        # etesync uses UUIDs for collection names
+        if self.storage_class.storage_name.startswith('etesync'):
+            return
+
         assert collection in urlunquote(s.collection)
         if self.storage_class.storage_name.endswith('dav'):
             assert urlquote(uid, '/@:') in href
