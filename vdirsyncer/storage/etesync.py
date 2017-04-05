@@ -166,11 +166,11 @@ class EtesyncStorage(Storage):
     def upload(self, item):
         try:
             entry = self._item_type.create(self._journal.collection, item.raw)
+            entry.save()
         except etesync.exceptions.DoesNotExist as e:
             raise exceptions.NotFoundError(e)
         except peewee.IntegrityError as e:
             raise exceptions.AlreadyExistingError(e)
-        entry.save()
         return item.uid, item.hash
 
     @_writing_op
