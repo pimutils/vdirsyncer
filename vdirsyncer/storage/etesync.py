@@ -112,7 +112,7 @@ class EtesyncStorage(Storage):
                  **kwargs):
         assert cls._collection_type
         if kwargs.get('collection', None) is not None:
-            raise TypeError('collections argument must not be given.')
+            raise TypeError('collection argument must not be given.')
         session = _Session(email, secrets_dir, server_url, db_path)
         session.etesync.sync_journal_list()
         for entry in session.etesync.list():
@@ -163,7 +163,10 @@ class EtesyncStorage(Storage):
 
     @_writing_op
     def upload(self, item):
-        entry = self._item_type.create(self._journal.collection, item.raw)
+        try:
+            entry = self._item_type.create(self._journal.collection, item.raw)
+        except etesync.exceptions.DoesNotExist as e:
+            raise exceptions.NotFoundError(e)
         entry.save()
         return item.uid, item.hash
 
