@@ -66,11 +66,13 @@ class EtesyncTests(StorageTests):
                 'email': 'test@localhost',
                 'db_path': str(tmpdir.join('etesync.db')),
                 'secrets_dir': os.path.dirname(__file__),
-                'server_url': 'http://127.0.0.1:8000/',
-                'collection': collection
+                'server_url': 'http://127.0.0.1:8000/'
             }
             if collection is not None:
-                rv = self.storage_class.create_collection(**rv)
+                rv = self.storage_class.create_collection(
+                    collection=collection,
+                    **rv
+                )
             return rv
         return inner
 

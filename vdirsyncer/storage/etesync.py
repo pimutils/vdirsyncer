@@ -8,6 +8,7 @@ import uuid
 import atomicwrites
 import click
 import etesync
+import etesync.exceptions
 
 from .. import exceptions
 from ..cli.utils import assert_permissions
@@ -111,7 +112,7 @@ class EtesyncStorage(Storage):
                  **kwargs):
         assert cls._collection_type
         if kwargs.get('collection', None) is not None:
-            raise TypeError('Collections argument must not be given.')
+            raise TypeError('collections argument must not be given.')
         session = _Session(email, secrets_dir, server_url, db_path)
         session.etesync.sync_journal_list()
         for entry in session.etesync.list():
@@ -154,7 +155,10 @@ class EtesyncStorage(Storage):
             yield str(entry.uid), item.hash
 
     def get(self, href):
-        item = Item(self._journal.collection.get(href).content)
+        try:
+            item = Item(self._journal.collection.get(href).content)
+        except etesync.exceptions.DoesNotExist as e:
+            raise exceptions.NotFoundError(e)
         return item, item.hash
 
     @_writing_op
@@ -175,11 +179,14 @@ class EtesyncStorage(Storage):
 
     @_writing_op
     def delete(self, href, etag):
-        entry = self._journal.collection.get(href)
-        old_item = Item(entry.content)
-        if old_item.hash != etag:
-            raise exceptions.WrongEtagError(etag, old_item.hash)
-        entry.delete()
+        try:
+            entry = self._journal.collection.get(href)
+            old_item = Item(entry.content)
+            if old_item.hash != etag:
+                raise exceptions.WrongEtagError(etag, old_item.hash)
+            entry.delete()
+        except etesync.exceptions.DoesNotExist as e:
+            raise exceptions.NotFoundError(e)
 
     @contextlib.contextmanager
     def at_once(self):
