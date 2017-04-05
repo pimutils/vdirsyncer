@@ -226,6 +226,24 @@ To use them, you need to install some optional dependencies with::
 
 .. autostorage:: vdirsyncer.storage.remotestorage.RemoteStorageCalendars
 
+EteSync
++++++++
+
+`EteSync <https://www.etesync.com/>`_ is a new cloud provider for end to end
+encrypted contacts and calendar storage. Vdirsyncer contains **experimental**
+support for it.
+
+To use it, you need to install some optional dependencies::
+
+    pip install vdirsyncer[etesync]
+
+On first usage you will be prompted for the service password and the encryption
+password. Neither are stored.
+
+.. autostorage:: vdirsyncer.storage.etesync.EtesyncContacts
+
+.. autostorage:: vdirsyncer.storage.etesync.EtesyncCalendars
+
 Local
 +++++
 
