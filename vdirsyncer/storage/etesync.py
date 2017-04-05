@@ -3,13 +3,11 @@ import functools
 import logging
 import os
 import binascii
-import uuid
 
 import atomicwrites
 import click
 import etesync
 import etesync.exceptions
-import peewee
 
 from .. import exceptions
 from ..cli.utils import assert_permissions
@@ -169,7 +167,7 @@ class EtesyncStorage(Storage):
             entry.save()
         except etesync.exceptions.DoesNotExist as e:
             raise exceptions.NotFoundError(e)
-        except peewee.IntegrityError as e:
+        except etesync.exceptions.AlreadyExists as e:
             raise exceptions.AlreadyExistingError(e)
         return item.uid, item.hash
 
