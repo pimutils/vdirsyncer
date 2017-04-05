@@ -86,6 +86,6 @@ class TestContacts(EtesyncTests):
 class TestCalendars(EtesyncTests):
     storage_class = EtesyncCalendars
 
-    @pytest.fixture(params=['VTODO', 'VEVENT'])
+    @pytest.fixture(params=['VEVENT'])
     def item_type(self, request):
         return request.param
