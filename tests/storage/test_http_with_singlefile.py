@@ -15,6 +15,7 @@ class CombinedStorage(Storage):
     '''A subclass of HttpStorage to make testing easier. It supports writes via
     SingleFileStorage.'''
     _repr_attributes = ('url', 'path')
+    storage_name = 'http_and_singlefile'
 
     def __init__(self, url, path, **kwargs):
         if kwargs.get('collection', None) is not None:
