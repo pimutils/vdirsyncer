@@ -9,6 +9,7 @@ import atomicwrites
 import click
 import etesync
 import etesync.exceptions
+import peewee
 
 from .. import exceptions
 from ..cli.utils import assert_permissions
@@ -167,6 +168,8 @@ class EtesyncStorage(Storage):
             entry = self._item_type.create(self._journal.collection, item.raw)
         except etesync.exceptions.DoesNotExist as e:
             raise exceptions.NotFoundError(e)
+        except peewee.IntegrityError as e:
+            raise exceptions.AlreadyExistingError(e)
         entry.save()
         return item.uid, item.hash
 
