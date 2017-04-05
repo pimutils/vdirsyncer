@@ -172,7 +172,10 @@ class EtesyncStorage(Storage):
 
     @_writing_op
     def update(self, href, item, etag):
-        entry = self._journal.collection.get(href)
+        try:
+            entry = self._journal.collection.get(href)
+        except etesync.exceptions.DoesNotExist as e:
+            raise exceptions.NotFoundError(e)
         old_item = Item(entry.content)
         if old_item.hash != etag:
             raise exceptions.WrongEtagError(etag, old_item.hash)
