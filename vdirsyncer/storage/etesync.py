@@ -10,9 +10,11 @@ import click
 try:
     import etesync
     import etesync.exceptions
+    from etesync import AddressBook, Calendar
     has_etesync = True
 except ImportError:
     has_etesync = False
+    AddressBook = Calendar = None
 
 from .. import exceptions
 from ..cli.utils import assert_permissions
@@ -227,7 +229,7 @@ class EtesyncContacts(EtesyncStorage):
     Contacts for EteSync.
     ''' + EtesyncStorage.__doc__
 
-    _collection_type = etesync.AddressBook
+    _collection_type = AddressBook
     _item_type = etesync.Contact
     storage_name = 'etesync_contacts'
 
@@ -237,6 +239,6 @@ class EtesyncCalendars(EtesyncStorage):
     Calendars for EteSync.
     ''' + EtesyncStorage.__doc__
 
-    _collection_type = etesync.Calendar
+    _collection_type = Calendar
     _item_type = etesync.Event
     storage_name = 'etesync_calendars'
