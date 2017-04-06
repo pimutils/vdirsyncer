@@ -21,7 +21,6 @@ endif
 
 ifeq ($(ETESYNC_TESTS), true)
 	TEST_EXTRA_PACKAGES += git+https://github.com/etesync/journal-manager
-	TEST_EXTRA_PACKAGES += git+https://github.com/etesync/pyetesync
 	TEST_EXTRA_PACKAGES += django djangorestframework wsgi_intercept
 endif
 
