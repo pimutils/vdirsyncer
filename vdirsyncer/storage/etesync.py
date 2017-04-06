@@ -6,8 +6,13 @@ import binascii
 
 import atomicwrites
 import click
-import etesync
-import etesync.exceptions
+
+try:
+    import etesync
+    import etesync.exceptions
+    has_etesync = True
+except ImportError:
+    has_etesync = False
 
 from .. import exceptions
 from ..cli.utils import assert_permissions
@@ -104,6 +109,9 @@ class EtesyncStorage(Storage):
 
     def __init__(self, email, secrets_dir, server_url=None, db_path=None,
                  **kwargs):
+        if not has_etesync:
+            raise exceptions.UserError('Dependencies for etesync are not '
+                                       'installed.')
         if kwargs.get('collection', None) is None:
             raise ValueError('Collection argument required')
 
