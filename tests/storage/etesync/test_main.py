@@ -4,7 +4,6 @@ import shutil
 import os
 import sys
 
-from urllib.parse import quote as urlquote
 
 import pytest
 import requests

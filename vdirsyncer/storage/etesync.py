@@ -223,7 +223,7 @@ class EtesyncStorage(Storage):
 
 
 class EtesyncContacts(EtesyncStorage):
-    __doc__= '''
+    __doc__ = '''
     Contacts for EteSync.
     ''' + EtesyncStorage.__doc__
 
@@ -233,7 +233,7 @@ class EtesyncContacts(EtesyncStorage):
 
 
 class EtesyncCalendars(EtesyncStorage):
-    __doc__= '''
+    __doc__ = '''
     Calendars for EteSync.
     ''' + EtesyncStorage.__doc__
 
