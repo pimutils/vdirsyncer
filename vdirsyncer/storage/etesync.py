@@ -41,6 +41,9 @@ def _writing_op(f):
 
 class _Session:
     def __init__(self, email, secrets_dir, server_url=None, db_path=None):
+        if not has_etesync:
+            raise exceptions.UserError('Dependencies for etesync are not '
+                                       'installed.')
         server_url = server_url or etesync.API_URL
         self.email = email
         self.secrets_dir = os.path.join(secrets_dir, email + '/')
@@ -111,9 +114,6 @@ class EtesyncStorage(Storage):
 
     def __init__(self, email, secrets_dir, server_url=None, db_path=None,
                  **kwargs):
-        if not has_etesync:
-            raise exceptions.UserError('Dependencies for etesync are not '
-                                       'installed.')
         if kwargs.get('collection', None) is None:
             raise ValueError('Collection argument required')
 
