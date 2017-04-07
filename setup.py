@@ -62,7 +62,7 @@ setup(
     author_email='markus@unterwaditzer.net',
     url='https://github.com/pimutils/vdirsyncer',
     description='Synchronize calendars and contacts',
-    license='MIT',
+    license='BSD',
     long_description=long_description,
 
     # Runtime dependencies
@@ -92,7 +92,7 @@ setup(
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: BSD License',
         'Operating System :: POSIX',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',

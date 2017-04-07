@@ -23,6 +23,7 @@ Version 0.16.0
   improvements. This means that **sqlite3 is now a dependency of vdirsyncer**.
 - Vdirsyncer now ignores folders with a leading dot. This makes it easier to
   combine it with version control.
+- **Vdirsyncer is now licensed under the 3-clause BSD license**, see :gh:`610`.
 
 Version 0.15.0
 ==============
