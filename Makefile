@@ -18,19 +18,8 @@ ifeq ($(COVERAGE), true)
 	PYTEST_ARGS += --cov-config .coveragerc --cov vdirsyncer
 endif
 
-ifeq ($(CI), true)
 test:
-	curl -s https://codecov.io/bash > $(CODECOV_PATH)
-	py.test $(PYTEST_ARGS) tests/unit/
-	bash $(CODECOV_PATH) -c -F unit
-	py.test $(PYTEST_ARGS) tests/system/
-	bash $(CODECOV_PATH) -c -F system
-	py.test $(PYTEST_ARGS) tests/storage/
-	bash $(CODECOV_PATH) -c -F storage
-else
-test:
-	py.test $(PYTEST_ARGS)
-endif
+	py.test
 
 all:
 	$(error Take a look at https://vdirsyncer.pimutils.org/en/stable/tutorial.html#installation)

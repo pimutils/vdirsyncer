@@ -269,6 +269,7 @@ class SqliteStatus(_StatusBase):
                 (self.SCHEMA_VERSION,)
             ).fetchone())
         except sqlite3.OperationalError:
+            raise
             return False
 
     @contextlib.contextmanager
