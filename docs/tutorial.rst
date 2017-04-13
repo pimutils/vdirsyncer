@@ -210,3 +210,51 @@ to your CalDAV/CardDAV collection directly.
 
 Note that not all storages support the ``null``-collection, for example
 :storage:`google_contacts` and :storage:`google_calendar` don't.
+
+Advanced collection configuration (server-to-server sync)
+---------------------------------------------------------
+
+The examples above are good enough if you want to synchronize a remote server
+to a previously empty disk. However, even more trickery is required when you
+have two servers with *already existing* collections which you want to
+synchronize.
+
+The core problem in this situation is that vdirsyncer pairs collections by
+collection name by default (see definition in previous section, basically a
+foldername or a remote UUID). When you have two servers, those collection names
+may not line up as nicely. Suppose you created two calendars "Test", one on a
+NextCloud server and one on iCloud, using their respective web interfaces. The
+URLs look something like this::
+
+    NextCloud: https://example.com/remote.php/dav/calendars/user/test/
+    iCloud:    https://p-XX.caldav.icloud.com/YYY/calendars/3b4c9995-5c67-4021-9fa0-be4633623e1c
+
+Those are two DAV calendar collections. Their collection names will be ``test``
+and ``3b4c9995-5c67-4021-9fa0-be4633623e1c`` respectively, so you don't have a
+single name you can address them both with. You will need to manually "pair"
+(no pun intended) those collections up like this::
+
+    [pair doublecloud]
+    a = my_nextcloud
+    b = my_icloud
+    collections = [["mytest", "test", "3b4c9995-5c67-4021-9fa0-be4633623e1c"]]
+
+``mytest`` gives that combination of calendars a nice name you can use when
+talking about it, so you would use ``vdirsyncer sync doublecloud/mytest`` to
+say: "Only synchronize these two storages, nothing else that may be
+configured".
+
+.. note:: Why not use displaynames?
+
+   You may wonder why vdirsyncer just couldn't figure this out by itself. After
+   all, you did name both collections "Test" (which is called "the
+   displayname"), so why not pair collections by that value?
+
+   There are a few problems with this idea:
+
+   - Two calendars may have the same exact displayname.
+   - A calendar may not have a (non-empty) displayname.
+   - The displayname might change. Either you rename the calendar, or the
+     calendar renames itself because you change a language setting.
+
+   In the end, that property was never designed to be parsed by machines.
