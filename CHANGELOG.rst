@@ -24,6 +24,8 @@ Version 0.16.0
 - Vdirsyncer now ignores folders with a leading dot. This makes it easier to
   combine it with version control.
 - **Vdirsyncer is now licensed under the 3-clause BSD license**, see :gh:`610`.
+- Vdirsyncer now includes experimental support for `EteSync
+  <https://www.etesync.com/>`_, see :ghpr:`614`.
 
 Version 0.15.0
 ==============
