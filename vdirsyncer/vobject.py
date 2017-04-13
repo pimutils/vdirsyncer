@@ -40,7 +40,7 @@ class Item(object):
     VCARD'''
 
     def __init__(self, raw):
-        assert isinstance(raw, str)
+        assert isinstance(raw, str), type(raw)
         self._raw = raw
 
     def with_uid(self, new_uid):

@@ -226,6 +226,9 @@ class StorageTests(object):
         assert 'collection argument must not be given' in str(excinfo.value)
 
     def test_collection_arg(self, get_storage_args):
+        if self.storage_class.storage_name.startswith('etesync'):
+            pytest.skip('etesync uses UUIDs.')
+
         if self.supports_collections:
             s = self.storage_class(**get_storage_args(collection='test2'))
             # Can't do stronger assertion because of radicale, which needs a
@@ -269,6 +272,10 @@ class StorageTests(object):
 
         (_, etag3), = s.list()
         assert etag2 == etag3
+
+        # etesync uses UUIDs for collection names
+        if self.storage_class.storage_name.startswith('etesync'):
+            return
 
         assert collection in urlunquote(s.collection)
         if self.storage_class.storage_name.endswith('dav'):

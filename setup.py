@@ -72,6 +72,7 @@ setup(
     extras_require={
         'remotestorage': ['requests-oauthlib'],
         'google': ['requests-oauthlib'],
+        'etesync': ['etesync']
     },
 
     # Build dependencies

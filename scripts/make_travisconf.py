@@ -72,6 +72,14 @@ for python, requirements in itertools.product(python_versions,
         })
 
 matrix.append({
+    'python': latest_python,
+    'env': ("BUILD=test "
+            "ETESYNC_TESTS=true "
+            "REQUIREMENTS=latest "
+            "BUILD_PRS=true ")
+})
+
+matrix.append({
     'language': 'generic',
     'os': 'osx',
     'env': 'BUILD=test BUILD_PRS=true'

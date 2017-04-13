@@ -124,6 +124,10 @@
         "python": "pypy3"
       },
       {
+        "env": "BUILD=test ETESYNC_TESTS=true REQUIREMENTS=latest BUILD_PRS=true ",
+        "python": "3.6"
+      },
+      {
         "env": "BUILD=test BUILD_PRS=true",
         "language": "generic",
         "os": "osx"
