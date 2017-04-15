@@ -59,7 +59,7 @@ class GoogleSession(dav.DAVSession):
             )
 
         def _save_token(token):
-            checkdir(os.path.dirname(token_file), create=True)
+            checkdir(expand_path(os.path.dirname(token_file)), create=True)
             with atomic_write(token_file, mode='w', overwrite=True) as f:
                 json.dump(token, f)
 
@@ -152,15 +152,16 @@ class GoogleCalendarStorage(dav.CalDAVStorage):
 class GoogleContactsStorage(dav.CardDAVStorage):
     __doc__ = '''Google contacts.
 
-    .. note:: Google's CardDAV implementation is allegedly a disaster in terms
-        of data safety. See `this blog post
-        <https://evertpot.com/google-carddav-issues/>`_ for the details.
-        Always back up your data.
     ''' + GOOGLE_PARAMS_DOCS
 
     class session_class(GoogleSession):
-        # Apparently Google wants us to submit a PROPFIND to the well-known
-        # URL, instead of looking for a redirect.
+        # Google CardDAV is completely bonkers. Collection discovery doesn't
+        # work properly, well-known URI takes us directly to single collection
+        # from where we can't discover principal or homeset URIs (the PROPFINDs
+        # 404).
+        #
+        # So we configure the well-known URI here again, such that discovery
+        # tries collection enumeration on it directly. That appears to work.
         url = 'https://www.googleapis.com/.well-known/carddav'
         scope = ['https://www.googleapis.com/auth/carddav']
 

@@ -273,6 +273,9 @@ class PairConfig(object):
     @cached_property
     def partial_sync(self):
         partial_sync = self._partial_sync
+        # We need to use UserError here because ValueError is not
+        # caught at the time this is expanded.
+
         if partial_sync is not None:
             cls_a, _ = storage_class_from_config(self.config_a)
             cls_b, _ = storage_class_from_config(self.config_b)
@@ -281,14 +284,17 @@ class PairConfig(object):
                not self.config_a.get('read_only', False) and \
                not cls_b.read_only and \
                not self.config_b.get('read_only', False):
-                raise ValueError('`partial_sync` is only effective if one '
-                                 'storage is read-only.')
+                raise exceptions.UserError(
+                    '`partial_sync` is only effective if one storage is '
+                    'read-only. Use `read_only = true` in exactly one storage '
+                    'section.'
+                )
 
         if partial_sync is None:
             partial_sync = 'revert'
 
         if partial_sync not in ('ignore', 'revert', 'error'):
-            raise ValueError('Invalid value for `partial_sync`.')
+            raise exceptions.UserError('Invalid value for `partial_sync`.')
 
         return partial_sync
 

@@ -30,11 +30,9 @@ The iCalendar format also supports saving tasks in form of ``VTODO``-entries,
 with the same file extension as normal events: ``.ics``. All CalDAV servers
 support synchronizing tasks, vdirsyncer does too.
 
-- todoman_, a CLI task manager supporting :doc:`vdir <vdir>`.  You can use
+- todoman_, a CLI task manager supporting :doc:`vdir <vdir>`. Its interface is
+  similar to the ones of Taskwarrior or the todo.txt CLI app. You can use
   :storage:`filesystem` with it.
-
-  Its interface is similar to the ones of Taskwarrior or the todo.txt CLI app
-  and should be intuitively usable.
 
 .. _todoman: https://hugo.barrera.io/journal/2015/03/30/introducing-todoman/
 
@@ -52,9 +50,12 @@ Contacts
 
 - vdirel_, access :doc:`vdir <vdir>` contacts from Emacs.
 
+- Claws-Mail's addressbook can be fed by a ``.vcf`` file. See :ref:`here
+  <claws-mail-tutorial>` for a tutorial.
+
 .. _khard: https://github.com/scheibler/khard/
 .. _contactquery.c: https://github.com/t-8ch/snippets/blob/master/contactquery.c
-.. _mates: https://github.com/untitaker/mates.rs
+.. _mates: https://github.com/pimutils/mates.rs
 .. _vdirel: https://github.com/DamienCassou/vdirel
 
 .. _supported-servers:
@@ -71,7 +72,7 @@ Radicale_ is a very lightweight server, however, it intentionally doesn't
 implement the CalDAV and CardDAV standards completely, which might lead to
 issues even with very well-written clients. Apart from its non-conformity with
 standards, there are multiple other problems with its code quality and the way
-it is maintained.
+it is maintained. Consider using e.g. Xandikos_ instead.
 
 That said, vdirsyncer is continuously tested against the git version and the
 latest PyPI release of Radicale.
@@ -254,3 +255,26 @@ tested frequently. You can use :storage:`google_contacts` and
 :storage:`google_calendar`.
 
 For more information see :gh:`202` and :gh:`8`.
+
+Xandikos
+--------
+
+Xandikos_ is a lightweight, yet complete CalDAV and CardDAV server, backed by
+git. Vdirsyncer is continuously tested against its latest version.
+
+After running ``./bin/xandikos --defaults -d $HOME/dav``, you should be able to
+point vdirsyncer against the root of Xandikos like this::
+
+    [storage cal]
+    type = "caldav"
+    url = "https://xandikos.example.com/"
+    username = ...
+    password = ...
+
+    [storage card]
+    type = "carddav"
+    url = "https://xandikos.example.com/"
+    username = ...
+    password = ...
+
+.. _Xandikos: https://github.com/jelmer/xandikos

@@ -7,13 +7,34 @@ export TESTSERVER_BASE := ./tests/storage/servers/
 export CI := false
 export COVERAGE := $(CI)
 export DETERMINISTIC_TESTS := false
+export ETESYNC_TESTS := false
+
+CODECOV_PATH = /tmp/codecov.sh
 
 PYTEST_ARGS =
-ifneq ($(DAV_SERVER), skip)
-	PYTEST_ARGS += tests/storage/dav
+TEST_EXTRA_PACKAGES =
+ifeq ($(COVERAGE), true)
+	TEST_EXTRA_PACKAGES += pytest-cov
+	PYTEST_ARGS += --cov-config .coveragerc --cov vdirsyncer
 endif
-ifneq ($(REMOTESTORAGE_SERVER), skip)
-	PYTEST_ARGS += tests/storage/test_remotestorage.py
+
+ifeq ($(ETESYNC_TESTS), true)
+	TEST_EXTRA_PACKAGES += git+https://github.com/etesync/journal-manager
+	TEST_EXTRA_PACKAGES += django djangorestframework wsgi_intercept
+endif
+
+ifeq ($(CI), true)
+test:
+	curl -s https://codecov.io/bash > $(CODECOV_PATH)
+	py.test $(PYTEST_ARGS) tests/unit/
+	bash $(CODECOV_PATH) -c -F unit
+	py.test $(PYTEST_ARGS) tests/system/
+	bash $(CODECOV_PATH) -c -F system
+	py.test $(PYTEST_ARGS) tests/storage/
+	bash $(CODECOV_PATH) -c -F storage
+else
+test:
+	py.test $(PYTEST_ARGS)
 endif
 
 all:
@@ -36,21 +57,10 @@ install-test: install-servers
 			git+https://github.com/DRMacIver/hypothesis \
 			git+https://github.com/pytest-dev/pytest; \
 	fi
-	[ $(CI) != "true" ] || pip install pytest-cov codecov
-
-test:
-	set -e; \
-	if [ "$(COVERAGE)" = "true" ]; then \
-		py.test --cov-config .coveragerc --cov vdirsyncer $(PYTEST_ARGS); \
-	else \
-		py.test $(PYTEST_ARGS); \
-	fi
-
-after-test:
-	[ "$(CI)" != "true" ] || codecov
+	[ -z "$(TEST_EXTRA_PACKAGES)" ] || pip install $(TEST_EXTRA_PACKAGES)
 
 install-style: install-docs
-	pip install flake8 flake8-import-order flake8-bugbear
+	pip install flake8 flake8-import-order flake8-bugbear>=17.3.0
 	
 style:
 	flake8
@@ -58,9 +68,6 @@ style:
 	! git grep -i 'text/icalendar' */*
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
 	python3 scripts/make_travisconf.py | diff -b .travis.yml -
-
-after-style:
-	true
 
 travis-conf:
 	python3 scripts/make_travisconf.py > .travis.yml
@@ -70,9 +77,6 @@ install-docs:
 
 docs:
 	cd docs && make html
-
-after-docs:
-	true
 
 sh:  # open subshell with default test config
 	$$SHELL;
@@ -84,16 +88,14 @@ release:
 	python setup.py sdist bdist_wheel upload
 
 install-dev:
-	set -xe && if [ "$$REMOTESTORAGE_SERVER" != "skip" ]; then \
-		pip install -e .[remotestorage]; \
-	else \
-		pip install -e .; \
-	fi
-	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
+	pip install -e .
+	[ "$(REMOTESTORAGE_SERVER)" = "skip" ] || pip install -e .[remotestorage]
+	[ "$(ETESYNC_TESTS)" = "false" ] || pip install -e .[etesync]
+	set -xe && if [ "$(REQUIREMENTS)" = "devel" ]; then \
 	    pip install -U --force-reinstall \
 			git+https://github.com/mitsuhiko/click \
 			git+https://github.com/kennethreitz/requests; \
-	elif [ "$$REQUIREMENTS" = "minimal" ]; then \
+	elif [ "$(REQUIREMENTS)" = "minimal" ]; then \
 		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
 	fi
 

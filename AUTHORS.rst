@@ -13,3 +13,6 @@ In alphabetical order:
 - Markus Unterwaditzer
 - Michael Adler
 - Thomas Weißschuh
+
+Additionally `FastMail sponsored a paid account for testing
+<https://github.com/pimutils/vdirsyncer/issues/571>`_. Thanks!

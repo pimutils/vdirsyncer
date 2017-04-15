@@ -33,7 +33,7 @@ class Storage(metaclass=StorageMeta):
           contact.
       - HREF: String; Per-storage identifier of item, might be UID. The reason
           items aren't just referenced by their UID is because the CalDAV and
-          CardDAV specifications make this imperformant to implement.
+          CardDAV specifications make this unperformant to implement.
       - ETAG: String; Checksum of item, or something similar that changes when
           the item does.
 

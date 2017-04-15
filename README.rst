@@ -41,7 +41,7 @@ Links of interest
 License
 =======
 
-Licensed under the Expat/MIT license, see ``LICENSE``.
+Licensed under the 3-clause BSD license, see ``LICENSE``.
 
 Donations
 =========

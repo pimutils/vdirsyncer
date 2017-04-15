@@ -207,6 +207,7 @@ def _print_collections(instance_name, get_discovered):
         logger.debug(''.join(traceback.format_tb(sys.exc_info()[2])))
         logger.warning('Failed to discover collections for {}, use `-vdebug` '
                        'to see the full traceback.'.format(instance_name))
+        return
     logger.info('{}:'.format(instance_name))
     for args in discovered.values():
         collection = args['collection']

@@ -134,23 +134,14 @@ class Discover(object):
         _, collection = url.rstrip('/').rsplit('/', 1)
         return urlparse.unquote(collection)
 
-    def find_dav(self):
+    def find_principal(self):
         try:
-            response = self.session.request(
-                'GET', self._well_known_uri, allow_redirects=True,
-                headers=self.session.get_default_headers()
-            )
-            return response.url
+            return self._find_principal_impl('')
         except (HTTPError, exceptions.Error):
-            # The user might not have well-known URLs set up and instead points
-            # vdirsyncer directly to the DAV server.
-            dav_logger.debug('Server does not support well-known URIs.')
-            return ''
+            dav_logger.debug('Trying out well-known URI')
+            return self._find_principal_impl(self._well_known_uri)
 
-    def find_principal(self, url=None):
-        if url is None:
-            url = self.find_dav()
-
+    def _find_principal_impl(self, url):
         headers = self.session.get_default_headers()
         headers['Depth'] = '0'
         body = b"""
@@ -160,8 +151,10 @@ class Discover(object):
             </d:prop>
         </d:propfind>
         """
+
         response = self.session.request('PROPFIND', url, headers=headers,
                                         data=body)
+
         root = _parse_xml(response.content)
         rv = root.find('.//{DAV:}current-user-principal/{DAV:}href')
         if rv is None:
@@ -172,11 +165,10 @@ class Discover(object):
                 'No current-user-principal returned, re-using URL {}'
                 .format(response.url))
             return response.url
-        return urlparse.urljoin(response.url, rv.text)
+        return urlparse.urljoin(response.url, rv.text).rstrip('/') + '/'
 
-    def find_home(self, url=None):
-        if url is None:
-            url = self.find_principal()
+    def find_home(self):
+        url = self.find_principal()
         headers = self.session.get_default_headers()
         headers['Depth'] = '0'
         response = self.session.request('PROPFIND', url,
@@ -188,7 +180,7 @@ class Discover(object):
         rv = root.find('.//' + self._homeset_tag + '/{DAV:}href')
         if rv is None:
             raise InvalidXMLResponse('Couldn\'t find home-set.')
-        return urlparse.urljoin(response.url, rv.text)
+        return urlparse.urljoin(response.url, rv.text).rstrip('/') + '/'
 
     def find_collections(self):
         rv = None
@@ -209,7 +201,7 @@ class Discover(object):
         props = _merge_xml(response.findall(
             '{DAV:}propstat/{DAV:}prop'
         ))
-        if not props:
+        if props is None or not len(props):
             dav_logger.debug('Skipping, missing <prop>: %s', response)
             return False
         if props.find('{DAV:}resourcetype/' + self._resourcetype) \
@@ -569,7 +561,7 @@ class DAVStorage(Storage):
                 continue
 
             props = response.findall('{DAV:}propstat/{DAV:}prop')
-            if not props:
+            if props is None or not len(props):
                 dav_logger.warning('Skipping {!r}, properties are missing.'
                                    .format(href))
                 continue

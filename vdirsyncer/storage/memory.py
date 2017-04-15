@@ -13,6 +13,8 @@ def _random_string():
 
 class MemoryStorage(Storage):
 
+    storage_name = 'memory'
+
     '''
     Saves data in RAM, only useful for testing.
     '''

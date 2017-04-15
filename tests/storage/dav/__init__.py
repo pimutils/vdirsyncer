@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import uuid
+
 import os
 
 import pytest
@@ -44,11 +46,11 @@ class DAVStorageTests(ServerMixin, StorageTests):
 
     def test_dav_unicode_href(self, s, get_item, monkeypatch):
         if self.dav_server == 'radicale':
-            pytest.xfail('Radicale is unable to deal with unicode hrefs')
+            pytest.skip('Radicale is unable to deal with unicode hrefs')
 
         monkeypatch.setattr(s, '_get_href',
                             lambda item: item.ident + s.fileext)
-        item = get_item(uid=u'lolätvdirsynceröü град сатану')
+        item = get_item(uid=u'град сатану' + str(uuid.uuid4()))
         href, etag = s.upload(item)
         item2, etag2 = s.get(href)
         assert_item_equals(item, item2)

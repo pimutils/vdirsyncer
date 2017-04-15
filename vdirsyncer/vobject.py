@@ -9,6 +9,9 @@ from .utils import cached_property, uniq
 IGNORE_PROPS = (
     # PRODID is changed by radicale for some reason after upload
     'PRODID',
+    # Sometimes METHOD:PUBLISH is added by WebCAL providers, for us it doesn't
+    # make a difference
+    'METHOD',
     # X-RADICALE-NAME is used by radicale, because hrefs don't really exist in
     # their filesystem backend
     'X-RADICALE-NAME',
@@ -37,7 +40,7 @@ class Item(object):
     VCARD'''
 
     def __init__(self, raw):
-        assert isinstance(raw, str)
+        assert isinstance(raw, str), type(raw)
         self._raw = raw
 
     def with_uid(self, new_uid):
@@ -87,7 +90,7 @@ class Item(object):
 
         # We hash the item instead of directly using its raw content, because
         #
-        # 1. The raw content might be really large, e.g. when its a contact
+        # 1. The raw content might be really large, e.g. when it's a contact
         #    with a picture, which bloats the status file.
         #
         # 2. The status file would contain really sensitive information.
@@ -162,6 +165,8 @@ def _split_collection_impl(item, main, inline, items, ungrouped_items):
 
         wrapper.subcomponents.append(item)
     elif item.name in (u'VCALENDAR', u'VADDRESSBOOK'):
+        if item.name == 'VCALENDAR':
+            del item['METHOD']
         for subitem in item.subcomponents:
             _split_collection_impl(subitem, item, inline, items,
                                    ungrouped_items)

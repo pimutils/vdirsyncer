@@ -1,31 +1,15 @@
 import os
-import uuid
 
 import pytest
-
-
-def _clear_collection(s):
-    for href, etag in s.list():
-        s.delete(href, etag)
 
 
 class ServerMixin(object):
 
     @pytest.fixture
-    def get_storage_args(self, item_type, request):
-        # We need to properly clean up because otherwise we will run into
-        # iCloud's storage limit.
-        collections_to_delete = []
-
-        def delete_collections():
-            for s in collections_to_delete:
-                s.session.request('DELETE', '')
-
-        request.addfinalizer(delete_collections)
-
+    def get_storage_args(self, item_type, slow_create_collection):
         if item_type != 'VEVENT':
-            # For some reason the collections created by vdirsyncer are not
-            # usable as task lists.
+            # iCloud collections can either be calendars or task lists.
+            # See https://github.com/pimutils/vdirsyncer/pull/593#issuecomment-285941615  # noqa
             pytest.skip('iCloud doesn\'t support anything else than VEVENT')
 
         def inner(collection='test'):
@@ -42,15 +26,7 @@ class ServerMixin(object):
                 raise RuntimeError()
 
             if collection is not None:
-                assert collection.startswith('test')
-                # iCloud requires a minimum length for collection names
-                collection += '-vdirsyncer-ci-' + str(uuid.uuid4())
-
-                args = self.storage_class.create_collection(collection,
-                                                               **args)
-                s = self.storage_class(**args)
-                _clear_collection(s)
-                assert not list(s.list())
-                collections_to_delete.append(s)
+                args = slow_create_collection(self.storage_class, args,
+                                              collection)
             return args
         return inner
