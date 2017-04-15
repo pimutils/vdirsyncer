@@ -12,7 +12,7 @@ may want to subscribe to `GitHub's tag feed
 Version 0.16.0
 ==============
 
-- Strip ``METHOD:PUBLISH`` added by some calendar providers.
+- Strip ``METHOD:PUBLISH`` added by some calendar providers, see :gh:`502`.
 - Fix crash of Google storages when saving token file.
 - Make DAV discovery more RFC-conformant, see :ghpr:`585`.
 - Vdirsyncer is now tested against Xandikos, see :ghpr:`601`.
