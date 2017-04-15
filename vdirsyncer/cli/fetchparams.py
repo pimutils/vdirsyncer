@@ -85,6 +85,16 @@ def _strategy_command(*command):
                                    .format(' '.join(command), str(e)))
 
 
+def _strategy_netrc(*params):
+    import netrc
+    netrcfile = netrc.netrc()
+    netrc_params = params
+    if netrc_params[0] == "login":
+        return netrcfile.authenticators(netrc_params[1])[0]
+    elif netrc_params[0] == "password":
+        return netrcfile.authenticators(netrc_params[1])[2]
+
+
 def _strategy_prompt(text):
     return click.prompt(text, hide_input=True)
 
@@ -92,4 +102,5 @@ def _strategy_prompt(text):
 STRATEGIES = {
     'command': _strategy_command,
     'prompt': _strategy_prompt,
+    'netrc': _strategy_netrc
 }
