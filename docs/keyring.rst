@@ -38,6 +38,23 @@ You can fetch the username as well::
 
 Or really any kind of parameter in a storage section.
 
+Accessing your netrc file
+-------------------------
+
+As shown above, you can use the ``command`` strategy to fetch your credentials
+from arbitrary sources. A very common usecase is to fetch your password from
+your ``~/.netrc`` file.
+
+the netrc_ Python module enables you to fetch passwords and logins from your
+``~/.netrc`` file.
+
+Basic usage::
+
+    username.fetch = ["netrc", "login", "example.com"]
+    password.fetch = ["netrc", "password", "example.com"]
+
+.. _netrc: https://docs.python.org/3/library/netrc.html
+
 Accessing the system keyring
 ----------------------------
 
