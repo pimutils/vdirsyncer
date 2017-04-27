@@ -27,11 +27,14 @@ sync_logger = logging.getLogger(__name__)
 
 @contextlib.contextmanager
 def _exclusive_transaction(conn):
+    c = None
     try:
         c = conn.execute('BEGIN EXCLUSIVE TRANSACTION')
         yield c
         c.execute('COMMIT')
     except BaseException:
+        if c is None:
+            raise
         _, e, tb = sys.exc_info()
         c.execute('ROLLBACK')
         raise e.with_traceback(tb)
