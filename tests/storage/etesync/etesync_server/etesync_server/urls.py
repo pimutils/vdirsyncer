@@ -13,26 +13,26 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf import settings
 from django.conf.urls import include, url
-from django.contrib import admin
 
-from rest_framework import routers
-from rest_framework.authtoken import views as token_views
+from rest_framework_nested import routers
 
 from journal import views
 
 router = routers.DefaultRouter()
 router.register(r'journals', views.JournalViewSet)
-router.register(r'journal/(?P<journal>[^/]+)', views.EntryViewSet)
+router.register(r'journal/(?P<journal_uid>[^/]+)', views.EntryViewSet)
+router.register(r'user', views.UserInfoViewSet)
+
+journals_router = routers.NestedSimpleRouter(router, r'journals', lookup='journal')
+journals_router.register(r'members', views.MembersViewSet, base_name='journal-members')
+journals_router.register(r'entries', views.EntryViewSet, base_name='journal-entries')
+
 
 urlpatterns = [
     url(r'^api/v1/', include(router.urls)),
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),  # noqa
-    url(r'^api-token-auth/', token_views.obtain_auth_token),
+    url(r'^api/v1/', include(journals_router.urls)),
 ]
 
-if settings.DEBUG:
-    urlpatterns += url(r'^reset/$', views.reset, name='reset_debug'),
-
-urlpatterns += url(r'^admin/', admin.site.urls),
+# Adding this just for testing, this shouldn't be here normally
+urlpatterns += url(r'^reset/$', views.reset, name='reset_debug'),
