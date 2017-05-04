@@ -109,7 +109,7 @@ pair section::
 
     [pair my_contacts]
     ...
-    conflict_resolution = b wins
+    conflict_resolution = "b wins"
 
 Earlier we wrote that ``b = my_contacts_remote``, so when vdirsyncer encounters
 the situation where an item changed on both sides, it will simply overwrite the
