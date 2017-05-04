@@ -20,8 +20,9 @@ Configuration
       contains a very terse version of this.
 
     - In this example we set up contacts synchronization, but calendar sync
-      works almost the same. Just swap ``type = carddav`` for ``type = caldav``
-      and ``fileext = .vcf`` for ``fileext = .ics``.
+      works almost the same. Just swap ``type = "carddav"``
+      for ``type = "caldav"`` and ``fileext = ".vcf"``
+      for ``fileext = ".ics"``.
 
     - Take a look at the :doc:`problems` page if anything doesn't work like
       planned.
@@ -111,9 +112,9 @@ pair section::
     ...
     conflict_resolution = "b wins"
 
-Earlier we wrote that ``b = my_contacts_remote``, so when vdirsyncer encounters
+Earlier we wrote that ``b = "my_contacts_remote"``, so when vdirsyncer encounters
 the situation where an item changed on both sides, it will simply overwrite the
-local item with the one from the server. Of course ``a wins`` is also a valid
+local item with the one from the server. Of course ``"a wins"`` is also a valid
 value.
 
 .. _metasync_tutorial:
@@ -235,8 +236,8 @@ single name you can address them both with. You will need to manually "pair"
 (no pun intended) those collections up like this::
 
     [pair doublecloud]
-    a = my_nextcloud
-    b = my_icloud
+    a = "my_nextcloud"
+    b = "my_icloud"
     collections = [["mytest", "test", "3b4c9995-5c67-4021-9fa0-be4633623e1c"]]
 
 ``mytest`` gives that combination of calendars a nice name you can use when
