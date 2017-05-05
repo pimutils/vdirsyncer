@@ -38,6 +38,13 @@ You can fetch the username as well::
 
 Or really any kind of parameter in a storage section.
 
+With pass_ for example, you might find yourself writing something like this in
+your configuration file::
+
+    password.fetch = ["command", "pass", "caldav"]
+
+.. _pass: https://www.passwordstore.org/
+
 Accessing the system keyring
 ----------------------------
 
