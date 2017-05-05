@@ -38,15 +38,12 @@ You can fetch the username as well::
 
 Or really any kind of parameter in a storage section.
 
-It might be recommended to use an external password manager such as ``pass``
-to fetch the password. (more details can be found in it's `home website`_).
+With pass_ for example, you might find yourself writing something like this in
+your configuration file::
 
-With ``pass``, you might find yourself writing something like this in your
-configuration file::
+    password.fetch = ["command", "pass", "caldav"]
 
-    password.fetch = ["command", "/usr/bin/pass", "caldav"]
-
-.. _`home website`: https://www.passwordstore.org/
+.. _pass: https://www.passwordstore.org/
 
 Accessing the system keyring
 ----------------------------
