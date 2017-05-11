@@ -58,7 +58,7 @@ Suggesting features
 If you're suggesting a feature, keep in mind that vdirsyncer tries not to be a
 full calendar or contacts client, but rather just the piece of software that
 synchronizes all the data. :doc:`Take a look at the documentation for software
-working with vdirsyncer <supported>`.
+working with vdirsyncer <tutorials/index>`.
 
 Submitting patches, pull requests
 =================================
