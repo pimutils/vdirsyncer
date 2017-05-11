@@ -89,7 +89,7 @@ However, if new collections are created on the server, it will not
 automatically start synchronizing those [2]_. You need to run ``vdirsyncer
 discover`` again to re-fetch this list instead.
 
-.. [1] You'll want to :doc:`use a helper program for this <tutorials>`.
+.. [1] You'll want to :doc:`use a helper program for this <tutorials/index>`.
 
 .. [2] Because collections are added rarely, and checking for this case before
    every synchronization isn't worth the overhead.
