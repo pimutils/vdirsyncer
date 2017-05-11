@@ -59,10 +59,10 @@ def uniq(s):
 
 
 def get_etag_from_file(f):
-    '''Get mtime-based etag from a filepath or file-like object.
+    '''Get etag from a filepath or file-like object.
 
     This function will flush/sync the file as much as necessary to obtain a
-    correct mtime.
+    correct value.
     '''
     if hasattr(f, 'read'):
         f.flush()  # Only this is necessary on Linux
@@ -75,7 +75,7 @@ def get_etag_from_file(f):
     mtime = getattr(stat, 'st_mtime_ns', None)
     if mtime is None:
         mtime = stat.st_mtime
-    return '{:.9f}'.format(mtime)
+    return '{:.9f};{}'.format(mtime, stat.st_ino)
 
 
 def get_storage_init_specs(cls, stop_at=object):
