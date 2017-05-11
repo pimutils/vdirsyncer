@@ -1,5 +1,6 @@
+========
 Radicale
---------
+========
 
 Radicale_ is a very lightweight server, however, it intentionally doesn't
 implement the CalDAV and CardDAV standards completely, which might lead to

@@ -1,5 +1,6 @@
+========
 Xandikos
---------
+========
 
 Xandikos_ is a lightweight, yet complete CalDAV and CardDAV server, backed by
 git. Vdirsyncer is continuously tested against its latest version.

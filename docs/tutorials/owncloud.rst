@@ -1,7 +1,8 @@
 .. _owncloud_setup:
 
+========
 ownCloud
---------
+========
 
 Vdirsyncer is continuously tested against the latest version of ownCloud_::
 
@@ -23,4 +24,3 @@ Vdirsyncer is continuously tested against the latest version of ownCloud_::
   7.0.0. See :gh:`16` for more information.
 
 .. _ownCloud: https://owncloud.org/
-

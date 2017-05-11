@@ -1,5 +1,6 @@
+======
 Baikal
-------
+======
 
 Vdirsyncer is continuously tested against the latest version of Baikal_.
 

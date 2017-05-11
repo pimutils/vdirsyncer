@@ -1,5 +1,6 @@
+=========
 nextCloud
----------
+=========
 
 Vdirsyncer is continuously tested against the latest version of nextCloud_::
 

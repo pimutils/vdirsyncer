@@ -1,7 +1,8 @@
 .. _davmail_setup:
 
+===========================
 DavMail (Exchange, Outlook)
----------------------------
+===========================
 
 DavMail_ is a proxy program that allows you to use Card- and CalDAV clients
 with Outlook. That allows you to use vdirsyncer with Outlook.

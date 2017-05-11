@@ -1,5 +1,6 @@
+========
 FastMail
---------
+========
 
 Vdirsyncer is irregularly tested against FastMail_. There are no known issues
 with it. `FastMail's support pages

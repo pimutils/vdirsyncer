@@ -1,7 +1,8 @@
 .. _icloud_setup:
 
+======
 iCloud
-------
+======
 
 Vdirsyncer is regularly tested against iCloud_.
 

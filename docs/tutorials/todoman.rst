@@ -10,5 +10,4 @@ todoman_ is a CLI task manager supporting :doc:`vdir <vdir>`. Its interface is
 similar to the ones of Taskwarrior or the todo.txt CLI app. You can use
 :storage:`filesystem` with it.
 
-
 .. _todoman: https://hugo.barrera.io/journal/2015/03/30/introducing-todoman/

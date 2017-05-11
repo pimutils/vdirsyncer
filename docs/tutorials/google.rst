@@ -1,5 +1,6 @@
+======
 Google
-------
+======
 
 Using vdirsyncer with Google Calendar is possible as of 0.10, but it is not
 tested frequently. You can use :storage:`google_contacts` and
