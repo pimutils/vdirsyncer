@@ -78,3 +78,9 @@ Then change into the ``docs/`` directory and build whatever format you want
 using the ``Makefile`` in there (run ``make`` for the formats you can build).
 
 .. _Sphinx: www.sphinx-doc.org/
+
+Contrib files
+=============
+
+Reference ``systemd.service`` and ``systemd.timer`` unit files are provided. It
+is recommended to install this if your distribution is systemd-based.

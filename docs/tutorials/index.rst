@@ -11,3 +11,4 @@ that other software may only apply to specific versions of them.
     :maxdepth: 1
 
     claws-mail
+    systemd-timer
