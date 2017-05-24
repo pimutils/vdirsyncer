@@ -29,6 +29,9 @@ Version 0.16.0
 - Vdirsyncer now uses more filesystem metadata for determining whether an item
   changed. You will notice a **possibly heavy CPU/IO spike on the first sync
   after upgrading**.
+- **Packagers:** Reference ``systemd.service`` and ``systemd.timer`` unit files
+  are provided. It is recommended to install this if your distribution is
+  systemd-based.
 
 Version 0.15.0
 ==============
