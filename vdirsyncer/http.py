@@ -4,11 +4,11 @@ import logging
 import requests
 
 from .utils import expand_path
-from . import DOCS_HOME, exceptions
+from . import DOCS_HOME, exceptions, __version__
 
 
 logger = logging.getLogger(__name__)
-USERAGENT = 'vdirsyncer'
+USERAGENT = 'vdirsyncer/{}'.format(__version__)
 
 
 def _detect_faulty_requests():  # pragma: no cover
