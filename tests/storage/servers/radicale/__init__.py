@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-
 import logging
 import pytest
 
@@ -10,8 +7,6 @@ import radicale
 import radicale.config
 
 from pkg_resources import parse_version as ver
-
-from urllib.parse import quote as urlquote
 
 import wsgi_intercept
 import wsgi_intercept.requests_intercept
