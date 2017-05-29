@@ -18,6 +18,7 @@ that other software only applies to specific versions of them.
     :maxdepth: 1
 
     claws-mail
+    systemd-timer
     todoman
 
 Further applications, with missing pages:

@@ -1,0 +1,10 @@
+[Unit]
+Description=Synchronize vdirs
+
+[Timer]
+OnBootSec=5m
+OnUnitActiveSec=15m
+AccuracySec=5m
+
+[Install]
+WantedBy=timers.target
