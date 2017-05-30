@@ -2,7 +2,6 @@
 
 export DAV_SERVER := skip
 export REMOTESTORAGE_SERVER := skip
-export RADICALE_BACKEND := filesystem
 export REQUIREMENTS := release
 export TESTSERVER_BASE := ./tests/storage/servers/
 export CI := false
