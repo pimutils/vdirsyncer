@@ -41,6 +41,23 @@ def _contains_quoted_reserved_chars(x):
     return False
 
 
+def _assert_multistatus_success(r):
+    # Xandikos returns a multistatus on PUT.
+    try:
+        root = _parse_xml(r.content)
+    except InvalidXMLResponse:
+        print("INVALID RESPONSE")
+        return
+    for status in root.findall('.//{DAV:}status'):
+        parts = status.text.strip().split()
+        try:
+            st = int(parts[1])
+        except (ValueError, IndexError):
+            continue
+        if st < 200 or st >= 400:
+            raise HTTPError('Server error: {}'.format(st))
+
+
 def _normalize_href(base, href):
     '''Normalize the href to be a path only relative to hostname and
     schema.'''
@@ -498,6 +515,8 @@ class DAVStorage(Storage):
             data=item.raw.encode('utf-8'),
             headers=headers
         )
+
+        _assert_multistatus_success(response)
 
         # The server may not return an etag under certain conditions:
         #
