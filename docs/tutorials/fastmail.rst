@@ -2,8 +2,9 @@
 FastMail
 ========
 
-Vdirsyncer is irregularly tested against FastMail_. There are no known issues
-with it. `FastMail's support pages
+Vdirsyncer is continuously tested against FastMail_, thanks to them for
+providing a free account for this purpose. There are no known issues with it.
+`FastMail's support pages
 <https://www.fastmail.com/help/technical/servernamesandports.html>`_ provide
 the settings to use::
 
