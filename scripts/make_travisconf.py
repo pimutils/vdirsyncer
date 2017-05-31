@@ -8,6 +8,7 @@ latest_python = "3.6"
 cfg = {}
 
 cfg['sudo'] = True
+cfg['dist'] = 'trusty'
 cfg['language'] = 'python'
 cfg['cache'] = 'pip'
 

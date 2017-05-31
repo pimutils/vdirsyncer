@@ -6,6 +6,7 @@
     ]
   },
   "cache": "pip",
+  "dist": "trusty",
   "git": {
     "submodules": false
   },
