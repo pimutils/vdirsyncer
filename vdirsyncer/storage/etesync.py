@@ -127,10 +127,10 @@ class EtesyncStorage(Storage):
     @classmethod
     def discover(cls, email, secrets_dir, server_url=None, db_path=None,
                  **kwargs):
-        assert cls._collection_type
         if kwargs.get('collection', None) is not None:
             raise TypeError('collection argument must not be given.')
         session = _Session(email, secrets_dir, server_url, db_path)
+        assert cls._collection_type
         session.etesync.sync_journal_list()
         for entry in session.etesync.list():
             if isinstance(entry.collection, cls._collection_type):
