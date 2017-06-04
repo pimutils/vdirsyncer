@@ -10,6 +10,7 @@ export DETERMINISTIC_TESTS := false
 export ETESYNC_TESTS := false
 
 CODECOV_PATH = /tmp/codecov.sh
+PYTEST = $(shell (which py.test-3 || which py.test) | tail -1)
 
 PYTEST_ARGS =
 TEST_EXTRA_PACKAGES =
@@ -26,15 +27,15 @@ endif
 ifeq ($(CI), true)
 test:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
-	py.test $(PYTEST_ARGS) tests/unit/
+	$(PYTEST) $(PYTEST_ARGS) tests/unit/
 	bash $(CODECOV_PATH) -c -F unit
-	py.test $(PYTEST_ARGS) tests/system/
+	$(PYTEST) $(PYTEST_ARGS) tests/system/
 	bash $(CODECOV_PATH) -c -F system
-	py.test $(PYTEST_ARGS) tests/storage/
+	$(PYTEST) $(PYTEST_ARGS) tests/storage/
 	bash $(CODECOV_PATH) -c -F storage
 else
 test:
-	py.test $(PYTEST_ARGS)
+	$(PYTEST) $(PYTEST_ARGS)
 endif
 
 all:
