@@ -55,6 +55,7 @@ install-test: install-servers
 	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
 		pip install -U --force-reinstall \
 			git+https://github.com/DRMacIver/hypothesis \
+			git+https://github.com/kennethreitz/requests \
 			git+https://github.com/pytest-dev/pytest; \
 	fi
 	[ -z "$(TEST_EXTRA_PACKAGES)" ] || pip install $(TEST_EXTRA_PACKAGES)
