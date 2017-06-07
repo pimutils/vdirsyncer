@@ -53,7 +53,6 @@ class ServerMixin(object):
     @pytest.fixture
     def get_storage_args(self, monkeypatch, setup_mysteryshack_server):
         from requests import Session
-        from requests.adapters import HTTPAdapter
 
         monkeypatch.setitem(os.environ, 'OAUTHLIB_INSECURE_TRANSPORT', 'true')
 

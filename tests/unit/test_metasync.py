@@ -132,6 +132,8 @@ metadata = st.dictionaries(keys, values)
 )
 @example(a={u'0': u'0'}, b={}, status={u'0': u'0'}, keys={u'0'},
          conflict_resolution='a wins')
+@example(a={'0': '0'}, b={'0': '1'}, status={'0': '0'}, keys={'0'},
+         conflict_resolution='a wins')
 def test_fuzzing(a, b, status, keys, conflict_resolution):
     def _get_storage(m, instance_name):
         s = MemoryStorage(instance_name=instance_name)
@@ -143,7 +145,8 @@ def test_fuzzing(a, b, status, keys, conflict_resolution):
 
     winning_storage = (a if conflict_resolution == 'a wins' else b)
     expected_values = dict((key, winning_storage.get_meta(key))
-                           for key in keys)
+                           for key in keys
+                           if key not in status)
 
     metasync(a, b, status,
              keys=keys, conflict_resolution=conflict_resolution)
@@ -151,4 +154,5 @@ def test_fuzzing(a, b, status, keys, conflict_resolution):
     for key in keys:
         s = status.get(key, '')
         assert a.get_meta(key) == b.get_meta(key) == s
-        assert s == expected_values[key] or not expected_values[key] or not s
+        if expected_values.get(key, '') and s:
+            assert s == expected_values[key]

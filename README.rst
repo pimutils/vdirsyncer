@@ -11,7 +11,7 @@ folder or file. The local data can then be accessed via a variety of programs_,
 none of which have to know or worry about syncing to a server.
 
 .. _storages: https://vdirsyncer.pimutils.org/en/latest/config.html#storages
-.. _programs: https://vdirsyncer.pimutils.org/en/stable/supported.html
+.. _programs: https://vdirsyncer.pimutils.org/en/latest/tutorials/
 
 It aims to be for CalDAV and CardDAV what `OfflineIMAP
 <http://offlineimap.org/>`_ is for IMAP.
@@ -41,7 +41,7 @@ Links of interest
 License
 =======
 
-Licensed under the Expat/MIT license, see ``LICENSE``.
+Licensed under the 3-clause BSD license, see ``LICENSE``.
 
 Donations
 =========

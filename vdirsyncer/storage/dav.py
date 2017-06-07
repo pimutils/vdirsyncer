@@ -41,6 +41,23 @@ def _contains_quoted_reserved_chars(x):
     return False
 
 
+def _assert_multistatus_success(r):
+    # Xandikos returns a multistatus on PUT.
+    try:
+        root = _parse_xml(r.content)
+    except InvalidXMLResponse:
+        print("INVALID RESPONSE")
+        return
+    for status in root.findall('.//{DAV:}status'):
+        parts = status.text.strip().split()
+        try:
+            st = int(parts[1])
+        except (ValueError, IndexError):
+            continue
+        if st < 200 or st >= 400:
+            raise HTTPError('Server error: {}'.format(st))
+
+
 def _normalize_href(base, href):
     '''Normalize the href to be a path only relative to hostname and
     schema.'''
@@ -165,7 +182,7 @@ class Discover(object):
                 'No current-user-principal returned, re-using URL {}'
                 .format(response.url))
             return response.url
-        return urlparse.urljoin(response.url, rv.text)
+        return urlparse.urljoin(response.url, rv.text).rstrip('/') + '/'
 
     def find_home(self):
         url = self.find_principal()
@@ -180,7 +197,7 @@ class Discover(object):
         rv = root.find('.//' + self._homeset_tag + '/{DAV:}href')
         if rv is None:
             raise InvalidXMLResponse('Couldn\'t find home-set.')
-        return urlparse.urljoin(response.url, rv.text)
+        return urlparse.urljoin(response.url, rv.text).rstrip('/') + '/'
 
     def find_collections(self):
         rv = None
@@ -201,7 +218,7 @@ class Discover(object):
         props = _merge_xml(response.findall(
             '{DAV:}propstat/{DAV:}prop'
         ))
-        if not props:
+        if props is None or not len(props):
             dav_logger.debug('Skipping, missing <prop>: %s', response)
             return False
         if props.find('{DAV:}resourcetype/' + self._resourcetype) \
@@ -499,6 +516,8 @@ class DAVStorage(Storage):
             headers=headers
         )
 
+        _assert_multistatus_success(response)
+
         # The server may not return an etag under certain conditions:
         #
         #   An origin server MUST NOT send a validator header field (Section
@@ -561,7 +580,7 @@ class DAVStorage(Storage):
                 continue
 
             props = response.findall('{DAV:}propstat/{DAV:}prop')
-            if not props:
+            if props is None or not len(props):
                 dav_logger.warning('Skipping {!r}, properties are missing.'
                                    .format(href))
                 continue

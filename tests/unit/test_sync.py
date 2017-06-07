@@ -12,8 +12,17 @@ from tests import blow_up, uid_strategy
 
 from vdirsyncer.storage.memory import MemoryStorage, _random_string
 from vdirsyncer.sync import BothReadOnly, IdentConflict, PartialSync, \
-    StorageEmpty, SyncConflict, sync
+    StorageEmpty, SqliteStatus, SyncConflict, sync as _sync
 from vdirsyncer.vobject import Item
+
+
+def sync(a, b, status, *args, **kwargs):
+    new_status = SqliteStatus(':memory:')
+    new_status.load_legacy_status(status)
+    rv = _sync(a, b, new_status, *args, **kwargs)
+    status.clear()
+    status.update(new_status.to_legacy_status())
+    return rv
 
 
 def empty_storage(x):
@@ -390,6 +399,7 @@ def test_partial_sync_revert():
     a.items[next(iter(a.items))] = ('foo', Item('UID:2\nupdated'))
     assert items(a) == {'UID:2\nupdated'}
     sync(a, b, status, partial_sync='revert')
+    assert len(status) == 1
     assert items(a) == {'UID:2\nupdated'}
     sync(a, b, status, partial_sync='revert')
     assert items(a) == {'UID:2'}

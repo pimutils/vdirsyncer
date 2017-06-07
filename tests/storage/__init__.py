@@ -200,9 +200,6 @@ class StorageTests(object):
 
     def test_create_collection(self, requires_collections, get_storage_args,
                                get_item):
-        if getattr(self, 'dav_server', '') == 'radicale':
-            pytest.skip('MKCOL is broken under Radicale 1.x')
-
         if getattr(self, 'dav_server', '') in \
            ('icloud', 'fastmail', 'davical'):
             pytest.skip('Manual cleanup would be necessary.')
@@ -226,6 +223,9 @@ class StorageTests(object):
         assert 'collection argument must not be given' in str(excinfo.value)
 
     def test_collection_arg(self, get_storage_args):
+        if self.storage_class.storage_name.startswith('etesync'):
+            pytest.skip('etesync uses UUIDs.')
+
         if self.supports_collections:
             s = self.storage_class(**get_storage_args(collection='test2'))
             # Can't do stronger assertion because of radicale, which needs a
@@ -269,6 +269,10 @@ class StorageTests(object):
 
         (_, etag3), = s.list()
         assert etag2 == etag3
+
+        # etesync uses UUIDs for collection names
+        if self.storage_class.storage_name.startswith('etesync'):
+            return
 
         assert collection in urlunquote(s.collection)
         if self.storage_class.storage_name.endswith('dav'):
@@ -315,11 +319,11 @@ class StorageTests(object):
         BEGIN:VCALENDAR
         VERSION:2.0
         BEGIN:VEVENT
-        DTSTART;TZID=Australia/Sydney:20140325T084000
-        DTEND;TZID=Australia/Sydney:20140325T101000
+        DTSTART;TZID=UTC:20140325T084000Z
+        DTEND;TZID=UTC:20140325T101000Z
         DTSTAMP:20140327T060506Z
         UID:{uid}
-        RECURRENCE-ID;TZID=Australia/Sydney:20140325T083000
+        RECURRENCE-ID;TZID=UTC:20140325T083000Z
         CREATED:20131216T033331Z
         DESCRIPTION:
         LAST-MODIFIED:20140327T060215Z
@@ -330,8 +334,8 @@ class StorageTests(object):
         TRANSP:OPAQUE
         END:VEVENT
         BEGIN:VEVENT
-        DTSTART;TZID=Australia/Sydney:20140128T083000
-        DTEND;TZID=Australia/Sydney:20140128T100000
+        DTSTART;TZID=UTC:20140128T083000Z
+        DTEND;TZID=UTC:20140128T100000Z
         RRULE:FREQ=WEEKLY;UNTIL=20141208T213000Z;BYDAY=TU
         DTSTAMP:20140327T060506Z
         UID:{uid}

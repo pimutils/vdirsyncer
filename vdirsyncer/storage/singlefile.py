@@ -11,7 +11,7 @@ from atomicwrites import atomic_write
 
 from .base import Storage
 from .. import exceptions
-from ..utils import checkfile, expand_path
+from ..utils import checkfile, expand_path, get_etag_from_file
 from ..vobject import Item, join_collection, split_collection
 
 logger = logging.getLogger(__name__)
@@ -62,7 +62,7 @@ class SingleFileStorage(Storage):
         #username =
         #password =
 
-    Example for syncing with :storage:`caldav` using a ``null`` collection:
+    Example for syncing with :storage:`caldav` using a ``null`` collection::
 
         [pair my_calendar]
         a = my_calendar_local
@@ -88,7 +88,7 @@ class SingleFileStorage(Storage):
     _read_mode = 'rb'
 
     _items = None
-    _last_mtime = None
+    _last_etag = None
 
     def __init__(self, path, encoding='utf-8', **kwargs):
         super(SingleFileStorage, self).__init__(**kwargs)
@@ -149,7 +149,7 @@ class SingleFileStorage(Storage):
         self._items = collections.OrderedDict()
 
         try:
-            self._last_mtime = os.path.getmtime(self.path)
+            self._last_etag = get_etag_from_file(self.path)
             with open(self.path, self._read_mode) as f:
                 text = f.read().decode(self.encoding)
         except OSError as e:
@@ -210,8 +210,8 @@ class SingleFileStorage(Storage):
         del self._items[href]
 
     def _write(self):
-        if self._last_mtime is not None and \
-           self._last_mtime != os.path.getmtime(self.path):
+        if self._last_etag is not None and \
+           self._last_etag != get_etag_from_file(self.path):
             raise exceptions.PreconditionFailed(
                 'Some other program modified the file {r!}. Re-run the '
                 'synchronization and make sure absolutely no other program is '
@@ -224,7 +224,7 @@ class SingleFileStorage(Storage):
                 f.write(text.encode(self.encoding))
         finally:
             self._items = None
-            self._last_mtime = None
+            self._last_etag = None
 
     @contextlib.contextmanager
     def at_once(self):

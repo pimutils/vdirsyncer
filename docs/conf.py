@@ -22,6 +22,8 @@ copyright = (u'2014-{}, Markus Unterwaditzer & contributors'
 release = vdirsyncer.__version__
 version = '.'.join(release.split('.')[:2])  # The short X.Y version.
 
+rst_epilog = '.. |vdirsyncer_version| replace:: %s' % release
+
 exclude_patterns = ['_build']
 
 pygments_style = 'sphinx'

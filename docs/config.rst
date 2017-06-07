@@ -157,6 +157,15 @@ CalDAV and CardDAV
 Google
 ++++++
 
+Vdirsyncer supports synchronization with Google calendars with the restriction
+that ``VTODO`` files are rejected by the server.
+
+Synchronization with Google contacts is less reliable due to negligence of
+Google's CardDAV API. **Google's CardDAV implementation is allegedly a disaster
+in terms of data safety**. See `this blog post
+<https://evertpot.com/google-carddav-issues/>`_ for the details.  Always back
+up your data.
+
 At first run you will be asked to authorize application for google account
 access.
 
@@ -189,8 +198,11 @@ The ``token_file`` parameter should be a filepath where vdirsyncer can later
 store authentication-related data. You do not need to create the file itself
 or write anything to it.
 
-You can select which calendars to sync on `CalDav settings page
-<https://calendar.google.com/calendar/syncselect>`_.
+.. note::
+
+    You need to configure which calendars Google should offer vdirsyncer using
+    a rather hidden `settings page
+    <https://calendar.google.com/calendar/syncselect>`_.
 
 .. autostorage:: vdirsyncer.storage.google.GoogleCalendarStorage
 
@@ -213,6 +225,24 @@ To use them, you need to install some optional dependencies with::
 .. autostorage:: vdirsyncer.storage.remotestorage.RemoteStorageContacts
 
 .. autostorage:: vdirsyncer.storage.remotestorage.RemoteStorageCalendars
+
+EteSync
++++++++
+
+`EteSync <https://www.etesync.com/>`_ is a new cloud provider for end to end
+encrypted contacts and calendar storage. Vdirsyncer contains **experimental**
+support for it.
+
+To use it, you need to install some optional dependencies::
+
+    pip install vdirsyncer[etesync]
+
+On first usage you will be prompted for the service password and the encryption
+password. Neither are stored.
+
+.. autostorage:: vdirsyncer.storage.etesync.EtesyncContacts
+
+.. autostorage:: vdirsyncer.storage.etesync.EtesyncCalendars
 
 Local
 +++++

@@ -7,29 +7,28 @@ Installation
 OS/distro packages
 ------------------
 
-Unless you want to contribute to vdirsyncer, you should use the packages from
-your distribution:
+The following packages are user-contributed. They may or may not be up-to-date:
 
 - `ArchLinux (AUR) <https://aur.archlinux.org/packages/vdirsyncer>`_
-- `pkgsrc <http://pkgsrc.se/time/py-vdirsyncer>`_
-- `nixpkg <https://github.com/NixOS/nixpkgs/tree/master/pkgs/tools/misc/vdirsyncer>`_
+- `Debian <https://packages.debian.org/sid/vdirsyncer>`_
 - `GNU Guix <https://www.gnu.org/software/guix/package-list.html#vdirsyncer>`_
-- `homebrew <http://braumeister.org/formula/vdirsyncer>`_
-- `Gentoo <https://packages.gentoo.org/packages/dev-python/vdirsyncer>`_
+- `Ubuntu <http://packages.ubuntu.com/search?keywords=vdirsyncer>`_
+- `OS X (homebrew) <http://braumeister.org/formula/vdirsyncer>`_
+- `BSD (pkgsrc) <http://pkgsrc.se/time/py-vdirsyncer>`_
+- `OpenBSD <http://ports.su/productivity/vdirsyncer>`_
 
-Some distros have multiple release channels. The following **may not contain
-the latest version:**
+We only support the latest version of vdirsyncer, which is at the time of this
+writing |vdirsyncer_version|. Please **do not file bugs if you use an older
+version**.
 
-- `Fedora <https://apps.fedoraproject.org/packages/vdirsyncer>`_
-- `Debian <https://packages.debian.org/sid/vdirsyncer>`_ (likewise for Ubuntu)
+Some distributions have multiple release channels. Debian and Fedora for
+example have a "stable" release channel that ships an older version of
+vdirsyncer. Those versions aren't supported either.
 
-We only support the latest version of vdirsyncer. Please do not file bugs if
-you use an older version.
-
-If there is no package for your distribution, you'll need to :ref:`install
-vdirsyncer manually <manual-installation>`. There is an easy command to
-copy-and-paste for this as well, but you should be aware of its consequences.
-
+If there is no suitable package for your distribution, you'll need to
+:ref:`install vdirsyncer manually <manual-installation>`. There is an easy
+command to copy-and-paste for this as well, but you should be aware of its
+consequences.
 
 .. _manual-installation:
 

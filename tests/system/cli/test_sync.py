@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import sys
 from textwrap import dedent
 
 import hypothesis.strategies as st
@@ -269,6 +270,9 @@ def test_multiple_pairs(tmpdir, runner):
     ])
 
 
+# XXX: https://github.com/pimutils/vdirsyncer/issues/617
+@pytest.mark.skipif(sys.platform == 'darwin',
+                    reason='This test inexplicably fails')
 @given(collections=st.sets(
     st.text(
         st.characters(

@@ -4,11 +4,11 @@ import logging
 import requests
 
 from .utils import expand_path
-from . import DOCS_HOME, exceptions
+from . import DOCS_HOME, exceptions, __version__
 
 
 logger = logging.getLogger(__name__)
-USERAGENT = 'vdirsyncer'
+USERAGENT = 'vdirsyncer/{}'.format(__version__)
 
 
 def _detect_faulty_requests():  # pragma: no cover
@@ -177,7 +177,7 @@ def request(method, url, session=None, latin1_fallback=True,
 
     if r.status_code == 412:
         raise exceptions.PreconditionFailed(r.reason)
-    if r.status_code == 404:
+    if r.status_code in (404, 410):
         raise exceptions.NotFoundError(r.reason)
 
     r.raise_for_status()

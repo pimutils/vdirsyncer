@@ -8,7 +8,7 @@ vdirsyncer
 Vdirsyncer synchronizes your calendars and addressbooks between two
 :ref:`storages <storages>`. The most popular purpose is to synchronize a
 CalDAV/CardDAV server with a local folder or file. The local data can then be
-accessed via a variety of :doc:`programs <supported>`, none of which have to
+accessed via a variety of :doc:`programs <tutorials/index>`, none of which have to
 know or worry about syncing to a server.
 
 It aims to be for CalDAV and CardDAV what `OfflineIMAP
@@ -25,7 +25,6 @@ It aims to be for CalDAV and CardDAV what `OfflineIMAP
    keyring
    partial-sync
    config
-   supported
    tutorials/index
    problems
 

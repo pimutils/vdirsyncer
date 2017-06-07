@@ -1,15 +1,8 @@
-include AUTHORS.rst
-include CHANGELOG.rst
-include LICENSE
-include config.example
-include Makefile
-include test-requirements.txt
-include docs-requirements.txt
-
-recursive-include docs *
-recursive-include tests *
-recursive-include contrib *
+# setuptools-scm includes everything tracked by git
+prune contrib
+prune scripts
 prune tests/storage/servers
+prune tests/storage/etesync
 recursive-include tests/storage/servers/radicale *
 recursive-include tests/storage/servers/skip *
 

@@ -8,8 +8,8 @@ class ServerMixin(object):
     @pytest.fixture
     def get_storage_args(self, item_type, slow_create_collection):
         if item_type != 'VEVENT':
-            # For some reason the collections created by vdirsyncer are not
-            # usable as task lists.
+            # iCloud collections can either be calendars or task lists.
+            # See https://github.com/pimutils/vdirsyncer/pull/593#issuecomment-285941615  # noqa
             pytest.skip('iCloud doesn\'t support anything else than VEVENT')
 
         def inner(collection='test'):

@@ -6,12 +6,14 @@
 # upgrade
 # Taken from werkzeug, which took it from pyca/cryptography
 if [ "$TRAVIS_PYTHON_VERSION" = "pypy3" ]; then
-    git clone https://github.com/yyuu/pyenv.git ~/.pyenv;
     PYENV_ROOT="$HOME/.pyenv";
+    rm -rf "$PYENV_ROOT";
+    git clone https://github.com/yyuu/pyenv.git "$PYENV_ROOT";
     PATH="$PYENV_ROOT/bin:$PATH";
     eval "$(pyenv init -)";
-    pyenv install pypy3.3-5.5-alpha;
-    pyenv global pypy3.3-5.5-alpha;
+    pypyversion="pypy3.5-5.7-beta";
+    pyenv install $pypyversion;
+    pyenv global $pypyversion;
     python --version;
     pip --version;
 fi
