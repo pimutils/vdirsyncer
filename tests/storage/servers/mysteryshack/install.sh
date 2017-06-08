@@ -14,4 +14,5 @@ fi
 pip install pytest-xprocess
 
 cd mysteryshack
+make libsodium
 make debug-build  # such that first test doesn't hang too long w/o output

@@ -47,10 +47,11 @@ matrix.append({
 for python, requirements in itertools.product(python_versions,
                                               ("devel", "release", "minimal")):
     dav_servers = ("radicale", "xandikos")
-    rs_servers = ("mysteryshack",)
+    rs_servers = ()
     if python == latest_python and requirements == "release":
         dav_servers += ("owncloud", "nextcloud", "baikal", "davical", "icloud",
                         "fastmail")
+        rs_servers += ("mysteryshack",)
 
     for server_type, server in itertools.chain(
         (("REMOTESTORAGE", x) for x in rs_servers),
