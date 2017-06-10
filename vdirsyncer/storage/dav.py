@@ -46,7 +46,6 @@ def _assert_multistatus_success(r):
     try:
         root = _parse_xml(r.content)
     except InvalidXMLResponse:
-        print("INVALID RESPONSE")
         return
     for status in root.findall('.//{DAV:}status'):
         parts = status.text.strip().split()
