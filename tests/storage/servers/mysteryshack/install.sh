@@ -4,8 +4,7 @@ cd "$(dirname "$0")"
 . ./variables.sh
 
 if [ "$CI" = "true" ]; then
-    curl -sL https://static.rust-lang.org/rustup.sh -o ~/rust-installer/rustup.sh
-    sh ~/rust-installer/rustup.sh --prefix=~/rust --spec=stable -y --disable-sudo 2> /dev/null
+    curl https://sh.rustup.rs/ | sh -s -- -y
 fi
 
 if [ ! -d mysteryshack ]; then
@@ -15,4 +14,5 @@ fi
 pip install pytest-xprocess
 
 cd mysteryshack
+make libsodium
 make debug-build  # such that first test doesn't hang too long w/o output

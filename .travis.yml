@@ -101,6 +101,10 @@
         "python": "3.6"
       },
       {
+        "env": "BUILD=test REMOTESTORAGE_SERVER=mysteryshack REQUIREMENTS=release BUILD_PRS=true ",
+        "python": "3.6"
+      },
+      {
         "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release BUILD_PRS=true ",
         "python": "3.6"
       },
