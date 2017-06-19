@@ -103,10 +103,16 @@ More Configuration
 Conflict resolution
 -------------------
 
-What if the same item is changed on both sides? What should vdirsyncer do? By
-default, it will show an ugly error message, which is surely a way to avoid the
-problem. Another way to solve that ambiguity is to add another line to the
-pair section::
+What if the same item is changed on both sides? What should vdirsyncer
+do? Three options are currently provided:
+
+1. vdirsyncer displays an error message (the default);
+2. vdirsyncer chooses one alternative version over the other;
+3. vdirsyncer starts a command of your choice that is supposed to merge the two alternative versions.
+
+Options 2 and 3 require adding a ``"conflict_resolution"``
+parameter to the pair section. Option 2 requires giving either ``"a
+wins"`` or ``"b wins"`` as value to the parameter::
 
     [pair my_contacts]
     ...
@@ -114,8 +120,23 @@ pair section::
 
 Earlier we wrote that ``b = "my_contacts_remote"``, so when vdirsyncer encounters
 the situation where an item changed on both sides, it will simply overwrite the
-local item with the one from the server. Of course ``"a wins"`` is also a valid
-value.
+local item with the one from the server.
+
+Option 3 requires specifying as value of ``"conflict_resolution"`` an
+array starting with ``"command"`` and containing paths and arguments
+to a command. For example::
+
+    [pair my_contacts]
+    ...
+    conflict_resolution = ["command", "vimdiff"]
+
+In this example, ``vimdiff <a> <b>`` will be called with ``<a>`` and
+``<b>`` being two temporary files containing the conflicting
+files. The files need to be exactly the same when the command
+returns. More arguments can be passed to the command by adding more
+elements to the array.
+
+See :ref:`pair_config` for the reference documentation.
 
 .. _metasync_tutorial:
 
