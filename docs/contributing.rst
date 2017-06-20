@@ -33,7 +33,7 @@ more upfront thinking and may turn out to be impossible to solve, or at least
 harder than anticipated. On the flip side those tend to be the more interesting
 issues as well, depending on how one looks at it.
 
-All of those labels are also available as a kanban board on `waffles.io
+All of those labels are also available as a kanban board on `waffle.io
 <https://waffle.io/pimutils/vdirsyncer>`_. It is really just an alternative
 overview over all issues, but might be easier to comprehend.
 
