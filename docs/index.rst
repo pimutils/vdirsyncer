@@ -43,3 +43,4 @@ It aims to be for CalDAV and CardDAV what `OfflineIMAP
    contact
    changelog
    license
+   donations
