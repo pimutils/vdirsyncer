@@ -17,12 +17,11 @@ Version 0.16.0
 - Make DAV discovery more RFC-conformant, see :ghpr:`585`.
 - Vdirsyncer is now tested against Xandikos, see :ghpr:`601`.
 - Subfolders with a leading dot are now ignored during discover for
-  ``filesystem`` storage.
+  ``filesystem`` storage. This makes it easier to combine it with version
+  control.
 - Statuses are now stored in a sqlite database. Old data is automatically
   migrated. Users with really large datasets should encounter performance
   improvements. This means that **sqlite3 is now a dependency of vdirsyncer**.
-- Vdirsyncer now ignores folders with a leading dot. This makes it easier to
-  combine it with version control.
 - **Vdirsyncer is now licensed under the 3-clause BSD license**, see :gh:`610`.
 - Vdirsyncer now includes experimental support for `EteSync
   <https://www.etesync.com/>`_, see :ghpr:`614`.
@@ -30,8 +29,8 @@ Version 0.16.0
   changed. You will notice a **possibly heavy CPU/IO spike on the first sync
   after upgrading**.
 - **Packagers:** Reference ``systemd.service`` and ``systemd.timer`` unit files
-  are provided. It is recommended to install this if your distribution is
-  systemd-based.
+  are provided. It is recommended to install these as documentation if your
+  distribution is systemd-based.
 
 Version 0.15.0
 ==============
