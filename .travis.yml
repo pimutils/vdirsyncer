@@ -121,10 +121,6 @@
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=icloud REQUIREMENTS=release BUILD_PRS=false ",
-        "python": "3.6"
-      },
-      {
         "env": "BUILD=test DAV_SERVER=fastmail REQUIREMENTS=release BUILD_PRS=false ",
         "python": "3.6"
       },

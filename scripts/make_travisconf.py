@@ -49,7 +49,7 @@ for python, requirements in itertools.product(python_versions,
     dav_servers = ("radicale",)
     rs_servers = ()
     if python == latest_python and requirements == "release":
-        dav_servers += ("owncloud", "nextcloud", "baikal", "davical", "icloud",
+        dav_servers += ("owncloud", "nextcloud", "baikal", "davical",
                         "fastmail")
     if python != "pypy3":
         dav_servers += ("xandikos",)
