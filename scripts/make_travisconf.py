@@ -54,7 +54,7 @@ for python, requirements in itertools.product(python_versions,
     rs_servers = ()
     if python == latest_python and requirements == "release":
         dav_servers += ("owncloud", "nextcloud", "baikal", "davical",
-                            "fastmail")
+                        "fastmail")
 
     for server_type, server in itertools.chain(
         (("REMOTESTORAGE", x) for x in rs_servers),
