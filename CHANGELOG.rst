@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.16.0
 ==============
 
+*released on 2 June 2017*
+
 - Strip ``METHOD:PUBLISH`` added by some calendar providers, see :gh:`502`.
 - Fix crash of Google storages when saving token file.
 - Make DAV discovery more RFC-conformant, see :ghpr:`585`.
