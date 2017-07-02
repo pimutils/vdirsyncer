@@ -38,7 +38,7 @@ Links of interest
 * `How to contribute to this project
   <https://vdirsyncer.pimutils.org/en/stable/contributing.html>`_
 
-+ `Donations <https://vdirsyncer.pimutils.org/en/stable/donations.html>`_
+* `Donations <https://vdirsyncer.pimutils.org/en/stable/donations.html>`_
 
 License
 =======
