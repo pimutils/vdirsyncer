@@ -1,7 +1,6 @@
 # See the documentation on how to run the tests.
 
 export DAV_SERVER := skip
-export REMOTESTORAGE_SERVER := skip
 export REQUIREMENTS := release
 export TESTSERVER_BASE := ./tests/storage/servers/
 export CI := false
@@ -42,7 +41,7 @@ all:
 
 install-servers:
 	set -ex; \
-	for server in $(DAV_SERVER) $(REMOTESTORAGE_SERVER); do \
+	for server in $(DAV_SERVER); do \
 		if [ ! "$$(ls $(TESTSERVER_BASE)$$server/)" ]; then \
 			git submodule update --init -- "$(TESTSERVER_BASE)$$server"; \
 		fi; \
@@ -90,7 +89,6 @@ release:
 
 install-dev:
 	pip install -e .
-	[ "$(REMOTESTORAGE_SERVER)" = "skip" ] || pip install -e .[remotestorage]
 	[ "$(ETESYNC_TESTS)" = "false" ] || pip install -e .[etesync]
 	set -xe && if [ "$(REQUIREMENTS)" = "devel" ]; then \
 	    pip install -U --force-reinstall \

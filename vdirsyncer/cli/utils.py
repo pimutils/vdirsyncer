@@ -34,10 +34,6 @@ class _StorageIndex(object):
             filesystem='vdirsyncer.storage.filesystem.FilesystemStorage',
             http='vdirsyncer.storage.http.HttpStorage',
             singlefile='vdirsyncer.storage.singlefile.SingleFileStorage',
-            remotestorage_contacts=(
-                'vdirsyncer.storage.remotestorage.RemoteStorageContacts'),
-            remotestorage_calendars=(
-                'vdirsyncer.storage.remotestorage.RemoteStorageCalendars'),
             google_calendar='vdirsyncer.storage.google.GoogleCalendarStorage',
             google_contacts='vdirsyncer.storage.google.GoogleContactsStorage',
             etesync_calendars='vdirsyncer.storage.etesync.EtesyncCalendars',
