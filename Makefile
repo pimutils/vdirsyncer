@@ -34,7 +34,7 @@ test:
 	bash $(CODECOV_PATH) -c -F storage
 else
 test:
-	py.test $(PYTEST_ARGS)
+	py.test $(PYTEST_ARGS) tests/
 endif
 
 all:
