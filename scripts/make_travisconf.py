@@ -51,25 +51,19 @@ for python, requirements in itertools.product(python_versions,
     else:
         dav_servers = ("radicale", "xandikos")
 
-    rs_servers = ()
     if python == latest_python and requirements == "release":
         dav_servers += ("owncloud", "nextcloud", "baikal", "davical",
                         "fastmail")
 
-    for server_type, server in itertools.chain(
-        (("REMOTESTORAGE", x) for x in rs_servers),
-        (("DAV", x) for x in dav_servers)
-    ):
-
-        build_prs = server not in ("fastmail", "davical", "icloud")
+    for dav_server in dav_servers:
+        build_prs = dav_server not in ("fastmail", "davical", "icloud")
         matrix.append({
             'python': python,
             'env': ("BUILD=test "
-                    "{server_type}_SERVER={server} "
+                    "DAV_SERVER={dav_server} "
                     "REQUIREMENTS={requirements} "
                     "BUILD_PRS={build_prs} "
-                    .format(server_type=server_type,
-                            server=server,
+                    .format(dav_server=dav_server,
                             requirements=requirements,
                             build_prs=build_prs and "true" or "false"))
         })
