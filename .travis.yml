@@ -137,18 +137,6 @@
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=skip REQUIREMENTS=devel BUILD_PRS=true ",
-        "python": "pypy3"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=skip REQUIREMENTS=release BUILD_PRS=true ",
-        "python": "pypy3"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=skip REQUIREMENTS=minimal BUILD_PRS=true ",
-        "python": "pypy3"
-      },
-      {
         "env": "BUILD=test ETESYNC_TESTS=true REQUIREMENTS=latest BUILD_PRS=true ",
         "python": "3.6"
       },

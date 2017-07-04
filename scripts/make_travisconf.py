@@ -2,7 +2,7 @@ import itertools
 import json
 import sys
 
-python_versions = ("3.3", "3.4", "3.5", "3.6", "pypy3")
+python_versions = ("3.3", "3.4", "3.5", "3.6")
 latest_python = "3.6"
 
 cfg = {}
@@ -46,10 +46,7 @@ matrix.append({
 
 for python, requirements in itertools.product(python_versions,
                                               ("devel", "release", "minimal")):
-    if python == "pypy3":
-        dav_servers = ("skip",)
-    else:
-        dav_servers = ("radicale", "xandikos")
+    dav_servers = ("radicale", "xandikos")
 
     if python == latest_python and requirements == "release":
         dav_servers += ("owncloud", "nextcloud", "baikal", "davical",
