@@ -1,23 +1,5 @@
 #!/bin/sh
 
-# Travis uses an outdated PyPy, this installs the most recent one.  This
-# makes the tests run on Travis' legacy infrastructure, but so be it.
-# temporary pyenv installation to get pypy-2.6 before container infra
-# upgrade
-# Taken from werkzeug, which took it from pyca/cryptography
-if [ "$TRAVIS_PYTHON_VERSION" = "pypy3" ]; then
-    PYENV_ROOT="$HOME/.pyenv";
-    rm -rf "$PYENV_ROOT";
-    git clone https://github.com/yyuu/pyenv.git "$PYENV_ROOT";
-    PATH="$PYENV_ROOT/bin:$PATH";
-    eval "$(pyenv init -)";
-    pypyversion="pypy3.5-5.7-beta";
-    pyenv install $pypyversion;
-    pyenv global $pypyversion;
-    python --version;
-    pip --version;
-fi
-
 # The OS X VM doesn't have any Python support at all
 # See https://github.com/travis-ci/travis-ci/issues/2312
 if [ "$TRAVIS_OS_NAME" = "osx" ]; then
