@@ -91,7 +91,7 @@ class _ConfigReader:
     def __init__(self, f):
         self._file = f
         self._parser = c = RawConfigParser()
-        c.readfp(f)
+        c.read_file(f)
         self._seen_names = set()
 
         self._general = {}
