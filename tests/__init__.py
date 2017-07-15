@@ -3,9 +3,11 @@
 Test suite for vdirsyncer.
 '''
 
+import random
+
 import hypothesis.strategies as st
 
-from vdirsyncer.vobject import normalize_item
+from vdirsyncer.vobject import Item, normalize_item
 
 import urllib3
 import urllib3.exceptions
@@ -109,3 +111,10 @@ uid_strategy = st.text(
     )),
     min_size=1
 ).filter(lambda x: x.strip() == x)
+
+
+def format_item(uid=None, item_template=VCARD_TEMPLATE):
+    # assert that special chars are handled correctly.
+    r = random.random()
+    uid = uid or r
+    return Item(item_template.format(r=r, uid=uid))

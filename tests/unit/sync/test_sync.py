@@ -8,7 +8,7 @@ from hypothesis.stateful import Bundle, RuleBasedStateMachine, rule
 
 import pytest
 
-from tests import blow_up, uid_strategy
+from tests import blow_up, format_item, uid_strategy
 
 from vdirsyncer.storage.memory import MemoryStorage, _random_string
 from vdirsyncer.sync import sync as _sync
@@ -49,7 +49,7 @@ def test_missing_status():
     a = MemoryStorage()
     b = MemoryStorage()
     status = {}
-    item = Item(u'asdf')
+    item = format_item('asdf')
     a.upload(item)
     b.upload(item)
     sync(a, b, status)
@@ -62,8 +62,8 @@ def test_missing_status_and_different_items():
     b = MemoryStorage()
 
     status = {}
-    item1 = Item(u'UID:1\nhaha')
-    item2 = Item(u'UID:1\nhoho')
+    item1 = format_item('1')
+    item2 = format_item('1')
     a.upload(item1)
     b.upload(item2)
     with pytest.raises(SyncConflict):
@@ -79,8 +79,8 @@ def test_read_only_and_prefetch():
     b.read_only = True
 
     status = {}
-    item1 = Item(u'UID:1\nhaha')
-    item2 = Item(u'UID:2\nhoho')
+    item1 = format_item('1')
+    item2 = format_item('2')
     a.upload(item1)
     a.upload(item2)
 
@@ -95,7 +95,8 @@ def test_partial_sync_error():
     b = MemoryStorage()
     status = {}
 
-    a.upload(Item('UID:0'))
+    item = format_item('0')
+    a.upload(item)
     b.read_only = True
 
     with pytest.raises(PartialSync):
@@ -107,13 +108,13 @@ def test_partial_sync_ignore():
     b = MemoryStorage()
     status = {}
 
-    item0 = Item('UID:0\nhehe')
+    item0 = format_item('0')
     a.upload(item0)
     b.upload(item0)
 
     b.read_only = True
 
-    item1 = Item('UID:1\nhaha')
+    item1 = format_item('1')
     a.upload(item1)
 
     sync(a, b, status, partial_sync='ignore')
@@ -128,23 +129,25 @@ def test_partial_sync_ignore2():
     b = MemoryStorage()
     status = {}
 
-    href, etag = a.upload(Item('UID:0'))
+    item = format_item('0')
+    href, etag = a.upload(item)
     a.read_only = True
 
     sync(a, b, status, partial_sync='ignore', force_delete=True)
-    assert items(b) == items(a) == {'UID:0'}
+    assert items(b) == items(a) == {item.raw}
 
     b.items.clear()
     sync(a, b, status, partial_sync='ignore', force_delete=True)
     sync(a, b, status, partial_sync='ignore', force_delete=True)
-    assert items(a) == {'UID:0'}
+    assert items(a) == {item.raw}
     assert not b.items
 
     a.read_only = False
-    a.update(href, Item('UID:0\nupdated'), etag)
+    new_item = format_item('0')
+    a.update(href, new_item, etag)
     a.read_only = True
     sync(a, b, status, partial_sync='ignore', force_delete=True)
-    assert items(b) == items(a) == {'UID:0\nupdated'}
+    assert items(b) == items(a) == {new_item.raw}
 
 
 def test_upload_and_update():
@@ -152,22 +155,22 @@ def test_upload_and_update():
     b = MemoryStorage(fileext='.b')
     status = {}
 
-    item = Item(u'UID:1')  # new item 1 in a
+    item = format_item('1')  # new item 1 in a
     a.upload(item)
     sync(a, b, status)
     assert items(b) == items(a) == {item.raw}
 
-    item = Item(u'UID:1\nASDF:YES')  # update of item 1 in b
+    item = format_item('1')  # update of item 1 in b
     b.update('1.b', item, b.get('1.b')[1])
     sync(a, b, status)
     assert items(b) == items(a) == {item.raw}
 
-    item2 = Item(u'UID:2')  # new item 2 in b
+    item2 = format_item('2')  # new item 2 in b
     b.upload(item2)
     sync(a, b, status)
     assert items(b) == items(a) == {item.raw, item2.raw}
 
-    item2 = Item(u'UID:2\nASDF:YES')  # update of item 2 in a
+    item2 = format_item('2')  # update of item 2 in a
     a.update('2.a', item2, a.get('2.a')[1])
     sync(a, b, status)
     assert items(b) == items(a) == {item.raw, item2.raw}
@@ -178,9 +181,9 @@ def test_deletion():
     b = MemoryStorage(fileext='.b')
     status = {}
 
-    item = Item(u'UID:1')
+    item = format_item('1')
     a.upload(item)
-    item2 = Item(u'UID:2')
+    item2 = format_item('2')
     a.upload(item2)
     sync(a, b, status)
     b.delete('1.b', b.get('1.b')[1])
@@ -200,14 +203,14 @@ def test_insert_hash():
     b = MemoryStorage()
     status = {}
 
-    item = Item('UID:1')
+    item = format_item('1')
     href, etag = a.upload(item)
     sync(a, b, status)
 
     for d in status['1']:
         del d['hash']
 
-    a.update(href, Item('UID:1\nHAHA:YES'), etag)
+    a.update(href, format_item('1'), etag)  # new item content
     sync(a, b, status)
     assert 'hash' in status['1'][0] and 'hash' in status['1'][1]
 
@@ -215,7 +218,7 @@ def test_insert_hash():
 def test_already_synced():
     a = MemoryStorage(fileext='.a')
     b = MemoryStorage(fileext='.b')
-    item = Item(u'UID:1')
+    item = format_item('1')
     a.upload(item)
     b.upload(item)
     status = {
@@ -243,14 +246,14 @@ def test_already_synced():
 def test_conflict_resolution_both_etags_new(winning_storage):
     a = MemoryStorage()
     b = MemoryStorage()
-    item = Item(u'UID:1')
+    item = format_item('1')
     href_a, etag_a = a.upload(item)
     href_b, etag_b = b.upload(item)
     status = {}
     sync(a, b, status)
     assert status
-    item_a = Item(u'UID:1\nitem a')
-    item_b = Item(u'UID:1\nitem b')
+    item_a = format_item('1')
+    item_b = format_item('1')
     a.update(href_a, item_a, etag_a)
     b.update(href_b, item_b, etag_b)
     with pytest.raises(SyncConflict):
@@ -264,13 +267,14 @@ def test_conflict_resolution_both_etags_new(winning_storage):
 def test_updated_and_deleted():
     a = MemoryStorage()
     b = MemoryStorage()
-    href_a, etag_a = a.upload(Item(u'UID:1'))
+    item = format_item('1')
+    href_a, etag_a = a.upload(item)
     status = {}
     sync(a, b, status, force_delete=True)
 
     (href_b, etag_b), = b.list()
     b.delete(href_b, etag_b)
-    updated = Item(u'UID:1\nupdated')
+    updated = format_item('1')
     a.update(href_a, updated, etag_a)
     sync(a, b, status, force_delete=True)
 
@@ -280,8 +284,8 @@ def test_updated_and_deleted():
 def test_conflict_resolution_invalid_mode():
     a = MemoryStorage()
     b = MemoryStorage()
-    item_a = Item(u'UID:1\nitem a')
-    item_b = Item(u'UID:1\nitem b')
+    item_a = format_item('1')
+    item_b = format_item('1')
     a.upload(item_a)
     b.upload(item_b)
     with pytest.raises(ValueError):
@@ -291,7 +295,7 @@ def test_conflict_resolution_invalid_mode():
 def test_conflict_resolution_new_etags_without_changes():
     a = MemoryStorage()
     b = MemoryStorage()
-    item = Item(u'UID:1')
+    item = format_item('1')
     href_a, etag_a = a.upload(item)
     href_b, etag_b = b.upload(item)
     status = {'1': (href_a, 'BOGUS_a', href_b, 'BOGUS_b')}
@@ -326,7 +330,7 @@ def test_uses_get_multi(monkeypatch):
 
     a = MemoryStorage()
     b = MemoryStorage()
-    item = Item(u'UID:1')
+    item = format_item('1')
     expected_href, etag = a.upload(item)
 
     sync(a, b, {})
@@ -336,8 +340,8 @@ def test_uses_get_multi(monkeypatch):
 def test_empty_storage_dataloss():
     a = MemoryStorage()
     b = MemoryStorage()
-    a.upload(Item(u'UID:1'))
-    a.upload(Item(u'UID:2'))
+    for i in '12':
+        a.upload(format_item(i))
     status = {}
     sync(a, b, status)
     with pytest.raises(StorageEmpty):
@@ -350,22 +354,24 @@ def test_empty_storage_dataloss():
 def test_no_uids():
     a = MemoryStorage()
     b = MemoryStorage()
-    a.upload(Item(u'ASDF'))
-    b.upload(Item(u'FOOBAR'))
+    item_a = format_item('')
+    item_b = format_item('')
+    a.upload(item_a)
+    b.upload(item_b)
     status = {}
     sync(a, b, status)
-    assert items(a) == items(b) == {u'ASDF', u'FOOBAR'}
+    assert items(a) == items(b) == {item_a.raw, item_b.raw}
 
 
 def test_changed_uids():
     a = MemoryStorage()
     b = MemoryStorage()
-    href_a, etag_a = a.upload(Item(u'UID:A-ONE'))
-    href_b, etag_b = b.upload(Item(u'UID:B-ONE'))
+    href_a, etag_a = a.upload(format_item('a1'))
+    href_b, etag_b = b.upload(format_item('b1'))
     status = {}
     sync(a, b, status)
 
-    a.update(href_a, Item(u'UID:A-TWO'), etag_a)
+    a.update(href_a, format_item('a2'), etag_a)
     sync(a, b, status)
 
 
@@ -383,34 +389,37 @@ def test_partial_sync_revert():
     a = MemoryStorage(instance_name='a')
     b = MemoryStorage(instance_name='b')
     status = {}
-    a.upload(Item(u'UID:1'))
-    b.upload(Item(u'UID:2'))
+    item1 = format_item('1')
+    item2 = format_item('2')
+    a.upload(item1)
+    b.upload(item2)
     b.read_only = True
 
     sync(a, b, status, partial_sync='revert')
     assert len(status) == 2
-    assert items(a) == {'UID:1', 'UID:2'}
-    assert items(b) == {'UID:2'}
+    assert items(a) == {item1.raw, item2.raw}
+    assert items(b) == {item2.raw}
 
     sync(a, b, status, partial_sync='revert')
     assert len(status) == 1
-    assert items(a) == {'UID:2'}
-    assert items(b) == {'UID:2'}
+    assert items(a) == {item2.raw}
+    assert items(b) == {item2.raw}
 
     # Check that updates get reverted
-    a.items[next(iter(a.items))] = ('foo', Item('UID:2\nupdated'))
-    assert items(a) == {'UID:2\nupdated'}
+    item2_up = format_item('2')
+    a.items[next(iter(a.items))] = ('foo', item2_up)
+    assert items(a) == {item2_up.raw}
     sync(a, b, status, partial_sync='revert')
     assert len(status) == 1
-    assert items(a) == {'UID:2\nupdated'}
+    assert items(a) == {item2_up.raw}
     sync(a, b, status, partial_sync='revert')
-    assert items(a) == {'UID:2'}
+    assert items(a) == {item2.raw}
 
     # Check that deletions get reverted
     a.items.clear()
     sync(a, b, status, partial_sync='revert', force_delete=True)
     sync(a, b, status, partial_sync='revert', force_delete=True)
-    assert items(a) == {'UID:2'}
+    assert items(a) == {item2.raw}
 
 
 @pytest.mark.parametrize('sync_inbetween', (True, False))
@@ -418,13 +427,16 @@ def test_ident_conflict(sync_inbetween):
     a = MemoryStorage()
     b = MemoryStorage()
     status = {}
-    href_a, etag_a = a.upload(Item(u'UID:aaa'))
-    href_b, etag_b = a.upload(Item(u'UID:bbb'))
+    item_a = format_item('aaa')
+    item_b = format_item('bbb')
+    href_a, etag_a = a.upload(item_a)
+    href_b, etag_b = a.upload(item_b)
     if sync_inbetween:
         sync(a, b, status)
 
-    a.update(href_a, Item(u'UID:xxx'), etag_a)
-    a.update(href_b, Item(u'UID:xxx'), etag_b)
+    item_x = format_item('xxx')
+    a.update(href_a, item_x, etag_a)
+    a.update(href_b, item_x, etag_b)
 
     with pytest.raises(IdentConflict):
         sync(a, b, status)
@@ -441,7 +453,8 @@ def test_moved_href():
     a = MemoryStorage()
     b = MemoryStorage()
     status = {}
-    href, etag = a.upload(Item(u'UID:haha'))
+    item = format_item('haha')
+    href, etag = a.upload(item)
     sync(a, b, status)
 
     b.items['lol'] = b.items.pop('haha')
@@ -454,7 +467,7 @@ def test_moved_href():
 
     sync(a, b, status)
     assert len(status) == 1
-    assert items(a) == items(b) == {'UID:haha'}
+    assert items(a) == items(b) == {item.raw}
     assert status['haha'][1]['href'] == 'lol'
     old_status = deepcopy(status)
 
@@ -463,7 +476,7 @@ def test_moved_href():
 
     sync(a, b, status)
     assert old_status == status
-    assert items(a) == items(b) == {'UID:haha'}
+    assert items(a) == items(b) == {item.raw}
 
 
 def test_bogus_etag_change():
@@ -476,26 +489,31 @@ def test_bogus_etag_change():
     a = MemoryStorage()
     b = MemoryStorage()
     status = {}
-    href_a, etag_a = a.upload(Item(u'UID:ASDASD'))
-    sync(a, b, status)
-    assert len(status) == len(list(a.list())) == len(list(b.list())) == 1
+    item = format_item('ASDASD')
 
+    href_a, etag_a = a.upload(item)
+    sync(a, b, status)
+    assert len(status) == 1
+    assert items(a) == items(b) == {item.raw}
+
+    new_item = format_item('ASDASD')
     (href_b, etag_b), = b.list()
-    a.update(href_a, Item(u'UID:ASDASD'), etag_a)
-    b.update(href_b, Item(u'UID:ASDASD\nACTUALCHANGE:YES'), etag_b)
+    a.update(href_a, item, etag_a)
+    b.update(href_b, new_item, etag_b)
 
     b.delete = b.update = b.upload = blow_up
 
     sync(a, b, status)
     assert len(status) == 1
-    assert items(a) == items(b) == {u'UID:ASDASD\nACTUALCHANGE:YES'}
+    assert items(a) == items(b) == {new_item.raw}
 
 
 def test_unicode_hrefs():
     a = MemoryStorage()
     b = MemoryStorage()
     status = {}
-    href, etag = a.upload(Item(u'UID:äää'))
+    item = format_item('äää')
+    href, etag = a.upload(item)
     sync(a, b, status)
 
 
@@ -565,7 +583,7 @@ class SyncMachine(RuleBasedStateMachine):
           uid=uid_strategy,
           etag=st.text())
     def upload(self, storage, uid, etag):
-        item = Item(u'UID:{}'.format(uid))
+        item = Item('BEGIN:VCARD\r\nUID:{}\r\nEND:VCARD'.format(uid))
         storage.items[uid] = (etag, item)
 
     @rule(storage=Storage, href=st.text())
@@ -643,8 +661,8 @@ def test_rollback(error_callback):
     b = MemoryStorage()
     status = {}
 
-    a.items['0'] = ('', Item('UID:0'))
-    b.items['1'] = ('', Item('UID:1'))
+    a.items['0'] = ('', format_item('0'))
+    b.items['1'] = ('', format_item('1'))
 
     b.upload = b.update = b.delete = action_failure
 
@@ -668,7 +686,7 @@ def test_duplicate_hrefs():
     a = MemoryStorage()
     b = MemoryStorage()
     a.list = lambda: [('a', 'a')] * 3
-    a.items['a'] = ('a', Item('UID:a'))
+    a.items['a'] = ('a', format_item('a'))
 
     status = {}
     sync(a, b, status)

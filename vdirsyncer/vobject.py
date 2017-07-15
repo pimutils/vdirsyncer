@@ -4,6 +4,7 @@ import hashlib
 from itertools import chain, tee
 
 from .utils import cached_property, uniq
+from . import exceptions, native
 
 
 IGNORE_PROPS = (
@@ -39,25 +40,25 @@ class Item(object):
     '''Immutable wrapper class for VCALENDAR (VEVENT, VTODO) and
     VCARD'''
 
-    def __init__(self, raw):
+    def __init__(self, raw, component=None):
         assert isinstance(raw, str), type(raw)
         self._raw = raw
 
+        try:
+            self._component = component or \
+                native.parse_component(self.raw.encode('utf-8'))
+        except exceptions.VobjectParseError:
+            self._component = None
+
     def with_uid(self, new_uid):
-        parsed = _Component.parse(self.raw)
-        stack = [parsed]
-        while stack:
-            component = stack.pop()
-            stack.extend(component.subcomponents)
+        if not self._component:
+            raise ValueError('Item malformed.')
 
-            if component.name in ('VEVENT', 'VTODO', 'VJOURNAL', 'VCARD'):
-                del component['UID']
-                if new_uid:
-                    component['UID'] = new_uid
+        new_c = native.clone_component(self._component)
+        native.change_uid(new_c, new_uid or '')
+        return Item(native.write_component(new_c), component=new_c)
 
-        return Item('\r\n'.join(parsed.dump_lines()))
-
-    @cached_property
+    @property
     def raw(self):
         '''Raw content of the item, as unicode string.
 
@@ -69,13 +70,9 @@ class Item(object):
     def uid(self):
         '''Global identifier of the item, across storages, doesn't change after
         a modification of the item.'''
-        # Don't actually parse component, but treat all lines as single
-        # component, avoiding traversal through all subcomponents.
-        x = _Component('TEMP', self.raw.splitlines(), [])
-        try:
-            return x['UID'].strip() or None
-        except KeyError:
-            return None
+        if not self._component:
+            raise ValueError('Item malformed.')
+        return native.get_uid(self._component) or None
 
     @cached_property
     def hash(self):
@@ -99,10 +96,15 @@ class Item(object):
     @property
     def parsed(self):
         '''Don't cache because the rv is mutable.'''
+        # FIXME: remove
         try:
             return _Component.parse(self.raw)
         except Exception:
             return None
+
+    @property
+    def is_valid(self):
+        return bool(self._component)
 
 
 def normalize_item(item, ignore_props=IGNORE_PROPS):

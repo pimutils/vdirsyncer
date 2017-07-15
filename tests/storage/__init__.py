@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import random
 import uuid
 
 import textwrap
@@ -16,19 +15,14 @@ from vdirsyncer.storage.base import normalize_meta_value
 from vdirsyncer.vobject import Item
 
 from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
-    assert_item_equals, normalize_item, printable_characters_strategy
+    assert_item_equals, format_item, normalize_item, \
+    printable_characters_strategy
 
 
 def get_server_mixin(server_name):
     from . import __name__ as base
     x = __import__('{}.servers.{}'.format(base, server_name), fromlist=[''])
     return x.ServerMixin
-
-
-def format_item(item_template, uid=None):
-    # assert that special chars are handled correctly.
-    r = random.random()
-    return Item(item_template.format(r=r, uid=uid or r))
 
 
 class StorageTests(object):
@@ -62,7 +56,7 @@ class StorageTests(object):
             'VCARD': VCARD_TEMPLATE,
         }[item_type]
 
-        return lambda **kw: format_item(template, **kw)
+        return lambda **kw: format_item(item_template=template, **kw)
 
     @pytest.fixture
     def requires_collections(self):

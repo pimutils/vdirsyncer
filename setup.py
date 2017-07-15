@@ -32,7 +32,9 @@ requirements = [
     'requests_toolbelt >=0.4.0',
 
     # https://github.com/untitaker/python-atomicwrites/commit/4d12f23227b6a944ab1d99c507a69fdbc7c9ed6d  # noqa
-    'atomicwrites>=0.1.7'
+    'atomicwrites>=0.1.7',
+
+    'snaek',
 ]
 
 
@@ -75,7 +77,10 @@ setup(
     },
 
     # Build dependencies
-    setup_requires=['setuptools_scm != 1.12.0'],
+    setup_requires=[
+        'setuptools_scm != 1.12.0',
+        'snaek',
+    ],
 
     # Other
     packages=find_packages(exclude=['tests.*', 'tests']),
@@ -101,4 +106,12 @@ setup(
         'Topic :: Internet',
         'Topic :: Utilities',
     ],
+    snaek_rust_modules=[
+        ('vdirsyncer._native', 'rust/'),
+    ],
+    zip_safe=False,
+    platforms='any',
+    dependency_links=[
+        'https://github.com/mitsuhiko/snaek/tarball/master#egg=snaek'
+    ]
 )

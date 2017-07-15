@@ -62,7 +62,7 @@ def test_repair_uids(storage, runner, repair_uids):
         assert 'UID or href is unsafe, assigning random UID' in result.output
         assert not f.exists()
         new_f, = storage.listdir()
-        s = new_f.read()
+        s = new_f.read().strip()
 
         assert s.startswith('BEGIN:VCARD')
         assert s.endswith('END:VCARD')
