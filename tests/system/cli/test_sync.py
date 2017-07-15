@@ -9,6 +9,8 @@ from hypothesis import example, given
 
 import pytest
 
+from tests import format_item
+
 
 def test_simple_run(tmpdir, runner):
     runner.write_with_general(dedent('''
@@ -37,10 +39,11 @@ def test_simple_run(tmpdir, runner):
     result = runner.invoke(['sync'])
     assert not result.exception
 
-    tmpdir.join('path_a/haha.txt').write('UID:haha')
+    item = format_item('haha')
+    tmpdir.join('path_a/haha.txt').write(item.raw)
     result = runner.invoke(['sync'])
     assert 'Copying (uploading) item haha to my_b' in result.output
-    assert tmpdir.join('path_b/haha.txt').read() == 'UID:haha'
+    assert tmpdir.join('path_b/haha.txt').read() == item.raw
 
 
 def test_sync_inexistant_pair(tmpdir, runner):
@@ -109,7 +112,8 @@ def test_empty_storage(tmpdir, runner):
     result = runner.invoke(['sync'])
     assert not result.exception
 
-    tmpdir.join('path_a/haha.txt').write('UID:haha')
+    item = format_item('haha')
+    tmpdir.join('path_a/haha.txt').write(item.raw)
     result = runner.invoke(['sync'])
     assert not result.exception
     tmpdir.join('path_b/haha.txt').remove()
@@ -152,7 +156,7 @@ def test_collections_cache_invalidation(tmpdir, runner):
     collections = ["a", "b", "c"]
     ''').format(str(tmpdir)))
 
-    foo.join('a/itemone.txt').write('UID:itemone')
+    foo.join('a/itemone.txt').write(format_item('itemone').raw)
 
     result = runner.invoke(['discover'])
     assert not result.exception
@@ -347,9 +351,10 @@ def test_ident_conflict(tmpdir, runner):
     foo = tmpdir.mkdir('foo')
     tmpdir.mkdir('bar')
 
-    foo.join('one.txt').write('UID:1')
-    foo.join('two.txt').write('UID:1')
-    foo.join('three.txt').write('UID:1')
+    item = format_item('1')
+    foo.join('one.txt').write(item.raw)
+    foo.join('two.txt').write(item.raw)
+    foo.join('three.txt').write(item.raw)
 
     result = runner.invoke(['discover'])
     assert not result.exception
@@ -403,8 +408,12 @@ def test_no_configured_pairs(tmpdir, runner, cmd):
     assert result.exception.code == 5
 
 
+item_a = format_item('lol')
+item_b = format_item('lol')
+
+
 @pytest.mark.parametrize('resolution,expect_foo,expect_bar', [
-    (['command', 'cp'], 'UID:lol\nfööcontent', 'UID:lol\nfööcontent')
+    (['command', 'cp'], item_a.raw, item_a.raw)
 ])
 def test_conflict_resolution(tmpdir, runner, resolution, expect_foo,
                              expect_bar):
@@ -429,9 +438,9 @@ def test_conflict_resolution(tmpdir, runner, resolution, expect_foo,
     foo = tmpdir.join('foo')
     bar = tmpdir.join('bar')
     fooitem = foo.join('lol.txt').ensure()
-    fooitem.write('UID:lol\nfööcontent')
+    fooitem.write(item_a.raw)
     baritem = bar.join('lol.txt').ensure()
-    baritem.write('UID:lol\nbööcontent')
+    baritem.write(item_b.raw)
 
     r = runner.invoke(['discover'])
     assert not r.exception
@@ -471,11 +480,12 @@ def test_partial_sync(tmpdir, runner, partial_sync):
     foo = tmpdir.mkdir('foo')
     bar = tmpdir.mkdir('bar')
 
-    foo.join('other.txt').write('UID:other')
-    bar.join('other.txt').write('UID:other')
+    item = format_item('other')
+    foo.join('other.txt').write(item.raw)
+    bar.join('other.txt').write(item.raw)
 
     baritem = bar.join('lol.txt')
-    baritem.write('UID:lol')
+    baritem.write(format_item('lol').raw)
 
     r = runner.invoke(['discover'])
     assert not r.exception

@@ -212,7 +212,7 @@ def test_replace_uid(template, uid):
     item = vobject.Item(template.format(r=123, uid=123)).with_uid(uid)
     assert item.uid == uid
     if uid:
-        assert item.raw.count('\nUID:{}'.format(uid)) == 1
+        assert item.raw.count('\nUID:') == 1
     else:
         assert '\nUID:' not in item.raw
 
