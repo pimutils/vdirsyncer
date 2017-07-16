@@ -161,47 +161,58 @@ def test_multiline_uid(benchmark):
     assert benchmark(lambda: vobject.Item(a).uid) == u'123456789abcdefgh'
 
 
-def test_multiline_uid_complex():
-    a = dedent(u'''
-        BEGIN:VCALENDAR
-        BEGIN:VTIMEZONE
-        TZID:Europe/Rome
-        X-LIC-LOCATION:Europe/Rome
-        BEGIN:DAYLIGHT
-        TZOFFSETFROM:+0100
-        TZOFFSETTO:+0200
-        TZNAME:CEST
-        DTSTART:19700329T020000
-        RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3
-        END:DAYLIGHT
-        BEGIN:STANDARD
-        TZOFFSETFROM:+0200
-        TZOFFSETTO:+0100
-        TZNAME:CET
-        DTSTART:19701025T030000
-        RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10
-        END:STANDARD
-        END:VTIMEZONE
-        BEGIN:VEVENT
-        DTSTART:20140124T133000Z
-        DTEND:20140124T143000Z
-        DTSTAMP:20140612T090652Z
-        UID:040000008200E00074C5B7101A82E0080000000050AAABEEF50DCF
-         001000000062548482FA830A46B9EA62114AC9F0EF
-        CREATED:20140110T102231Z
-        DESCRIPTION:Test.
-        LAST-MODIFIED:20140123T095221Z
-        LOCATION:25.12.01.51
-        SEQUENCE:0
-        STATUS:CONFIRMED
-        SUMMARY:Präsentation
-        TRANSP:OPAQUE
-        END:VEVENT
-        END:VCALENDAR
-        ''').strip()
-    assert vobject.Item(a).uid == (u'040000008200E00074C5B7101A82E008000000005'
-                                   u'0AAABEEF50DCF001000000062548482FA830A46B9'
-                                   u'EA62114AC9F0EF')
+complex_uid_item = dedent(u'''
+    BEGIN:VCALENDAR
+    BEGIN:VTIMEZONE
+    TZID:Europe/Rome
+    X-LIC-LOCATION:Europe/Rome
+    BEGIN:DAYLIGHT
+    TZOFFSETFROM:+0100
+    TZOFFSETTO:+0200
+    TZNAME:CEST
+    DTSTART:19700329T020000
+    RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3
+    END:DAYLIGHT
+    BEGIN:STANDARD
+    TZOFFSETFROM:+0200
+    TZOFFSETTO:+0100
+    TZNAME:CET
+    DTSTART:19701025T030000
+    RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10
+    END:STANDARD
+    END:VTIMEZONE
+    BEGIN:VEVENT
+    DTSTART:20140124T133000Z
+    DTEND:20140124T143000Z
+    DTSTAMP:20140612T090652Z
+    UID:040000008200E00074C5B7101A82E0080000000050AAABEEF50DCF
+     001000000062548482FA830A46B9EA62114AC9F0EF
+    CREATED:20140110T102231Z
+    DESCRIPTION:Test.
+    LAST-MODIFIED:20140123T095221Z
+    LOCATION:25.12.01.51
+    SEQUENCE:0
+    STATUS:CONFIRMED
+    SUMMARY:Präsentation
+    TRANSP:OPAQUE
+    END:VEVENT
+    END:VCALENDAR
+    ''').strip()
+
+
+def test_multiline_uid_complex(benchmark):
+    assert benchmark(lambda: vobject.Item(complex_uid_item).uid) == (
+        u'040000008200E00074C5B7101A82E008000000005'
+        u'0AAABEEF50DCF001000000062548482FA830A46B9'
+        u'EA62114AC9F0EF'
+    )
+
+
+def test_replace_multiline_uid(benchmark):
+    def inner():
+        return vobject.Item(complex_uid_item).with_uid('a').uid
+
+    assert benchmark(inner) == 'a'
 
 
 @pytest.mark.parametrize('template', [EVENT_TEMPLATE,
