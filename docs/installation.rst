@@ -42,6 +42,7 @@ following things are installed:
 - Python 3.3+ and pip.
 - ``libxml`` and ``libxslt``
 - ``zlib``
+- Linux or OS X. **Windows is not supported, see :gh:`535`.**
 
 On Linux systems, using the distro's package manager is the best
 way to do this, for example, using Ubuntu::
