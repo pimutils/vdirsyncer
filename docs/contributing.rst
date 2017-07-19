@@ -97,6 +97,11 @@ The ``Makefile`` has a lot of options that allow you to control which tests are
 run, and which servers are tested. Take a look at its code where they are all
 initialized and documented.
 
+For example, to test xandikos, run::
+
+    make DAV_SERVER=xandikos install-test
+    make DAV_SERVER=xandikos test
+
 If you have any questions, feel free to open issues about it.
 
 Structure of the testsuite
