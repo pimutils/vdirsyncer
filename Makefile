@@ -1,16 +1,31 @@
 # See the documentation on how to run the tests.
 
+# Which DAV server to run the tests against (radicale, xandikos, skip, owncloud, nextcloud, ...)
 export DAV_SERVER := skip
+
+# release (install release versions of dependencies)
+# development (install development versions of some of vdirsyncer's dependencies)
+# or minimal (install oldest version of each dependency that is supported by vdirsyncer)
 export REQUIREMENTS := release
-export TESTSERVER_BASE := ./tests/storage/servers/
-export CI := false
-export COVERAGE := $(CI)
+
+# Set this to true if you run vdirsyncer's test as part of e.g. packaging.
 export DETERMINISTIC_TESTS := false
+
+# Run the etesync testsuite.
 export ETESYNC_TESTS := false
 
-CODECOV_PATH = /tmp/codecov.sh
+# Assume to run in Travis. Don't use this outside of a virtual machine. It will
+# heavily "pollute" your system.
+export CI := false
 
+# Whether to generate coverage data while running tests.
+export COVERAGE := $(CI)
+
+# Additional arguments that should be passed to py.test.
 PYTEST_ARGS =
+
+# Variables below this line are not very interesting for getting started.
+
 TEST_EXTRA_PACKAGES =
 ifeq ($(COVERAGE), true)
 	TEST_EXTRA_PACKAGES += pytest-cov
@@ -21,6 +36,9 @@ ifeq ($(ETESYNC_TESTS), true)
 	TEST_EXTRA_PACKAGES += git+https://github.com/etesync/journal-manager
 	TEST_EXTRA_PACKAGES += django djangorestframework wsgi_intercept drf-nested-routers
 endif
+
+export TESTSERVER_BASE := ./tests/storage/servers/
+CODECOV_PATH = /tmp/codecov.sh
 
 ifeq ($(CI), true)
 test:

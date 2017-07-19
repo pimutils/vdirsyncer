@@ -93,6 +93,10 @@ Then you can run::
     make style  # Stylechecker
     make docs  # Build the HTML docs, output is at docs/_build/html/
 
+The ``Makefile`` has a lot of options that allow you to control which tests are
+run, and which servers are tested. Take a look at its code where they are all
+initialized and documented.
+
 If you have any questions, feel free to open issues about it.
 
 Structure of the testsuite
