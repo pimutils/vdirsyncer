@@ -1,0 +1,11 @@
+[package]
+name = "vdirsyncer_rustext"
+version = "0.1.0"
+authors = ["Markus Unterwaditzer <markus@unterwaditzer.net>"]
+
+[lib]
+name = "vdirsyncer_rustext"
+crate-type = ["cdylib"]
+
+[dependencies]
+vobject = "0.2.0"

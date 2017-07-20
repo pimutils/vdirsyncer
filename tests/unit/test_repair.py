@@ -38,7 +38,7 @@ def test_repair_uids(uid):
 @settings(perform_health_check=False)  # Using the random module for UIDs
 def test_repair_unsafe_uids(uid):
     s = MemoryStorage()
-    item = Item(u'BEGIN:VCARD\nUID:{}\nEND:VCARD'.format(uid))
+    item = Item(u'BEGIN:VCARD\nUID:123\nEND:VCARD').with_uid(uid)
     href, etag = s.upload(item)
     assert s.get(href)[0].uid == uid
     assert not href_safe(uid)

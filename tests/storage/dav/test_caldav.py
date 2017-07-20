@@ -28,7 +28,7 @@ class TestCalDAVStorage(DAVStorageTests):
         s = self.storage_class(item_types=(item_type,), **get_storage_args())
 
         try:
-            s.upload(format_item(VCARD_TEMPLATE))
+            s.upload(format_item(item_template=VCARD_TEMPLATE))
         except (exceptions.Error, requests.exceptions.HTTPError):
             pass
         assert not list(s.list())
@@ -64,7 +64,7 @@ class TestCalDAVStorage(DAVStorageTests):
         s = self.storage_class(start_date=start_date, end_date=end_date,
                                **get_storage_args())
 
-        too_old_item = format_item(dedent(u'''
+        too_old_item = format_item(item_template=dedent(u'''
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN
@@ -78,7 +78,7 @@ class TestCalDAVStorage(DAVStorageTests):
             END:VCALENDAR
             ''').strip())
 
-        too_new_item = format_item(dedent(u'''
+        too_new_item = format_item(item_template=dedent(u'''
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN
@@ -92,7 +92,7 @@ class TestCalDAVStorage(DAVStorageTests):
             END:VCALENDAR
             ''').strip())
 
-        good_item = format_item(dedent(u'''
+        good_item = format_item(item_template=dedent(u'''
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN
@@ -136,8 +136,8 @@ class TestCalDAVStorage(DAVStorageTests):
     @pytest.mark.skipif(dav_server == 'icloud',
                         reason='iCloud only accepts VEVENT')
     def test_item_types_general(self, s):
-        event = s.upload(format_item(EVENT_TEMPLATE))[0]
-        task = s.upload(format_item(TASK_TEMPLATE))[0]
+        event = s.upload(format_item(item_template=EVENT_TEMPLATE))[0]
+        task = s.upload(format_item(item_template=TASK_TEMPLATE))[0]
         s.item_types = ('VTODO', 'VEVENT')
 
         def l():

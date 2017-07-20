@@ -8,3 +8,5 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
     virtualenv -p python3 $HOME/osx-py3
     . $HOME/osx-py3/bin/activate
 fi
+
+curl https://sh.rustup.rs -sSf | sh -s -- -y
