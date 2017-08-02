@@ -28,7 +28,7 @@ def test_get_storage_init_args():
 def test_request_ssl(httpsserver):
     httpsserver.serve_content('')  # we need to serve something
 
-    with pytest.raises(requests.exceptions.SSLError) as excinfo:
+    with pytest.raises(requests.exceptions.ConnectionError) as excinfo:
         http.request('GET', httpsserver.url)
     assert 'certificate verify failed' in str(excinfo.value)
 
@@ -52,11 +52,11 @@ def test_request_ssl_fingerprints(httpsserver, fingerprint):
 
     http.request('GET', httpsserver.url, verify=False,
                  verify_fingerprint=fingerprint)
-    with pytest.raises(requests.exceptions.SSLError) as excinfo:
+    with pytest.raises(requests.exceptions.ConnectionError) as excinfo:
         http.request('GET', httpsserver.url,
                      verify_fingerprint=fingerprint)
 
-    with pytest.raises(requests.exceptions.SSLError) as excinfo:
+    with pytest.raises(requests.exceptions.ConnectionError) as excinfo:
         http.request('GET', httpsserver.url, verify=False,
                      verify_fingerprint=''.join(reversed(fingerprint)))
     assert 'Fingerprints did not match' in str(excinfo.value)
