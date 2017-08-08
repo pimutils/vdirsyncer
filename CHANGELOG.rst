@@ -13,6 +13,7 @@ Version 0.16.1
 ==============
 
 - Removed remoteStorage support, see :gh:`647`.
+- Fixed test failures caused by latest requests version, see :gh:`660`.
 
 Version 0.16.0
 ==============
