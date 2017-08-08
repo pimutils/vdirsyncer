@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.16.1
 ==============
 
+*released on 8 August 2017*
+
 - Removed remoteStorage support, see :gh:`647`.
 - Fixed test failures caused by latest requests version, see :gh:`660`.
 
