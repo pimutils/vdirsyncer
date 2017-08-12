@@ -660,3 +660,15 @@ def test_rollback(error_callback):
     else:
         with pytest.raises(ActionIntentionallyFailed):
             sync(a, b, status=status, conflict_resolution='a wins')
+
+
+def test_duplicate_hrefs():
+    a = MemoryStorage()
+    b = MemoryStorage()
+    a.list = lambda: [('a', 'a')] * 3
+    a.items['a'] = ('a', Item('UID:a'))
+
+    status = {}
+    sync(a, b, status)
+    with pytest.raises(AssertionError):
+        sync(a, b, status)
