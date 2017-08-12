@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 '''
-The function in `vdirsyncer.sync` can be called on two instances of `Storage`
-to synchronize them. Due to the abstract API storage classes are implementing,
-the two given instances don't have to be of the same exact type. This allows us
-not only to synchronize a local vdir with a CalDAV server, but also synchronize
-two CalDAV servers or two local vdirs.
+The `sync` function in `vdirsyncer.sync` can be called on two instances of
+`Storage` to synchronize them. Apart from the defined errors, this is the only
+public API of this module.
 
 The algorithm is based on the blogpost "How OfflineIMAP works" by Edward Z.
 Yang: http://blog.ezyang.com/2012/08/how-offlineimap-works/
