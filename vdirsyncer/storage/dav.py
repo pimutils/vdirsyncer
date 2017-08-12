@@ -580,8 +580,8 @@ class DAVStorage(Storage):
 
             props = response.findall('{DAV:}propstat/{DAV:}prop')
             if props is None or not len(props):
-                dav_logger.warning('Skipping {!r}, properties are missing.'
-                                   .format(href))
+                dav_logger.debug('Skipping {!r}, properties are missing.'
+                                 .format(href))
                 continue
             else:
                 props = _merge_xml(props)
@@ -592,8 +592,8 @@ class DAVStorage(Storage):
 
             etag = getattr(props.find('{DAV:}getetag'), 'text', '')
             if not etag:
-                dav_logger.warning('Skipping {!r}, etag property is missing.'
-                                   .format(href))
+                dav_logger.debug('Skipping {!r}, etag property is missing.'
+                                 .format(href))
                 continue
 
             contenttype = getattr(props.find('{DAV:}getcontenttype'),
