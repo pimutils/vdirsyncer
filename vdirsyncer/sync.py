@@ -464,16 +464,15 @@ class _StorageInfo(object):
         prefetch = []
 
         def _store_props(ident, props):
-            nonlocal storage_nonempty
-            storage_nonempty = True
-
             try:
                 self.status.insert_ident(ident, props)
             except _IdentAlreadyExists as e:
                 raise e.to_ident_conflict(self.storage)
 
         for href, etag in self.storage.list():
+            storage_nonempty = True
             ident, meta = self.status.get_by_href(href)
+
             if meta is None or meta.href != href or meta.etag != etag:
                 # Either the item is completely new, or updated
                 # In both cases we should prefetch
