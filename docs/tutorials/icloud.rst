@@ -4,11 +4,7 @@
 iCloud
 ======
 
-Vdirsyncer is tested against iCloud_.
-
-.. note::
-
-    Automated testing against iCloud is broken! See :gh:`646`.
+Vdirsyncer is regularly tested against iCloud_.
 
 ::
 
