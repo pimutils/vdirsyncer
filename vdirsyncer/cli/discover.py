@@ -202,7 +202,12 @@ def _collection_from_discovered(get_discovered, collection, config,
 def _print_collections(instance_name, get_discovered):
     try:
         discovered = get_discovered()
+    except exceptions.UserError:
+        raise
     except Exception:
+        # Unless discovery failed due to a user-inflicted error (instanceof
+        # UserError), we don't even know if the storage supports discovery
+        # properly. So we can't abort.
         import traceback
         logger.debug(''.join(traceback.format_tb(sys.exc_info()[2])))
         logger.warning('Failed to discover collections for {}, use `-vdebug` '
