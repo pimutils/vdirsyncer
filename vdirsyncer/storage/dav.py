@@ -558,8 +558,9 @@ class DAVStorage(Storage):
             headers=headers
         )
 
-    def _parse_prop_responses(self, root):
-        hrefs = set()
+    def _parse_prop_responses(self, root, handled_hrefs=None):
+        if handled_hrefs is None:
+            handled_hrefs = set()
         for response in root.iter('{DAV:}response'):
             href = response.find('{DAV:}href')
             if href is None:
@@ -568,7 +569,7 @@ class DAVStorage(Storage):
 
             href = self._normalize_href(href.text)
 
-            if href in hrefs:
+            if href in handled_hrefs:
                 # Servers that send duplicate hrefs:
                 # - Zimbra
                 #   https://github.com/pimutils/vdirsyncer/issues/88
@@ -604,7 +605,7 @@ class DAVStorage(Storage):
                                          self.item_mimetype))
                 continue
 
-            hrefs.add(href)
+            handled_hrefs.add(href)
             yield href, etag, props
 
     def list(self):
@@ -838,12 +839,14 @@ class CalDAVStorage(DAVStorage):
         # the spec which values from WebDAV are actually allowed.
         headers['Depth'] = '1'
 
+        handled_hrefs = set()
+
         for caldavfilter in caldavfilters:
             xml = data.format(caldavfilter=caldavfilter).encode('utf-8')
             response = self.session.request('REPORT', '', data=xml,
                                             headers=headers)
             root = _parse_xml(response.content)
-            rv = self._parse_prop_responses(root)
+            rv = self._parse_prop_responses(root, handled_hrefs)
             for href, etag, _prop in rv:
                 yield href, etag
 

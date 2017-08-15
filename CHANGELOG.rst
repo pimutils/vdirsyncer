@@ -9,6 +9,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.16.2
+==============
+
+- Fix crash when using daterange or item_type filters in
+  :storage:`google_calendar`, see :gh:`657`.
+
 Version 0.16.1
 ==============
 
