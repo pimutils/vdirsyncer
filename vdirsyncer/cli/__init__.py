@@ -12,6 +12,7 @@ from .. import BUGTRACKER_HOME, __version__
 
 
 cli_logger = logging.getLogger(__name__)
+click_log.basic_config('vdirsyncer')
 
 
 class AppContext(object):
@@ -38,8 +39,7 @@ def catch_errors(f):
 
 
 @click.group()
-@click_log.init('vdirsyncer')
-@click_log.simple_verbosity_option()
+@click_log.simple_verbosity_option('vdirsyncer')
 @click.version_option(version=__version__)
 @click.option('--config', '-c', metavar='FILE', help='Config file to use.')
 @pass_context
@@ -64,7 +64,7 @@ main = app
 
 
 def max_workers_callback(ctx, param, value):
-    if value == 0 and click_log.get_level() == logging.DEBUG:
+    if value == 0 and logging.getLogger('vdirsyncer').level == logging.DEBUG:
         value = 1
 
     cli_logger.debug('Using {} maximal workers.'.format(value))

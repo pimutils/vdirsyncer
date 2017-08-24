@@ -14,6 +14,8 @@ Version 0.16.2
 
 - Fix crash when using daterange or item_type filters in
   :storage:`google_calendar`, see :gh:`657`.
+- **Packagers:** Fixes for new version ``0.2.0`` of ``click-log``. The version
+  requirements for the dependency ``click-log`` changed.
 
 Version 0.16.1
 ==============
