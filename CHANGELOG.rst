@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.16.2
 ==============
 
+*released on 24 August 2017*
+
 - Fix crash when using daterange or item_type filters in
   :storage:`google_calendar`, see :gh:`657`.
 - **Packagers:** Fixes for new version ``0.2.0`` of ``click-log``. The version
