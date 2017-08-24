@@ -11,7 +11,7 @@ that other software only applies to specific versions of them.
     Please :doc:`contribute </contributing>` your own tutorials too!  Pages are
     often only stubs and are lacking full examples.
 
-Ćlient applications
+Client applications
 ===================
 
 .. toctree::
