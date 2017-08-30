@@ -106,6 +106,13 @@ linkcheck:
 release:
 	python setup.py sdist bdist_wheel upload
 
+release-deb:
+	sh scripts/release-deb.sh debian jessie
+	sh scripts/release-deb.sh debian stretch
+	sh scripts/release-deb.sh ubuntu trusty
+	sh scripts/release-deb.sh ubuntu xenial
+	sh scripts/release-deb.sh ubuntu zesty
+
 install-dev:
 	pip install -e .
 	[ "$(ETESYNC_TESTS)" = "false" ] || pip install -e .[etesync]

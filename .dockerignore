@@ -1,0 +1,12 @@
+*
+!vdirsyncer/*/*
+!vdirsyncer/*
+!.git/**/*
+!.git/*
+!debian/*/*
+!debian/*
+!scripts/*/*
+!scripts/*
+!setup.py
+!Makefile
+!README.rst

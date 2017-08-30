@@ -7,12 +7,13 @@ Installation
 OS/distro packages
 ------------------
 
-The following packages are user-contributed. They may or may not be up-to-date:
+The following packages are user-contributed and were up-to-date at the time of
+writing:
 
 - `ArchLinux (AUR) <https://aur.archlinux.org/packages/vdirsyncer>`_
-- `Debian <https://packages.debian.org/sid/vdirsyncer>`_
+- `Ubuntu and Debian <https://packagecloud.io/pimutils/vdirsyncer/install>`_
+  (packages also exist in the official repositories but may be out of date)
 - `GNU Guix <https://www.gnu.org/software/guix/package-list.html#vdirsyncer>`_
-- `Ubuntu <http://packages.ubuntu.com/search?keywords=vdirsyncer>`_
 - `OS X (homebrew) <http://braumeister.org/formula/vdirsyncer>`_
 - `BSD (pkgsrc) <http://pkgsrc.se/time/py-vdirsyncer>`_
 - `OpenBSD <http://ports.su/productivity/vdirsyncer>`_
