@@ -9,6 +9,11 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.16.3
+==============
+
+- First version with custom Debian and Ubuntu packages. See :gh:`663`.
+
 Version 0.16.2
 ==============
 
