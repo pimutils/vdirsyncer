@@ -14,7 +14,6 @@ docker build \
     -t $name \
     "$context"
 
-mkdir -p dist/
 docker run $name tar -c -C /vdirsyncer pkgs | tar x -C "$context"
 package_cloud push pimutils/vdirsyncer/$distro/$distrover $context/pkgs/*.deb
 rm -rf "$context"
