@@ -23,11 +23,12 @@ WORKDIR /vdirsyncer/vdirsyncer/
 RUN mkdir /vdirsyncer/pkgs/
 
 RUN basename *.tar.gz .tar.gz | cut -d'-' -f2 | sed -e 's/\.dev/~/g' | tee version
+RUN (echo -n *.tar.gz; echo '[google]') | tee requirements.txt
 RUN . /vdirsyncer/env/bin/activate; fpm -s virtualenv -t deb \
 -n "vdirsyncer-latest" \
 -v "$(cat version)" \
 --prefix /opt/venvs/vdirsyncer-latest \
-*.tar.gz
+requirements.txt
 
 RUN mv /vdirsyncer/vdirsyncer/*.deb /vdirsyncer/pkgs/
 
