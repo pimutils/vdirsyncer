@@ -13,6 +13,7 @@ Version 0.16.3
 ==============
 
 - First version with custom Debian and Ubuntu packages. See :gh:`663`.
+- Remove invalid ASCII control characters from server responses. See :gh:`626`.
 
 Version 0.16.2
 ==============
