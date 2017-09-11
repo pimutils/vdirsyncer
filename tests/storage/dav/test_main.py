@@ -1,10 +1,6 @@
 import pytest
 
-from hypothesis import given
-import hypothesis.strategies as st
-
-from vdirsyncer.storage.dav import _BAD_XML_CHARS, _merge_xml, _parse_xml, \
-    _clean_body
+from vdirsyncer.storage.dav import _BAD_XML_CHARS, _merge_xml, _parse_xml
 
 
 def test_xml_utilities():
