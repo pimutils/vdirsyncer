@@ -7,6 +7,11 @@ import hypothesis.strategies as st
 
 from vdirsyncer.vobject import normalize_item
 
+import urllib3
+import urllib3.exceptions
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 def blow_up(*a, **kw):
     raise AssertionError('Did not expect to be called.')
