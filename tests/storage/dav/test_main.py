@@ -32,10 +32,9 @@ def test_xml_utilities():
 
 @pytest.mark.parametrize('char', range(32))
 def test_xml_specialchars(char):
-    char = chr(char).encode('ascii')
-    x = _parse_xml(b'<?xml version="1.0" encoding="UTF-8" ?>'
-                   b'<foo>ye%ss\r\n'
-                   b'hello</foo>' % char)
+    x = _parse_xml('<?xml version="1.0" encoding="UTF-8" ?>'
+                   '<foo>ye{}s\r\n'
+                   'hello</foo>'.format(chr(char)).encode('ascii'))
 
     if char in _BAD_XML_CHARS:
         assert x.text == 'yes\nhello'
