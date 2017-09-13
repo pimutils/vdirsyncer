@@ -123,7 +123,7 @@ class TestCalDAVStorage(DAVStorageTests):
 
             r = requests.Response()
             r.status_code = 200
-            r._content = 'Hello World.'
+            r._content = b'Hello World.'
             return r
 
         monkeypatch.setattr('requests.sessions.Session.request', request)

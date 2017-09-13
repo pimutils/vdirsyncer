@@ -92,9 +92,25 @@ class InvalidXMLResponse(exceptions.InvalidResponse):
     pass
 
 
+_BAD_XML_CHARS = (
+    b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x0b\x0c\x0e\x0f'
+    b'\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f'
+)
+
+
+def _clean_body(content, bad_chars=_BAD_XML_CHARS):
+    new_content = content.translate(None, bad_chars)
+    if new_content != content:
+        dav_logger.warning(
+            'Your server incorrectly returned ASCII control characters in its '
+            'XML. Vdirsyncer ignores those, but this is a bug in your server.'
+        )
+    return new_content
+
+
 def _parse_xml(content):
     try:
-        return etree.XML(content)
+        return etree.XML(_clean_body(content))
     except etree.ParseError as e:
         raise InvalidXMLResponse('Invalid XML encountered: {}\n'
                                  'Double-check the URLs in your config.'
