@@ -17,7 +17,7 @@ from vdirsyncer.vobject import Item
 from .. import StorageTests, get_server_mixin
 
 
-dav_server = os.environ['DAV_SERVER']
+dav_server = os.environ.get('DAV_SERVER', 'skip')
 ServerMixin = get_server_mixin(dav_server)
 
 
