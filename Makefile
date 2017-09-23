@@ -16,7 +16,8 @@ export DETERMINISTIC_TESTS := false
 export ETESYNC_TESTS := false
 
 # Assume to run in Travis. Don't use this outside of a virtual machine. It will
-# heavily "pollute" your system.
+# heavily "pollute" your system, such as attempting to install a new Python
+# systemwide.
 export CI := false
 
 # Whether to generate coverage data while running tests.
@@ -79,7 +80,7 @@ install-test: install-servers
 	[ -z "$(TEST_EXTRA_PACKAGES)" ] || pip install $(TEST_EXTRA_PACKAGES)
 
 install-style: install-docs
-	pip install flake8 flake8-import-order flake8-bugbear>=17.3.0
+	pip install flake8 flake8-import-order 'flake8-bugbear>=17.3.0' autopep8
 	
 style:
 	flake8
@@ -97,9 +98,6 @@ install-docs:
 docs:
 	cd docs && make html
 
-sh:  # open subshell with default test config
-	$$SHELL;
-
 linkcheck:
 	sphinx-build -W -b linkcheck ./docs/ ./docs/_build/linkcheck/
 
@@ -113,7 +111,7 @@ release-deb:
 	sh scripts/release-deb.sh ubuntu xenial
 	sh scripts/release-deb.sh ubuntu zesty
 
-install-dev:
+install-dev: install-git-hooks
 	pip install -e .
 	[ "$(ETESYNC_TESTS)" = "false" ] || pip install -e .[etesync]
 	set -xe && if [ "$(REQUIREMENTS)" = "devel" ]; then \
@@ -123,6 +121,13 @@ install-dev:
 	elif [ "$(REQUIREMENTS)" = "minimal" ]; then \
 		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
 	fi
+
+install-git-hooks: install-style
+	echo "make style-autocorrect" > .git/hooks/pre-commit
+	chmod +x .git/hooks/pre-commit
+
+style-autocorrect:
+	git diff --cached --name-only | egrep '\.py$$' | xargs --no-run-if-empty autopep8 -ri
 
 ssh-submodule-urls:
 	git submodule foreach "\

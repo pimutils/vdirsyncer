@@ -79,19 +79,19 @@ For many patches, it might suffice to just let Travis run the tests. However,
 Travis is slow, so you might want to run them locally too. For this, set up a
 virtualenv_ and run this inside of it::
 
-    # install vdirsyncer from the repo into the virtualenv. Prerequisite for
-    # most other tasks.
+    # install:
+    #  - vdirsyncer from the repo into the virtualenv
+    #  - stylecheckers (flake8) and code formatters (autopep8)
+    #  - git commit hook for autopep8
     make install-dev
 
     make install-test  # install test dependencies
-    make install-style  # install dependencies for stylechecking
-    make install-docs  # install dependencies for building documentation
 
 Then you can run::
 
-    make test  # The normal testsuite
+    make test   # The normal testsuite
     make style  # Stylechecker
-    make docs  # Build the HTML docs, output is at docs/_build/html/
+    make docs   # Build the HTML docs, output is at docs/_build/html/
 
 The ``Makefile`` has a lot of options that allow you to control which tests are
 run, and which servers are tested. Take a look at its code where they are all
