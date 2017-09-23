@@ -28,19 +28,14 @@ make -e install-dev;
 make -e install-$BUILD;
 """]
 
-script = """
-if [ "$TRAVIS_PULL_REQUEST" = "false" ] || [ "$BUILD_PRS" != "false" ];
-then {};
-fi""".format
-
-cfg['script'] = [script("make -e $BUILD")]
+cfg['script'] = ["make -e $BUILD"]
 
 matrix = []
 cfg['matrix'] = {'include': matrix}
 
 matrix.append({
     'python': latest_python,
-    'env': 'BUILD=style BUILD_PRS=true'
+    'env': 'BUILD=style'
 })
 
 
@@ -53,30 +48,32 @@ for python, requirements in itertools.product(python_versions,
                         "fastmail")
 
     for dav_server in dav_servers:
-        build_prs = dav_server not in ("fastmail", "davical", "icloud")
-        matrix.append({
+        job = {
             'python': python,
             'env': ("BUILD=test "
                     "DAV_SERVER={dav_server} "
                     "REQUIREMENTS={requirements} "
-                    "BUILD_PRS={build_prs} "
                     .format(dav_server=dav_server,
-                            requirements=requirements,
-                            build_prs=build_prs and "true" or "false"))
-        })
+                            requirements=requirements))
+        }
+
+        build_prs = dav_server not in ("fastmail", "davical", "icloud")
+        if not build_prs:
+            job['if'] = 'NOT (type IN (pull_request))'
+
+        matrix.append(job)
 
 matrix.append({
     'python': latest_python,
     'env': ("BUILD=test "
             "ETESYNC_TESTS=true "
-            "REQUIREMENTS=latest "
-            "BUILD_PRS=true ")
+            "REQUIREMENTS=latest")
 })
 
 matrix.append({
     'language': 'generic',
     'os': 'osx',
-    'env': 'BUILD=test BUILD_PRS=true'
+    'env': 'BUILD=test'
 })
 
 json.dump(cfg, sys.stdout, sort_keys=True, indent=2)
