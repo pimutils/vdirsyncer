@@ -5,14 +5,18 @@ vdirsyncer
 - `Documentation <https://vdirsyncer.pimutils.org/en/stable/>`_
 - `Source code <https://github.com/pimutils/vdirsyncer>`_
 
-Vdirsyncer synchronizes your calendars and addressbooks between two
-:ref:`storages <storages>`. The most popular purpose is to synchronize a
-CalDAV/CardDAV server with a local folder or file. The local data can then be
-accessed via a variety of :doc:`programs <tutorials/index>`, none of which have to
-know or worry about syncing to a server.
+Vdirsyncer is a command-line tool for synchronizing calendars and addressbooks
+between a variety of servers and the local filesystem. The most popular usecase
+is to synchronize a server with a local folder and use a set of other
+:doc:`programs <tutorials/index>` to change the local events and contacts.
+Vdirsyncer can then synchronize those changes back to the server.
 
-It aims to be for CalDAV and CardDAV what `OfflineIMAP
-<http://offlineimap.org/>`_ is for IMAP.
+However, vdirsyncer is not limited to synchronizing between clients and
+servers. It can also be used to synchronize calendars and/or addressbooks
+between two servers directly.
+
+It aims to be for calendars and contacts what `OfflineIMAP
+<http://offlineimap.org/>`_ is for emails.
 
 .. toctree::
    :caption: Users
