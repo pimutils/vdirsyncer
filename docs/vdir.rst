@@ -30,12 +30,11 @@ also implies only one ``VEVENT``/``VTODO``/``VCARD`` component per file, but
 e.g.  recurrence exceptions would require multiple ``VEVENT`` components per
 event.
 
-The filename *should* consist of the ``ident``, followed by the file extension.
-The ``ident`` is either the ``UID``, if the item has one, else a string with
-similar properties as the ``UID``. However, several restrictions of the
-underlying filesystem might make an implementation of this naming scheme for
-items' filenames impossible. The approach to deal with such cases is left to
-the client, which are free to choose a different scheme for filenames instead.
+The filename should have similar properties as the ``UID`` of the file content.
+However, there is no requirement for these two to be the same. Programs may
+choose to store additional metadata in that filename, however, at the same time
+they *must not* assume that the metadata they included will be preserved by
+other programs.
 
 .. _vCard: https://tools.ietf.org/html/rfc6350
 .. _iCalendar: https://tools.ietf.org/html/rfc5545
