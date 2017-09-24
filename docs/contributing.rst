@@ -82,10 +82,13 @@ virtualenv_ and run this inside of it::
     # install:
     #  - vdirsyncer from the repo into the virtualenv
     #  - stylecheckers (flake8) and code formatters (autopep8)
-    #  - git commit hook for autopep8
     make install-dev
 
-    make install-test  # install test dependencies
+    # Install git commit hook for the stylechecker
+    make install-git-hooks
+
+    # install test dependencies
+    make install-test
 
 Then you can run::
 

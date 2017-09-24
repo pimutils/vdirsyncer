@@ -111,7 +111,7 @@ release-deb:
 	sh scripts/release-deb.sh ubuntu xenial
 	sh scripts/release-deb.sh ubuntu zesty
 
-install-dev: install-git-hooks
+install-dev:
 	pip install -e .
 	[ "$(ETESYNC_TESTS)" = "false" ] || pip install -e .[etesync]
 	set -xe && if [ "$(REQUIREMENTS)" = "devel" ]; then \
