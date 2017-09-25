@@ -22,7 +22,7 @@ cfg['branches'] = {
 
 cfg['install'] = ["""
 . scripts/travis-install.sh;
-pip install -U pip;
+pip install -U pip setuptools;
 pip install wheel;
 make -e install-dev;
 make -e install-$BUILD;
