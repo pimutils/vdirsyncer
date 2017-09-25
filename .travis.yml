@@ -11,7 +11,11 @@
     "submodules": false
   },
   "install": [
-    "\n. scripts/travis-install.sh;\npip install -U pip;\npip install wheel;\nmake -e install-dev;\nmake -e install-$BUILD;\n"
+    ". scripts/travis-install.sh",
+    "pip install -U pip setuptools",
+    "pip install wheel",
+    "make -e install-dev",
+    "make -e install-$BUILD"
   ],
   "language": "python",
   "matrix": {

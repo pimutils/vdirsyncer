@@ -20,13 +20,13 @@ cfg['branches'] = {
     'only': ['auto', 'master']
 }
 
-cfg['install'] = ["""
-. scripts/travis-install.sh;
-pip install -U pip setuptools;
-pip install wheel;
-make -e install-dev;
-make -e install-$BUILD;
-"""]
+cfg['install'] = """
+. scripts/travis-install.sh
+pip install -U pip setuptools
+pip install wheel
+make -e install-dev
+make -e install-$BUILD
+""".strip().splitlines()
 
 cfg['script'] = ["make -e $BUILD"]
 
