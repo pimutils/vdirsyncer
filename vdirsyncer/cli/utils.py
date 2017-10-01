@@ -17,8 +17,9 @@ import click_threading
 
 from . import cli_logger
 from .. import BUGTRACKER_HOME, DOCS_HOME, exceptions
-from ..sync import IdentConflict, PartialSync, StorageEmpty, SyncConflict, \
-    SqliteStatus
+from ..sync.exceptions import IdentConflict, PartialSync, StorageEmpty, \
+    SyncConflict
+from ..sync.status import SqliteStatus
 from ..utils import expand_path, get_storage_init_args
 
 

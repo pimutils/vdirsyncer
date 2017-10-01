@@ -11,8 +11,10 @@ import pytest
 from tests import blow_up, uid_strategy
 
 from vdirsyncer.storage.memory import MemoryStorage, _random_string
-from vdirsyncer.sync import BothReadOnly, IdentConflict, PartialSync, \
-    StorageEmpty, SqliteStatus, SyncConflict, sync as _sync
+from vdirsyncer.sync import sync as _sync
+from vdirsyncer.sync.exceptions import BothReadOnly, IdentConflict, \
+    PartialSync, StorageEmpty, SyncConflict
+from vdirsyncer.sync.status import SqliteStatus
 from vdirsyncer.vobject import Item
 
 
