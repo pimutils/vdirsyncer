@@ -53,7 +53,7 @@ test:
 	bash $(CODECOV_PATH) -c -F storage
 else
 test:
-	py.test $(PYTEST_ARGS) tests/
+	py.test $(PYTEST_ARGS)
 endif
 
 all:
