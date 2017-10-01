@@ -116,6 +116,31 @@ class _IdentAlreadyExists(SyncError):
 
 
 class _StatusBase(metaclass=abc.ABCMeta):
+    def load_legacy_status(self, status):
+        with self.transaction():
+            for ident, metadata in status.items():
+                if len(metadata) == 4:
+                    href_a, etag_a, href_b, etag_b = metadata
+                    props_a = _ItemMetadata(href=href_a, hash='UNDEFINED',
+                                            etag=etag_a)
+                    props_b = _ItemMetadata(href=href_b, hash='UNDEFINED',
+                                            etag=etag_b)
+                else:
+                    a, b = metadata
+                    a.setdefault('hash', 'UNDEFINED')
+                    b.setdefault('hash', 'UNDEFINED')
+                    props_a = _ItemMetadata(**a)
+                    props_b = _ItemMetadata(**b)
+
+                self.insert_ident_a(ident, props_a)
+                self.insert_ident_b(ident, props_b)
+
+    def to_legacy_status(self):
+        for ident in self.iter_old():
+            a = self.get_a(ident)
+            b = self.get_b(ident)
+            yield ident, (a.to_status(), b.to_status())
+
     @abc.abstractmethod
     def transaction(self):
         raise NotImplementedError()
@@ -180,40 +205,12 @@ class _StatusBase(metaclass=abc.ABCMeta):
 class SqliteStatus(_StatusBase):
     SCHEMA_VERSION = 1
 
-    def __init__(self, path):
+    def __init__(self, path=':memory:'):
         self._path = path
         self._c = sqlite3.connect(path)
         self._c.isolation_level = None  # turn off idiocy of DB-API
         self._c.row_factory = sqlite3.Row
         self._update_schema()
-
-    def load_legacy_status(self, status):
-        for ident, metadata in status.items():
-            if len(metadata) == 4:
-                href_a, etag_a, href_b, etag_b = metadata
-                params = (ident, href_a, 'UNDEFINED', etag_a, href_b,
-                          'UNDEFINED', etag_b)
-            else:
-                a, b = metadata
-                params = (ident,
-                          a.get('href'), a.get('hash', 'UNDEFINED'),
-                          a.get('etag'),
-                          b.get('href'), b.get('hash', 'UNDEFINED'),
-                          b.get('etag'))
-
-            self._c.execute(
-                'INSERT INTO status'
-                ' (ident, href_a, hash_a, etag_a,'
-                '  href_b, hash_b, etag_b)'
-                ' VALUES (?, ?, ?, ?, ?, ?, ?)',
-                params
-            )
-
-    def to_legacy_status(self):
-        for ident in self.iter_old():
-            a = self.get_a(ident)
-            b = self.get_b(ident)
-            yield ident, (a.to_status(), b.to_status())
 
     def _update_schema(self):
         if self._is_latest_version():
