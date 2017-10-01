@@ -29,6 +29,7 @@ PYTEST_ARGS =
 # Variables below this line are not very interesting for getting started.
 
 TEST_EXTRA_PACKAGES =
+
 ifeq ($(COVERAGE), true)
 	TEST_EXTRA_PACKAGES += pytest-cov
 	PYTEST_ARGS += --cov-config .coveragerc --cov vdirsyncer
@@ -39,21 +40,23 @@ ifeq ($(ETESYNC_TESTS), true)
 	TEST_EXTRA_PACKAGES += django djangorestframework wsgi_intercept drf-nested-routers
 endif
 
+PYTEST = py.test $(PYTEST_ARGS)
+
 export TESTSERVER_BASE := ./tests/storage/servers/
 CODECOV_PATH = /tmp/codecov.sh
 
 ifeq ($(CI), true)
 test:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
-	py.test $(PYTEST_ARGS) tests/unit/
+	$(PYTEST) tests/unit/
 	bash $(CODECOV_PATH) -c -F unit
-	py.test $(PYTEST_ARGS) tests/system/
+	$(PYTEST) tests/system/
 	bash $(CODECOV_PATH) -c -F system
-	py.test $(PYTEST_ARGS) tests/storage/
+	$(PYTEST) tests/storage/
 	bash $(CODECOV_PATH) -c -F storage
 else
 test:
-	py.test $(PYTEST_ARGS)
+	$(PYTEST)
 endif
 
 all:
