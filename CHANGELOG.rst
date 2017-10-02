@@ -14,7 +14,7 @@ Version 0.16.3
 
 - First version with custom Debian and Ubuntu packages. See :gh:`663`.
 - Remove invalid ASCII control characters from server responses. See :gh:`626`.
-- **packagers:** Python 3.3 is no longer supported.
+- **packagers:** Python 3.3 is no longer supported. See :ghpr:`674`.
 
 Version 0.16.2
 ==============
