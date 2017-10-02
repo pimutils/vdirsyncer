@@ -72,7 +72,6 @@ install-servers:
 	done
 
 install-test: install-servers
-	(python --version | grep -vq 'Python 3.3') || pip install enum34
 	pip install -r test-requirements.txt
 	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
 		pip install -U --force-reinstall \

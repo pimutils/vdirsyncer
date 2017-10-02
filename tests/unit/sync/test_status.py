@@ -3,7 +3,6 @@ import pytest
 from hypothesis import assume, given
 import hypothesis.strategies as st
 
-from vdirsyncer.sync.exceptions import IdentAlreadyExists
 from vdirsyncer.sync.status import SqliteStatus
 
 
