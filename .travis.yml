@@ -19,6 +19,7 @@
   ],
   "language": "python",
   "matrix": {
+    "fast_finish": true,
     "include": [
       {
         "env": "BUILD=style",
