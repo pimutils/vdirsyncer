@@ -2,6 +2,7 @@
 name = "vdirsyncer_rustext"
 version = "0.1.0"
 authors = ["Markus Unterwaditzer <markus@unterwaditzer.net>"]
+build = "build.rs"
 
 [lib]
 name = "vdirsyncer_rustext"
@@ -9,3 +10,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 vobject = "0.2.0"
+
+[build-dependencies]
+cbindgen = "0.1"

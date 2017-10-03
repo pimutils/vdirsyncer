@@ -9,6 +9,7 @@ how to package vdirsyncer.
 
 from setuptools import Command, find_packages, setup
 
+milksnake = 'milksnake'
 
 requirements = [
     # https://github.com/mitsuhiko/click/issues/200
@@ -33,9 +34,23 @@ requirements = [
 
     # https://github.com/untitaker/python-atomicwrites/commit/4d12f23227b6a944ab1d99c507a69fdbc7c9ed6d  # noqa
     'atomicwrites>=0.1.7',
-
-    'snaek>=0.2.0',
+    milksnake
 ]
+
+
+def build_native(spec):
+    build = spec.add_external_build(
+        cmd=['cargo', 'build', '--release'],
+        path='./rust'
+    )
+
+    spec.add_cffi_module(
+        module_path='vdirsyncer._native',
+        dylib=lambda: build.find_dylib(
+            'vdirsyncer_rustext', in_path='target/release'),
+        header_filename=lambda: build.find_header(
+            'vdirsyncer_rustext.h', in_path='target')
+    )
 
 
 class PrintRequirements(Command):
@@ -79,7 +94,7 @@ setup(
     # Build dependencies
     setup_requires=[
         'setuptools_scm != 1.12.0',
-        'snaek',
+        milksnake,
     ],
 
     # Other
@@ -106,9 +121,7 @@ setup(
         'Topic :: Internet',
         'Topic :: Utilities',
     ],
-    snaek_rust_modules=[
-        ('vdirsyncer._native', 'rust/'),
-    ],
+    milksnake_tasks=[build_native],
     zip_safe=False,
     platforms='any'
 )
