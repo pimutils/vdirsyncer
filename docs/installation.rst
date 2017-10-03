@@ -12,7 +12,7 @@ writing:
 
 - `ArchLinux (AUR) <https://aur.archlinux.org/packages/vdirsyncer>`_
 - `Ubuntu and Debian, x86_64-only
-  <https://packagecloud.io/pimutils/vdirsyncer/install>`_ (packages also exist
+  <https://packagecloud.io/pimutils/vdirsyncer>`_ (packages also exist
   in the official repositories but may be out of date)
 - `GNU Guix <https://www.gnu.org/software/guix/package-list.html#vdirsyncer>`_
 - `OS X (homebrew) <http://braumeister.org/formula/vdirsyncer>`_
