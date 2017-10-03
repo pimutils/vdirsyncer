@@ -44,12 +44,14 @@ following things are installed:
 - Python 3.4+ and pip.
 - ``libxml`` and ``libxslt``
 - ``zlib``
+- `Rust <https://www.rust-lang.org/>`, the programming language, together with
+  its package manager ``cargo``.
 - Linux or OS X. **Windows is not supported, see :gh:`535`.**
 
 On Linux systems, using the distro's package manager is the best
 way to do this, for example, using Ubuntu::
 
-    sudo apt-get install libxml2 libxslt1.1 zlib1g python
+    sudo apt-get install libxml2 libxslt1.1 zlib1g python rustc cargo
 
 Then you have several options. The following text applies for most Python
 software by the way.
