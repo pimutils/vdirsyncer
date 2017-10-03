@@ -34,7 +34,7 @@ requirements = [
     # https://github.com/untitaker/python-atomicwrites/commit/4d12f23227b6a944ab1d99c507a69fdbc7c9ed6d  # noqa
     'atomicwrites>=0.1.7',
 
-    'snaek',
+    'snaek>=0.2.0',
 ]
 
 
@@ -110,6 +110,5 @@ setup(
         ('vdirsyncer._native', 'rust/'),
     ],
     zip_safe=False,
-    platforms='any',
-    dependency_links=['snaek=>0.2.0']
+    platforms='any'
 )
