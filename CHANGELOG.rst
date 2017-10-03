@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.16.3
 ==============
 
+*released on 03 October 2017*
+
 - First version with custom Debian and Ubuntu packages. See :gh:`663`.
 - Remove invalid ASCII control characters from server responses. See :gh:`626`.
 - **packagers:** Python 3.3 is no longer supported. See :ghpr:`674`.
