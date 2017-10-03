@@ -28,7 +28,7 @@ make -e install-$BUILD
 cfg['script'] = ["make -e $BUILD"]
 
 matrix = []
-cfg['matrix'] = {'include': matrix}
+cfg['matrix'] = {'include': matrix, 'fast_finish': True}
 
 matrix.append({
     'python': latest_python,
