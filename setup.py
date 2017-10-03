@@ -111,7 +111,5 @@ setup(
     ],
     zip_safe=False,
     platforms='any',
-    dependency_links=[
-        'https://github.com/mitsuhiko/snaek/tarball/master#egg=snaek'
-    ]
+    dependency_links=['snaek=>0.2.0']
 )
