@@ -8,9 +8,12 @@ ARG distrover
 
 RUN apt-get update
 RUN apt-get install -y build-essential fakeroot debhelper git
-RUN apt-get install -y python3-all python3-pip
+RUN apt-get install -y python3-all python3-dev python3-pip
 RUN apt-get install -y ruby ruby-dev 
 RUN apt-get install -y python-all python-pip
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+RUN apt-get install -y libssl-dev libffi-dev
+ENV PATH="/root/.cargo/bin/:${PATH}"
 
 RUN gem install fpm
 
@@ -24,7 +27,7 @@ RUN mkdir /vdirsyncer/pkgs/
 
 RUN basename *.tar.gz .tar.gz | cut -d'-' -f2 | sed -e 's/\.dev/~/g' | tee version
 RUN (echo -n *.tar.gz; echo '[google]') | tee requirements.txt
-RUN . /vdirsyncer/env/bin/activate; fpm -s virtualenv -t deb \
+RUN . /vdirsyncer/env/bin/activate; fpm --verbose -s virtualenv -t deb \
 -n "vdirsyncer-latest" \
 -v "$(cat version)" \
 --prefix /opt/venvs/vdirsyncer-latest \
