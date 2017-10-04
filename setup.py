@@ -9,6 +9,7 @@ how to package vdirsyncer.
 
 from setuptools import Command, find_packages, setup
 
+milksnake = 'milksnake'
 
 requirements = [
     # https://github.com/mitsuhiko/click/issues/200
@@ -32,8 +33,27 @@ requirements = [
     'requests_toolbelt >=0.4.0',
 
     # https://github.com/untitaker/python-atomicwrites/commit/4d12f23227b6a944ab1d99c507a69fdbc7c9ed6d  # noqa
-    'atomicwrites>=0.1.7'
+    'atomicwrites>=0.1.7',
+    milksnake
 ]
+
+
+def build_native(spec):
+    build = spec.add_external_build(
+        cmd=['cargo', 'build', '--release'],
+        path='./rust'
+    )
+
+    spec.add_cffi_module(
+        module_path='vdirsyncer._native',
+        dylib=lambda: build.find_dylib(
+            'vdirsyncer_rustext', in_path='target/release'),
+        header_filename=lambda: build.find_header(
+            'vdirsyncer_rustext.h', in_path='target'),
+        # Rust bug: If thread-local storage is used, this flag is necessary
+        # (mitsuhiko)
+        rtld_flags=['NODELETE']
+    )
 
 
 class PrintRequirements(Command):
@@ -75,7 +95,10 @@ setup(
     },
 
     # Build dependencies
-    setup_requires=['setuptools_scm != 1.12.0'],
+    setup_requires=[
+        'setuptools_scm != 1.12.0',
+        milksnake,
+    ],
 
     # Other
     packages=find_packages(exclude=['tests.*', 'tests']),
@@ -101,4 +124,7 @@ setup(
         'Topic :: Internet',
         'Topic :: Utilities',
     ],
+    milksnake_tasks=[build_native],
+    zip_safe=False,
+    platforms='any'
 )

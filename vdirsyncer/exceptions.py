@@ -79,3 +79,7 @@ class UnsupportedMetadataError(Error, NotImplementedError):
 
 class CollectionRequired(Error):
     '''`collection = null` is not allowed.'''
+
+
+class VobjectParseError(Error, ValueError):
+    '''The parsed vobject is invalid.'''

@@ -12,4 +12,5 @@ env
 dist
 docs/_build/
 vdirsyncer/version.py
+vdirsyncer/_native*
 .hypothesis

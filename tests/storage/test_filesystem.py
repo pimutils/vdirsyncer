@@ -5,9 +5,9 @@ import subprocess
 import pytest
 
 from vdirsyncer.storage.filesystem import FilesystemStorage
-from vdirsyncer.vobject import Item
 
 from . import StorageTests
+from tests import format_item
 
 
 class TestFilesystemStorage(StorageTests):
@@ -42,13 +42,13 @@ class TestFilesystemStorage(StorageTests):
 
     def test_ident_with_slash(self, tmpdir):
         s = self.storage_class(str(tmpdir), '.txt')
-        s.upload(Item(u'UID:a/b/c'))
+        s.upload(format_item('a/b/c'))
         item_file, = tmpdir.listdir()
         assert '/' not in item_file.basename and item_file.isfile()
 
     def test_too_long_uid(self, tmpdir):
         s = self.storage_class(str(tmpdir), '.txt')
-        item = Item(u'UID:' + u'hue' * 600)
+        item = format_item('hue' * 600)
         href, etag = s.upload(item)
         assert item.uid not in href
 
@@ -60,7 +60,7 @@ class TestFilesystemStorage(StorageTests):
         monkeypatch.setattr(subprocess, 'call', check_call_mock)
 
         s = self.storage_class(str(tmpdir), '.txt', post_hook=None)
-        s.upload(Item(u'UID:a/b/c'))
+        s.upload(format_item('a/b/c'))
 
     def test_post_hook_active(self, tmpdir, monkeypatch):
 
@@ -75,7 +75,7 @@ class TestFilesystemStorage(StorageTests):
         monkeypatch.setattr(subprocess, 'call', check_call_mock)
 
         s = self.storage_class(str(tmpdir), '.txt', post_hook=exe)
-        s.upload(Item(u'UID:a/b/c'))
+        s.upload(format_item('a/b/c'))
         assert calls
 
     def test_ignore_git_dirs(self, tmpdir):
