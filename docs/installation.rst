@@ -51,7 +51,7 @@ following things are installed:
 On Linux systems, using the distro's package manager is the best
 way to do this, for example, using Ubuntu::
 
-    sudo apt-get install libxml2 libxslt1.1 zlib1g python rustc cargo
+    sudo apt-get install libxml2 libxslt1.1 zlib1g python3 rustc cargo
 
 Then you have several options. The following text applies for most Python
 software by the way.
@@ -61,7 +61,7 @@ The dirty, easy way
 
 The easiest way to install vdirsyncer at this point would be to run::
 
-    pip install --user --ignore-installed vdirsyncer
+    pip3 install --user --ignore-installed vdirsyncer
 
 - ``--user`` is to install without root rights (into your home directory)
 - ``--ignore-installed`` is to work around Debian's potentially broken packages
