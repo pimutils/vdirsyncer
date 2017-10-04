@@ -10,3 +10,4 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
 fi
 
 curl https://sh.rustup.rs -sSf | sh -s -- -y
+export PATH="~/.cargo/bin/:$PATH"
