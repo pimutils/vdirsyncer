@@ -71,7 +71,7 @@ class Item(object):
         '''Global identifier of the item, across storages, doesn't change after
         a modification of the item.'''
         if not self._component:
-            raise ValueError('Item malformed.')
+            return None
         return native.get_uid(self._component) or None
 
     @cached_property
