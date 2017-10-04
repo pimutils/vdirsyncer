@@ -49,7 +49,10 @@ def build_native(spec):
         dylib=lambda: build.find_dylib(
             'vdirsyncer_rustext', in_path='target/release'),
         header_filename=lambda: build.find_header(
-            'vdirsyncer_rustext.h', in_path='target')
+            'vdirsyncer_rustext.h', in_path='target'),
+        # Rust bug: If thread-local storage is used, this flag is necessary
+        # (mitsuhiko)
+        rtld_flags=['NODELETE']
     )
 
 
