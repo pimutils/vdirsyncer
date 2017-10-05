@@ -139,4 +139,11 @@ ssh-submodule-urls:
 		echo -n 'New URL: '; \
 		git remote get-url origin"
 
+install-rust:
+	curl https://sh.rustup.rs -sSf | sh -s -- -y
+
+rust-ext:
+	[ "$$READTHEDOCS" != "True" ] || $(MAKE) install-rust
+	cd ./rust && PATH="$$HOME/.cargo/bin/:$$PATH" cargo build --release
+
 .PHONY: docs

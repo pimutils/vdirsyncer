@@ -9,5 +9,5 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
     . $HOME/osx-py3/bin/activate
 fi
 
-curl https://sh.rustup.rs -sSf | sh -s -- -y
+make install-rust
 export PATH="$HOME/.cargo/bin/:$PATH"
