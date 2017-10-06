@@ -84,7 +84,7 @@ There is a way to install Python software without scattering stuff across
 your filesystem: virtualenv_. There are a lot of resources on how to use it,
 the simplest possible way would look something like::
 
-    virtualenv ~/vdirsyncer_env
+    virtualenv --python python3 ~/vdirsyncer_env
     ~/vdirsyncer_env/bin/pip install -v vdirsyncer
     alias vdirsyncer="$HOME/vdirsyncer_env/bin/vdirsyncer"
 
