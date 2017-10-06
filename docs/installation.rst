@@ -48,10 +48,10 @@ following things are installed:
   its package manager ``cargo``.
 - Linux or OS X. **Windows is not supported**, see :gh:`535`.
 
-On Linux systems, using the distro's package manager is the best
-way to do this, for example, using Ubuntu::
+On Linux systems, using the distro's package manager is the best way to do
+this, for example, using Ubuntu (last tried on Trusty)::
 
-    sudo apt-get install libxml2 libxslt1.1 zlib1g python3 rustc cargo
+    sudo apt-get install python3 python3-pip libffi-dev rustc cargo
 
 Then you have several options. The following text applies for most Python
 software by the way.
@@ -61,11 +61,14 @@ The dirty, easy way
 
 The easiest way to install vdirsyncer at this point would be to run::
 
-    pip3 install --user --ignore-installed vdirsyncer
+    pip3 install -v --user --ignore-installed vdirsyncer
 
 - ``--user`` is to install without root rights (into your home directory)
 - ``--ignore-installed`` is to work around Debian's potentially broken packages
-  (see :ref:`debian-urllib3`).
+  (see :ref:`debian-urllib3`). You can try to omit it if you run into other
+  problems related to certificates, for example.
+
+Your executable is then in ``~/.local/bin/``.
 
 This method has a major flaw though: Pip doesn't keep track of the files it
 installs. Vdirsyncer's files would be located somewhere in
@@ -82,8 +85,8 @@ your filesystem: virtualenv_. There are a lot of resources on how to use it,
 the simplest possible way would look something like::
 
     virtualenv ~/vdirsyncer_env
-    ~/vdirsyncer_env/bin/pip install vdirsyncer
-    alias vdirsyncer="~/vdirsyncer_env/bin/vdirsyncer
+    ~/vdirsyncer_env/bin/pip install -v vdirsyncer
+    alias vdirsyncer="$HOME/vdirsyncer_env/bin/vdirsyncer"
 
 You'll have to put the last line into your ``.bashrc`` or ``.bash_profile``.
 
