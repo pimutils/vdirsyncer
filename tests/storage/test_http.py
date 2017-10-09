@@ -4,10 +4,9 @@ import pytest
 
 from requests import Response
 
-from tests import normalize_item
-
 from vdirsyncer.exceptions import UserError
 from vdirsyncer.storage.http import HttpStorage, prepare_auth
+from vdirsyncer.vobject import Item
 
 
 def test_list(monkeypatch):
@@ -56,9 +55,9 @@ def test_list(monkeypatch):
         item, etag2 = s.get(href)
         assert item.uid is not None
         assert etag2 == etag
-        found_items[normalize_item(item)] = href
+        found_items[item.hash] = href
 
-    expected = set(normalize_item(u'BEGIN:VCALENDAR\n' + x + '\nEND:VCALENDAR')
+    expected = set(Item(u'BEGIN:VCALENDAR\n' + x + '\nEND:VCALENDAR').hash
                    for x in items)
 
     assert set(found_items) == expected
@@ -67,7 +66,7 @@ def test_list(monkeypatch):
         item, etag2 = s.get(href)
         assert item.uid is not None
         assert etag2 == etag
-        assert found_items[normalize_item(item)] == href
+        assert found_items[item.hash] == href
 
 
 def test_readonly_param():

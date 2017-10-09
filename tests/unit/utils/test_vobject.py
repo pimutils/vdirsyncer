@@ -9,7 +9,7 @@ from hypothesis.stateful import Bundle, RuleBasedStateMachine, rule
 import pytest
 
 from tests import BARE_EVENT_TEMPLATE, EVENT_TEMPLATE, \
-    EVENT_WITH_TIMEZONE_TEMPLATE, VCARD_TEMPLATE, normalize_item, \
+    EVENT_WITH_TIMEZONE_TEMPLATE, VCARD_TEMPLATE, \
     uid_strategy
 
 import vdirsyncer.vobject as vobject
@@ -31,8 +31,8 @@ _simple_joined = u'\r\n'.join(
 def test_split_collection_simple(benchmark):
     given = benchmark(lambda: list(vobject.split_collection(_simple_joined)))
 
-    assert [normalize_item(item) for item in given] == \
-        [normalize_item(item) for item in _simple_split]
+    assert [vobject.Item(item).hash for item in given] == \
+        [vobject.Item(item).hash for item in _simple_split]
 
     assert [x.splitlines() for x in given] == \
         [x.splitlines() for x in _simple_split]
@@ -47,8 +47,8 @@ def test_split_collection_multiple_wrappers(benchmark):
     )
     given = benchmark(lambda: list(vobject.split_collection(joined)))
 
-    assert [normalize_item(item) for item in given] == \
-        [normalize_item(item) for item in _simple_split]
+    assert [vobject.Item(item).hash for item in given] == \
+        [vobject.Item(item).hash for item in _simple_split]
 
     assert [x.splitlines() for x in given] == \
         [x.splitlines() for x in _simple_split]
@@ -56,7 +56,7 @@ def test_split_collection_multiple_wrappers(benchmark):
 
 def test_join_collection_simple(benchmark):
     given = benchmark(lambda: vobject.join_collection(_simple_split))
-    assert normalize_item(given) == normalize_item(_simple_joined)
+    assert vobject.Item(given).hash == vobject.Item(_simple_joined).hash
     assert given.splitlines() == _simple_joined.splitlines()
 
 
@@ -123,12 +123,12 @@ def test_split_collection_timezones():
         [timezone, u'END:VCALENDAR']
     )
 
-    given = set(normalize_item(item)
+    given = set(vobject.Item(item).hash
                 for item in vobject.split_collection(full))
     expected = set(
-        normalize_item(u'\r\n'.join((
+        vobject.Item(u'\r\n'.join((
             u'BEGIN:VCALENDAR', item, timezone, u'END:VCALENDAR'
-        )))
+        ))).hash
         for item in items
     )
 
@@ -146,11 +146,11 @@ def test_split_contacts():
             with_wrapper.splitlines()
 
 
-def test_hash_item():
+def test_hash_item2():
     a = EVENT_TEMPLATE.format(r=1, uid=1)
     b = u'\n'.join(line for line in a.splitlines()
                    if u'PRODID' not in line)
-    assert vobject.hash_item(a) == vobject.hash_item(b)
+    assert vobject.Item(a).hash == vobject.Item(b).hash
 
 
 def test_multiline_uid(benchmark):
@@ -351,3 +351,47 @@ def test_component_contains():
 
     with pytest.raises(ValueError):
         42 in item
+
+
+def test_hash_item():
+    item1 = vobject.Item(
+        'BEGIN:FOO\r\n'
+        'X-RADICALE-NAME:YES\r\n'
+        'END:FOO\r\n'
+    )
+
+    item2 = vobject.Item(
+        'BEGIN:FOO\r\n'
+        'X-RADICALE-NAME:NO\r\n'
+        'END:FOO\r\n'
+    )
+
+    assert item1.hash == item2.hash
+
+    item2 = vobject.Item(
+        'BEGIN:FOO\r\n'
+        'X-RADICALE-NAME:NO\r\n'
+        'OTHER-PROP:YAY\r\n'
+        'END:FOO\r\n'
+    )
+
+    assert item1.hash != item2.hash
+
+
+def test_hash_item_timezones():
+    item1 = vobject.Item(
+        'BEGIN:VCALENDAR\r\n'
+        'HELLO:HAHA\r\n'
+        'BEGIN:VTIMEZONE\r\n'
+        'PROP:YES\r\n'
+        'END:VTIMEZONE\r\n'
+        'END:VCALENDAR\r\n'
+    )
+
+    item2 = vobject.Item(
+        'BEGIN:VCALENDAR\r\n'
+        'HELLO:HAHA\r\n'
+        'END:VCALENDAR\r\n'
+    )
+
+    assert item1.hash == item2.hash

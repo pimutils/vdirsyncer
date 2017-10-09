@@ -15,7 +15,7 @@ from vdirsyncer.storage.base import normalize_meta_value
 from vdirsyncer.vobject import Item
 
 from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
-    assert_item_equals, format_item, normalize_item, \
+    assert_item_equals, format_item, \
     printable_characters_strategy
 
 
@@ -348,4 +348,4 @@ class StorageTests(object):
         href, etag = s.upload(item)
 
         item2, etag2 = s.get(href)
-        assert normalize_item(item) == normalize_item(item2)
+        assert item.hash == item2.hash

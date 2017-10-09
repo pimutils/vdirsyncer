@@ -1,38 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import hashlib
 from itertools import chain, tee
 
 from .utils import cached_property, uniq
 from . import exceptions, native
-
-
-IGNORE_PROPS = (
-    # PRODID is changed by radicale for some reason after upload
-    'PRODID',
-    # Sometimes METHOD:PUBLISH is added by WebCAL providers, for us it doesn't
-    # make a difference
-    'METHOD',
-    # X-RADICALE-NAME is used by radicale, because hrefs don't really exist in
-    # their filesystem backend
-    'X-RADICALE-NAME',
-    # Apparently this is set by Horde?
-    # https://github.com/pimutils/vdirsyncer/issues/318
-    'X-WR-CALNAME',
-    # Those are from the VCARD specification and is supposed to change when the
-    # item does -- however, we can determine that ourselves
-    'REV',
-    'LAST-MODIFIED',
-    'CREATED',
-    # Some iCalendar HTTP calendars generate the DTSTAMP at request time, so
-    # this property always changes when the rest of the item didn't. Some do
-    # the same with the UID.
-    #
-    # - Google's read-only calendar links
-    # - http://www.feiertage-oesterreich.at/
-    'DTSTAMP',
-    'UID',
-)
 
 
 class Item(object):
@@ -76,8 +47,11 @@ class Item(object):
 
     @cached_property
     def hash(self):
-        '''Hash of self.raw, used for etags.'''
-        return hash_item(self.raw)
+        '''Used for etags.'''
+        if not self.is_valid:
+            raise ValueError('Item malformed.')
+
+        return native.hash_component(self._component)
 
     @cached_property
     def ident(self):
@@ -105,36 +79,6 @@ class Item(object):
     @property
     def is_valid(self):
         return bool(self._component)
-
-
-def normalize_item(item, ignore_props=IGNORE_PROPS):
-    '''Create syntactically invalid mess that is equal for similar items.'''
-    if not isinstance(item, Item):
-        item = Item(item)
-
-    item = _strip_timezones(item)
-
-    x = _Component('TEMP', item.raw.splitlines(), [])
-    for prop in IGNORE_PROPS:
-        del x[prop]
-
-    x.props.sort()
-    return u'\r\n'.join(filter(bool, (line.strip() for line in x.props)))
-
-
-def _strip_timezones(item):
-    parsed = item.parsed
-    if not parsed or parsed.name != 'VCALENDAR':
-        return item
-
-    parsed.subcomponents = [c for c in parsed.subcomponents
-                            if c.name != 'VTIMEZONE']
-
-    return Item('\r\n'.join(parsed.dump_lines()))
-
-
-def hash_item(text):
-    return hashlib.sha256(normalize_item(text).encode('utf-8')).hexdigest()
 
 
 def split_collection(text):

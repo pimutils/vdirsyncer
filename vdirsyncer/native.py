@@ -39,3 +39,7 @@ def _component_rv(c):
 
 def clone_component(c):
     return _component_rv(lib.vdirsyncer_clone_component(c))
+
+
+def hash_component(c):
+    return _string_rv(lib.vdirsyncer_hash_component(c))

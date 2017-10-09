@@ -9,7 +9,8 @@ name = "vdirsyncer_rustext"
 crate-type = ["cdylib"]
 
 [dependencies]
-vobject = "0.2.0"
+vobject = "0.3.0"
+ring = "0.12.1"
 
 [build-dependencies]
 cbindgen = "0.1"

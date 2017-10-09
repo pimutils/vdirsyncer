@@ -7,7 +7,7 @@ import random
 
 import hypothesis.strategies as st
 
-from vdirsyncer.vobject import Item, normalize_item
+from vdirsyncer.vobject import Item
 
 import urllib3
 import urllib3.exceptions
@@ -20,7 +20,7 @@ def blow_up(*a, **kw):
 
 
 def assert_item_equals(a, b):
-    assert normalize_item(a) == normalize_item(b)
+    assert a.hash == b.hash
 
 
 VCARD_TEMPLATE = u'''BEGIN:VCARD
