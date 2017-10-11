@@ -45,6 +45,9 @@ PYTEST = py.test $(PYTEST_ARGS)
 export TESTSERVER_BASE := ./tests/storage/servers/
 CODECOV_PATH = /tmp/codecov.sh
 
+all:
+	$(error Take a look at https://vdirsyncer.pimutils.org/en/stable/tutorial.html#installation)
+
 ifeq ($(CI), true)
 test:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
@@ -58,9 +61,6 @@ else
 test:
 	$(PYTEST)
 endif
-
-all:
-	$(error Take a look at https://vdirsyncer.pimutils.org/en/stable/tutorial.html#installation)
 
 install-servers:
 	set -ex; \
