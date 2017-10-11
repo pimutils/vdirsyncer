@@ -14,12 +14,15 @@ class Item(object):
     def __init__(self, raw, component=None):
         assert isinstance(raw, str), type(raw)
         self._raw = raw
+        if component is not None:
+            self.__dict__['_component'] = component
 
+    @cached_property
+    def _component(self):
         try:
-            self._component = component or \
-                native.parse_component(self.raw.encode('utf-8'))
+            return native.parse_component(self.raw.encode('utf-8'))
         except exceptions.VobjectParseError:
-            self._component = None
+            return None
 
     def with_uid(self, new_uid):
         if not self._component:
