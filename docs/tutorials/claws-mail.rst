@@ -86,7 +86,7 @@ Crontab
 On the end we create a crontab, so that vdirsyncer syncs automatically
 every 30 minutes our contacts::
 
-    contab -e
+    crontab -e
 
 On the end of that file enter this line::
 
