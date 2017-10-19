@@ -10,7 +10,12 @@ cfg = {}
 cfg['sudo'] = True
 cfg['dist'] = 'trusty'
 cfg['language'] = 'python'
-cfg['cache'] = 'pip'
+cfg['cache'] = {
+    'pip': True,
+    'directories': [
+        './rust/target/'
+    ]
+}
 
 cfg['git'] = {
     'submodules': False

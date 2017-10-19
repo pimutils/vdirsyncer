@@ -5,7 +5,12 @@
       "master"
     ]
   },
-  "cache": "pip",
+  "cache": {
+    "directories": [
+      "./rust/target/"
+    ],
+    "pip": true
+  },
   "dist": "trusty",
   "git": {
     "submodules": false
