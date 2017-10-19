@@ -51,7 +51,10 @@ following things are installed:
 On Linux systems, using the distro's package manager is the best way to do
 this, for example, using Ubuntu (last tried on Trusty)::
 
-    sudo apt-get install python3 python3-pip libffi-dev rustc cargo
+    sudo apt-get install python3 python3-pip libffi-dev
+
+Rust may need to be installed separately, as the packages in Ubuntu are usually
+out-of-date. I recommend `rustup <https://rustup.rs/>`_ for that.
 
 Then you have several options. The following text applies for most Python
 software by the way.
