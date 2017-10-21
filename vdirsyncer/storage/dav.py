@@ -724,8 +724,8 @@ class CalDAVStorage(DAVStorage):
     example, the following would synchronize the timerange from one year in the
     past to one year in the future::
 
-        start_date = datetime.now() - timedelta(days=365)
-        end_date = datetime.now() + timedelta(days=365)
+        start_date = "datetime.now() - timedelta(days=365)"
+        end_date = "datetime.now() + timedelta(days=365)"
 
     Either both or none have to be specified. The default is to synchronize
     everything.
