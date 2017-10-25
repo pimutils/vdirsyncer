@@ -114,7 +114,7 @@ release-deb:
 	sh scripts/release-deb.sh ubuntu zesty
 
 install-dev:
-	pip install -e .
+	pip install -ve .
 	[ "$(ETESYNC_TESTS)" = "false" ] || pip install -e .[etesync]
 	set -xe && if [ "$(REQUIREMENTS)" = "devel" ]; then \
 	    pip install -U --force-reinstall \

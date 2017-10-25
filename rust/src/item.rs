@@ -12,8 +12,6 @@ use VdirsyncerError;
 
 const EMPTY_STRING: *const c_char = b"\0" as *const u8 as *const c_char;
 
-// Workaround to be able to use opaque pointer
-#[repr(C)]
 pub struct VdirsyncerComponent(vobject::Component);
 
 #[no_mangle]
