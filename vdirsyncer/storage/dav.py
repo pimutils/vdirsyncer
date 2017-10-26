@@ -792,32 +792,28 @@ class CalDAVStorage(DAVStorage):
 
     @staticmethod
     def _get_list_filters(components, start, end):
-        if components:
-            caldavfilter = '''
-                <C:comp-filter name="VCALENDAR">
-                    <C:comp-filter name="{component}">
-                        {timefilter}
-                    </C:comp-filter>
+        caldavfilter = '''
+            <C:comp-filter name="VCALENDAR">
+                <C:comp-filter name="{component}">
+                    {timefilter}
                 </C:comp-filter>
-                '''
+            </C:comp-filter>
+            '''
 
-            if start is not None and end is not None:
-                start = start.strftime(CALDAV_DT_FORMAT)
-                end = end.strftime(CALDAV_DT_FORMAT)
+        timefilter = ''
 
-                timefilter = ('<C:time-range start="{start}" end="{end}"/>'
-                              .format(start=start, end=end))
-            else:
-                timefilter = ''
+        if start is not None and end is not None:
+            start = start.strftime(CALDAV_DT_FORMAT)
+            end = end.strftime(CALDAV_DT_FORMAT)
 
-            for component in components:
-                yield caldavfilter.format(component=component,
-                                          timefilter=timefilter)
-        else:
-            if start is not None and end is not None:
-                for x in CalDAVStorage._get_list_filters(('VTODO', 'VEVENT'),
-                                                         start, end):
-                    yield x
+            timefilter = ('<C:time-range start="{start}" end="{end}"/>'
+                          .format(start=start, end=end))
+            if not components:
+                components = ('VTODO', 'VEVENT')
+
+        for component in components:
+            yield caldavfilter.format(component=component,
+                                      timefilter=timefilter)
 
     def list(self):
         caldavfilters = list(self._get_list_filters(
@@ -833,8 +829,8 @@ class CalDAVStorage(DAVStorage):
             # instead?
             #
             # See https://github.com/dmfs/tasks/issues/118 for backstory.
-            for x in DAVStorage.list(self):
-                yield x
+            yield from DAVStorage.list(self)
+            return
 
         data = '''<?xml version="1.0" encoding="utf-8" ?>
             <C:calendar-query xmlns:D="DAV:"
