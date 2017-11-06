@@ -43,7 +43,7 @@ pub unsafe extern "C" fn vdirsyncer_parse_component(s: *const c_char, err: *mut 
         Ok(x) => mem::transmute(Box::new(VdirsyncerComponent(x))),
         Err(e) => {
             (*err).failed = true;
-            (*err).msg = CString::new(e.into_string()).unwrap().into_raw();
+            (*err).msg = CString::new(e.description()).unwrap().into_raw();
             mem::zeroed()
         }
     }
