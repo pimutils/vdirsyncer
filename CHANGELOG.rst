@@ -9,6 +9,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.17.0
+==============
+
+- Fix bug where collection discovery under DAV-storages would produce invalid
+  XML. See :gh:`688`.
+
 Version 0.16.3
 ==============
 

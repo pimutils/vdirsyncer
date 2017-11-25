@@ -146,7 +146,7 @@ class Discover(object):
     _homeset_xml = None
     _homeset_tag = None
     _well_known_uri = None
-    _collection_xml = b"""
+    _collection_xml = b"""<?xml version="1.0" encoding="utf-8" ?>
     <d:propfind xmlns:d="DAV:">
         <d:prop>
             <d:resourcetype />
