@@ -293,7 +293,7 @@ class StorageTests(object):
 
     @given(value=st.one_of(
         st.none(),
-        printable_characters_strategy.filter(lambda x: x.strip() != x)
+        printable_characters_strategy
     ))
     def test_metadata_normalization(self, requires_metadata, s, value):
         x = s.get_meta('displayname')
