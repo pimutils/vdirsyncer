@@ -348,4 +348,5 @@ class StorageTests(object):
         href, etag = s.upload(item)
 
         item2, etag2 = s.get(href)
-        assert item.hash == item2.hash
+        assert item2.raw.count('BEGIN:VEVENT') == 2
+        assert 'RRULE' in item2.raw
