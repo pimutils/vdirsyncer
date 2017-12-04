@@ -103,7 +103,7 @@ linkcheck:
 	sphinx-build -W -b linkcheck ./docs/ ./docs/_build/linkcheck/
 
 release:
-	python setup.py sdist bdist_wheel upload
+	python setup.py sdist upload
 
 release-deb:
 	sh scripts/release-deb.sh debian jessie
