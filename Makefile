@@ -36,8 +36,7 @@ ifeq ($(COVERAGE), true)
 endif
 
 ifeq ($(ETESYNC_TESTS), true)
-	TEST_EXTRA_PACKAGES += git+https://github.com/etesync/journal-manager
-	TEST_EXTRA_PACKAGES += django djangorestframework wsgi_intercept drf-nested-routers
+	TEST_EXTRA_PACKAGES += django-etesync-journal django djangorestframework wsgi_intercept drf-nested-routers
 endif
 
 PYTEST = py.test $(PYTEST_ARGS)
