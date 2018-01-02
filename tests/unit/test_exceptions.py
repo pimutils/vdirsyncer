@@ -11,4 +11,4 @@ def test_user_error_problems():
     assert 'one' in str(e)
     assert 'two' in str(e)
     assert 'three' in str(e)
-    assert 'problems occured' in str(e)
+    assert 'problems occurred' in str(e)
