@@ -144,9 +144,9 @@ def handle_cli_error(status_name=None, e=None):
         import traceback
         tb = traceback.format_tb(tb)
         if status_name:
-            msg = 'Unknown error occured for {}'.format(status_name)
+            msg = 'Unknown error occurred for {}'.format(status_name)
         else:
-            msg = 'Unknown error occured'
+            msg = 'Unknown error occurred'
 
         msg += ': {}\nUse `-vdebug` to see the full traceback.'.format(e)
 
