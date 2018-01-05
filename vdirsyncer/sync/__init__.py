@@ -27,6 +27,7 @@ sync_logger = logging.getLogger(__name__)
 class _StorageInfo(object):
     '''A wrapper class that holds prefetched items, the status and other
     things.'''
+
     def __init__(self, storage, status):
         self.storage = storage
         self.status = status
@@ -57,6 +58,12 @@ class _StorageInfo(object):
         # Prefetch items
         for href, item, etag in (self.storage.get_multi(prefetch)
                                  if prefetch else ()):
+            if not item.is_parseable:
+                sync_logger.warning(
+                    'Storage "{}": item {} is malformed. '
+                    'Please try to repair it.'
+                    .format(self.storage.instance_name, href)
+                )
             _store_props(item.ident, ItemMetadata(
                 href=href,
                 hash=item.hash,
@@ -122,9 +129,9 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
         raise BothReadOnly()
 
     if conflict_resolution == 'a wins':
-        conflict_resolution = lambda a, b: a
+        def conflict_resolution(a, b): return a
     elif conflict_resolution == 'b wins':
-        conflict_resolution = lambda a, b: b
+        def conflict_resolution(a, b): return b
 
     status_nonempty = bool(next(status.iter_old(), None))
 

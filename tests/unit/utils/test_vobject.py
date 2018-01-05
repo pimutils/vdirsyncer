@@ -235,7 +235,7 @@ def test_broken_item():
     assert 'Parsing error at line 1' in str(excinfo.value)
 
     item = vobject.Item('END:FOO')
-    assert item.parsed is None
+    assert not item.is_parseable
 
 
 def test_multiple_items():

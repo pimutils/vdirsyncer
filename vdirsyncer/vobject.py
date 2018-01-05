@@ -33,6 +33,10 @@ class Item(object):
         return Item(native.write_component(new_c), component=new_c)
 
     @property
+    def is_parseable(self):
+        return bool(self._component)
+
+    @property
     def raw(self):
         '''Raw content of the item, as unicode string.
 
@@ -69,15 +73,6 @@ class Item(object):
         #
         # 2. The status file would contain really sensitive information.
         return self.uid or self.hash
-
-    @property
-    def parsed(self):
-        '''Don't cache because the rv is mutable.'''
-        # FIXME: remove
-        try:
-            return _Component.parse(self.raw)
-        except Exception:
-            return None
 
     @property
     def is_valid(self):

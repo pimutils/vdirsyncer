@@ -40,7 +40,7 @@ def repair_storage(storage, repair_unsafe_uid):
 
 
 def repair_item(href, item, seen_uids, repair_unsafe_uid):
-    if item.parsed is None:
+    if not item.is_parseable:
         raise IrreparableItem()
 
     new_item = item
