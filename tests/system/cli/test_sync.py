@@ -40,7 +40,8 @@ def test_simple_run(tmpdir, runner):
     tmpdir.join('path_a/haha.txt').write(item.raw)
     result = runner.invoke(['sync'])
     assert 'Copying (uploading) item haha to my_b' in result.output
-    assert tmpdir.join('path_b/haha.txt').read() == item.raw
+    assert tmpdir.join('path_b/haha.txt').read().splitlines() == \
+        item.raw.splitlines()
 
 
 def test_sync_inexistant_pair(tmpdir, runner):
@@ -433,8 +434,8 @@ def test_conflict_resolution(tmpdir, runner, resolution, expect_foo,
     r = runner.invoke(['sync'])
     assert not r.exception
 
-    assert fooitem.read() == expect_foo
-    assert baritem.read() == expect_bar
+    assert fooitem.read().splitlines() == expect_foo.splitlines()
+    assert baritem.read().splitlines() == expect_bar.splitlines()
 
 
 @pytest.mark.parametrize('partial_sync', ['error', 'ignore', 'revert', None])

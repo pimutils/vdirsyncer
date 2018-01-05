@@ -150,20 +150,25 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
 
         actions = list(_get_actions(a_info, b_info))
 
-        with storage_a.at_once(), storage_b.at_once():
-            for action in actions:
-                try:
-                    action.run(
-                        a_info,
-                        b_info,
-                        conflict_resolution,
-                        partial_sync
-                    )
-                except Exception as e:
-                    if error_callback:
-                        error_callback(e)
-                    else:
-                        raise
+        storage_a.buffered()
+        storage_b.buffered()
+
+        for action in actions:
+            try:
+                action.run(
+                    a_info,
+                    b_info,
+                    conflict_resolution,
+                    partial_sync
+                )
+            except Exception as e:
+                if error_callback:
+                    error_callback(e)
+                else:
+                    raise
+
+        storage_a.flush()
+        storage_b.flush()
 
 
 class Action:

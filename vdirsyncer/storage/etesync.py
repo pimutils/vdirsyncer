@@ -1,4 +1,3 @@
-import contextlib
 import functools
 import logging
 import os
@@ -30,10 +29,10 @@ logger = logging.getLogger(__name__)
 def _writing_op(f):
     @functools.wraps(f)
     def inner(self, *args, **kwargs):
-        if not self._at_once:
+        if not self._buffered:
             self._sync_journal()
         rv = f(self, *args, **kwargs)
-        if not self._at_once:
+        if not self._buffered:
             self._sync_journal()
         return rv
     return inner
@@ -110,7 +109,7 @@ class EtesyncStorage(Storage):
 
     _collection_type = None
     _item_type = None
-    _at_once = False
+    _buffered = False
 
     def __init__(self, email, secrets_dir, server_url=None, db_path=None,
                  **kwargs):
@@ -213,15 +212,11 @@ class EtesyncStorage(Storage):
         except etesync.exceptions.DoesNotExist as e:
             raise exceptions.NotFoundError(e)
 
-    @contextlib.contextmanager
-    def at_once(self):
+    def buffered(self):
+        self._buffered = True
+
+    def flush(self):
         self._sync_journal()
-        self._at_once = True
-        try:
-            yield self
-            self._sync_journal()
-        finally:
-            self._at_once = False
 
 
 class EtesyncContacts(EtesyncStorage):

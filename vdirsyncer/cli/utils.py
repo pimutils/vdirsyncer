@@ -244,6 +244,9 @@ def save_status(base_path, pair, collection=None, data_type=None, data=None):
 
 def storage_class_from_config(config):
     config = dict(config)
+    if 'type' not in config:
+        raise exceptions.UserError('Missing parameter "type"')
+
     storage_name = config.pop('type')
     try:
         cls = storage_names[storage_name]
