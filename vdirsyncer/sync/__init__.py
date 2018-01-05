@@ -129,9 +129,9 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
         raise BothReadOnly()
 
     if conflict_resolution == 'a wins':
-        def conflict_resolution(a, b): return a
+        conflict_resolution = lambda a, b: a
     elif conflict_resolution == 'b wins':
-        def conflict_resolution(a, b): return b
+        conflict_resolution = lambda a, b: b
 
     status_nonempty = bool(next(status.iter_old(), None))
 

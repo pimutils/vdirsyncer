@@ -81,7 +81,7 @@ install-test: install-servers
 	[ -z "$(TEST_EXTRA_PACKAGES)" ] || pip install $(TEST_EXTRA_PACKAGES)
 
 install-style: install-docs
-	pip install flake8 flake8-import-order 'flake8-bugbear>=17.3.0' autopep8
+	pip install flake8 flake8-import-order 'flake8-bugbear>=17.3.0'
 	
 style:
 	flake8
@@ -122,13 +122,6 @@ install-dev:
 	elif [ "$(REQUIREMENTS)" = "minimal" ]; then \
 		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
 	fi
-
-install-git-hooks: install-style
-	echo "make style-autocorrect" > .git/hooks/pre-commit
-	chmod +x .git/hooks/pre-commit
-
-style-autocorrect:
-	git diff --cached --name-only | egrep '\.py$$' | xargs --no-run-if-empty autopep8 -ri
 
 ssh-submodule-urls:
 	git submodule foreach "\
