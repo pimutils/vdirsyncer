@@ -8,6 +8,7 @@ latest_python = "3.6"
 cfg = {}
 
 cfg['sudo'] = True
+cfg['services'] = ['docker']
 cfg['dist'] = 'trusty'
 cfg['language'] = 'python'
 cfg['cache'] = {
@@ -22,7 +23,7 @@ cfg['git'] = {
 }
 
 cfg['branches'] = {
-    'only': ['auto', 'master']
+    'only': ['auto', 'master', 'nextcloud-docker']
 }
 
 cfg['install'] = """

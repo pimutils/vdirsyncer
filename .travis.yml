@@ -2,7 +2,8 @@
   "branches": {
     "only": [
       "auto",
-      "master"
+      "master",
+      "nextcloud-docker"
     ]
   },
   "cache": {
@@ -142,6 +143,9 @@
   },
   "script": [
     "make -e $BUILD"
+  ],
+  "services": [
+    "docker"
   ],
   "sudo": true
 }
