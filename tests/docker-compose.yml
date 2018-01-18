@@ -1,0 +1,11 @@
+version: '2'
+
+services:
+    nextcloud:
+        image: nextcloud
+        ports:
+            - '8080:80'
+        environment:
+            - SQLITE_DATABASE=nextcloud
+            - NEXTCLOUD_ADMIN_USER=asdf
+            - NEXTCLOUD_ADMIN_PASSWORD=asdf

@@ -52,12 +52,10 @@ Servers
 .. toctree::
     :maxdepth: 1
 
-    baikal
     davmail
     fastmail
     google
     icloud
     nextcloud
-    owncloud
     radicale
     xandikos

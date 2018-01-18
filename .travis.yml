@@ -95,15 +95,7 @@
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=release ",
-        "python": "3.6"
-      },
-      {
         "env": "BUILD=test DAV_SERVER=nextcloud REQUIREMENTS=release ",
-        "python": "3.6"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=release ",
         "python": "3.6"
       },
       {
@@ -142,6 +134,9 @@
   },
   "script": [
     "make -e $BUILD"
+  ],
+  "services": [
+    "docker"
   ],
   "sudo": true
 }
