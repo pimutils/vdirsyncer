@@ -2,8 +2,7 @@
   "branches": {
     "only": [
       "auto",
-      "master",
-      "nextcloud-docker"
+      "master"
     ]
   },
   "cache": {
@@ -96,15 +95,7 @@
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=release ",
-        "python": "3.6"
-      },
-      {
         "env": "BUILD=test DAV_SERVER=nextcloud REQUIREMENTS=release ",
-        "python": "3.6"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=release ",
         "python": "3.6"
       },
       {

@@ -23,7 +23,7 @@ cfg['git'] = {
 }
 
 cfg['branches'] = {
-    'only': ['auto', 'master', 'nextcloud-docker']
+    'only': ['auto', 'master']
 }
 
 cfg['install'] = """
