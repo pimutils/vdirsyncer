@@ -291,10 +291,10 @@ class StorageTests(object):
             assert rv == x
             assert isinstance(rv, str)
 
-    @given(value=st.one_of(
-        st.none(),
-        printable_characters_strategy
-    ))
+    @pytest.mark.parametrize('value', [
+        'fööbör',
+        'ананасовое перо'
+    ])
     def test_metadata_normalization(self, requires_metadata, s, value):
         x = s.get_meta('displayname')
         assert x == normalize_meta_value(x)
