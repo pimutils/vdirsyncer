@@ -53,8 +53,8 @@ pairs of storages should actually be synchronized is defined in :ref:`pair
 section <pair_config>`.  This format is copied from OfflineIMAP, where storages
 are called repositories and pairs are called accounts.
 
-The following example synchronizes addressbooks from a :doc:`NextCloud` to
-``~/.contacts/``::
+The following example synchronizes addressbooks from a :doc:`NextCloud
+<tutorials/nextcloud>` to ``~/.contacts/``::
 
 
     [pair my_contacts]

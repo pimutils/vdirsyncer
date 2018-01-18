@@ -5,9 +5,6 @@ import uuid
 import textwrap
 from urllib.parse import quote as urlquote, unquote as urlunquote
 
-import hypothesis.strategies as st
-from hypothesis import given
-
 import pytest
 
 from vdirsyncer import exceptions
@@ -15,8 +12,7 @@ from vdirsyncer.storage.base import normalize_meta_value
 from vdirsyncer.vobject import Item
 
 from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
-    assert_item_equals, format_item, \
-    printable_characters_strategy
+    assert_item_equals, format_item
 
 
 def get_server_mixin(server_name):
