@@ -43,7 +43,7 @@ fileext = ".vcf"
 
 [storage bob_contacts_remote]
 type = "carddav"
-url = "https://owncloud.example.com/remote.php/carddav/"
+url = "https://nextcloud.example.com/"
 #username =
 # The password can also be fetched from the system password storage, netrc or a
 # custom command. See http://vdirsyncer.pimutils.org/en/stable/keyring.html
@@ -65,6 +65,6 @@ fileext = ".ics"
 
 [storage bob_calendar_remote]
 type = "caldav"
-url = "https://owncloud.example.com/remote.php/caldav/"
+url = "https://nextcloud.example.com/"
 #username =
 #password =

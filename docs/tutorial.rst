@@ -53,7 +53,8 @@ pairs of storages should actually be synchronized is defined in :ref:`pair
 section <pair_config>`.  This format is copied from OfflineIMAP, where storages
 are called repositories and pairs are called accounts.
 
-The following example synchronizes ownCloud's addressbooks to ``~/.contacts/``::
+The following example synchronizes addressbooks from a :doc:`NextCloud` to
+``~/.contacts/``::
 
 
     [pair my_contacts]
@@ -70,7 +71,7 @@ The following example synchronizes ownCloud's addressbooks to ``~/.contacts/``::
     type = "carddav"
 
     # We can simplify this URL here as well. In theory it shouldn't matter.
-    url = "https://owncloud.example.com/remote.php/carddav/"
+    url = "https://nextcloud.example.com/"
     username = "bob"
     password = "asdf"
 
@@ -162,13 +163,13 @@ let's switch to a different base example. This time we'll synchronize calendars:
     [storage my_calendars_remote]
     type = "caldav"
 
-    url = "https://owncloud.example.com/remote.php/caldav/"
+    url = "https://nextcloud.example.com/"
     username = "bob"
     password = "asdf"
 
 Run ``vdirsyncer discover`` for discovery. Then you can use ``vdirsyncer
 metasync`` to synchronize the ``color`` property between your local calendars
-in ``~/.calendars/`` and your ownCloud. Locally the color is just represented
+in ``~/.calendars/`` and your NextCloud. Locally the color is just represented
 as a file called ``color`` within the calendar folder.
 
 .. _collections_tutorial:

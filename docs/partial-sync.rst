@@ -66,7 +66,3 @@ For such purposes you can set the ``partial_sync`` parameter to ``ignore``::
     partial_sync = ignore
 
 See :ref:`the config docs <partial_sync_def>` for more information.
-
-.. _nextCloud: https://nextcloud.com/
-.. _Baikal: http://sabre.io/baikal/
-.. _DAViCal: http://www.davical.org/

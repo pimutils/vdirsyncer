@@ -299,10 +299,8 @@ class StorageTests(object):
         x = s.get_meta('displayname')
         assert x == normalize_meta_value(x)
 
-        if not getattr(self, 'dav_server', None):
-            # ownCloud replaces "" with "unnamed"
-            s.set_meta('displayname', value)
-            assert s.get_meta('displayname') == normalize_meta_value(value)
+        s.set_meta('displayname', value)
+        assert s.get_meta('displayname') == normalize_meta_value(value)
 
     def test_recurring_events(self, s, item_type):
         if item_type != 'VEVENT':

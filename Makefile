@@ -1,7 +1,7 @@
 # See the documentation on how to run the tests:
 # https://vdirsyncer.pimutils.org/en/stable/contributing.html
 
-# Which DAV server to run the tests against (radicale, xandikos, skip, owncloud, nextcloud, ...)
+# Which DAV server to run the tests against (radicale, xandikos, skip, nextcloud, ...)
 export DAV_SERVER := skip
 
 # release (install release versions of dependencies)

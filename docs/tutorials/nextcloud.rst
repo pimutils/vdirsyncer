@@ -1,8 +1,8 @@
 =========
-nextCloud
+NextCloud
 =========
 
-Vdirsyncer is continuously tested against the latest version of nextCloud_::
+Vdirsyncer is continuously tested against the latest version of NextCloud_::
 
     [storage cal]
     type = "caldav"
@@ -17,4 +17,4 @@ Vdirsyncer is continuously tested against the latest version of nextCloud_::
 - WebCAL-subscriptions can't be discovered by vdirsyncer. See `this relevant
   issue <https://github.com/nextcloud/calendar/issues/63>`_.
 
-.. _nextCloud: https://nextcloud.com/
+.. _NextCloud: https://nextcloud.com/
