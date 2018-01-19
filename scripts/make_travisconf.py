@@ -50,7 +50,7 @@ for python, requirements in itertools.product(python_versions,
     dav_servers = ("radicale", "xandikos")
 
     if python == latest_python and requirements == "release":
-        dav_servers += ("nextcloud", "davical", "icloud", "fastmail")
+        dav_servers += ("nextcloud", "icloud", "fastmail")
 
     for dav_server in dav_servers:
         job = {

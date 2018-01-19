@@ -99,11 +99,6 @@
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=release ",
-        "if": "NOT (type IN (pull_request))",
-        "python": "3.6"
-      },
-      {
         "env": "BUILD=test DAV_SERVER=icloud REQUIREMENTS=release ",
         "if": "NOT (type IN (pull_request))",
         "python": "3.6"
