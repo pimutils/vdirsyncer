@@ -10,13 +10,15 @@ try:
         'url': 'https://brutus.lostpackets.de/davical-test/caldav.php/',
     }
 except KeyError as e:
-    pytestmark = pytest.mark.skip('Missing envkey: {}'.format(str(e)))
+    caldav_args = None
 
 
 @pytest.mark.flaky(reruns=5)
 class ServerMixin(object):
     @pytest.fixture
     def davical_args(self):
+        if caldav_args is None:
+            pytest.skip('Missing envkeys for davical')
         if self.storage_class.fileext == '.ics':
             return dict(caldav_args)
         elif self.storage_class.fileext == '.vcf':
