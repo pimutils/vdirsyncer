@@ -4,9 +4,6 @@ import json
 import sys
 from textwrap import dedent
 
-import hypothesis.strategies as st
-from hypothesis import example, given
-
 import pytest
 
 from tests import format_item
@@ -275,25 +272,13 @@ def test_multiple_pairs(tmpdir, runner):
 
 
 # XXX: https://github.com/pimutils/vdirsyncer/issues/617
-@pytest.mark.skipif(sys.platform == 'darwin',
-                    reason='This test inexplicably fails')
-@given(collections=st.sets(
-    st.text(
-        st.characters(
-            blacklist_characters=set(
-                u'./\x00'  # Invalid chars on POSIX filesystems
-            ),
-            # Surrogates can't be encoded to utf-8 in Python
-            blacklist_categories=set(['Cs'])
-        ),
-        min_size=1,
-        max_size=50
-    ),
-    min_size=1
-))
-@example(collections=[u'persönlich'])
-@example(collections={'a', 'A'})
-@example(collections={'\ufffe'})
+@pytest.mark.xfail(sys.platform == 'darwin',
+                   reason='This test inexplicably fails')
+@pytest.mark.parametrize('collections', [
+    {'persönlich'},
+    {'a', 'A'},
+    {'\ufffe'},
+])
 def test_create_collections(subtest, collections):
 
     @subtest
