@@ -63,8 +63,9 @@ def _validate_collections_param(collections):
             elif isinstance(collection, list):
                 e = ValueError(
                     'Expected list of format '
-                    '["config_name", "storage_a_name", "storage_b_name"]'
-                    .format(len(collection)))
+                    '["config_name", "storage_a_name", "storage_b_name"], but '
+                    'found {!r} instead.'
+                    .format(collection))
                 if len(collection) != 3:
                     raise e
 

@@ -1,6 +1,9 @@
 import os
+import pytest
+from io import StringIO
+from textwrap import dedent
 
-from vdirsyncer.cli.config import _resolve_conflict_via_command
+from vdirsyncer.cli.config import Config, _resolve_conflict_via_command
 from vdirsyncer.vobject import Item
 
 
@@ -22,3 +25,26 @@ def test_conflict_resolution_command():
         a, b, ['~/command'], 'a', 'b',
         _check_call=check_call
     ).raw == a.raw
+
+
+def test_config_reader_invalid_collections():
+    s = StringIO(dedent('''
+    [general]
+    status_path = "foo"
+
+    [storage foo]
+    type = "memory"
+
+    [storage bar]
+    type = "memory"
+
+    [pair foobar]
+    a = "foo"
+    b = "bar"
+    collections = [["a", "b", "c", "d"]]
+    ''').strip())
+
+    with pytest.raises(ValueError) as excinfo:
+        Config.from_fileobject(s)
+
+    assert 'Expected list of format' in str(excinfo.value)
