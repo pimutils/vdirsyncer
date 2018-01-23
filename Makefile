@@ -136,6 +136,6 @@ install-rust:
 
 rust-ext:
 	[ "$$READTHEDOCS" != "True" ] || $(MAKE) install-rust
-	cd ./rust && PATH="$$HOME/.cargo/bin/:$$PATH" cargo build --release
+	cd ./rust && cargo build --release
 
 .PHONY: docs
