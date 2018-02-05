@@ -72,7 +72,7 @@ install-servers:
 	done
 
 install-test: install-servers
-	pip install -r test-requirements.txt
+	pip install -Ur test-requirements.txt
 	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
 		pip install -U --force-reinstall \
 			git+https://github.com/DRMacIver/hypothesis \
@@ -82,7 +82,7 @@ install-test: install-servers
 	[ -z "$(TEST_EXTRA_PACKAGES)" ] || pip install $(TEST_EXTRA_PACKAGES)
 
 install-style: install-docs
-	pip install flake8 flake8-import-order 'flake8-bugbear>=17.3.0' autopep8
+	pip install -U flake8 flake8-import-order 'flake8-bugbear>=17.3.0' autopep8
 	
 style:
 	flake8
@@ -95,7 +95,7 @@ travis-conf:
 	python3 scripts/make_travisconf.py > .travis.yml
 
 install-docs:
-	pip install -r docs-requirements.txt
+	pip install -Ur docs-requirements.txt
 
 docs:
 	cd docs && make html
@@ -115,7 +115,7 @@ release-deb:
 
 install-dev:
 	pip install -e .
-	[ "$(ETESYNC_TESTS)" = "false" ] || pip install -e .[etesync]
+	[ "$(ETESYNC_TESTS)" = "false" ] || pip install -Ue .[etesync]
 	set -xe && if [ "$(REQUIREMENTS)" = "devel" ]; then \
 	    pip install -U --force-reinstall \
 			git+https://github.com/mitsuhiko/click \
