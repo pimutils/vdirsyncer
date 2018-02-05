@@ -16,6 +16,13 @@ Version 0.17.0
   XML. See :gh:`688`.
 - ownCloud and Baikal are no longer tested.
 
+Version 0.16.4
+==============
+
+*released on 05 February 2018*
+
+- Fix tests for new Hypothesis version. (Literally no other change included)
+
 Version 0.16.3
 ==============
 

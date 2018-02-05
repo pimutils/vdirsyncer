@@ -2,7 +2,8 @@
   "branches": {
     "only": [
       "auto",
-      "master"
+      "master",
+      "/^.*-maintenance$/"
     ]
   },
   "cache": {

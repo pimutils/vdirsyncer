@@ -6,6 +6,7 @@ build
 env
 *.egg-info
 .cache
+.pytest_cache
 .eggs
 .egg
 .xprocess
