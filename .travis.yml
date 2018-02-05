@@ -90,28 +90,6 @@
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=owncloud REQUIREMENTS=release ",
-        "python": "3.6"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=nextcloud REQUIREMENTS=release ",
-        "python": "3.6"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=baikal REQUIREMENTS=release ",
-        "python": "3.6"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=davical REQUIREMENTS=release ",
-        "if": "NOT (type IN (pull_request))",
-        "python": "3.6"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=icloud REQUIREMENTS=release ",
-        "if": "NOT (type IN (pull_request))",
-        "python": "3.6"
-      },
-      {
         "env": "BUILD=test DAV_SERVER=fastmail REQUIREMENTS=release ",
         "if": "NOT (type IN (pull_request))",
         "python": "3.6"
