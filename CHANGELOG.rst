@@ -9,6 +9,13 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.16.4
+==============
+
+*released on 05 February 2018*
+
+- Fix tests for new Hypothesis version. (Literally no other change included)
+
 Version 0.16.3
 ==============
 
