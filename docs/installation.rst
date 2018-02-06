@@ -10,7 +10,7 @@ OS/distro packages
 The following packages are user-contributed and were up-to-date at the time of
 writing:
 
-- `ArchLinux (AUR) <https://aur.archlinux.org/packages/vdirsyncer>`_
+- `ArchLinux <https://www.archlinux.org/packages/community/any/vdirsyncer/>`_
 - `Ubuntu and Debian, x86_64-only
   <https://packagecloud.io/pimutils/vdirsyncer>`_ (packages also exist
   in the official repositories but may be out of date)
