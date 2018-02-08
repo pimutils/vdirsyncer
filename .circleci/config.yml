@@ -1,0 +1,183 @@
+version: 2
+
+references:
+  basic_env: &basic_env
+    CI: true
+  restore_caches: &restore_caches
+    restore_cache:
+      keys:
+        - cache-{{ arch }}-{{ .Branch }}
+
+  save_caches: &save_caches
+    save_cache:
+      key: cache-{{ arch }}-{{ .Branch }}
+      paths:
+        - "rust/target/"
+        - "~/.cargo/"
+        - "~/.cache/pip/"
+        - "~/.rustup/"
+
+  basic_setup: &basic_setup
+    run: . scripts/circleci-install.sh
+
+jobs:
+  nextcloud:
+    docker:
+      - image: circleci/python:3.6
+        environment:
+          <<: *basic_env
+          NEXTCLOUD_HOST: localhost:80
+          DAV_SERVER: nextcloud
+      - image: nextcloud
+        environment:
+          SQLITE_DATABASE: nextcloud
+          NEXTCLOUD_ADMIN_USER: asdf
+          NEXTCLOUD_ADMIN_PASSWORD: asdf
+    steps:
+      - checkout
+      - *restore_caches
+      - *basic_setup
+      - *save_caches
+
+      - run: wget -O - --retry-connrefused http://localhost:80/
+      - run: make -e storage-test
+
+  fastmail:
+    docker:
+      - image: circleci/python:3.6
+        environment:
+          <<: *basic_env
+          DAV_SERVER: fastmail
+    steps:
+      - checkout
+      - *restore_caches
+      - *basic_setup
+      - *save_caches
+
+      - run: make -e storage-test
+
+  style:
+    docker:
+      - image: circleci/python:3.6
+        environment:
+          <<: *basic_env
+    steps:
+      - checkout
+      - *restore_caches
+      - *basic_setup
+      - *save_caches
+
+      - run: make -e style
+
+  py34-minimal:
+    docker:
+      - image: circleci/python:3.4
+        environment:
+          <<: *basic_env
+          REQUIREMENTS: minimal
+    steps:
+      - checkout
+      - *restore_caches
+      - *basic_setup
+      - *save_caches
+
+      - run: make -e test
+
+  py34-release:
+    docker:
+      - image: circleci/python:3.4
+        environment:
+          <<: *basic_env
+          REQUIREMENTS: release
+    steps:
+      - checkout
+      - *restore_caches
+      - *basic_setup
+      - *save_caches
+
+      - run: make -e test
+
+  py34-devel:
+    docker:
+      - image: circleci/python:3.4
+        environment:
+          <<: *basic_env
+          REQUIREMENTS: devel
+    steps:
+      - checkout
+      - *restore_caches
+      - *basic_setup
+      - *save_caches
+
+      - run: make -e test
+
+  py36-minimal:
+    docker:
+      - image: circleci/python:3.6
+        environment:
+          <<: *basic_env
+          REQUIREMENTS: minimal
+    steps:
+      - checkout
+      - *restore_caches
+      - *basic_setup
+      - *save_caches
+
+      - run: make -e test
+
+  py36-release:
+    docker:
+      - image: circleci/python:3.6
+        environment:
+          <<: *basic_env
+          REQUIREMENTS: release
+    steps:
+      - checkout
+      - *restore_caches
+      - *basic_setup
+      - *save_caches
+
+      - run: make -e test
+
+  py36-devel:
+    docker:
+      - image: circleci/python:3.6
+        environment:
+          <<: *basic_env
+          REQUIREMENTS: devel
+    steps:
+      - checkout
+      - *restore_caches
+      - *basic_setup
+      - *save_caches
+
+      - run: make -e test
+
+  rust:
+    docker:
+      - image: circleci/python:3.6
+        environment:
+          <<: *basic_env
+          REQUIREMENTS: release
+    steps:
+      - checkout
+      - *restore_caches
+      - *basic_setup
+      - *save_caches
+
+      - run: make -e rust-test
+
+workflows:
+  version: 2
+  test_all:
+    jobs:
+      - nextcloud
+      - fastmail
+      - style
+      - py34-minimal
+      - py34-release
+      - py34-devel
+      - py36-minimal
+      - py36-release
+      - py36-devel
+      - rust

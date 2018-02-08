@@ -48,18 +48,29 @@ all:
 	$(error Take a look at https://vdirsyncer.pimutils.org/en/stable/tutorial.html#installation)
 
 ifeq ($(CI), true)
-test:
-	curl -s https://codecov.io/bash > $(CODECOV_PATH)
-	$(PYTEST) tests/unit/
-	bash $(CODECOV_PATH) -c -F unit
-	$(PYTEST) tests/system/
-	bash $(CODECOV_PATH) -c -F system
-	$(PYTEST) tests/storage/
-	bash $(CODECOV_PATH) -c -F storage
+codecov.sh:
+	curl -s https://codecov.io/bash > $@
 else
-test:
-	$(PYTEST)
+codecov.sh:
+	echo > $@
 endif
+
+rust-test:
+	cd rust/ && cargo test --release
+
+test: unit-test system-test storage-test
+
+unit-test: codecov.sh
+	$(PYTEST) tests/unit/
+	bash codecov.sh -c -F unit
+
+system-test: codecov.sh
+	$(PYTEST) tests/system/
+	bash codecov.sh -c -F system
+
+storage-test: codecov.sh
+	$(PYTEST) tests/storage/
+	bash codecov.sh -c -F storage
 
 install-servers:
 	set -ex; \
@@ -88,10 +99,6 @@ style:
 	! git grep -i syncroniz */*
 	! git grep -i 'text/icalendar' */*
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
-	python3 scripts/make_travisconf.py | diff -b .travis.yml -
-
-travis-conf:
-	python3 scripts/make_travisconf.py > .travis.yml
 
 install-docs:
 	pip install -Ur docs-requirements.txt
