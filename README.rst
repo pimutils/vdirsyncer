@@ -20,8 +20,8 @@ It aims to be for calendars and contacts what `OfflineIMAP
 
 .. _programs: https://vdirsyncer.pimutils.org/en/latest/tutorials/
 
-.. image:: https://travis-ci.org/pimutils/vdirsyncer.svg?branch=master
-    :target: https://travis-ci.org/pimutils/vdirsyncer
+.. image:: https://circleci.com/gh/pimutils/vdirsyncer.svg?style=svg
+    :target: https://circleci.com/gh/pimutils/vdirsyncer
 
 .. image:: https://codecov.io/github/pimutils/vdirsyncer/coverage.svg?branch=master
     :target: https://codecov.io/github/pimutils/vdirsyncer?branch=master
