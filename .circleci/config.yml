@@ -3,6 +3,7 @@ version: 2
 references:
   basic_env: &basic_env
     CI: true
+    DAV_SERVER: xandikos
   restore_caches: &restore_caches
     restore_cache:
       keys:
@@ -131,6 +132,21 @@ jobs:
         environment:
           <<: *basic_env
           REQUIREMENTS: release
+    steps:
+      - checkout
+      - *restore_caches
+      - *basic_setup
+      - *save_caches
+
+      - run: make -e test
+
+  py36-release-radicale:
+    docker:
+      - image: circleci/python:3.6
+        environment:
+          <<: *basic_env
+          REQUIREMENTS: release
+          DAV_SERVER: radicale
     steps:
       - checkout
       - *restore_caches
