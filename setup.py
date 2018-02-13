@@ -52,7 +52,7 @@ def build_native(spec):
             'vdirsyncer_rustext.h', in_path='rust/target'),
         # Rust bug: If thread-local storage is used, this flag is necessary
         # (mitsuhiko)
-        rtld_flags=['NODELETE']
+        rtld_flags=['NOW', 'NODELETE']
     )
 
 
