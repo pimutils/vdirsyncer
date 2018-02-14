@@ -394,21 +394,16 @@ def test_no_configured_pairs(tmpdir, runner, cmd):
     assert result.exception.code == 5
 
 
-item_a = format_item('lol')
-item_b = format_item('lol')
+def test_conflict_resolution(tmpdir, runner):
+    item_a = format_item('lol')
+    item_b = format_item('lol')
 
-
-@pytest.mark.parametrize('resolution,expect_foo,expect_bar', [
-    (['command', 'cp'], item_a.raw, item_a.raw)
-])
-def test_conflict_resolution(tmpdir, runner, resolution, expect_foo,
-                             expect_bar):
     runner.write_with_general(dedent('''
     [pair foobar]
     a = "foo"
     b = "bar"
     collections = null
-    conflict_resolution = {val}
+    conflict_resolution = ["command", "cp"]
 
     [storage foo]
     type = "filesystem"
@@ -419,7 +414,7 @@ def test_conflict_resolution(tmpdir, runner, resolution, expect_foo,
     type = "filesystem"
     fileext = ".txt"
     path = "{base}/bar"
-    '''.format(base=str(tmpdir), val=json.dumps(resolution))))
+    '''.format(base=str(tmpdir))))
 
     foo = tmpdir.join('foo')
     bar = tmpdir.join('bar')
@@ -434,8 +429,8 @@ def test_conflict_resolution(tmpdir, runner, resolution, expect_foo,
     r = runner.invoke(['sync'])
     assert not r.exception
 
-    assert fooitem.read().splitlines() == expect_foo.splitlines()
-    assert baritem.read().splitlines() == expect_bar.splitlines()
+    assert fooitem.read().splitlines() == item_a.raw.splitlines()
+    assert baritem.read().splitlines() == item_a.raw.splitlines()
 
 
 @pytest.mark.parametrize('partial_sync', ['error', 'ignore', 'revert', None])
