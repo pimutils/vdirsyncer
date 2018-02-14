@@ -145,6 +145,7 @@ ssh-submodule-urls:
 
 install-rust:
 	curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain nightly
+	rustup update nightly
 
 rust-ext:
 	[ "$$READTHEDOCS" != "True" ] || $(MAKE) install-rust
