@@ -123,7 +123,6 @@ release-deb:
 	sh scripts/release-deb.sh debian stretch
 	sh scripts/release-deb.sh ubuntu trusty
 	sh scripts/release-deb.sh ubuntu xenial
-	sh scripts/release-deb.sh ubuntu zesty
 
 install-dev:
 	pip install -ve .
