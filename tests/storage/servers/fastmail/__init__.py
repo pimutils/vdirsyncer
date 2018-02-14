@@ -3,15 +3,19 @@ import os
 import pytest
 
 
+username = os.environ.get('FASTMAIL_USERNAME', '').strip()
+password = os.environ.get('FASTMAIL_PASSWORD', '').strip()
+
+
 class ServerMixin(object):
 
     @pytest.fixture
     def get_storage_args(self, slow_create_collection):
+        if not username:
+            pytest.skip('Fastmail credentials not available')
+
         def inner(collection='test'):
-            args = {
-                'username': os.environ['FASTMAIL_USERNAME'],
-                'password': os.environ['FASTMAIL_PASSWORD']
-            }
+            args = {'username': username, 'password': password}
 
             if self.storage_class.fileext == '.ics':
                 args['url'] = 'https://caldav.messagingengine.com/'

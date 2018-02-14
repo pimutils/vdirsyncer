@@ -2,6 +2,9 @@ import os
 
 import pytest
 
+username = os.environ.get('ICLOUD_USERNAME', '').strip()
+password = os.environ.get('ICLOUD_PASSWORD', '').strip()
+
 
 class ServerMixin(object):
 
@@ -12,11 +15,11 @@ class ServerMixin(object):
             # See https://github.com/pimutils/vdirsyncer/pull/593#issuecomment-285941615  # noqa
             pytest.skip('iCloud doesn\'t support anything else than VEVENT')
 
+        if not username:
+            pytest.skip('iCloud credentials not available')
+
         def inner(collection='test'):
-            args = {
-                'username': os.environ['ICLOUD_USERNAME'],
-                'password': os.environ['ICLOUD_PASSWORD']
-            }
+            args = {'username': username, 'password': password}
 
             if self.storage_class.fileext == '.ics':
                 args['url'] = 'https://caldav.icloud.com/'
