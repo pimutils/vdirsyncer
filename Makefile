@@ -93,12 +93,18 @@ install-test: install-servers
 
 install-style: install-docs
 	pip install -U flake8 flake8-import-order 'flake8-bugbear>=17.3.0'
+	which cargo-install-update || cargo +nightly install cargo-update
+	cargo +nightly install-update -i clippy
+	cargo +nightly install-update -i rustfmt-nightly
+	cargo +nightly install-update -i cargo-update
 
 style:
 	flake8
 	! git grep -i syncroniz */*
 	! git grep -i 'text/icalendar' */*
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
+	cd rust/ && cargo +nightly clippy
+	cd rust/ && cargo fmt
 
 install-docs:
 	pip install -Ur docs-requirements.txt
@@ -139,7 +145,7 @@ ssh-submodule-urls:
 		git remote get-url origin"
 
 install-rust:
-	curl https://sh.rustup.rs -sSf | sh -s -- -y
+	curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain nightly
 
 rust-ext:
 	[ "$$READTHEDOCS" != "True" ] || $(MAKE) install-rust

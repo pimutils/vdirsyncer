@@ -3,7 +3,7 @@
 from itertools import chain, tee
 
 from .utils import cached_property, uniq
-from . import exceptions, native
+from . import native
 
 
 class Item(object):
@@ -11,72 +11,52 @@ class Item(object):
     '''Immutable wrapper class for VCALENDAR (VEVENT, VTODO) and
     VCARD'''
 
-    def __init__(self, raw, component=None):
-        assert isinstance(raw, str), type(raw)
-        self._raw = raw
-        if component is not None:
-            self.__dict__['_component'] = component
+    def __init__(self, raw, _native=None):
+        if raw is None:
+            assert _native
+            self._native = _native
+            return
 
-    @cached_property
-    def _component(self):
-        try:
-            return native.parse_component(self.raw.encode('utf-8'))
-        except exceptions.VobjectParseError:
-            return None
+        assert isinstance(raw, str), type(raw)
+        assert _native is None
+        self._native = native.item_rv(
+            native.lib.vdirsyncer_item_from_raw(raw.encode('utf-8'))
+        )
 
     def with_uid(self, new_uid):
-        if not self._component:
-            raise ValueError('Item malformed.')
+        new_uid = new_uid or ''
+        assert isinstance(new_uid, str), type(new_uid)
 
-        new_c = native.clone_component(self._component)
-        native.change_uid(new_c, new_uid or '')
-        return Item(native.write_component(new_c), component=new_c)
+        e = native.ffi.new('VdirsyncerError *')
+        rv = native.lib.vdirsyncer_with_uid(self._native,
+                                            new_uid.encode('utf-8'),
+                                            e)
+        native.check_error(e)
+        return Item(None, _native=native.item_rv(rv))
 
-    @property
+    @cached_property
     def is_parseable(self):
-        return bool(self._component)
+        return native.lib.vdirsyncer_item_is_parseable(self._native)
 
-    @property
+    @cached_property
     def raw(self):
-        '''Raw content of the item, as unicode string.
-
-        Vdirsyncer doesn't validate the content in any way.
-        '''
-        return self._raw
+        return native.string_rv(native.lib.vdirsyncer_get_raw(self._native))
 
     @cached_property
     def uid(self):
-        '''Global identifier of the item, across storages, doesn't change after
-        a modification of the item.'''
-        if not self._component:
-            return None
-        return native.get_uid(self._component) or None
+        rv = native.string_rv(native.lib.vdirsyncer_get_uid(self._native))
+        return rv or None
 
     @cached_property
     def hash(self):
-        '''Used for etags.'''
-        if not self.is_valid:
-            raise ValueError('Item malformed.')
-
-        return native.hash_component(self._component)
+        e = native.ffi.new('VdirsyncerError *')
+        rv = native.lib.vdirsyncer_get_hash(self._native, e)
+        native.check_error(e)
+        return native.string_rv(rv)
 
     @cached_property
     def ident(self):
-        '''Used for generating hrefs and matching up items during
-        synchronization. This is either the UID or the hash of the item's
-        content.'''
-
-        # We hash the item instead of directly using its raw content, because
-        #
-        # 1. The raw content might be really large, e.g. when it's a contact
-        #    with a picture, which bloats the status file.
-        #
-        # 2. The status file would contain really sensitive information.
         return self.uid or self.hash
-
-    @property
-    def is_valid(self):
-        return bool(self._component)
 
 
 def split_collection(text):

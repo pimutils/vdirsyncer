@@ -1,6 +1,8 @@
 make install-rust
 echo "export PATH=$HOME/.cargo/bin/:$PATH" >> $BASH_ENV
 
+sudo apt-get install -y cmake
+
 pip install --user virtualenv
 ~/.local/bin/virtualenv ~/env
 echo ". ~/env/bin/activate" >> $BASH_ENV

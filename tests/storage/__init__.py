@@ -344,3 +344,58 @@ class StorageTests(object):
         item2, etag2 = s.get(href)
         assert item2.raw.count('BEGIN:VEVENT') == 2
         assert 'RRULE' in item2.raw
+
+    def test_buffered(self, get_storage_args, get_item, requires_collections):
+        args = get_storage_args()
+        s1 = self.storage_class(**args)
+        s2 = self.storage_class(**args)
+        s1.upload(get_item())
+        assert sorted(list(s1.list())) == sorted(list(s2.list()))
+
+        s1.buffered()
+        s1.upload(get_item())
+        s1.flush()
+        assert sorted(list(s1.list())) == sorted(list(s2.list()))
+
+    def test_retain_timezones(self, item_type, s):
+        if item_type != 'VEVENT':
+            pytest.skip('This storage instance doesn\'t support iCalendar.')
+
+        item = Item(textwrap.dedent('''
+        BEGIN:VCALENDAR
+        PRODID:-//ownCloud calendar v1.4.0
+        VERSION:2.0
+        CALSCALE:GREGORIAN
+        BEGIN:VEVENT
+        CREATED:20161004T110533
+        DTSTAMP:20161004T110533
+        LAST-MODIFIED:20161004T110533
+        UID:y2lmgz48mg
+        SUMMARY:Test
+        CLASS:PUBLIC
+        STATUS:CONFIRMED
+        DTSTART;TZID=Europe/Berlin:20161014T101500
+        DTEND;TZID=Europe/Berlin:20161014T114500
+        END:VEVENT
+        BEGIN:VTIMEZONE
+        TZID:Europe/Berlin
+        BEGIN:DAYLIGHT
+        DTSTART:20160327T030000
+        TZNAME:CEST
+        TZOFFSETFROM:+0100
+        TZOFFSETTO:+0200
+        END:DAYLIGHT
+        BEGIN:STANDARD
+        DTSTART:20161030T020000
+        TZNAME:CET
+        TZOFFSETFROM:+0200
+        TZOFFSETTO:+0100
+        END:STANDARD
+        END:VTIMEZONE
+        END:VCALENDAR
+        ''').strip())
+
+        href, etag = s.upload(item)
+        item2, _ = s.get(href)
+        assert 'VTIMEZONE' in item2.raw
+        assert item2.hash == item.hash

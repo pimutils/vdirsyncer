@@ -15,6 +15,17 @@ from tests import BARE_EVENT_TEMPLATE, EVENT_TEMPLATE, \
 import vdirsyncer.vobject as vobject
 
 
+@pytest.fixture
+def check_roundtrip(benchmark):
+    def inner(split):
+        joined = benchmark(lambda: vobject.join_collection(split))
+        split2 = benchmark(lambda: list(vobject.split_collection(joined)))
+
+        assert [vobject.Item(item).hash for item in split] == \
+            [vobject.Item(item).hash for item in split2]
+    return inner
+
+
 _simple_split = [
     VCARD_TEMPLATE.format(r=123, uid=123),
     VCARD_TEMPLATE.format(r=345, uid=345),
@@ -28,7 +39,9 @@ _simple_joined = u'\r\n'.join(
 )
 
 
-def test_split_collection_simple(benchmark):
+def test_split_collection_simple(benchmark, check_roundtrip):
+    check_roundtrip(_simple_split)
+
     given = benchmark(lambda: list(vobject.split_collection(_simple_joined)))
 
     assert [vobject.Item(item).hash for item in given] == \
@@ -46,6 +59,7 @@ def test_split_collection_multiple_wrappers(benchmark):
         for x in _simple_split
     )
     given = benchmark(lambda: list(vobject.split_collection(joined)))
+    check_roundtrip(given)
 
     assert [vobject.Item(item).hash for item in given] == \
         [vobject.Item(item).hash for item in _simple_split]
@@ -395,3 +409,44 @@ def test_hash_item_timezones():
     )
 
     assert item1.hash == item2.hash
+
+
+def test_hash_item_line_wrapping():
+    item1 = vobject.Item(
+        'BEGIN:VCALENDAR\r\n'
+        'PROP:a\r\n'
+        ' b\r\n'
+        ' c\r\n'
+        'END:VCALENDAR\r\n'
+    )
+
+    item2 = vobject.Item(
+        'BEGIN:VCALENDAR\r\n'
+        'PROP:abc\r\n'
+        'END:VCALENDAR\r\n'
+    )
+
+    assert item1.hash == item2.hash
+
+
+def test_wrapper_properties(check_roundtrip):
+    raws = [dedent('''
+    BEGIN:VCALENDAR
+    PRODID:-//Google Inc//Google Calendar 70.9054//EN
+    VERSION:2.0
+    CALSCALE:GREGORIAN
+    X-WR-CALNAME:hans.gans@gmail.com
+    X-WR-TIMEZONE:Europe/Vienna
+    BEGIN:VEVENT
+    DTSTART;TZID=Europe/Vienna:20171012T153000
+    DTEND;TZID=Europe/Vienna:20171012T170000
+    DTSTAMP:20171009T085029Z
+    UID:test@test.com
+    STATUS:CONFIRMED
+    SUMMARY:Test
+    TRANSP:OPAQUE
+    END:VEVENT
+    END:VCALENDAR
+    ''').strip()]
+
+    check_roundtrip(raws)
