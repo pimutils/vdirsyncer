@@ -57,6 +57,20 @@ jobs:
 
       - run: make -e storage-test
 
+  icloud:
+    docker:
+      - image: circleci/python:3.6
+        environment:
+          <<: *basic_env
+          DAV_SERVER: icloud
+    steps:
+      - checkout
+      - *restore_caches
+      - *basic_setup
+      - *save_caches
+
+      - run: make -e storage-test
+
   style:
     docker:
       - image: circleci/python:3.6
@@ -189,6 +203,7 @@ workflows:
     jobs:
       - nextcloud
       - fastmail
+      - icloud
       - style
       - py34-minimal
       - py34-release
