@@ -94,9 +94,9 @@ install-test: install-servers
 install-style: install-docs
 	pip install -U flake8 flake8-import-order 'flake8-bugbear>=17.3.0'
 	which cargo-install-update || cargo install cargo-update
-	cargo install-update -i clippy
-	cargo install-update -i rustfmt-nightly
-	cargo install-update -i cargo-update
+	cargo +nightly install-update -i clippy
+	cargo +nightly install-update -i rustfmt-nightly
+	cargo +nightly install-update -i cargo-update
 
 style:
 	flake8
