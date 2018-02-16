@@ -18,6 +18,10 @@ vdirsyncer
   :target: https://pypi.python.org/pypi/vdirsyncer
   :alt: version on pypi
 
+.. image:: https://img.shields.io/badge/deb-packagecloud.io-844fec.svg
+  :target: https://packagecloud.io/pimutils/vdirsyncer
+  :alt: Debian packages
+
 .. image:: https://img.shields.io/pypi/l/vdirsyncer.svg
   :target: https://github.com/pimutils/vdirsyncer/blob/master/LICENCE
   :alt: licence: BSD

@@ -14,5 +14,9 @@ In alphabetical order:
 - Michael Adler
 - Thomas Weißschuh
 
-Additionally `FastMail sponsored a paid account for testing
-<https://github.com/pimutils/vdirsyncer/issues/571>`_. Thanks!
+Special thanks goes to:
+
+* `FastMail <https://github.com/pimutils/vdirsyncer/issues/571>`_ sponsors a
+  paid account for testing their servers.
+* `Packagecloud <https://packagecloud.io/>`_ provide repositories for
+  vdirsyncer's Debian packages.
