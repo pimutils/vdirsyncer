@@ -130,6 +130,7 @@ install-dev:
 	set -xe && if [ "$(REQUIREMENTS)" = "devel" ]; then \
 	    pip install -U --force-reinstall \
 			git+https://github.com/mitsuhiko/click \
+			git+https://github.com/click-contrib/click-log \
 			git+https://github.com/kennethreitz/requests; \
 	elif [ "$(REQUIREMENTS)" = "minimal" ]; then \
 		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
