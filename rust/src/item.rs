@@ -41,13 +41,13 @@ impl Item {
         None
     }
 
-    pub fn with_uid(&self, uid: &str) -> Result<Self> {
+    pub fn with_uid(&self, uid: &str) -> Fallible<Self> {
         if let Item::Parsed(ref component) = *self {
             let mut new_component = component.clone();
             change_uid(&mut new_component, uid);
             Ok(Item::from_raw(vobject::write_component(&new_component)))
         } else {
-            Err(ErrorKind::ItemUnparseable.into())
+            Err(ItemUnparseable.into())
         }
     }
 
@@ -60,34 +60,34 @@ impl Item {
     }
 
     /// Component of item if parseable
-    pub fn get_component(&self) -> Result<&vobject::Component> {
+    pub fn get_component(&self) -> Fallible<&vobject::Component> {
         match *self {
             Item::Parsed(ref component) => Ok(component),
-            _ => Err(ErrorKind::ItemUnparseable.into()),
+            _ => Err(ItemUnparseable.into()),
         }
     }
 
     /// Component of item if parseable
-    pub fn into_component(self) -> Result<vobject::Component> {
+    pub fn into_component(self) -> Fallible<vobject::Component> {
         match self {
             Item::Parsed(component) => Ok(component),
-            _ => Err(ErrorKind::ItemUnparseable.into()),
+            _ => Err(ItemUnparseable.into()),
         }
     }
 
     /// Used for etags
-    pub fn get_hash(&self) -> Result<String> {
+    pub fn get_hash(&self) -> Fallible<String> {
         // FIXME: cache
         if let Item::Parsed(ref component) = *self {
             Ok(hash_component(component))
         } else {
-            Err(ErrorKind::ItemUnparseable.into())
+            Err(ItemUnparseable.into())
         }
     }
 
     /// Used for generating hrefs and matching up items during synchronization. This is either the
     /// UID or the hash of the item's content.
-    pub fn get_ident(&self) -> Result<String> {
+    pub fn get_ident(&self) -> Fallible<String> {
         if let Some(x) = self.get_uid() {
             return Ok(x);
         }
@@ -188,7 +188,7 @@ fn hash_component(c: &vobject::Component) -> String {
 
 pub mod exports {
     use super::Item;
-    use std::mem;
+    use std::ptr;
     use std::ffi::{CStr, CString};
     use std::os::raw::c_char;
     use errors::*;
@@ -225,29 +225,25 @@ pub mod exports {
     pub unsafe extern "C" fn vdirsyncer_with_uid(
         c: *mut Item,
         uid: *const c_char,
-        err: *mut VdirsyncerError,
+        err: *mut *mut exports::ShippaiError,
     ) -> *mut Item {
         let uid_cstring = CStr::from_ptr(uid);
-        match (*c).with_uid(uid_cstring.to_str().unwrap()) {
-            Ok(x) => Box::into_raw(Box::new(x)),
-            Err(e) => {
-                e.fill_c_err(err);
-                mem::zeroed()
-            }
+        if let Some(x) = export_result((*c).with_uid(uid_cstring.to_str().unwrap()), err) {
+            Box::into_raw(Box::new(x))
+        } else {
+            ptr::null_mut()
         }
     }
 
     #[no_mangle]
     pub unsafe extern "C" fn vdirsyncer_get_hash(
         c: *mut Item,
-        err: *mut VdirsyncerError,
+        err: *mut *mut exports::ShippaiError,
     ) -> *const c_char {
-        match (*c).get_hash() {
-            Ok(x) => CString::new(x).unwrap().into_raw(),
-            Err(e) => {
-                e.fill_c_err(err);
-                mem::zeroed()
-            }
+        if let Some(x) = export_result((*c).get_hash(), err) {
+            CString::new(x).unwrap().into_raw()
+        } else {
+            ptr::null_mut()
         }
     }
 

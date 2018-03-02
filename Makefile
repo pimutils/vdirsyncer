@@ -131,7 +131,8 @@ install-dev:
 	    pip install -U --force-reinstall \
 			git+https://github.com/mitsuhiko/click \
 			git+https://github.com/click-contrib/click-log \
-			git+https://github.com/kennethreitz/requests; \
+			git+https://github.com/kennethreitz/requests \
+			"git+https://github.com/untitaker/shippai#subdirectory=python"; \
 	elif [ "$(REQUIREMENTS)" = "minimal" ]; then \
 		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
 	fi
@@ -152,4 +153,7 @@ rust-ext:
 	[ "$$READTHEDOCS" != "True" ] || $(MAKE) install-rust
 	cd ./rust && cargo build --release
 
-.PHONY: docs
+rust/vdirsyncer_rustext.h:
+	cbindgen -c rust/cbindgen.toml rust/ > $@
+
+.PHONY: docs rust/vdirsyncer_rustext.h

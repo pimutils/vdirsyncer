@@ -78,7 +78,7 @@ class SingleFileStorage(RustStorageMixin, Storage):
 
         self._native_storage = native.ffi.gc(
             native.lib.vdirsyncer_init_singlefile(path.encode('utf-8')),
-            native.lib.vdirsyncer_free_singlefile
+            native.lib.vdirsyncer_storage_free
         )
 
     @classmethod

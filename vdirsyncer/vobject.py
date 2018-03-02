@@ -27,7 +27,7 @@ class Item(object):
         new_uid = new_uid or ''
         assert isinstance(new_uid, str), type(new_uid)
 
-        e = native.ffi.new('VdirsyncerError *')
+        e = native.get_error_pointer()
         rv = native.lib.vdirsyncer_with_uid(self._native,
                                             new_uid.encode('utf-8'),
                                             e)
@@ -49,7 +49,7 @@ class Item(object):
 
     @cached_property
     def hash(self):
-        e = native.ffi.new('VdirsyncerError *')
+        e = native.get_error_pointer()
         rv = native.lib.vdirsyncer_get_hash(self._native, e)
         native.check_error(e)
         return native.string_rv(rv)
