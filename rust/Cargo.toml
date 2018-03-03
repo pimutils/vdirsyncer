@@ -1,8 +1,7 @@
 [package]
-name = "vdirsyncer_rustext"
+name = "vdirsyncer-rustext"
 version = "0.1.0"
 authors = ["Markus Unterwaditzer <markus@unterwaditzer.net>"]
-build = "build.rs"
 
 [lib]
 name = "vdirsyncer_rustext"
@@ -11,7 +10,8 @@ crate-type = ["cdylib"]
 [dependencies]
 vobject = "0.4.2"
 ring = "0.12.1"
-error-chain = "0.11.0"
+failure = "0.1"
+shippai = "0.1.1"
 atomicwrites = "0.1.4"
 
 [build-dependencies]

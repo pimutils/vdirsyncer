@@ -1,5 +1,3 @@
-use std::ffi::CStr;
-use std::os::raw::c_char;
 use std::path::{Path, PathBuf};
 use std::collections::{BTreeMap, BTreeSet};
 use std::collections::btree_map::Entry::*;
@@ -34,14 +32,14 @@ impl SinglefileStorage {
         }
     }
 
-    fn get_items(&mut self) -> Result<&mut ItemCache> {
+    fn get_items(&mut self) -> Fallible<&mut ItemCache> {
         if self.items_cache.is_none() {
             self.list()?;
         }
         Ok(&mut self.items_cache.as_mut().unwrap().0)
     }
 
-    fn write_back(&mut self) -> Result<()> {
+    fn write_back(&mut self) -> Fallible<()> {
         self.dirty_cache = true;
         if self.buffered_mode {
             return Ok(());
@@ -52,19 +50,22 @@ impl SinglefileStorage {
     }
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn vdirsyncer_init_singlefile(path: *const c_char) -> *mut SinglefileStorage {
-    let cstring = CStr::from_ptr(path);
-    Box::into_raw(Box::new(SinglefileStorage::new(cstring.to_str().unwrap())))
-}
+pub mod exports {
+    use super::*;
+    use std::ffi::CStr;
+    use std::os::raw::c_char;
 
-#[no_mangle]
-pub unsafe extern "C" fn vdirsyncer_free_singlefile(s: *mut SinglefileStorage) {
-    let _: Box<SinglefileStorage> = Box::from_raw(s);
+    #[no_mangle]
+    pub unsafe extern "C" fn vdirsyncer_init_singlefile(path: *const c_char) -> *mut Box<Storage> {
+        let cstring = CStr::from_ptr(path);
+        Box::into_raw(Box::new(Box::new(SinglefileStorage::new(
+            cstring.to_str().unwrap(),
+        ))))
+    }
 }
 
 impl Storage for SinglefileStorage {
-    fn list<'a>(&'a mut self) -> Result<Box<Iterator<Item = (String, String)> + 'a>> {
+    fn list<'a>(&'a mut self) -> Fallible<Box<Iterator<Item = (String, String)> + 'a>> {
         let mut new_cache = BTreeMap::new();
         let mtime = metadata(&self.path)?.modified()?;
         let mut f = File::open(&self.path)?;
@@ -84,51 +85,61 @@ impl Storage for SinglefileStorage {
         )))
     }
 
-    fn get(&mut self, href: &str) -> Result<(Item, String)> {
+    fn get(&mut self, href: &str) -> Fallible<(Item, String)> {
         match self.get_items()?.get(href) {
             Some(&(ref href, ref etag)) => Ok((href.clone(), etag.clone())),
-            None => Err(ErrorKind::ItemNotFound(href.to_owned()))?,
+            None => Err(ItemNotFound {
+                href: href.to_owned(),
+            })?,
         }
     }
 
-    fn upload(&mut self, item: Item) -> Result<(String, String)> {
+    fn upload(&mut self, item: Item) -> Fallible<(String, String)> {
         let hash = item.get_hash()?;
         let href = item.get_ident()?;
         match self.get_items()?.entry(href.clone()) {
-            Occupied(_) => Err(ErrorKind::AlreadyExisting(href.clone()))?,
+            Occupied(_) => Err(ItemAlreadyExisting { href: href.clone() })?,
             Vacant(vc) => vc.insert((item, hash.clone())),
         };
         self.write_back()?;
         Ok((href, hash))
     }
 
-    fn update(&mut self, href: &str, item: Item, etag: &str) -> Result<String> {
+    fn update(&mut self, href: &str, item: Item, etag: &str) -> Fallible<String> {
         let hash = match self.get_items()?.entry(href.to_owned()) {
             Occupied(mut oc) => {
                 if oc.get().1 == etag {
                     let hash = item.get_hash()?;
                     oc.insert((item, hash.clone()));
-                    Ok(hash)
+                    hash
                 } else {
-                    Err(ErrorKind::WrongEtag(href.to_owned()))
+                    Err(WrongEtag {
+                        href: href.to_owned(),
+                    })?
                 }
             }
-            Vacant(_) => Err(ErrorKind::ItemNotFound(href.to_owned())),
-        }?;
+            Vacant(_) => Err(ItemNotFound {
+                href: href.to_owned(),
+            })?,
+        };
         self.write_back()?;
         Ok(hash)
     }
 
-    fn delete(&mut self, href: &str, etag: &str) -> Result<()> {
+    fn delete(&mut self, href: &str, etag: &str) -> Fallible<()> {
         match self.get_items()?.entry(href.to_owned()) {
             Occupied(oc) => {
                 if oc.get().1 == etag {
                     oc.remove();
                 } else {
-                    Err(ErrorKind::WrongEtag(href.to_owned()))?
+                    Err(WrongEtag {
+                        href: href.to_owned(),
+                    })?
                 }
             }
-            Vacant(_) => Err(ErrorKind::ItemNotFound(href.to_owned()))?,
+            Vacant(_) => Err(ItemNotFound {
+                href: href.to_owned(),
+            })?,
         }
         self.write_back()?;
         Ok(())
@@ -138,7 +149,7 @@ impl Storage for SinglefileStorage {
         self.buffered_mode = true;
     }
 
-    fn flush(&mut self) -> Result<()> {
+    fn flush(&mut self) -> Fallible<()> {
         if !self.dirty_cache {
             return Ok(());
         }
@@ -146,16 +157,21 @@ impl Storage for SinglefileStorage {
 
         let af = AtomicFile::new(&self.path, AllowOverwrite);
         let content = join_collection(items.into_iter().map(|(_, (item, _))| item))?;
-        af.write::<(), Error, _>(|f| {
-            f.write_all(content.as_bytes())?;
 
-            let real_mtime = metadata(&self.path)?.modified()?;
+        let path = &self.path;
+        let write_inner = |f: &mut File| -> Fallible<()> {
+            f.write_all(content.as_bytes())?;
+            let real_mtime = metadata(path)?.modified()?;
             if mtime != real_mtime {
-                Err(ErrorKind::MtimeMismatch(
-                    self.path.to_string_lossy().into_owned(),
-                ))?;
+                Err(MtimeMismatch {
+                    filepath: path.to_string_lossy().into_owned(),
+                })?;
             }
             Ok(())
+        };
+
+        af.write::<(), ::failure::Compat<::failure::Error>, _>(|f| {
+            write_inner(f).map_err(|e| e.compat())
         })?;
 
         self.dirty_cache = false;
@@ -164,10 +180,11 @@ impl Storage for SinglefileStorage {
     }
 }
 
-fn split_collection(mut input: &str) -> Result<Vec<vobject::Component>> {
+fn split_collection(mut input: &str) -> Fallible<Vec<vobject::Component>> {
     let mut rv = vec![];
     while !input.is_empty() {
-        let (component, remainder) = vobject::read_component(input)?;
+        let (component, remainder) =
+            vobject::read_component(input).map_err(::failure::SyncFailure::new)?;
         input = remainder;
 
         match component.name.as_ref() {
@@ -175,17 +192,17 @@ fn split_collection(mut input: &str) -> Result<Vec<vobject::Component>> {
             "VCARD" => rv.push(component),
             "VADDRESSBOOK" => for vcard in component.subcomponents {
                 if vcard.name != "VCARD" {
-                    Err(ErrorKind::UnexpectedVobject(
-                        vcard.name.clone(),
-                        "VCARD".to_owned(),
-                    ))?;
+                    Err(UnexpectedVobject {
+                        found: vcard.name.clone(),
+                        expected: "VCARD".to_owned(),
+                    })?;
                 }
                 rv.push(vcard);
             },
-            _ => Err(ErrorKind::UnexpectedVobject(
-                component.name.clone(),
-                "VCALENDAR | VCARD | VADDRESSBOOK".to_owned(),
-            ))?,
+            _ => Err(UnexpectedVobject {
+                found: component.name.clone(),
+                expected: "VCALENDAR | VCARD | VADDRESSBOOK".to_owned(),
+            })?,
         }
     }
 
@@ -194,7 +211,7 @@ fn split_collection(mut input: &str) -> Result<Vec<vobject::Component>> {
 
 /// Split one VCALENDAR component into multiple VCALENDAR components
 #[inline]
-fn split_vcalendar(mut vcalendar: vobject::Component) -> Result<Vec<vobject::Component>> {
+fn split_vcalendar(mut vcalendar: vobject::Component) -> Fallible<Vec<vobject::Component>> {
     vcalendar.props.remove("METHOD");
 
     let mut timezones = BTreeMap::new(); // tzid => component
@@ -210,10 +227,10 @@ fn split_vcalendar(mut vcalendar: vobject::Component) -> Result<Vec<vobject::Com
                 timezones.insert(tzid, component);
             }
             "VTODO" | "VEVENT" | "VJOURNAL" => subcomponents.push(component),
-            _ => Err(ErrorKind::UnexpectedVobject(
-                component.name.clone(),
-                "VTIMEZONE | VTODO | VEVENT | VJOURNAL".to_owned(),
-            ))?,
+            _ => Err(UnexpectedVobject {
+                found: component.name.clone(),
+                expected: "VTIMEZONE | VTODO | VEVENT | VJOURNAL".to_owned(),
+            })?,
         };
     }
 
@@ -262,7 +279,7 @@ fn split_vcalendar(mut vcalendar: vobject::Component) -> Result<Vec<vobject::Com
         .collect())
 }
 
-fn join_collection<I: Iterator<Item = Item>>(item_iter: I) -> Result<String> {
+fn join_collection<I: Iterator<Item = Item>>(item_iter: I) -> Fallible<String> {
     let mut items = item_iter.peekable();
 
     let item_name = match items.peek() {
@@ -273,10 +290,10 @@ fn join_collection<I: Iterator<Item = Item>>(item_iter: I) -> Result<String> {
     let wrapper_name = match item_name.as_ref() {
         "VCARD" => "VADDRESSBOOK",
         "VCALENDAR" => "VCALENDAR",
-        _ => Err(ErrorKind::UnexpectedVobject(
-            item_name.clone(),
-            "VCARD | VCALENDAR".to_owned(),
-        ))?,
+        _ => Err(UnexpectedVobject {
+            found: item_name.clone(),
+            expected: "VCARD | VCALENDAR".to_owned(),
+        })?,
     };
 
     let mut wrapper = vobject::Component::new(wrapper_name);
@@ -285,17 +302,20 @@ fn join_collection<I: Iterator<Item = Item>>(item_iter: I) -> Result<String> {
     for item in items {
         let mut c = item.into_component()?;
         if c.name != item_name {
-            return Err(ErrorKind::UnexpectedVobject(c.name, item_name.clone()).into());
+            return Err(UnexpectedVobject {
+                found: c.name,
+                expected: item_name.clone(),
+            }.into());
         }
 
         if item_name == wrapper_name {
             wrapper.subcomponents.extend(c.subcomponents.drain(..));
             match (version.as_ref(), c.get_only("VERSION")) {
                 (Some(x), Some(y)) if x.raw_value != y.raw_value => {
-                    return Err(ErrorKind::VobjectVersionMismatch(
-                        x.raw_value.clone(),
-                        y.raw_value.clone(),
-                    ).into());
+                    return Err(UnexpectedVobjectVersion {
+                        expected: x.raw_value.clone(),
+                        found: y.raw_value.clone(),
+                    }.into());
                 }
                 (None, Some(_)) => (),
                 _ => continue,

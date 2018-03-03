@@ -1,5 +1,10 @@
-from ._native import ffi, lib
+import shippai
+
 from . import exceptions
+from ._native import ffi, lib
+
+
+errors = shippai.Shippai(ffi, lib)
 
 
 def string_rv(c_str):
@@ -13,20 +18,16 @@ def item_rv(c):
     return ffi.gc(c, lib.vdirsyncer_free_item)
 
 
+def get_error_pointer():
+    return ffi.new("ShippaiError **")
+
+
 def check_error(e):
     try:
-        if e.failed:
-            msg = ffi.string(e.msg).decode('utf-8')
-            if msg.startswith('ItemNotFound'):
-                raise exceptions.NotFoundError(msg)
-            elif msg.startswith('AlreadyExisting'):
-                raise exceptions.AlreadyExistingError(msg)
-            elif msg.startswith('WrongEtag'):
-                raise exceptions.WrongEtagError(msg)
-            elif msg.startswith('ItemUnparseable'):
-                raise ValueError(msg)
-            else:
-                raise Exception(msg)
-    finally:
-        if e.failed:
-            lib.vdirsyncer_clear_err(e)
+        errors.check_exception(e[0])
+    except errors.ItemNotFound as e:
+        raise exceptions.NotFoundError(e)
+    except errors.ItemAlreadyExisting as e:
+        raise exceptions.AlreadyExistingError(e)
+    except errors.WrongEtag as e:
+        raise exceptions.WrongEtagError(e)

@@ -34,7 +34,10 @@ requirements = [
 
     # https://github.com/untitaker/python-atomicwrites/commit/4d12f23227b6a944ab1d99c507a69fdbc7c9ed6d  # noqa
     'atomicwrites>=0.1.7',
-    milksnake
+
+    milksnake,
+
+    'shippai >= 0.1.1',
 ]
 
 
@@ -48,8 +51,7 @@ def build_native(spec):
         module_path='vdirsyncer._native',
         dylib=lambda: build.find_dylib(
             'vdirsyncer_rustext', in_path='rust/target/release'),
-        header_filename=lambda: build.find_header(
-            'vdirsyncer_rustext.h', in_path='rust/target'),
+        header_filename='rust/vdirsyncer_rustext.h',
         # Rust bug: If thread-local storage is used, this flag is necessary
         # (mitsuhiko)
         rtld_flags=['NOW', 'NODELETE']
