@@ -13,6 +13,9 @@ ring = "0.12.1"
 failure = "0.1"
 shippai = "0.1.1"
 atomicwrites = "0.1.4"
+uuid = { version = "0.6", features = ["v4"] }
+libc = "0.2"
+log = "0.4"
 
 [build-dependencies]
 cbindgen = "0.4"

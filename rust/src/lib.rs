@@ -5,6 +5,9 @@ extern crate failure;
 extern crate shippai;
 extern crate ring;
 extern crate vobject;
+extern crate uuid;
+extern crate libc;
+#[macro_use] extern crate log;
 
 mod item;
 mod storage;
