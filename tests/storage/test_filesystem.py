@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import subprocess
-
 import pytest
 
 from vdirsyncer.storage.filesystem import FilesystemStorage

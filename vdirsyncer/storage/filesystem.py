@@ -3,14 +3,13 @@
 import errno
 import logging
 import os
-import subprocess
 
 from atomicwrites import atomic_write
 
 from .base import Storage, normalize_meta_value
 from ._rust import RustStorageMixin
-from .. import exceptions, native
-from ..utils import checkdir, expand_path, generate_href, get_etag_from_file
+from .. import native
+from ..utils import checkdir, expand_path
 
 logger = logging.getLogger(__name__)
 

@@ -5,7 +5,7 @@ fn is_href_safe(ident: &str) -> bool {
         match c {
             '_' | '.' | '-' | '+' => (),
             _ if c.is_alphanumeric() => (),
-            _ => return false
+            _ => return false,
         }
     }
     true

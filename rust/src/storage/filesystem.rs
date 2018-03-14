@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::fs;
 use std::io;
-use std::io::{Read,Write};
+use std::io::{Read, Write};
 use std::os::unix::fs::MetadataExt;
 use std::process::Command;
 use super::Storage;
@@ -13,12 +13,12 @@ use super::utils;
 
 use item::Item;
 
-use atomicwrites::{AllowOverwrite, DisallowOverwrite, AtomicFile};
+use atomicwrites::{AllowOverwrite, AtomicFile, DisallowOverwrite};
 
 pub struct FilesystemStorage {
     path: PathBuf,
     fileext: String,
-    post_hook: Option<String>
+    post_hook: Option<String>,
 }
 
 impl FilesystemStorage {
@@ -26,15 +26,15 @@ impl FilesystemStorage {
         FilesystemStorage {
             path: path.as_ref().to_owned(),
             fileext: fileext.into(),
-            post_hook: post_hook
+            post_hook,
         }
     }
 
     fn get_href(&self, ident: Option<&str>) -> String {
-         let href_base = match ident {
+        let href_base = match ident {
             Some(x) => utils::generate_href(x),
-            None => utils::random_href()
-         };
+            None => utils::random_href(),
+        };
         format!("{}{}", href_base, self.fileext)
     }
 
@@ -46,9 +46,12 @@ impl FilesystemStorage {
         if let Some(ref cmd) = self.post_hook {
             let status = match Command::new(cmd).arg(fpath).status() {
                 Ok(x) => x,
-                Err(e) => { warn!("Failed to run external hook: {}", e); return }
+                Err(e) => {
+                    warn!("Failed to run external hook: {}", e);
+                    return;
+                }
             };
-            
+
             if !status.success() {
                 if let Some(code) = status.code() {
                     warn!("External hook exited with error code {}.", code);
@@ -63,9 +66,13 @@ impl FilesystemStorage {
 #[inline]
 fn handle_io_error(href: &str, e: io::Error) -> failure::Error {
     match e.kind() {
-        io::ErrorKind::NotFound => ItemNotFound { href: href.to_owned(), }.into(),
-        io::ErrorKind::AlreadyExists => ItemAlreadyExisting { href: href.to_owned() }.into(),
-        _ => e.into()
+        io::ErrorKind::NotFound => ItemNotFound {
+            href: href.to_owned(),
+        }.into(),
+        io::ErrorKind::AlreadyExists => ItemAlreadyExisting {
+            href: href.to_owned(),
+        }.into(),
+        _ => e.into(),
     }
 }
 
@@ -78,7 +85,7 @@ pub mod exports {
     pub unsafe extern "C" fn vdirsyncer_init_filesystem(
         path: *const c_char,
         fileext: *const c_char,
-        post_hook: *const c_char
+        post_hook: *const c_char,
     ) -> *mut Box<Storage> {
         let path_c = CStr::from_ptr(path);
         let fileext_c = CStr::from_ptr(fileext);
@@ -88,13 +95,17 @@ pub mod exports {
         Box::into_raw(Box::new(Box::new(FilesystemStorage::new(
             path_c.to_str().unwrap(),
             fileext_c.to_str().unwrap(),
-            if post_hook_str.is_empty() { None } else { Some(post_hook_str.to_owned()) }
+            if post_hook_str.is_empty() {
+                None
+            } else {
+                Some(post_hook_str.to_owned())
+            },
         ))))
     }
 }
 
 #[inline]
-fn etag_from_file(metadata: fs::Metadata) -> String {
+fn etag_from_file(metadata: &fs::Metadata) -> String {
     format!(
         "{}.{};{}",
         metadata.mtime(),
@@ -124,10 +135,10 @@ impl Storage for FilesystemStorage {
                 continue;
             }
 
-            rv.push((fname, etag_from_file(metadata)));
+            rv.push((fname, etag_from_file(&metadata)));
         }
 
-        return Ok(Box::new(rv.into_iter()));
+        Ok(Box::new(rv.into_iter()))
     }
 
     fn get(&mut self, href: &str) -> Fallible<(Item, String)> {
@@ -139,7 +150,7 @@ impl Storage for FilesystemStorage {
 
         let mut s = String::new();
         f.read_to_string(&mut s)?;
-        Ok((Item::from_raw(s), etag_from_file(f.metadata()?)))
+        Ok((Item::from_raw(s), etag_from_file(&f.metadata()?)))
     }
 
     fn upload(&mut self, item: Item) -> Fallible<(String, String)> {
@@ -149,7 +160,7 @@ impl Storage for FilesystemStorage {
             let af = AtomicFile::new(&filepath, DisallowOverwrite);
             let content = item.get_raw();
             af.write(|f| f.write_all(content.as_bytes()))?;
-            let new_etag = etag_from_file(fs::metadata(&filepath)?);
+            let new_etag = etag_from_file(&fs::metadata(&filepath)?);
             s.run_post_hook(filepath);
             Ok(new_etag)
         }
@@ -162,10 +173,10 @@ impl Storage for FilesystemStorage {
                 href = self.get_href(None);
                 match inner(self, &item, &href) {
                     Ok(x) => x,
-                    Err(e) => Err(handle_io_error(&href, e))?
+                    Err(e) => Err(handle_io_error(&href, e))?,
                 }
-            },
-            Err(e) => Err(handle_io_error(&href, e))?
+            }
+            Err(e) => Err(handle_io_error(&href, e))?,
         };
 
         Ok((href, etag))
@@ -175,17 +186,19 @@ impl Storage for FilesystemStorage {
         let filepath = self.get_filepath(href);
         let metadata = match fs::metadata(&filepath) {
             Ok(x) => x,
-            Err(e) => Err(handle_io_error(href, e))?
+            Err(e) => Err(handle_io_error(href, e))?,
         };
-        let actual_etag = etag_from_file(metadata);
+        let actual_etag = etag_from_file(&metadata);
         if actual_etag != etag {
-            Err(WrongEtag { href: href.to_owned() })?;
+            Err(WrongEtag {
+                href: href.to_owned(),
+            })?;
         }
 
         let af = AtomicFile::new(&filepath, AllowOverwrite);
         let content = item.get_raw();
         af.write(|f| f.write_all(content.as_bytes()))?;
-        let new_etag = etag_from_file(fs::metadata(filepath)?);
+        let new_etag = etag_from_file(&fs::metadata(filepath)?);
         Ok(new_etag)
     }
 
@@ -193,11 +206,13 @@ impl Storage for FilesystemStorage {
         let filepath = self.get_filepath(href);
         let metadata = match fs::metadata(&filepath) {
             Ok(x) => x,
-            Err(e) => Err(handle_io_error(href, e))?
+            Err(e) => Err(handle_io_error(href, e))?,
         };
-        let actual_etag = etag_from_file(metadata);
+        let actual_etag = etag_from_file(&metadata);
         if actual_etag != etag {
-            Err(WrongEtag { href: href.to_owned() })?;
+            Err(WrongEtag {
+                href: href.to_owned(),
+            })?;
         }
         fs::remove_file(filepath)?;
         Ok(())

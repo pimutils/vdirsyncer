@@ -3,11 +3,12 @@ extern crate atomicwrites;
 extern crate failure;
 #[macro_use]
 extern crate shippai;
-extern crate ring;
-extern crate vobject;
-extern crate uuid;
 extern crate libc;
-#[macro_use] extern crate log;
+extern crate ring;
+extern crate uuid;
+extern crate vobject;
+#[macro_use]
+extern crate log;
 
 mod item;
 mod storage;
