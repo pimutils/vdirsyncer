@@ -50,6 +50,10 @@ const char *vdirsyncer_get_raw(Item *c);
 
 const char *vdirsyncer_get_uid(Item *c);
 
+Box_Storage *vdirsyncer_init_filesystem(const char *path,
+                                        const char *fileext,
+                                        const char *post_hook);
+
 Box_Storage *vdirsyncer_init_singlefile(const char *path);
 
 Item *vdirsyncer_item_from_raw(const char *s);

@@ -3,19 +3,18 @@
 import errno
 import logging
 import os
-import subprocess
 
 from atomicwrites import atomic_write
 
 from .base import Storage, normalize_meta_value
-from .. import exceptions
-from ..utils import checkdir, expand_path, generate_href, get_etag_from_file
-from ..vobject import Item
+from ._rust import RustStorageMixin
+from .. import native
+from ..utils import checkdir, expand_path
 
 logger = logging.getLogger(__name__)
 
 
-class FilesystemStorage(Storage):
+class FilesystemStorage(RustStorageMixin, Storage):
 
     '''
     Saves each item in its own file, given a directory.
@@ -51,6 +50,15 @@ class FilesystemStorage(Storage):
         self.encoding = encoding
         self.fileext = fileext
         self.post_hook = post_hook
+
+        self._native_storage = native.ffi.gc(
+            native.lib.vdirsyncer_init_filesystem(
+                path.encode('utf-8'),
+                fileext.encode('utf-8'),
+                (post_hook or "").encode('utf-8')
+            ),
+            native.lib.vdirsyncer_storage_free
+        )
 
     @classmethod
     def discover(cls, path, **kwargs):
@@ -92,102 +100,6 @@ class FilesystemStorage(Storage):
         kwargs['path'] = path
         kwargs['collection'] = collection
         return kwargs
-
-    def _get_filepath(self, href):
-        return os.path.join(self.path, href)
-
-    def _get_href(self, ident):
-        return generate_href(ident) + self.fileext
-
-    def list(self):
-        for fname in os.listdir(self.path):
-            fpath = os.path.join(self.path, fname)
-            if os.path.isfile(fpath) and fname.endswith(self.fileext):
-                yield fname, get_etag_from_file(fpath)
-
-    def get(self, href):
-        fpath = self._get_filepath(href)
-        try:
-            with open(fpath, 'rb') as f:
-                return (Item(f.read().decode(self.encoding)),
-                        get_etag_from_file(fpath))
-        except IOError as e:
-            if e.errno == errno.ENOENT:
-                raise exceptions.NotFoundError(href)
-            else:
-                raise
-
-    def upload(self, item):
-        if not isinstance(item.raw, str):
-            raise TypeError('item.raw must be a unicode string.')
-
-        try:
-            href = self._get_href(item.ident)
-            fpath, etag = self._upload_impl(item, href)
-        except OSError as e:
-            if e.errno in (
-                errno.ENAMETOOLONG,  # Unix
-                errno.ENOENT  # Windows
-            ):
-                logger.debug('UID as filename rejected, trying with random '
-                             'one.')
-                # random href instead of UID-based
-                href = self._get_href(None)
-                fpath, etag = self._upload_impl(item, href)
-            else:
-                raise
-
-        if self.post_hook:
-            self._run_post_hook(fpath)
-        return href, etag
-
-    def _upload_impl(self, item, href):
-        fpath = self._get_filepath(href)
-        try:
-            with atomic_write(fpath, mode='wb', overwrite=False) as f:
-                f.write(item.raw.encode(self.encoding))
-                return fpath, get_etag_from_file(f)
-        except OSError as e:
-            if e.errno == errno.EEXIST:
-                raise exceptions.AlreadyExistingError(existing_href=href)
-            else:
-                raise
-
-    def update(self, href, item, etag):
-        fpath = self._get_filepath(href)
-        if not os.path.exists(fpath):
-            raise exceptions.NotFoundError(item.uid)
-        actual_etag = get_etag_from_file(fpath)
-        if etag != actual_etag:
-            raise exceptions.WrongEtagError(etag, actual_etag)
-
-        if not isinstance(item.raw, str):
-            raise TypeError('item.raw must be a unicode string.')
-
-        with atomic_write(fpath, mode='wb', overwrite=True) as f:
-            f.write(item.raw.encode(self.encoding))
-            etag = get_etag_from_file(f)
-
-        if self.post_hook:
-            self._run_post_hook(fpath)
-        return etag
-
-    def delete(self, href, etag):
-        fpath = self._get_filepath(href)
-        if not os.path.isfile(fpath):
-            raise exceptions.NotFoundError(href)
-        actual_etag = get_etag_from_file(fpath)
-        if etag != actual_etag:
-            raise exceptions.WrongEtagError(etag, actual_etag)
-        os.remove(fpath)
-
-    def _run_post_hook(self, fpath):
-        logger.info('Calling post_hook={} with argument={}'.format(
-            self.post_hook, fpath))
-        try:
-            subprocess.call([self.post_hook, fpath])
-        except OSError as e:
-            logger.warning('Error executing external hook: {}'.format(str(e)))
 
     def get_meta(self, key):
         fpath = os.path.join(self.path, key)
