@@ -101,20 +101,7 @@ class GoogleSession(dav.DAVSession):
             _save_token(token)
 
 
-GOOGLE_PARAMS_DOCS = '''
-    :param token_file: A filepath where access tokens are stored.
-    :param client_id/client_secret: OAuth credentials, obtained from the Google
-        API Manager.
-'''
-
-
 class GoogleCalendarStorage(dav.CalDAVStorage):
-    __doc__ = '''Google calendar.
-
-    Please refer to :storage:`caldav` regarding
-    the ``item_types`` and timerange parameters.
-    ''' + GOOGLE_PARAMS_DOCS
-
     class session_class(GoogleSession):
         url = 'https://apidata.googleusercontent.com/caldav/v2/'
         scope = ['https://www.googleapis.com/auth/calendar']
@@ -150,10 +137,6 @@ class GoogleCalendarStorage(dav.CalDAVStorage):
 
 
 class GoogleContactsStorage(dav.CardDAVStorage):
-    __doc__ = '''Google contacts.
-
-    ''' + GOOGLE_PARAMS_DOCS
-
     class session_class(GoogleSession):
         # Google CardDAV is completely bonkers. Collection discovery doesn't
         # work properly, well-known URI takes us directly to single collection

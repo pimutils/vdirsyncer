@@ -30,56 +30,6 @@ def _writing_op(f):
 
 
 class SingleFileStorage(Storage):
-    '''Save data in single local ``.vcf`` or ``.ics`` file.
-
-    The storage basically guesses how items should be joined in the file.
-
-    .. versionadded:: 0.1.6
-
-    .. note::
-        This storage is very slow, and that is unlikely to change. You should
-        consider using :storage:`filesystem` if it fits your usecase.
-
-    :param path: The filepath to the file to be written to. If collections are
-        used, this should contain ``%s`` as a placeholder for the collection
-        name.
-    :param encoding: Which encoding the file should use. Defaults to UTF-8.
-
-    Example for syncing with :storage:`caldav`::
-
-        [pair my_calendar]
-        a = my_calendar_local
-        b = my_calendar_remote
-        collections = ["from a", "from b"]
-
-        [storage my_calendar_local]
-        type = "singlefile"
-        path = ~/.calendars/%s.ics
-
-        [storage my_calendar_remote]
-        type = "caldav"
-        url = https://caldav.example.org/
-        #username =
-        #password =
-
-    Example for syncing with :storage:`caldav` using a ``null`` collection::
-
-        [pair my_calendar]
-        a = my_calendar_local
-        b = my_calendar_remote
-
-        [storage my_calendar_local]
-        type = "singlefile"
-        path = ~/my_calendar.ics
-
-        [storage my_calendar_remote]
-        type = "caldav"
-        url = https://caldav.example.org/username/my_calendar/
-        #username =
-        #password =
-
-    '''
-
     storage_name = 'singlefile'
     _repr_attributes = ('path',)
 

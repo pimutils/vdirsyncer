@@ -6,7 +6,7 @@ import os
 
 from sphinx.ext import autodoc
 
-import vdirsyncer
+import setuptools_scm
 
 extensions = ['sphinx.ext.autodoc']
 
@@ -19,7 +19,7 @@ project = u'vdirsyncer'
 copyright = (u'2014-{}, Markus Unterwaditzer & contributors'
              .format(datetime.date.today().strftime('%Y')))
 
-release = vdirsyncer.__version__
+release = setuptools_scm.get_version(root='..', relative_to=__file__)
 version = '.'.join(release.split('.')[:2])  # The short X.Y version.
 
 rst_epilog = '.. |vdirsyncer_version| replace:: %s' % release
@@ -75,9 +75,10 @@ def github_issue_role(name, rawtext, text, lineno, inliner,
         prb = inliner.problematic(rawtext, rawtext, msg)
         return [prb], [msg]
 
-    import vdirsyncer
     from docutils import nodes
-    link = '{}/{}/{}'.format(vdirsyncer.PROJECT_HOME,
+
+    PROJECT_HOME = 'https://github.com/pimutils/vdirsyncer'
+    link = '{}/{}/{}'.format(PROJECT_HOME,
                              'issues' if name == 'gh' else 'pull',
                              issue_num)
     linktext = ('issue #{}' if name == 'gh'
@@ -87,64 +88,9 @@ def github_issue_role(name, rawtext, text, lineno, inliner,
     return [node], []
 
 
-def format_storage_config(cls, header=True):
-    if header is True:
-        yield '[storage example_for_{}]'.format(cls.storage_name)
-    yield 'type = "{}"'.format(cls.storage_name)
-
-    from vdirsyncer.storage.base import Storage
-    from vdirsyncer.utils import get_storage_init_specs
-    handled = set()
-    for spec in get_storage_init_specs(cls, stop_at=Storage):
-        defaults = spec.defaults or ()
-        defaults = dict(zip(spec.args[-len(defaults):], defaults))
-        for key in spec.args[1:]:
-            if key in handled:
-                continue
-            handled.add(key)
-
-            comment = '' if key not in defaults else '#'
-            value = defaults.get(key, '...')
-            yield '{}{} = {}'.format(comment, key, json.dumps(value))
-
-
-class StorageDocumenter(autodoc.ClassDocumenter):
-    '''Custom formatter for auto-documenting storage classes. It assumes that
-    the first line of the class' docstring is its own paragraph.
-
-    After that first paragraph, an example configuration will be inserted and
-    Sphinx' __init__ signature removed.'''
-
-    objtype = 'storage'
-    domain = None
-    directivetype = 'storage'
-    option_spec = {}
-
-    @classmethod
-    def can_document_member(cls, member, membername, isattr, parent):
-        from vdirsyncer.storage.base import Storage
-        return isinstance(member, Storage)
-
-    def format_signature(self):
-        return ''
-
-    def add_directive_header(self, sig):
-        directive = getattr(self, 'directivetype', self.objtype)
-        name = self.object.storage_name
-        self.add_line(u'.. %s:: %s%s' % (directive, name, sig),
-                      '<autodoc>')
-
-    def get_doc(self, encoding=None, ignore=1):
-        rv = autodoc.ClassDocumenter.get_doc(self, encoding, ignore)
-        config = [u'    ' + x for x in format_storage_config(self.object)]
-        rv[0] = rv[0][:1] + [u'::', u''] + config + [u''] + rv[0][1:]
-        return rv
-
-
 def setup(app):
     from sphinx.domains.python import PyObject
     app.add_object_type('storage', 'storage', 'pair: %s; storage',
                         doc_field_types=PyObject.doc_field_types)
     app.add_role('gh', github_issue_role)
     app.add_role('ghpr', github_issue_role)
-    app.add_autodocumenter(StorageDocumenter)

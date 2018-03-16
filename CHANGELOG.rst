@@ -9,14 +9,17 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.16.6
+==============
+
+- **Packagers:** Documentation building no longer needs a working installation
+  of vdirsyncer.
+
 Version 0.16.5
 ==============
 
-*released on 13 June 2018*
-
 - **Packagers:** click-log 0.3 is required.
 - All output will now happen on stderr (because of the upgrade of ``click-log``).
-
 
 Version 0.16.4
 ==============

@@ -1,2 +1,3 @@
 sphinx != 1.4.7
 sphinx_rtd_theme
+setuptools_scm

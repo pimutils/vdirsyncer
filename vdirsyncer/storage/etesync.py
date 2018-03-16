@@ -100,14 +100,6 @@ class _Session:
 
 
 class EtesyncStorage(Storage):
-    '''
-    :param email: The email address of your account.
-    :param secrets_dir: A directory where vdirsyncer can store the encryption
-        key and authentication token.
-    :param server_url: Optional. URL to the root of your custom server.
-    :param db_path: Optional. Use a different path for the database.
-    '''
-
     _collection_type = None
     _item_type = None
     _at_once = False
@@ -225,20 +217,12 @@ class EtesyncStorage(Storage):
 
 
 class EtesyncContacts(EtesyncStorage):
-    __doc__ = '''
-    Contacts for EteSync.
-    ''' + EtesyncStorage.__doc__
-
     _collection_type = AddressBook
     _item_type = Contact
     storage_name = 'etesync_contacts'
 
 
 class EtesyncCalendars(EtesyncStorage):
-    __doc__ = '''
-    Calendars for EteSync.
-    ''' + EtesyncStorage.__doc__
-
     _collection_type = Calendar
     _item_type = Event
     storage_name = 'etesync_calendars'
