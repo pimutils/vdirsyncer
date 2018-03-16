@@ -15,6 +15,8 @@ Version 0.17.0
 - Fix bug where collection discovery under DAV-storages would produce invalid
   XML. See :gh:`688`.
 - ownCloud and Baikal are no longer tested.
+- **Packagers:** Documentation building no longer needs a working installation
+  of vdirsyncer.
 
 Version 0.16.4
 ==============

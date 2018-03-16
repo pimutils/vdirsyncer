@@ -150,9 +150,107 @@ Supported Storages
 CalDAV and CardDAV
 ++++++++++++++++++
 
-.. autostorage:: vdirsyncer.storage.dav.CalDAVStorage
+.. note::
 
-.. autostorage:: vdirsyncer.storage.dav.CardDAVStorage
+    Please also see :ref:`supported-servers`, as some servers may not work
+    well.
+
+.. storage:: caldav
+
+    CalDAV.
+
+    ::
+
+      [storage example_for_caldav]
+      type = "caldav"
+      #start_date = null
+      #end_date = null
+      #item_types = []
+      url = "..."
+      #username = ""
+      #password = ""
+      #verify = true
+      #auth = null
+      #useragent = "vdirsyncer/0.16.4"
+      #verify_fingerprint = null
+      #auth_cert = null
+
+    You can set a timerange to synchronize with the parameters ``start_date``
+    and ``end_date``. Inside those parameters, you can use any Python
+    expression to return a valid :py:class:`datetime.datetime` object. For
+    example, the following would synchronize the timerange from one year in the
+    past to one year in the future::
+
+        start_date = "datetime.now() - timedelta(days=365)"
+        end_date = "datetime.now() + timedelta(days=365)"
+
+    Either both or none have to be specified. The default is to synchronize
+    everything.
+
+    You can set ``item_types`` to restrict the *kind of items* you want to
+    synchronize. For example, if you want to only synchronize events (but don't
+    download any tasks from the server), set ``item_types = ["VEVENT"]``. If
+    you want to synchronize events and tasks, but have some ``VJOURNAL`` items
+    on the server you don't want to synchronize, use ``item_types = ["VEVENT",
+    "VTODO"]``.
+
+    :param start_date: Start date of timerange to show, default -inf.
+    :param end_date: End date of timerange to show, default +inf.
+    :param item_types: Kind of items to show. The default, the empty list, is
+        to show all. This depends on particular features on the server, the
+        results are not validated.
+    :param url: Base URL or an URL to a calendar.
+    :param username: Username for authentication.
+    :param password: Password for authentication.
+    :param verify: Verify SSL certificate, default True. This can also be a
+        local path to a self-signed SSL certificate. See :ref:`ssl-tutorial`
+        for more information.
+    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
+        expected server certificate. See :ref:`ssl-tutorial` for more
+        information.
+    :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. The
+        default is preemptive Basic auth, sending credentials even if server
+        didn't request them. This saves from an additional roundtrip per
+        request. Consider setting ``guess`` if this causes issues with your
+        server.
+    :param auth_cert: Optional. Either a path to a certificate with a client
+        certificate and the key or a list of paths to the files with them.
+    :param useragent: Default ``vdirsyncer``.
+
+
+.. storage:: carddav
+
+   CardDAV.
+
+   ::
+       [storage example_for_carddav]
+       type = "carddav"
+       url = "..."
+       #username = ""
+       #password = ""
+       #verify = true
+       #auth = null
+       #useragent = "vdirsyncer/0.16.4"
+       #verify_fingerprint = null
+       #auth_cert = null
+
+    :param url: Base URL or an URL to an addressbook.
+    :param username: Username for authentication.
+    :param password: Password for authentication.
+    :param verify: Verify SSL certificate, default True. This can also be a
+        local path to a self-signed SSL certificate. See :ref:`ssl-tutorial`
+        for more information.
+    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
+        expected server certificate. See :ref:`ssl-tutorial` for more
+        information.
+    :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. The
+        default is preemptive Basic auth, sending credentials even if server
+        didn't request them. This saves from an additional roundtrip per
+        request. Consider setting ``guess`` if this causes issues with your
+        server.
+    :param auth_cert: Optional. Either a path to a certificate with a client
+        certificate and the key or a list of paths to the files with them.
+    :param useragent: Default ``vdirsyncer``.
 
 Google
 ++++++
@@ -206,9 +304,42 @@ or write anything to it.
     a rather hidden `settings page
     <https://calendar.google.com/calendar/syncselect>`_.
 
-.. autostorage:: vdirsyncer.storage.google.GoogleCalendarStorage
+.. storage:: google_calendar
 
-.. autostorage:: vdirsyncer.storage.google.GoogleContactsStorage
+   Google calendar.
+
+   ::
+
+       [storage example_for_google_calendar]
+       type = "google_calendar"
+       token_file = "..."
+       client_id = "..."
+       client_secret = "..."
+       #start_date = null
+       #end_date = null
+       #item_types = []
+
+   Please refer to :storage:`caldav` regarding the ``item_types`` and timerange parameters.
+
+    :param token_file: A filepath where access tokens are stored.
+    :param client_id/client_secret: OAuth credentials, obtained from the Google
+        API Manager.
+
+.. storage:: google_contacts
+
+   Google contacts.
+
+   ::
+
+       [storage example_for_google_contacts]
+       type = "google_contacts"
+       token_file = "..."
+       client_id = "..."
+       client_secret = "..."
+
+    :param token_file: A filepath where access tokens are stored.
+    :param client_id/client_secret: OAuth credentials, obtained from the Google
+        API Manager.
 
 EteSync
 +++++++
@@ -224,17 +355,123 @@ To use it, you need to install some optional dependencies::
 On first usage you will be prompted for the service password and the encryption
 password. Neither are stored.
 
-.. autostorage:: vdirsyncer.storage.etesync.EtesyncContacts
+.. storage:: etesync_contacts
 
-.. autostorage:: vdirsyncer.storage.etesync.EtesyncCalendars
+   Contacts for etesync.
+
+   ::
+       [storage example_for_etesync_contacts]
+       email = ...
+       secrets_dir = ...
+       #server_path = ...
+       #db_path = ...
+   
+    :param email: The email address of your account.
+    :param secrets_dir: A directory where vdirsyncer can store the encryption
+        key and authentication token.
+    :param server_url: Optional. URL to the root of your custom server.
+    :param db_path: Optional. Use a different path for the database.
+
+.. storage:: etesync_calendars
+
+   Calendars for etesync.
+
+   ::
+       [storage example_for_etesync_calendars]
+       email = ...
+       secrets_dir = ...
+       #server_path = ...
+       #db_path = ...
+   
+    :param email: The email address of your account.
+    :param secrets_dir: A directory where vdirsyncer can store the encryption
+        key and authentication token.
+    :param server_url: Optional. URL to the root of your custom server.
+    :param db_path: Optional. Use a different path for the database.
 
 Local
 +++++
 
-.. autostorage:: vdirsyncer.storage.filesystem.FilesystemStorage
+.. storage:: filesystem
 
-.. autostorage:: vdirsyncer.storage.singlefile.SingleFileStorage
+    Saves each item in its own file, given a directory.
 
+    ::
+
+      [storage example_for_filesystem]
+      type = "filesystem"
+      path = "..."
+      fileext = "..."
+      #encoding = "utf-8"
+      #post_hook = null
+
+    Can be used with `khal <http://lostpackets.de/khal/>`_. See :doc:`vdir` for
+    a more formal description of the format.
+
+    Directories with a leading dot are ignored to make usage of e.g. version
+    control easier.
+
+    :param path: Absolute path to a vdir/collection. If this is used in
+        combination with the ``collections`` parameter in a pair-section, this
+        should point to a directory of vdirs instead.
+    :param fileext: The file extension to use (e.g. ``.txt``). Contained in the
+        href, so if you change the file extension after a sync, this will
+        trigger a re-download of everything (but *should* not cause data-loss
+        of any kind).
+    :param encoding: File encoding for items, both content and filename.
+    :param post_hook: A command to call for each item creation and
+        modification. The command will be called with the path of the
+        new/updated file.
+
+.. storage:: singlefile
+
+    Save data in single local ``.vcf`` or ``.ics`` file.
+
+    The storage basically guesses how items should be joined in the file.
+
+    .. versionadded:: 0.1.6
+
+    .. note::
+        This storage is very slow, and that is unlikely to change. You should
+        consider using :storage:`filesystem` if it fits your usecase.
+
+    :param path: The filepath to the file to be written to. If collections are
+        used, this should contain ``%s`` as a placeholder for the collection
+        name.
+    :param encoding: Which encoding the file should use. Defaults to UTF-8.
+
+    Example for syncing with :storage:`caldav`::
+
+        [pair my_calendar]
+        a = my_calendar_local
+        b = my_calendar_remote
+        collections = ["from a", "from b"]
+
+        [storage my_calendar_local]
+        type = "singlefile"
+        path = ~/.calendars/%s.ics
+
+        [storage my_calendar_remote]
+        type = "caldav"
+        url = https://caldav.example.org/
+        #username =
+        #password =
+
+    Example for syncing with :storage:`caldav` using a ``null`` collection::
+
+        [pair my_calendar]
+        a = my_calendar_local
+        b = my_calendar_remote
+
+        [storage my_calendar_local]
+        type = "singlefile"
+        path = ~/my_calendar.ics
+
+        [storage my_calendar_remote]
+        type = "caldav"
+        url = https://caldav.example.org/username/my_calendar/
+        #username =
+        #password =
 
 Read-only storages
 ++++++++++++++++++
@@ -243,4 +480,50 @@ These storages don't support writing of their items, consequently ``read_only``
 is set to ``true`` by default. Changing ``read_only`` to ``false`` on them
 leads to an error.
 
-.. autostorage:: vdirsyncer.storage.http.HttpStorage
+.. storage:: http
+
+    Use a simple ``.ics`` file (or similar) from the web.
+    ``webcal://``-calendars are supposed to be used with this, but you have to
+    replace ``webcal://`` with ``http://``, or better, ``https://``.
+
+    ::
+
+        [pair holidays]
+        a = holidays_local
+        b = holidays_remote
+        collections = null
+
+        [storage holidays_local]
+        type = "filesystem"
+        path = ~/.config/vdir/calendars/holidays/
+        fileext = .ics
+
+        [storage holidays_remote]
+        type = "http"
+        url = https://example.com/holidays_from_hicksville.ics
+
+    Too many WebCAL providers generate UIDs of all ``VEVENT``-components
+    on-the-fly, i.e. all UIDs change every time the calendar is downloaded.
+    This leads many synchronization programs to believe that all events have
+    been deleted and new ones created, and accordingly causes a lot of
+    unnecessary uploads and deletions on the other side. Vdirsyncer completely
+    ignores UIDs coming from :storage:`http` and will replace them with a hash
+    of the normalized item content.
+
+    :param url: URL to the ``.ics`` file.
+    :param username: Username for authentication.
+    :param password: Password for authentication.
+    :param verify: Verify SSL certificate, default True. This can also be a
+        local path to a self-signed SSL certificate. See :ref:`ssl-tutorial`
+        for more information.
+    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
+        expected server certificate. See :ref:`ssl-tutorial` for more
+        information.
+    :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. The
+        default is preemptive Basic auth, sending credentials even if server
+        didn't request them. This saves from an additional roundtrip per
+        request. Consider setting ``guess`` if this causes issues with your
+        server.
+    :param auth_cert: Optional. Either a path to a certificate with a client
+        certificate and the key or a list of paths to the files with them.
+    :param useragent: Default ``vdirsyncer``.

@@ -93,26 +93,6 @@ def prepare_client_cert(cert):
     return cert
 
 
-HTTP_STORAGE_PARAMETERS = '''
-    :param username: Username for authentication.
-    :param password: Password for authentication.
-    :param verify: Verify SSL certificate, default True. This can also be a
-        local path to a self-signed SSL certificate. See :ref:`ssl-tutorial`
-        for more information.
-    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
-        expected server certificate. See :ref:`ssl-tutorial` for more
-        information.
-    :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. The
-        default is preemptive Basic auth, sending credentials even if server
-        didn't request them. This saves from an additional roundtrip per
-        request. Consider setting ``guess`` if this causes issues with your
-        server.
-    :param auth_cert: Optional. Either a path to a certificate with a client
-        certificate and the key or a list of paths to the files with them.
-    :param useragent: Default ``vdirsyncer``.
-'''
-
-
 def _install_fingerprint_adapter(session, fingerprint):
     prefix = 'https://'
     try:

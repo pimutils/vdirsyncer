@@ -12,7 +12,7 @@ from requests.exceptions import HTTPError
 
 from .base import Storage, normalize_meta_value
 from .. import exceptions, http, utils
-from ..http import HTTP_STORAGE_PARAMETERS, USERAGENT, prepare_auth, \
+from ..http import USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
 from ..vobject import Item
 
@@ -397,17 +397,6 @@ class DAVSession(object):
 
 
 class DAVStorage(Storage):
-
-    __doc__ = '''
-    :param url: Base URL or an URL to a collection.
-    ''' + HTTP_STORAGE_PARAMETERS + '''
-
-    .. note::
-
-        Please also see :ref:`supported-servers`, as some servers may not work
-        well.
-    '''
-
     # the file extension of items. Useful for testing against radicale.
     fileext = None
     # mimetype of items
@@ -714,36 +703,6 @@ class DAVStorage(Storage):
 
 
 class CalDAVStorage(DAVStorage):
-
-    __doc__ = '''
-    CalDAV.
-
-    You can set a timerange to synchronize with the parameters ``start_date``
-    and ``end_date``. Inside those parameters, you can use any Python
-    expression to return a valid :py:class:`datetime.datetime` object. For
-    example, the following would synchronize the timerange from one year in the
-    past to one year in the future::
-
-        start_date = "datetime.now() - timedelta(days=365)"
-        end_date = "datetime.now() + timedelta(days=365)"
-
-    Either both or none have to be specified. The default is to synchronize
-    everything.
-
-    You can set ``item_types`` to restrict the *kind of items* you want to
-    synchronize. For example, if you want to only synchronize events (but don't
-    download any tasks from the server), set ``item_types = ["VEVENT"]``. If
-    you want to synchronize events and tasks, but have some ``VJOURNAL`` items
-    on the server you don't want to synchronize, use ``item_types = ["VEVENT",
-    "VTODO"]``.
-
-    :param start_date: Start date of timerange to show, default -inf.
-    :param end_date: End date of timerange to show, default +inf.
-    :param item_types: Kind of items to show. The default, the empty list, is
-        to show all. This depends on particular features on the server, the
-        results are not validated.
-    ''' + DAVStorage.__doc__
-
     storage_name = 'caldav'
     fileext = '.ics'
     item_mimetype = 'text/calendar'
@@ -864,11 +823,6 @@ class CalDAVStorage(DAVStorage):
 
 
 class CardDAVStorage(DAVStorage):
-
-    __doc__ = '''
-    CardDAV.
-    ''' + DAVStorage.__doc__
-
     storage_name = 'carddav'
     fileext = '.vcf'
     item_mimetype = 'text/vcard'

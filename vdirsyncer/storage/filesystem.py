@@ -16,28 +16,6 @@ logger = logging.getLogger(__name__)
 
 class FilesystemStorage(RustStorageMixin, Storage):
 
-    '''
-    Saves each item in its own file, given a directory.
-
-    Can be used with `khal <http://lostpackets.de/khal/>`_. See :doc:`vdir` for
-    a more formal description of the format.
-
-    Directories with a leading dot are ignored to make usage of e.g. version
-    control easier.
-
-    :param path: Absolute path to a vdir/collection. If this is used in
-        combination with the ``collections`` parameter in a pair-section, this
-        should point to a directory of vdirs instead.
-    :param fileext: The file extension to use (e.g. ``.txt``). Contained in the
-        href, so if you change the file extension after a sync, this will
-        trigger a re-download of everything (but *should* not cause data-loss
-        of any kind).
-    :param encoding: File encoding for items, both content and filename.
-    :param post_hook: A command to call for each item creation and
-        modification. The command will be called with the path of the
-        new/updated file.
-    '''
-
     storage_name = 'filesystem'
     _repr_attributes = ('path',)
 
