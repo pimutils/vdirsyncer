@@ -149,10 +149,6 @@ install-rust:
 	curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain nightly
 	rustup update nightly
 
-rust-ext:
-	[ "$$READTHEDOCS" != "True" ] || $(MAKE) install-rust
-	cd ./rust && cargo build --release
-
 rust/vdirsyncer_rustext.h:
 	cbindgen -c rust/cbindgen.toml rust/ > $@
 

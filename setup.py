@@ -43,14 +43,14 @@ requirements = [
 
 def build_native(spec):
     build = spec.add_external_build(
-        cmd=['make', 'rust-ext'],
-        path='.'
+        cmd=['cargo', 'build', '--release'],
+        path='./rust/'
     )
 
     spec.add_cffi_module(
         module_path='vdirsyncer._native',
-        dylib=lambda: build.find_dylib(
-            'vdirsyncer_rustext', in_path='rust/target/release'),
+        dylib=lambda: build.find_dylib('vdirsyncer_rustext',
+                                       in_path='target/release'),
         header_filename='rust/vdirsyncer_rustext.h',
         # Rust bug: If thread-local storage is used, this flag is necessary
         # (mitsuhiko)
