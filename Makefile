@@ -104,7 +104,7 @@ style:
 	! git grep -i 'text/icalendar' */*
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
 	cd rust/ && cargo +nightly clippy
-	cd rust/ && cargo fmt --all -- --write-mode=diff
+	cd rust/ && cargo +nightly fmt --all -- --write-mode=diff
 
 install-docs:
 	pip install -Ur docs-requirements.txt
