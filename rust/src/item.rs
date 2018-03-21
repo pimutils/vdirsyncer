@@ -1,7 +1,7 @@
 use vobject;
-use ring;
 
 use std::fmt::Write;
+use sha2::{Digest, Sha256};
 
 use errors::*;
 
@@ -178,7 +178,9 @@ fn hash_component(c: &vobject::Component) -> String {
     let raw = vobject::write_component(&new_c);
     let mut lines: Vec<_> = raw.lines().collect();
     lines.sort();
-    let digest = ring::digest::digest(&ring::digest::SHA256, lines.join("\r\n").as_bytes());
+    let mut hasher = Sha256::default();
+    hasher.input(lines.join("\r\n").as_bytes());
+    let digest = hasher.result();
     let mut rv = String::new();
     for &byte in digest.as_ref() {
         write!(&mut rv, "{:x}", byte).unwrap();

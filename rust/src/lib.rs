@@ -4,11 +4,11 @@ extern crate failure;
 #[macro_use]
 extern crate shippai;
 extern crate libc;
-extern crate ring;
 extern crate uuid;
 extern crate vobject;
 #[macro_use]
 extern crate log;
+extern crate sha2;
 
 mod item;
 mod storage;
