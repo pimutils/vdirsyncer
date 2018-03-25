@@ -1,6 +1,7 @@
 pub mod singlefile;
 pub mod exports;
 pub mod filesystem;
+pub mod http;
 mod utils;
 use errors::Fallible;
 use item::Item;
