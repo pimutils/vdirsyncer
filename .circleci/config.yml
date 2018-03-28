@@ -74,6 +74,21 @@ jobs:
 
       - run: make -e storage-test
 
+  davical:
+    docker:
+      - image: circleci/python:3.6
+        environment:
+          <<: *basic_env
+          DAV_SERVER: davical
+    steps:
+      - checkout
+      - *restore_caches
+      - *basic_setup
+      - run: make -e install-dev install-test
+      - *save_caches
+
+      - run: make -e storage-test
+
   style:
     docker:
       - image: circleci/python:3.6
@@ -216,6 +231,7 @@ workflows:
       - nextcloud
       - fastmail
       - icloud
+      - davical
       - style
       - py34-minimal
       - py34-release
