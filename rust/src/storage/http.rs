@@ -19,14 +19,14 @@ fn get_http_connection(
     auth: Option<Auth>,
     useragent: Option<String>,
     verify_cert: Option<String>,
-    _auth_cert: Option<String>
+    _auth_cert: Option<String>,
 ) -> Fallible<reqwest::ClientBuilder> {
     let mut headers = reqwest::header::Headers::new();
 
     if let Some((username, password)) = auth {
         headers.set(reqwest::header::Authorization(reqwest::header::Basic {
-            username: username,
-            password: Some(password)
+            username,
+            password: Some(password),
         }));
     }
 
@@ -55,20 +55,24 @@ pub struct HttpStorage {
     items_cache: Option<ItemCache>,
     useragent: Option<String>,
     verify_cert: Option<String>,
-    auth_cert: Option<String>
+    auth_cert: Option<String>,
 }
 
 impl HttpStorage {
-    pub fn new(url: String, auth: Option<Auth>,
-               useragent: Option<String>, verify_cert: Option<String>,
-               auth_cert: Option<String>) -> Self {
+    pub fn new(
+        url: String,
+        auth: Option<Auth>,
+        useragent: Option<String>,
+        verify_cert: Option<String>,
+        auth_cert: Option<String>,
+    ) -> Self {
         HttpStorage {
-            url: url,
-            auth: auth,
+            url,
+            auth,
             items_cache: None,
-            useragent: useragent,
-            verify_cert: verify_cert,
-            auth_cert: auth_cert
+            useragent,
+            verify_cert,
+            auth_cert,
         }
     }
 
@@ -86,7 +90,7 @@ impl Storage for HttpStorage {
             self.auth.clone(),
             self.useragent.clone(),
             self.verify_cert.clone(),
-            self.auth_cert.clone()
+            self.auth_cert.clone(),
         )?.build()?;
 
         let mut response = client.get(&self.url).send()?.error_for_status()?;
@@ -141,7 +145,7 @@ pub mod exports {
         password: *const c_char,
         useragent: *const c_char,
         verify_cert: *const c_char,
-        auth_cert: *const c_char
+        auth_cert: *const c_char,
     ) -> *mut Box<Storage> {
         let url = CStr::from_ptr(url);
 
@@ -156,7 +160,7 @@ pub mod exports {
         let verify_cert_dec = verify_cert.to_str().unwrap();
         let auth_cert = CStr::from_ptr(auth_cert);
         let auth_cert_dec = auth_cert.to_str().unwrap();
-        
+
         let auth = if !username_dec.is_empty() && !password_dec.is_empty() {
             Some((username_dec.to_owned(), password_dec.to_owned()))
         } else {
@@ -166,9 +170,21 @@ pub mod exports {
         Box::into_raw(Box::new(Box::new(HttpStorage::new(
             url.to_str().unwrap().to_owned(),
             auth,
-            if useragent_dec.is_empty() { None } else { Some(useragent_dec.to_owned()) },
-            if verify_cert_dec.is_empty() { None } else { Some(verify_cert_dec.to_owned()) },
-            if auth_cert_dec.is_empty() { None } else { Some(auth_cert_dec.to_owned()) }
+            if useragent_dec.is_empty() {
+                None
+            } else {
+                Some(useragent_dec.to_owned())
+            },
+            if verify_cert_dec.is_empty() {
+                None
+            } else {
+                Some(verify_cert_dec.to_owned())
+            },
+            if auth_cert_dec.is_empty() {
+                None
+            } else {
+                Some(auth_cert_dec.to_owned())
+            },
         ))))
     }
 }

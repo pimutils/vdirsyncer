@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import urllib.parse as urlparse
-
 from .base import Storage
 from ._rust import RustStorageMixin
 from .. import exceptions, native
-from ..http import USERAGENT, prepare_auth, \
-    prepare_client_cert, prepare_verify, request
-from ..vobject import Item, split_collection
+from ..http import USERAGENT
 
 
 class HttpStorage(RustStorageMixin, Storage):
