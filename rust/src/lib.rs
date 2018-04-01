@@ -8,6 +8,7 @@ extern crate uuid;
 extern crate vobject;
 #[macro_use]
 extern crate log;
+extern crate reqwest;
 extern crate sha2;
 
 mod item;

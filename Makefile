@@ -150,6 +150,7 @@ install-rust:
 	rustup update nightly
 
 rust/vdirsyncer_rustext.h:
-	cbindgen -c rust/cbindgen.toml rust/ > $@
+	cd rust/ && cargo build # hack to work around cbindgen bugs
+	CARGO_EXPAND_TARGET_DIR=rust/target/ cbindgen -c rust/cbindgen.toml rust/ > $@
 
 .PHONY: docs rust/vdirsyncer_rustext.h

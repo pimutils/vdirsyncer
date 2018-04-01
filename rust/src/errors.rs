@@ -48,6 +48,10 @@ pub struct MtimeMismatch {
     pub filepath: String,
 }
 
+#[derive(Debug, Fail)]
+#[fail(display = "Tried to write to a read-only storage.")]
+pub struct ReadOnly;
+
 pub unsafe fn export_result<V>(
     res: Result<V, failure::Error>,
     c_err: *mut *mut exports::ShippaiError,
@@ -69,6 +73,7 @@ pub mod exports {
         super::ItemNotFound as ITEM_NOT_FOUND,
         super::ItemAlreadyExisting as ITEM_ALREADY_EXISTING,
         super::WrongEtag as WRONG_ETAG,
-        super::MtimeMismatch as MTIME_MISMATCH
+        super::MtimeMismatch as MTIME_MISMATCH,
+        super::ReadOnly as READ_ONLY
     }
 }

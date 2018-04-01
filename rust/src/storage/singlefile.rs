@@ -180,7 +180,7 @@ impl Storage for SinglefileStorage {
     }
 }
 
-fn split_collection(mut input: &str) -> Fallible<Vec<vobject::Component>> {
+pub fn split_collection(mut input: &str) -> Fallible<Vec<vobject::Component>> {
     let mut rv = vec![];
     while !input.is_empty() {
         let (component, remainder) =

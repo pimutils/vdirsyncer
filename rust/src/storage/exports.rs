@@ -6,6 +6,7 @@ use item::Item;
 use super::Storage;
 pub use super::singlefile::exports::*;
 pub use super::filesystem::exports::*;
+pub use super::http::exports::*;
 
 #[no_mangle]
 pub unsafe extern "C" fn vdirsyncer_storage_free(storage: *mut Box<Storage>) {
