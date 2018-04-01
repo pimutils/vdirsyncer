@@ -1,4 +1,6 @@
 use std::collections::BTreeMap;
+use std::fs::File;
+use std::io::Read;
 
 use reqwest;
 
@@ -13,19 +15,60 @@ type Username = String;
 type Password = String;
 type Auth = (Username, Password);
 
+fn get_http_connection(
+    auth: Option<Auth>,
+    useragent: Option<String>,
+    verify_cert: Option<String>,
+    _auth_cert: Option<String>
+) -> Fallible<reqwest::ClientBuilder> {
+    let mut headers = reqwest::header::Headers::new();
+
+    if let Some((username, password)) = auth {
+        headers.set(reqwest::header::Authorization(reqwest::header::Basic {
+            username: username,
+            password: Some(password)
+        }));
+    }
+
+    if let Some(useragent) = useragent {
+        headers.set(reqwest::header::UserAgent::new(useragent));
+    }
+
+    let mut client = reqwest::Client::builder();
+    client.default_headers(headers);
+
+    if let Some(verify_cert) = verify_cert {
+        let mut buf = Vec::new();
+        File::open(verify_cert)?.read_to_end(&mut buf)?;
+        let cert = reqwest::Certificate::from_pem(&buf)?;
+        client.add_root_certificate(cert);
+    }
+
+    // TODO: auth_cert https://github.com/sfackler/rust-native-tls/issues/27
+    Ok(client)
+}
+
 pub struct HttpStorage {
     url: String,
     auth: Option<Auth>,
     // href -> (item, etag)
     items_cache: Option<ItemCache>,
+    useragent: Option<String>,
+    verify_cert: Option<String>,
+    auth_cert: Option<String>
 }
 
 impl HttpStorage {
-    pub fn new(url: String, auth: Option<Auth>) -> Self {
+    pub fn new(url: String, auth: Option<Auth>,
+               useragent: Option<String>, verify_cert: Option<String>,
+               auth_cert: Option<String>) -> Self {
         HttpStorage {
             url: url,
             auth: auth,
             items_cache: None,
+            useragent: useragent,
+            verify_cert: verify_cert,
+            auth_cert: auth_cert
         }
     }
 
@@ -39,15 +82,17 @@ impl HttpStorage {
 
 impl Storage for HttpStorage {
     fn list<'a>(&'a mut self) -> Fallible<Box<Iterator<Item = (String, String)> + 'a>> {
-        let mut new_cache = BTreeMap::new();
-        let client = reqwest::Client::new();
-        let mut request_builder = client.get(&self.url);
+        let client = get_http_connection(
+            self.auth.clone(),
+            self.useragent.clone(),
+            self.verify_cert.clone(),
+            self.auth_cert.clone()
+        )?.build()?;
 
-        if let Some((ref username, ref password)) = self.auth {
-            request_builder.basic_auth(&username[..], Some(&password[..]));
-        }
-        let mut response = request_builder.send()?.error_for_status()?;
+        let mut response = client.get(&self.url).send()?.error_for_status()?;
         let s = response.text()?;
+
+        let mut new_cache = BTreeMap::new();
         for component in split_collection(&s)? {
             let mut item = Item::from_component(component);
             item = item.with_uid(&item.get_hash()?)?;
@@ -93,13 +138,24 @@ pub mod exports {
     pub unsafe extern "C" fn vdirsyncer_init_http(
         url: *const c_char,
         username: *const c_char,
-        password: *const c_char
+        password: *const c_char,
+        useragent: *const c_char,
+        verify_cert: *const c_char,
+        auth_cert: *const c_char
     ) -> *mut Box<Storage> {
-        let url_cstring = CStr::from_ptr(url);
-        let username_cstring = CStr::from_ptr(username);
-        let password_cstring = CStr::from_ptr(password);
-        let username_dec = username_cstring.to_str().unwrap();
-        let password_dec = password_cstring.to_str().unwrap();
+        let url = CStr::from_ptr(url);
+
+        let username = CStr::from_ptr(username);
+        let password = CStr::from_ptr(password);
+        let username_dec = username.to_str().unwrap();
+        let password_dec = password.to_str().unwrap();
+
+        let useragent = CStr::from_ptr(useragent);
+        let useragent_dec = useragent.to_str().unwrap();
+        let verify_cert = CStr::from_ptr(verify_cert);
+        let verify_cert_dec = verify_cert.to_str().unwrap();
+        let auth_cert = CStr::from_ptr(auth_cert);
+        let auth_cert_dec = auth_cert.to_str().unwrap();
         
         let auth = if !username_dec.is_empty() && !password_dec.is_empty() {
             Some((username_dec.to_owned(), password_dec.to_owned()))
@@ -108,8 +164,11 @@ pub mod exports {
         };
 
         Box::into_raw(Box::new(Box::new(HttpStorage::new(
-            url_cstring.to_str().unwrap().to_owned(),
-            auth
+            url.to_str().unwrap().to_owned(),
+            auth,
+            if useragent_dec.is_empty() { None } else { Some(useragent_dec.to_owned()) },
+            if verify_cert_dec.is_empty() { None } else { Some(verify_cert_dec.to_owned()) },
+            if auth_cert_dec.is_empty() { None } else { Some(auth_cert_dec.to_owned()) }
         ))))
     }
 }

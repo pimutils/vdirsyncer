@@ -19,18 +19,13 @@ class HttpStorage(RustStorageMixin, Storage):
     # Required for tests.
     _ignore_uids = True
 
-    def __init__(self, url, username='', password='', verify=True, auth=None,
-                 useragent=USERAGENT, verify_fingerprint=None, auth_cert=None,
-                 **kwargs):
+    def __init__(self, url, username='', password='', useragent=USERAGENT,
+                 verify_cert=None, auth_cert=None, **kwargs):
         if kwargs.get('collection') is not None:
             raise exceptions.UserError('HttpStorage does not support '
                                        'collections.')
 
-        assert verify, "not yet supported" # TODO
-        assert auth is None, "not yet supported" # TODO
-        assert useragent == USERAGENT, "not yet supported" # TODO
-        assert verify_fingerprint is None, "not yet supported" # TODO
-        assert auth_cert is None, "not yet supported" # TODO
+        assert auth_cert is None, "not yet supported"
 
         super(HttpStorage, self).__init__(**kwargs)
 
@@ -38,7 +33,10 @@ class HttpStorage(RustStorageMixin, Storage):
             native.lib.vdirsyncer_init_http(
                 url.encode('utf-8'),
                 (username or "").encode('utf-8'),
-                (password or "").encode('utf-8')
+                (password or "").encode('utf-8'),
+                (useragent or "").encode('utf-8'),
+                (verify_cert or "").encode('utf-8'),
+                (auth_cert or "").encode('utf-8')
             ),
             native.lib.vdirsyncer_storage_free
         )
