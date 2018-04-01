@@ -54,7 +54,12 @@ Box_Storage *vdirsyncer_init_filesystem(const char *path,
                                         const char *fileext,
                                         const char *post_hook);
 
-Box_Storage *vdirsyncer_init_http(const char *url, const char *username, const char *password);
+Box_Storage *vdirsyncer_init_http(const char *url,
+                                  const char *username,
+                                  const char *password,
+                                  const char *useragent,
+                                  const char *verify_cert,
+                                  const char *auth_cert);
 
 Box_Storage *vdirsyncer_init_singlefile(const char *path);
 
