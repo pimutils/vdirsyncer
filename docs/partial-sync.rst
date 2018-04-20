@@ -32,15 +32,15 @@ Paste this into your vdirsyncer config::
     [storage holidays_public]
     type = "http"
     # The URL to your iCalendar file.
-    url = ...
+    url = "..."
 
     [storage holidays_private]
     type = "caldav"
     # The direct URL to your calendar.
-    url = ...
+    url = "..."
     # The credentials to your CalDAV server
-    username = ...
-    password = ...
+    username = "..."
+    password = "..."
 
 Then run ``vdirsyncer discover holidays`` and ``vdirsyncer sync holidays``, and
 your previously created calendar should be filled with events.
