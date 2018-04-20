@@ -11,14 +11,14 @@ Vdirsyncer is regularly tested against iCloud_.
     [storage cal]
     type = "caldav"
     url = "https://caldav.icloud.com/"
-    username = ...
-    password = ...
+    username = "..."
+    password = "..."
 
     [storage card]
     type = "carddav"
     url = "https://contacts.icloud.com/"
-    username = ...
-    password = ...
+    username = "..."
+    password = "..."
 
 Problems:
 
