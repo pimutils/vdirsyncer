@@ -85,7 +85,7 @@ install-test: install-servers
 	pip install -Ur test-requirements.txt
 	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
 		pip install -U --force-reinstall \
-			git+https://github.com/DRMacIver/hypothesis \
+			'git+https://github.com/HypothesisWorks/hypothesis#egg=hypothesis&subdirectory=hypothesis-python'
 			git+https://github.com/kennethreitz/requests \
 			git+https://github.com/pytest-dev/pytest; \
 	fi
