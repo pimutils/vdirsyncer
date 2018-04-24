@@ -20,6 +20,20 @@ typedef struct {
   const char *etag;
 } VdirsyncerStorageUploadResult;
 
+extern const uint8_t SHIPPAI_VARIANT_Error_ItemAlreadyExisting;
+
+extern const uint8_t SHIPPAI_VARIANT_Error_ItemNotFound;
+
+extern const uint8_t SHIPPAI_VARIANT_Error_ItemUnparseable;
+
+extern const uint8_t SHIPPAI_VARIANT_Error_MtimeMismatch;
+
+extern const uint8_t SHIPPAI_VARIANT_Error_UnexpectedVobject;
+
+extern const uint8_t SHIPPAI_VARIANT_Error_UnexpectedVobjectVersion;
+
+extern const uint8_t SHIPPAI_VARIANT_Error_WrongEtag;
+
 void shippai_free_failure(ShippaiError *t);
 
 void shippai_free_str(char *t);
@@ -28,19 +42,9 @@ const char *shippai_get_debug(ShippaiError *t);
 
 const char *shippai_get_display(ShippaiError *t);
 
-bool shippai_is_error_ItemAlreadyExisting(ShippaiError *t);
+uint8_t shippai_get_variant_Error(ShippaiError *t);
 
-bool shippai_is_error_ItemNotFound(ShippaiError *t);
-
-bool shippai_is_error_ItemUnparseable(ShippaiError *t);
-
-bool shippai_is_error_MtimeMismatch(ShippaiError *t);
-
-bool shippai_is_error_UnexpectedVobject(ShippaiError *t);
-
-bool shippai_is_error_UnexpectedVobjectVersion(ShippaiError *t);
-
-bool shippai_is_error_WrongEtag(ShippaiError *t);
+bool shippai_is_error_Error(ShippaiError *t);
 
 bool vdirsyncer_advance_storage_listing(VdirsyncerStorageListing *listing);
 

@@ -25,9 +25,9 @@ def get_error_pointer():
 def check_error(e):
     try:
         errors.check_exception(e[0])
-    except errors.ItemNotFound as e:
+    except errors.Error.ItemNotFound as e:
         raise exceptions.NotFoundError(e)
-    except errors.ItemAlreadyExisting as e:
+    except errors.Error.ItemAlreadyExisting as e:
         raise exceptions.AlreadyExistingError(e)
-    except errors.WrongEtag as e:
+    except errors.Error.WrongEtag as e:
         raise exceptions.WrongEtagError(e)

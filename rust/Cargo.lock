@@ -211,21 +211,21 @@ dependencies = [
 
 [[package]]
 name = "shippai"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "failure 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "shippai_derive 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "shippai_derive 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "shippai_derive"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "proc-macro2 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "syn 0.13.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "synstructure 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -263,6 +263,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "quote 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "syn 0.11.11 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "synstructure"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "proc-macro2 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn 0.13.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "unicode-xid 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -307,7 +318,7 @@ dependencies = [
  "libc 0.2.40 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "sha2 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "shippai 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "shippai 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "uuid 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "vobject 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -373,12 +384,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum remove_dir_all 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "3488ba1b9a2084d38645c4c08276a1752dcbf2c7130d74f1569681ad5d2799c5"
 "checksum rustc-demangle 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)" = "11fb43a206a04116ffd7cfcf9bcb941f8eb6cc7ff667272246b0a1c74259a3cb"
 "checksum sha2 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "7daca11f2fdb8559c4f6c588386bed5e2ad4b6605c1442935a7f08144a918688"
-"checksum shippai 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "c6f9aeb41e06c9d8079d36b997575dc0290b11066c27684c4fb868e429e01b90"
-"checksum shippai_derive 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "c7a8bd6070ae7fc692908ec3853348566e5c0576c6b9d1a683813430a19b4961"
+"checksum shippai 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "6bb8291e9995ea961d67fdedad78ca67a6ea2b14a69bdfddb012151e1c8b5ede"
+"checksum shippai_derive 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "7d00a1043d0e6407aa7312b3eb8c7dc7f63993e5060306d4a2cac0bf8b9d85e7"
 "checksum syn 0.11.11 (registry+https://github.com/rust-lang/crates.io-index)" = "d3b891b9015c88c576343b9b3e41c2c11a51c219ef067b264bd9c8aa9b441dad"
 "checksum syn 0.13.1 (registry+https://github.com/rust-lang/crates.io-index)" = "91b52877572087400e83d24b9178488541e3d535259e04ff17a63df1e5ceff59"
 "checksum synom 0.11.3 (registry+https://github.com/rust-lang/crates.io-index)" = "a393066ed9010ebaed60b9eafa373d4b1baac186dd7e008555b0f702b51945b6"
 "checksum synstructure 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)" = "3a761d12e6d8dcb4dcf952a7a89b475e3a9d69e4a69307e01a470977642914bd"
+"checksum synstructure 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)" = "98cad891cd238c98e1f0aec9f7c0f620aa696e4e5f7daba56ac67b5e86a6b049"
 "checksum tempdir 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)" = "15f2b5fb00ccdf689e0149d1b1b3c03fead81c2b37735d812fa8bddbbf41b6d8"
 "checksum typenum 1.10.0 (registry+https://github.com/rust-lang/crates.io-index)" = "612d636f949607bdf9b123b4a6f6d966dedf3ff669f7f045890d3a4a73948169"
 "checksum unicode-xid 0.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "8c1f860d7d29cf02cb2f3f359fd35991af3d30bac52c57d265a3c461074cb4dc"

@@ -47,7 +47,7 @@ impl Item {
             change_uid(&mut new_component, uid);
             Ok(Item::from_raw(vobject::write_component(&new_component)))
         } else {
-            Err(ItemUnparseable.into())
+            Err(Error::ItemUnparseable.into())
         }
     }
 
@@ -63,7 +63,7 @@ impl Item {
     pub fn get_component(&self) -> Fallible<&vobject::Component> {
         match *self {
             Item::Parsed(ref component) => Ok(component),
-            _ => Err(ItemUnparseable.into()),
+            _ => Err(Error::ItemUnparseable.into()),
         }
     }
 
@@ -71,7 +71,7 @@ impl Item {
     pub fn into_component(self) -> Fallible<vobject::Component> {
         match self {
             Item::Parsed(component) => Ok(component),
-            _ => Err(ItemUnparseable.into()),
+            _ => Err(Error::ItemUnparseable.into()),
         }
     }
 
@@ -81,7 +81,7 @@ impl Item {
         if let Item::Parsed(ref component) = *self {
             Ok(hash_component(component))
         } else {
-            Err(ItemUnparseable.into())
+            Err(Error::ItemUnparseable.into())
         }
     }
 
