@@ -37,8 +37,8 @@ Assuming a config like this::
     [storage calendars_dav]
     type = "caldav"
     url = "https://nextcloud.example.net/"
-    username = ...
-    password = ...
+    username = "..."
+    password = "..."
 
 ``vdirsyncer sync`` will then synchronize the calendars of your NextCloud_
 instance to subfolders of ``~/.calendar/``.

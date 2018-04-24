@@ -7,8 +7,8 @@ Vdirsyncer is continuously tested against the latest version of NextCloud_::
     [storage cal]
     type = "caldav"
     url = "https://nextcloud.example.com/"
-    username = ...
-    password = ...
+    username = "..."
+    password = "..."
 
     [storage card]
     type = "carddav"
