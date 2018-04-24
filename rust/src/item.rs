@@ -227,7 +227,7 @@ pub mod exports {
     pub unsafe extern "C" fn vdirsyncer_with_uid(
         c: *mut Item,
         uid: *const c_char,
-        err: *mut *mut exports::ShippaiError,
+        err: *mut *mut ShippaiError,
     ) -> *mut Item {
         let uid_cstring = CStr::from_ptr(uid);
         if let Some(x) = export_result((*c).with_uid(uid_cstring.to_str().unwrap()), err) {
@@ -240,7 +240,7 @@ pub mod exports {
     #[no_mangle]
     pub unsafe extern "C" fn vdirsyncer_get_hash(
         c: *mut Item,
-        err: *mut *mut exports::ShippaiError,
+        err: *mut *mut ShippaiError,
     ) -> *const c_char {
         if let Some(x) = export_result((*c).get_hash(), err) {
             CString::new(x).unwrap().into_raw()

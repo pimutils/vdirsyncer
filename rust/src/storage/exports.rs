@@ -15,7 +15,7 @@ pub unsafe extern "C" fn vdirsyncer_storage_free(storage: *mut Box<Storage>) {
 #[no_mangle]
 pub unsafe extern "C" fn vdirsyncer_storage_list(
     storage: *mut Box<Storage>,
-    err: *mut *mut exports::ShippaiError,
+    err: *mut *mut ShippaiError,
 ) -> *mut VdirsyncerStorageListing {
     if let Some(x) = export_result((**storage).list(), err) {
         Box::into_raw(Box::new(VdirsyncerStorageListing {
@@ -32,7 +32,7 @@ pub unsafe extern "C" fn vdirsyncer_storage_list(
 pub unsafe extern "C" fn vdirsyncer_storage_get(
     storage: *mut Box<Storage>,
     c_href: *const c_char,
-    err: *mut *mut exports::ShippaiError,
+    err: *mut *mut ShippaiError,
 ) -> *mut VdirsyncerStorageGetResult {
     let href = CStr::from_ptr(c_href);
     if let Some((item, href)) = export_result((**storage).get(href.to_str().unwrap()), err) {
@@ -49,7 +49,7 @@ pub unsafe extern "C" fn vdirsyncer_storage_get(
 pub unsafe extern "C" fn vdirsyncer_storage_upload(
     storage: *mut Box<Storage>,
     item: *mut Item,
-    err: *mut *mut exports::ShippaiError,
+    err: *mut *mut ShippaiError,
 ) -> *mut VdirsyncerStorageUploadResult {
     if let Some((href, etag)) = export_result((**storage).upload((*item).clone()), err) {
         Box::into_raw(Box::new(VdirsyncerStorageUploadResult {
@@ -67,7 +67,7 @@ pub unsafe extern "C" fn vdirsyncer_storage_update(
     c_href: *const c_char,
     item: *mut Item,
     c_etag: *const c_char,
-    err: *mut *mut exports::ShippaiError,
+    err: *mut *mut ShippaiError,
 ) -> *const c_char {
     let href = CStr::from_ptr(c_href);
     let etag = CStr::from_ptr(c_etag);
@@ -88,7 +88,7 @@ pub unsafe extern "C" fn vdirsyncer_storage_delete(
     storage: *mut Box<Storage>,
     c_href: *const c_char,
     c_etag: *const c_char,
-    err: *mut *mut exports::ShippaiError,
+    err: *mut *mut ShippaiError,
 ) {
     let href = CStr::from_ptr(c_href);
     let etag = CStr::from_ptr(c_etag);
@@ -104,7 +104,7 @@ pub unsafe extern "C" fn vdirsyncer_storage_buffered(storage: *mut Box<Storage>)
 #[no_mangle]
 pub unsafe extern "C" fn vdirsyncer_storage_flush(
     storage: *mut Box<Storage>,
-    err: *mut *mut exports::ShippaiError,
+    err: *mut *mut ShippaiError,
 ) {
     let _ = export_result((**storage).flush(), err);
 }

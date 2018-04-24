@@ -12,7 +12,7 @@ extern crate sha2;
 
 mod item;
 mod storage;
-mod errors;
+pub mod errors;
 
 pub mod exports {
     use std::ffi::CStr;
@@ -20,7 +20,6 @@ pub mod exports {
 
     pub use super::item::exports::*;
     pub use super::storage::exports::*;
-    pub use super::errors::exports::*;
 
     #[no_mangle]
     pub unsafe extern "C" fn vdirsyncer_free_str(s: *const c_char) {
