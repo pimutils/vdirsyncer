@@ -11,13 +11,13 @@ point vdirsyncer against the root of Xandikos like this::
     [storage cal]
     type = "caldav"
     url = "https://xandikos.example.com/"
-    username = ...
-    password = ...
+    username = "..."
+    password = "..."
 
     [storage card]
     type = "carddav"
     url = "https://xandikos.example.com/"
-    username = ...
-    password = ...
+    username = "..."
+    password = "..."
 
 .. _Xandikos: https://github.com/jelmer/xandikos

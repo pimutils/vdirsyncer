@@ -11,13 +11,13 @@ the settings to use::
     [storage cal]
     type = "caldav"
     url = "https://caldav.fastmail.com/"
-    username = ...
-    password = ...
+    username = "..."
+    password = "..."
 
     [storage card]
     type = "carddav"
     url = "https://carddav.fastmail.com/"
-    username = ...
-    password = ...
+    username = "..."
+    password = "..."
 
 .. _FastMail: https://www.fastmail.com/
