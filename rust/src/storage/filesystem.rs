@@ -66,10 +66,10 @@ impl FilesystemStorage {
 #[inline]
 fn handle_io_error(href: &str, e: io::Error) -> failure::Error {
     match e.kind() {
-        io::ErrorKind::NotFound => ItemNotFound {
+        io::ErrorKind::NotFound => Error::ItemNotFound {
             href: href.to_owned(),
         }.into(),
-        io::ErrorKind::AlreadyExists => ItemAlreadyExisting {
+        io::ErrorKind::AlreadyExists => Error::ItemAlreadyExisting {
             href: href.to_owned(),
         }.into(),
         _ => e.into(),
@@ -190,7 +190,7 @@ impl Storage for FilesystemStorage {
         };
         let actual_etag = etag_from_file(&metadata);
         if actual_etag != etag {
-            Err(WrongEtag {
+            Err(Error::WrongEtag {
                 href: href.to_owned(),
             })?;
         }
@@ -210,7 +210,7 @@ impl Storage for FilesystemStorage {
         };
         let actual_etag = etag_from_file(&metadata);
         if actual_etag != etag {
-            Err(WrongEtag {
+            Err(Error::WrongEtag {
                 href: href.to_owned(),
             })?;
         }

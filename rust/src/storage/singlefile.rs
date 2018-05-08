@@ -88,7 +88,7 @@ impl Storage for SinglefileStorage {
     fn get(&mut self, href: &str) -> Fallible<(Item, String)> {
         match self.get_items()?.get(href) {
             Some(&(ref href, ref etag)) => Ok((href.clone(), etag.clone())),
-            None => Err(ItemNotFound {
+            None => Err(Error::ItemNotFound {
                 href: href.to_owned(),
             })?,
         }
@@ -98,7 +98,7 @@ impl Storage for SinglefileStorage {
         let hash = item.get_hash()?;
         let href = item.get_ident()?;
         match self.get_items()?.entry(href.clone()) {
-            Occupied(_) => Err(ItemAlreadyExisting { href: href.clone() })?,
+            Occupied(_) => Err(Error::ItemAlreadyExisting { href: href.clone() })?,
             Vacant(vc) => vc.insert((item, hash.clone())),
         };
         self.write_back()?;
@@ -113,12 +113,12 @@ impl Storage for SinglefileStorage {
                     oc.insert((item, hash.clone()));
                     hash
                 } else {
-                    Err(WrongEtag {
+                    Err(Error::WrongEtag {
                         href: href.to_owned(),
                     })?
                 }
             }
-            Vacant(_) => Err(ItemNotFound {
+            Vacant(_) => Err(Error::ItemNotFound {
                 href: href.to_owned(),
             })?,
         };
@@ -132,12 +132,12 @@ impl Storage for SinglefileStorage {
                 if oc.get().1 == etag {
                     oc.remove();
                 } else {
-                    Err(WrongEtag {
+                    Err(Error::WrongEtag {
                         href: href.to_owned(),
                     })?
                 }
             }
-            Vacant(_) => Err(ItemNotFound {
+            Vacant(_) => Err(Error::ItemNotFound {
                 href: href.to_owned(),
             })?,
         }
@@ -163,7 +163,7 @@ impl Storage for SinglefileStorage {
             f.write_all(content.as_bytes())?;
             let real_mtime = metadata(path)?.modified()?;
             if mtime != real_mtime {
-                Err(MtimeMismatch {
+                Err(Error::MtimeMismatch {
                     filepath: path.to_string_lossy().into_owned(),
                 })?;
             }
@@ -192,14 +192,14 @@ pub fn split_collection(mut input: &str) -> Fallible<Vec<vobject::Component>> {
             "VCARD" => rv.push(component),
             "VADDRESSBOOK" => for vcard in component.subcomponents {
                 if vcard.name != "VCARD" {
-                    Err(UnexpectedVobject {
+                    Err(Error::UnexpectedVobject {
                         found: vcard.name.clone(),
                         expected: "VCARD".to_owned(),
                     })?;
                 }
                 rv.push(vcard);
             },
-            _ => Err(UnexpectedVobject {
+            _ => Err(Error::UnexpectedVobject {
                 found: component.name.clone(),
                 expected: "VCALENDAR | VCARD | VADDRESSBOOK".to_owned(),
             })?,
@@ -227,7 +227,7 @@ fn split_vcalendar(mut vcalendar: vobject::Component) -> Fallible<Vec<vobject::C
                 timezones.insert(tzid, component);
             }
             "VTODO" | "VEVENT" | "VJOURNAL" => subcomponents.push(component),
-            _ => Err(UnexpectedVobject {
+            _ => Err(Error::UnexpectedVobject {
                 found: component.name.clone(),
                 expected: "VTIMEZONE | VTODO | VEVENT | VJOURNAL".to_owned(),
             })?,
@@ -290,7 +290,7 @@ fn join_collection<I: Iterator<Item = Item>>(item_iter: I) -> Fallible<String> {
     let wrapper_name = match item_name.as_ref() {
         "VCARD" => "VADDRESSBOOK",
         "VCALENDAR" => "VCALENDAR",
-        _ => Err(UnexpectedVobject {
+        _ => Err(Error::UnexpectedVobject {
             found: item_name.clone(),
             expected: "VCARD | VCALENDAR".to_owned(),
         })?,
@@ -302,7 +302,7 @@ fn join_collection<I: Iterator<Item = Item>>(item_iter: I) -> Fallible<String> {
     for item in items {
         let mut c = item.into_component()?;
         if c.name != item_name {
-            return Err(UnexpectedVobject {
+            return Err(Error::UnexpectedVobject {
                 found: c.name,
                 expected: item_name.clone(),
             }.into());
@@ -312,7 +312,7 @@ fn join_collection<I: Iterator<Item = Item>>(item_iter: I) -> Fallible<String> {
             wrapper.subcomponents.extend(c.subcomponents.drain(..));
             match (version.as_ref(), c.get_only("VERSION")) {
                 (Some(x), Some(y)) if x.raw_value != y.raw_value => {
-                    return Err(UnexpectedVobjectVersion {
+                    return Err(Error::UnexpectedVobjectVersion {
                         expected: x.raw_value.clone(),
                         found: y.raw_value.clone(),
                     }.into());

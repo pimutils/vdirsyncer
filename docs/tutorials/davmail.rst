@@ -17,7 +17,7 @@ Exchange server you might get confronted with weird errors of all sorts
     type = "caldav"
     url = "http://localhost:1080/users/user@example.com/calendar/"
     username = "user@example.com"
-    password = ...
+    password = "..."
 
 - Older versions of DavMail handle URLs case-insensitively. See :gh:`144`.
 - DavMail is handling malformed data on the Exchange server very poorly. In
