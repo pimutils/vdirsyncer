@@ -114,22 +114,22 @@ impl Storage for HttpStorage {
     fn get(&mut self, href: &str) -> Fallible<(Item, String)> {
         match self.get_items()?.get(href) {
             Some(&(ref href, ref etag)) => Ok((href.clone(), etag.clone())),
-            None => Err(ItemNotFound {
+            None => Err(Error::ItemNotFound {
                 href: href.to_owned(),
             })?,
         }
     }
 
     fn upload(&mut self, _item: Item) -> Fallible<(String, String)> {
-        Err(ReadOnly)?
+        Err(Error::ReadOnly)?
     }
 
     fn update(&mut self, _href: &str, _item: Item, _etag: &str) -> Fallible<String> {
-        Err(ReadOnly)?
+        Err(Error::ReadOnly)?
     }
 
     fn delete(&mut self, _href: &str, _etag: &str) -> Fallible<()> {
-        Err(ReadOnly)?
+        Err(Error::ReadOnly)?
     }
 }
 
