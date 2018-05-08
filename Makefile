@@ -20,6 +20,9 @@ export ETESYNC_TESTS := false
 # systemwide.
 export CI := false
 
+# Enable debug symbols and backtrace printing for rust lib
+export RUST_BACKTRACE := $(CI)
+
 # Whether to generate coverage data while running tests.
 export COVERAGE := $(CI)
 

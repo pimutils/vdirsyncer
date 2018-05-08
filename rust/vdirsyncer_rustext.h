@@ -20,6 +20,8 @@ typedef struct {
   const char *etag;
 } VdirsyncerStorageUploadResult;
 
+extern const uint8_t SHIPPAI_VARIANT_DavError_EtagNotFound;
+
 extern const uint8_t SHIPPAI_VARIANT_Error_ItemAlreadyExisting;
 
 extern const uint8_t SHIPPAI_VARIANT_Error_ItemNotFound;
@@ -27,6 +29,8 @@ extern const uint8_t SHIPPAI_VARIANT_Error_ItemNotFound;
 extern const uint8_t SHIPPAI_VARIANT_Error_ItemUnparseable;
 
 extern const uint8_t SHIPPAI_VARIANT_Error_MtimeMismatch;
+
+extern const uint8_t SHIPPAI_VARIANT_Error_ReadOnly;
 
 extern const uint8_t SHIPPAI_VARIANT_Error_UnexpectedVobject;
 
@@ -42,7 +46,11 @@ const char *shippai_get_debug(ShippaiError *t);
 
 const char *shippai_get_display(ShippaiError *t);
 
+uint8_t shippai_get_variant_DavError(ShippaiError *t);
+
 uint8_t shippai_get_variant_Error(ShippaiError *t);
+
+bool shippai_is_error_DavError(ShippaiError *t);
 
 bool shippai_is_error_Error(ShippaiError *t);
 
@@ -63,6 +71,22 @@ const char *vdirsyncer_get_hash(Item *c, ShippaiError **err);
 const char *vdirsyncer_get_raw(Item *c);
 
 const char *vdirsyncer_get_uid(Item *c);
+
+Box_Storage *vdirsyncer_init_caldav(const char *url,
+                                    const char *username,
+                                    const char *password,
+                                    const char *useragent,
+                                    const char *verify_cert,
+                                    const char *auth_cert,
+                                    int64_t start_date,
+                                    int64_t end_date);
+
+Box_Storage *vdirsyncer_init_carddav(const char *url,
+                                     const char *username,
+                                     const char *password,
+                                     const char *useragent,
+                                     const char *verify_cert,
+                                     const char *auth_cert);
 
 Box_Storage *vdirsyncer_init_filesystem(const char *path,
                                         const char *fileext,

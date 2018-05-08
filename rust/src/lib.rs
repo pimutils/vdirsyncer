@@ -10,6 +10,9 @@ extern crate vobject;
 extern crate log;
 extern crate reqwest;
 extern crate sha2;
+extern crate quick_xml;
+extern crate url;
+extern crate chrono;
 
 mod item;
 mod storage;

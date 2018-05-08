@@ -31,5 +31,5 @@ def check_error(e):
         raise exceptions.AlreadyExistingError(e)
     except errors.Error.WrongEtag as e:
         raise exceptions.WrongEtagError(e)
-    except errors.ReadOnly as e:
+    except errors.Error.ReadOnly as e:
         raise exceptions.ReadOnlyError(e)

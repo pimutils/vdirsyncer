@@ -11,7 +11,8 @@ import requests
 from requests.exceptions import HTTPError
 
 from .base import Storage, normalize_meta_value
-from .. import exceptions, http, utils
+from ._rust import RustStorageMixin
+from .. import exceptions, http, native, utils
 from ..http import USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
 from ..vobject import Item
@@ -396,7 +397,7 @@ class DAVSession(object):
         }
 
 
-class DAVStorage(Storage):
+class DAVStorage(RustStorageMixin, Storage):
     # the file extension of items. Useful for testing against radicale.
     fileext = None
     # mimetype of items
@@ -449,61 +450,6 @@ class DAVStorage(Storage):
 
     def _is_item_mimetype(self, mimetype):
         return _fuzzy_matches_mimetype(self.item_mimetype, mimetype)
-
-    def get(self, href):
-        ((actual_href, item, etag),) = self.get_multi([href])
-        assert href == actual_href
-        return item, etag
-
-    def get_multi(self, hrefs):
-        hrefs = set(hrefs)
-        href_xml = []
-        for href in hrefs:
-            if href != self._normalize_href(href):
-                raise exceptions.NotFoundError(href)
-            href_xml.append('<D:href>{}</D:href>'.format(href))
-        if not href_xml:
-            return ()
-
-        data = self.get_multi_template \
-            .format(hrefs='\n'.join(href_xml)).encode('utf-8')
-        response = self.session.request(
-            'REPORT',
-            '',
-            data=data,
-            headers=self.session.get_default_headers()
-        )
-        root = _parse_xml(response.content)  # etree only can handle bytes
-        rv = []
-        hrefs_left = set(hrefs)
-        for href, etag, prop in self._parse_prop_responses(root):
-            raw = prop.find(self.get_multi_data_query)
-            if raw is None:
-                dav_logger.warning('Skipping {}, the item content is missing.'
-                                   .format(href))
-                continue
-
-            raw = raw.text or u''
-
-            if isinstance(raw, bytes):
-                raw = raw.decode(response.encoding)
-            if isinstance(etag, bytes):
-                etag = etag.decode(response.encoding)
-
-            try:
-                hrefs_left.remove(href)
-            except KeyError:
-                if href in hrefs:
-                    dav_logger.warning('Server sent item twice: {}'
-                                       .format(href))
-                else:
-                    dav_logger.warning('Server sent unsolicited item: {}'
-                                       .format(href))
-            else:
-                rv.append((href, Item(raw), etag))
-        for href in hrefs_left:
-            raise exceptions.NotFoundError(href)
-        return rv
 
     def _put(self, href, item, etag):
         headers = self.session.get_default_headers()
@@ -612,30 +558,6 @@ class DAVStorage(Storage):
 
             handled_hrefs.add(href)
             yield href, etag, props
-
-    def list(self):
-        headers = self.session.get_default_headers()
-        headers['Depth'] = '1'
-
-        data = '''<?xml version="1.0" encoding="utf-8" ?>
-            <D:propfind xmlns:D="DAV:">
-                <D:prop>
-                    <D:resourcetype/>
-                    <D:getcontenttype/>
-                    <D:getetag/>
-                </D:prop>
-            </D:propfind>
-            '''.encode('utf-8')
-
-        # We use a PROPFIND request instead of addressbook-query due to issues
-        # with Zimbra. See https://github.com/pimutils/vdirsyncer/issues/83
-        response = self.session.request('PROPFIND', '', data=data,
-                                        headers=headers)
-        root = _parse_xml(response.content)
-
-        rv = self._parse_prop_responses(root)
-        for href, etag, _prop in rv:
-            yield href, etag
 
     def get_meta(self, key):
         try:
@@ -749,6 +671,20 @@ class CalDAVStorage(DAVStorage):
                  if isinstance(end_date, (bytes, str))
                  else end_date)
 
+        self._native_storage = native.ffi.gc(
+            native.lib.vdirsyncer_init_caldav(
+                kwargs['url'].encode('utf-8'),
+                kwargs.get('username', '').encode('utf-8'),
+                kwargs.get('password', '').encode('utf-8'),
+                kwargs.get('useragent', '').encode('utf-8'),
+                kwargs.get('verify_cert', '').encode('utf-8'),
+                kwargs.get('auth_cert', '').encode('utf-8'),
+                int(self.start_date.timestamp()) if self.start_date else -1,
+                int(self.end_date.timestamp()) if self.end_date else -1
+            ),
+            native.lib.vdirsyncer_storage_free
+        )
+
     @staticmethod
     def _get_list_filters(components, start, end):
         caldavfilter = '''
@@ -839,3 +775,18 @@ class CardDAVStorage(DAVStorage):
             </C:addressbook-multiget>'''
 
     get_multi_data_query = '{urn:ietf:params:xml:ns:carddav}address-data'
+
+    def __init__(self, **kwargs):
+        self._native_storage = native.ffi.gc(
+            native.lib.vdirsyncer_init_carddav(
+                kwargs['url'].encode('utf-8'),
+                kwargs.get('username', '').encode('utf-8'),
+                kwargs.get('password', '').encode('utf-8'),
+                kwargs.get('useragent', '').encode('utf-8'),
+                kwargs.get('verify_cert', '').encode('utf-8'),
+                kwargs.get('auth_cert', '').encode('utf-8')
+            ),
+            native.lib.vdirsyncer_storage_free
+        )
+
+        super(CardDAVStorage, self).__init__(**kwargs)

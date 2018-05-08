@@ -2,6 +2,9 @@ use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::Read;
 
+use std::ffi::CStr;
+use std::os::raw::c_char;
+
 use reqwest;
 
 use super::Storage;
@@ -11,68 +14,62 @@ use super::singlefile::split_collection;
 use item::Item;
 
 type ItemCache = BTreeMap<String, (Item, String)>;
-type Username = String;
-type Password = String;
-type Auth = (Username, Password);
+pub type Username = String;
+pub type Password = String;
+pub type Auth = (Username, Password);
 
-fn get_http_connection(
-    auth: Option<Auth>,
-    useragent: Option<String>,
-    verify_cert: Option<String>,
-    _auth_cert: Option<String>,
-) -> Fallible<reqwest::ClientBuilder> {
-    let mut headers = reqwest::header::Headers::new();
 
-    if let Some((username, password)) = auth {
-        headers.set(reqwest::header::Authorization(reqwest::header::Basic {
-            username,
-            password: Some(password),
-        }));
+#[derive(Clone)]
+pub struct HttpConfig {
+    pub auth: Option<Auth>,
+    pub useragent: Option<String>,
+    pub verify_cert: Option<String>,
+    pub auth_cert: Option<String>
+}
+
+impl HttpConfig {
+    pub fn into_connection(self) -> Fallible<reqwest::ClientBuilder> {
+        let mut headers = reqwest::header::Headers::new();
+
+        if let Some((username, password)) = self.auth {
+            headers.set(reqwest::header::Authorization(reqwest::header::Basic {
+                username,
+                password: Some(password),
+            }));
+        }
+
+        if let Some(useragent) = self.useragent {
+            headers.set(reqwest::header::UserAgent::new(useragent));
+        }
+
+        let mut client = reqwest::Client::builder();
+        client.default_headers(headers);
+
+        if let Some(verify_cert) = self.verify_cert {
+            let mut buf = Vec::new();
+            File::open(verify_cert)?.read_to_end(&mut buf)?;
+            let cert = reqwest::Certificate::from_pem(&buf)?;
+            client.add_root_certificate(cert);
+        }
+
+        // TODO: auth_cert https://github.com/sfackler/rust-native-tls/issues/27
+        Ok(client)
     }
-
-    if let Some(useragent) = useragent {
-        headers.set(reqwest::header::UserAgent::new(useragent));
-    }
-
-    let mut client = reqwest::Client::builder();
-    client.default_headers(headers);
-
-    if let Some(verify_cert) = verify_cert {
-        let mut buf = Vec::new();
-        File::open(verify_cert)?.read_to_end(&mut buf)?;
-        let cert = reqwest::Certificate::from_pem(&buf)?;
-        client.add_root_certificate(cert);
-    }
-
-    // TODO: auth_cert https://github.com/sfackler/rust-native-tls/issues/27
-    Ok(client)
 }
 
 pub struct HttpStorage {
     url: String,
-    auth: Option<Auth>,
     // href -> (item, etag)
     items_cache: Option<ItemCache>,
-    useragent: Option<String>,
-    verify_cert: Option<String>,
-    auth_cert: Option<String>,
+    http_config: HttpConfig
 }
 
 impl HttpStorage {
-    pub fn new(
-        url: String,
-        auth: Option<Auth>,
-        useragent: Option<String>,
-        verify_cert: Option<String>,
-        auth_cert: Option<String>,
-    ) -> Self {
+    pub fn new(url: String, http_config: HttpConfig) -> Self {
         HttpStorage {
             url,
-            auth,
             items_cache: None,
-            useragent,
-            verify_cert,
-            auth_cert,
+            http_config
         }
     }
 
@@ -86,12 +83,7 @@ impl HttpStorage {
 
 impl Storage for HttpStorage {
     fn list<'a>(&'a mut self) -> Fallible<Box<Iterator<Item = (String, String)> + 'a>> {
-        let client = get_http_connection(
-            self.auth.clone(),
-            self.useragent.clone(),
-            self.verify_cert.clone(),
-            self.auth_cert.clone(),
-        )?.build()?;
+        let client = self.http_config.clone().into_connection()?.build()?;
 
         let mut response = client.get(&self.url).send()?.error_for_status()?;
         let s = response.text()?;
@@ -149,42 +141,56 @@ pub mod exports {
     ) -> *mut Box<Storage> {
         let url = CStr::from_ptr(url);
 
-        let username = CStr::from_ptr(username);
-        let password = CStr::from_ptr(password);
-        let username_dec = username.to_str().unwrap();
-        let password_dec = password.to_str().unwrap();
-
-        let useragent = CStr::from_ptr(useragent);
-        let useragent_dec = useragent.to_str().unwrap();
-        let verify_cert = CStr::from_ptr(verify_cert);
-        let verify_cert_dec = verify_cert.to_str().unwrap();
-        let auth_cert = CStr::from_ptr(auth_cert);
-        let auth_cert_dec = auth_cert.to_str().unwrap();
-
-        let auth = if !username_dec.is_empty() && !password_dec.is_empty() {
-            Some((username_dec.to_owned(), password_dec.to_owned()))
-        } else {
-            None
-        };
-
         Box::into_raw(Box::new(Box::new(HttpStorage::new(
             url.to_str().unwrap().to_owned(),
-            auth,
-            if useragent_dec.is_empty() {
-                None
-            } else {
-                Some(useragent_dec.to_owned())
-            },
-            if verify_cert_dec.is_empty() {
-                None
-            } else {
-                Some(verify_cert_dec.to_owned())
-            },
-            if auth_cert_dec.is_empty() {
-                None
-            } else {
-                Some(auth_cert_dec.to_owned())
-            },
+            init_http_config(
+                username,
+                password,
+                useragent,
+                verify_cert,
+                auth_cert
+            )
         ))))
+    }
+}
+
+pub fn handle_http_error(href: &str, r: reqwest::Response) -> Fallible<reqwest::Response> {
+    if r.status() == reqwest::StatusCode::NotFound {
+        Err(Error::ItemNotFound { href: href.to_owned() })?;
+    }
+
+    r.error_for_status().map_err(|e| e.into())
+}
+
+pub unsafe fn init_http_config(
+    username: *const c_char,
+    password: *const c_char,
+    useragent: *const c_char,
+    verify_cert: *const c_char,
+    auth_cert: *const c_char,
+) -> HttpConfig {
+    let username = CStr::from_ptr(username);
+    let password = CStr::from_ptr(password);
+    let username_dec = username.to_str().unwrap();
+    let password_dec = password.to_str().unwrap();
+
+    let useragent = CStr::from_ptr(useragent);
+    let useragent_dec = useragent.to_str().unwrap();
+    let verify_cert = CStr::from_ptr(verify_cert);
+    let verify_cert_dec = verify_cert.to_str().unwrap();
+    let auth_cert = CStr::from_ptr(auth_cert);
+    let auth_cert_dec = auth_cert.to_str().unwrap();
+
+    let auth = if !username_dec.is_empty() && !password_dec.is_empty() {
+        Some((username_dec.to_owned(), password_dec.to_owned()))
+    } else {
+        None
+    };
+
+    HttpConfig {
+        auth,
+        useragent: if useragent_dec.is_empty() { None } else { Some(useragent_dec.to_owned()) },
+        verify_cert: if verify_cert_dec.is_empty() { None } else { Some(verify_cert_dec.to_owned()) },
+        auth_cert: if auth_cert_dec.is_empty() { None } else { Some(auth_cert_dec.to_owned()) },
     }
 }

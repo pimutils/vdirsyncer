@@ -40,7 +40,7 @@ class TestCalDAVStorage(DAVStorageTests):
         (('VEVENT',), 1),
         (('VTODO', 'VEVENT'), 2),
         (('VTODO', 'VEVENT', 'VJOURNAL'), 3),
-        ((), 1)
+        ((), 0)
     ])
     def test_item_types_performance(self, get_storage_args, arg, calls_num,
                                     monkeypatch):
@@ -112,26 +112,6 @@ class TestCalDAVStorage(DAVStorageTests):
 
         (actual_href, _), = s.list()
         assert actual_href == expected_href
-
-    def test_invalid_resource(self, monkeypatch, get_storage_args):
-        calls = []
-        args = get_storage_args(collection=None)
-
-        def request(session, method, url, **kwargs):
-            assert url == args['url']
-            calls.append(None)
-
-            r = requests.Response()
-            r.status_code = 200
-            r._content = b'Hello World.'
-            return r
-
-        monkeypatch.setattr('requests.sessions.Session.request', request)
-
-        with pytest.raises(ValueError):
-            s = self.storage_class(**args)
-            list(s.list())
-        assert len(calls) == 1
 
     @pytest.mark.skipif(dav_server == 'icloud',
                         reason='iCloud only accepts VEVENT')
