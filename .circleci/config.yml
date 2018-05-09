@@ -102,7 +102,7 @@ jobs:
       - run: make -e install-dev install-test
       - *save_caches
 
-      - run: wget -O - --retry-connrefused http://localhost:80/
+      - run: wget -O - --retry-connrefused http://localhost:5001/
       - run: make -e storage-test
 
   style:
