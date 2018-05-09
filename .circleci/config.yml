@@ -94,7 +94,7 @@ jobs:
         environment:
           <<: *basic_env
           DAV_SERVER: xandikos
-      - image: vdirsyncer/xandikos
+      - image: vdirsyncer/xandikos:0.0.1
     steps:
       - checkout
       - *restore_caches
