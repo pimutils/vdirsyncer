@@ -3,7 +3,7 @@ import requests
 import pytest
 
 
-port = os.environ.get('NEXTCLOUD_HOST', None) or 'localhost:8080'
+port = os.environ.get('NEXTCLOUD_HOST', None) or 'localhost:5001'
 user = os.environ.get('NEXTCLOUD_USER', None) or 'asdf'
 pwd = os.environ.get('NEXTCLOUD_PASS', None) or 'asdf'
 

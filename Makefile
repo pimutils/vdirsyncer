@@ -155,4 +155,8 @@ rust/vdirsyncer_rustext.h:
 	cd rust/ && cargo build # hack to work around cbindgen bugs
 	CARGO_EXPAND_TARGET_DIR=rust/target/ cbindgen -c rust/cbindgen.toml rust/ > $@
 
-.PHONY: docs rust/vdirsyncer_rustext.h
+docker/xandikos:
+	docker build -t vdirsyncer/xandikos:0.0.1 $@
+	docker push vdirsyncer/xandikos:0.0.1
+
+.PHONY: docs rust/vdirsyncer_rustext.h docker/xandikos
