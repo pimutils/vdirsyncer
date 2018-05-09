@@ -232,6 +232,7 @@ workflows:
       - fastmail
       - icloud
       - davical
+      - xandikos
       - style
       - py34-minimal
       - py34-release
