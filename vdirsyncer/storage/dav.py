@@ -15,7 +15,6 @@ from ._rust import RustStorageMixin
 from .. import exceptions, http, native, utils
 from ..http import USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
-from ..vobject import Item
 
 
 dav_logger = logging.getLogger(__name__)
