@@ -41,22 +41,6 @@ def _contains_quoted_reserved_chars(x):
     return False
 
 
-def _assert_multistatus_success(r):
-    # Xandikos returns a multistatus on PUT.
-    try:
-        root = _parse_xml(r.content)
-    except InvalidXMLResponse:
-        return
-    for status in root.findall('.//{DAV:}status'):
-        parts = status.text.strip().split()
-        try:
-            st = int(parts[1])
-        except (ValueError, IndexError):
-            continue
-        if st < 200 or st >= 400:
-            raise HTTPError('Server error: {}'.format(st))
-
-
 def _normalize_href(base, href):
     '''Normalize the href to be a path only relative to hostname and
     schema.'''
@@ -443,70 +427,8 @@ class DAVStorage(RustStorageMixin, Storage):
     def _normalize_href(self, *args, **kwargs):
         return _normalize_href(self.session.url, *args, **kwargs)
 
-    def _get_href(self, item):
-        href = utils.generate_href(item.ident)
-        return self._normalize_href(href + self.fileext)
-
     def _is_item_mimetype(self, mimetype):
         return _fuzzy_matches_mimetype(self.item_mimetype, mimetype)
-
-    def _put(self, href, item, etag):
-        headers = self.session.get_default_headers()
-        headers['Content-Type'] = self.item_mimetype
-        if etag is None:
-            headers['If-None-Match'] = '*'
-        else:
-            headers['If-Match'] = etag
-
-        response = self.session.request(
-            'PUT',
-            href,
-            data=item.raw.encode('utf-8'),
-            headers=headers
-        )
-
-        _assert_multistatus_success(response)
-
-        # The server may not return an etag under certain conditions:
-        #
-        #   An origin server MUST NOT send a validator header field (Section
-        #   7.2), such as an ETag or Last-Modified field, in a successful
-        #   response to PUT unless the request's representation data was saved
-        #   without any transformation applied to the body (i.e., the
-        #   resource's new representation data is identical to the
-        #   representation data received in the PUT request) and the validator
-        #   field value reflects the new representation.
-        #
-        # -- https://tools.ietf.org/html/rfc7231#section-4.3.4
-        #
-        # In such cases we return a constant etag. The next synchronization
-        # will then detect an etag change and will download the new item.
-        etag = response.headers.get('etag', None)
-        href = self._normalize_href(response.url)
-        return href, etag
-
-    def update(self, href, item, etag):
-        if etag is None:
-            raise ValueError('etag must be given and must not be None.')
-        href, etag = self._put(self._normalize_href(href), item, etag)
-        return etag
-
-    def upload(self, item):
-        href = self._get_href(item)
-        return self._put(href, item, None)
-
-    def delete(self, href, etag):
-        href = self._normalize_href(href)
-        headers = self.session.get_default_headers()
-        headers.update({
-            'If-Match': etag
-        })
-
-        self.session.request(
-            'DELETE',
-            href,
-            headers=headers
-        )
 
     def _parse_prop_responses(self, root, handled_hrefs=None):
         if handled_hrefs is None:

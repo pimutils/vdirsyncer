@@ -236,38 +236,6 @@ class StorageTests(object):
         assert len(items) == 2
         assert len(set(items)) == 2
 
-    def test_specialchars(self, monkeypatch, requires_collections,
-                          get_storage_args, get_item):
-        if getattr(self, 'dav_server', '') == 'radicale':
-            pytest.skip('Radicale is fundamentally broken.')
-        if getattr(self, 'dav_server', '') in ('icloud', 'fastmail'):
-            pytest.skip('iCloud and FastMail reject this name.')
-
-        monkeypatch.setattr('vdirsyncer.utils.generate_href', lambda x: x)
-
-        uid = u'test @ foo ät bar град сатану'
-        collection = 'test @ foo ät bar'
-
-        s = self.storage_class(**get_storage_args(collection=collection))
-        item = get_item(uid=uid)
-
-        href, etag = s.upload(item)
-        item2, etag2 = s.get(href)
-        if etag is not None:
-            assert etag2 == etag
-            assert_item_equals(item2, item)
-
-        (_, etag3), = s.list()
-        assert etag2 == etag3
-
-        # etesync uses UUIDs for collection names
-        if self.storage_class.storage_name.startswith('etesync'):
-            return
-
-        assert collection in urlunquote(s.collection)
-        if self.storage_class.storage_name.endswith('dav'):
-            assert urlquote(uid, '/@:') in href
-
     def test_metadata(self, requires_metadata, s):
         if not getattr(self, 'dav_server', ''):
             assert not s.get_meta('color')

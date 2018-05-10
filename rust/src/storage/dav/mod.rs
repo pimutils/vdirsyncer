@@ -4,13 +4,15 @@ use chrono;
 
 use std::io::{Read,BufReader};
 use std::collections::BTreeSet;
+use std::str::FromStr;
 
 use reqwest;
-use reqwest::header::{ContentType,ETag};
+use reqwest::header::{ContentType,IfMatch,IfNoneMatch,ETag,EntityTag};
 use quick_xml;
 use url::Url;
 
 use super::Storage;
+use super::utils::generate_href;
 use errors::*;
 use super::http::{HttpConfig,handle_http_error};
 
@@ -25,6 +27,16 @@ struct DavStorage {
     pub url: String,
     pub http_config: HttpConfig,
     pub http: Option<reqwest::Client>
+}
+
+impl DavStorage {
+    pub fn new(url: String, http_config: HttpConfig) -> Self {
+        DavStorage {
+            url: format!("{}/", url.trim_right_matches('/')),
+            http_config,
+            http: None
+        }
+    }
 }
 
 impl DavStorage {
@@ -89,6 +101,70 @@ impl DavStorage {
                         Some((href, response.etag?))
                     })))
     }
+
+    fn put(&mut self, href: &str, item: Item, mimetype: &str, etag: Option<&str>) -> Fallible<(String, String)> {
+        let base = Url::parse(&self.url)?;
+        let url = base.join(href)?;
+        let mut request = self.get_http()?.request(reqwest::Method::Put, url);
+        request.header(ContentType(reqwest::mime::Mime::from_str(mimetype)?));
+        if let Some(etag) = etag {
+            request.header(IfMatch::Items(vec![EntityTag::new(false, etag.trim_matches('"').to_owned())]));
+        } else {
+            request.header(IfNoneMatch::Any);
+        }
+
+        let raw = item.get_raw();
+        let response = request.body(raw).send()?;
+
+        match (etag, response.status()) {
+            (Some(_), reqwest::StatusCode::PreconditionFailed) => Err(Error::WrongEtag { href: href.to_owned() })?,
+            (None, reqwest::StatusCode::PreconditionFailed) => Err(Error::ItemAlreadyExisting { href: href.to_owned() })?,
+            _ => ()
+        }
+
+        let response = assert_multistatus_success(handle_http_error(href, response)?)?;
+
+        // The server may not return an etag under certain conditions:
+        //
+        //   An origin server MUST NOT send a validator header field (Section
+        //   7.2), such as an ETag or Last-Modified field, in a successful
+        //   response to PUT unless the request's representation data was saved
+        //   without any transformation applied to the body (i.e., the
+        //   resource's new representation data is identical to the
+        //   representation data received in the PUT request) and the validator
+        //   field value reflects the new representation.
+        //
+        // -- https://tools.ietf.org/html/rfc7231#section-4.3.4
+        //
+        // In such cases we return a constant etag. The next synchronization
+        // will then detect an etag change and will download the new item.
+        let etag = match response.headers().get::<ETag>() {
+            Some(x) => format!("\"{}\"", x.tag()),
+            None => "".to_owned()
+        };
+        Ok((response.url().path().to_owned(), etag))
+    }
+
+    fn delete(&mut self, href: &str, etag: &str) -> Fallible<()> {
+        let base = Url::parse(&self.url)?;
+        let url = base.join(href)?;
+        let response = self.get_http()?
+            .request(reqwest::Method::Delete, url)
+            .header(IfMatch::Items(vec![EntityTag::new(false, etag.trim_matches('"').to_owned())]))
+            .send()?;
+
+        if response.status() == reqwest::StatusCode::PreconditionFailed {
+            Err(Error::WrongEtag { href: href.to_owned() })?;
+        }
+
+        assert_multistatus_success(handle_http_error(href, response)?)?;
+        Ok(())
+    }
+}
+
+fn assert_multistatus_success(r: reqwest::Response) -> Fallible<reqwest::Response> {
+    // TODO
+    Ok(r)
 }
 
 pub struct CarddavStorage {
@@ -101,11 +177,7 @@ impl CarddavStorage {
         http_config: HttpConfig
     ) -> Self {
         CarddavStorage {
-            inner: DavStorage {
-                url,
-                http_config,
-                http: None
-            }
+            inner: DavStorage::new(url, http_config)
         }
     }
 }
@@ -119,16 +191,17 @@ impl Storage for CarddavStorage {
         self.inner.get(href)
     }
 
-    fn upload(&mut self, _item: Item) -> Fallible<(String, String)> {
-        panic!();
+    fn upload(&mut self, item: Item) -> Fallible<(String, String)> {
+        let href = format!("{}.vcf", generate_href(&item.get_ident()?));
+        self.inner.put(&href, item, "text/vcard", None)
     }
 
-    fn update(&mut self, _href: &str, _item: Item, _etag: &str) -> Fallible<String> {
-        panic!();
+    fn update(&mut self, href: &str, item: Item, etag: &str) -> Fallible<String> {
+        self.inner.put(&href, item, "text/vcard", Some(etag)).map(|x| x.1)
     }
 
-    fn delete(&mut self, _href: &str, _etag: &str) -> Fallible<()> {
-        panic!();
+    fn delete(&mut self, href: &str, etag: &str) -> Fallible<()> {
+        self.inner.delete(href, etag)
     }
 }
 
@@ -146,11 +219,7 @@ impl CaldavStorage {
         end_date: Option<chrono::DateTime<chrono::Utc>>,
     ) -> Self {
         CaldavStorage {
-            inner: DavStorage {
-                url,
-                http_config,
-                http: None,
-            },
+            inner: DavStorage::new(url, http_config),
             start_date,
             end_date
         }
@@ -167,16 +236,17 @@ impl Storage for CaldavStorage {
         self.inner.get(href)
     }
 
-    fn upload(&mut self, _item: Item) -> Fallible<(String, String)> {
-        panic!();
+    fn upload(&mut self, item: Item) -> Fallible<(String, String)> {
+        let href = format!("{}.ics", generate_href(&item.get_ident()?));
+        self.inner.put(&href, item, "text/calendar", None)
     }
 
-    fn update(&mut self, _href: &str, _item: Item, _etag: &str) -> Fallible<String> {
-        panic!();
+    fn update(&mut self, href: &str, item: Item, etag: &str) -> Fallible<String> {
+        self.inner.put(href, item, "text/calendar", Some(etag)).map(|x| x.1)
     }
 
-    fn delete(&mut self, _href: &str, _etag: &str) -> Fallible<()> {
-        panic!();
+    fn delete(&mut self, href: &str, etag: &str) -> Fallible<()> {
+        self.inner.delete(href, etag)
     }
 }
 
