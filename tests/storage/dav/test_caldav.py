@@ -6,11 +6,9 @@ from textwrap import dedent
 import pytest
 
 import requests
-import requests.exceptions
 
 from tests import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE
 
-from vdirsyncer import exceptions
 from vdirsyncer.storage.dav import CalDAVStorage
 
 from . import DAVStorageTests, dav_server

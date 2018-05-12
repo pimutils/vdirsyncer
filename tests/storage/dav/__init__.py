@@ -1,12 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import uuid
-
 import os
-
-import pytest
-
-from tests import assert_item_equals
 
 from .. import StorageTests, get_server_mixin
 

@@ -3,7 +3,6 @@
 import uuid
 
 import textwrap
-from urllib.parse import quote as urlquote, unquote as urlunquote
 
 import pytest
 
