@@ -27,7 +27,7 @@ class TestCalDAVStorage(DAVStorageTests):
 
         try:
             s.upload(format_item(item_template=VCARD_TEMPLATE))
-        except exceptions.UnsupportedVobjectError:
+        except Exception:
             pass
         assert not list(s.list())
 
