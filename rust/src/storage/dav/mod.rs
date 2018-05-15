@@ -23,6 +23,13 @@ fn propfind() -> reqwest::Method {
     reqwest::Method::Extension("PROPFIND".to_owned())
 }
 
+#[inline]
+fn report() -> reqwest::Method {
+    reqwest::Method::Extension("REPORT".to_owned())
+}
+
+static CALDAV_DT_FORMAT: &'static str = "%Y%m%dT%H%M%SZ";
+
 struct DavStorage {
     pub url: String,
     pub http_config: HttpConfig,
@@ -80,6 +87,11 @@ impl DavStorage {
                     </D:prop>
                 </D:propfind>"#)
             .send()?.error_for_status()?;
+        self.parse_prop_response(response, mimetype_contains)
+    }
+
+    fn parse_prop_response<'a>(&'a mut self, response: reqwest::Response, mimetype_contains: &'a str)
+        -> Fallible<Box<Iterator<Item = (String, String)> + 'a>> {
         let buf_reader = BufReader::new(response);
         let xml_reader = quick_xml::Reader::from_reader(buf_reader);
 
@@ -100,7 +112,7 @@ impl DavStorage {
                         seen_hrefs.insert(href.clone());
                         Some((href, response.etag?))
                     })))
-    }
+        }
 
     fn put(&mut self, href: &str, item: Item, mimetype: &str, etag: Option<&str>) -> Fallible<(String, String)> {
         let base = Url::parse(&self.url)?;
@@ -167,7 +179,7 @@ fn assert_multistatus_success(r: reqwest::Response) -> Fallible<reqwest::Respons
     Ok(r)
 }
 
-pub struct CarddavStorage {
+struct CarddavStorage {
     inner: DavStorage
 }
 
@@ -205,10 +217,11 @@ impl Storage for CarddavStorage {
     }
 }
 
-pub struct CaldavStorage {
+struct CaldavStorage {
     inner: DavStorage,
-    start_date: Option<chrono::DateTime<chrono::Utc>>,
-    end_date: Option<chrono::DateTime<chrono::Utc>>
+    start_date: Option<chrono::DateTime<chrono::Utc>>, // FIXME: store as Option<(start, end)>
+    end_date: Option<chrono::DateTime<chrono::Utc>>,
+    item_types: Vec<&'static str>
 }
 
 impl CaldavStorage {
@@ -217,19 +230,79 @@ impl CaldavStorage {
         http_config: HttpConfig,
         start_date: Option<chrono::DateTime<chrono::Utc>>,
         end_date: Option<chrono::DateTime<chrono::Utc>>,
+        item_types: Vec<&'static str>
     ) -> Self {
         CaldavStorage {
             inner: DavStorage::new(url, http_config),
             start_date,
-            end_date
+            end_date,
+            item_types
         }
+    }
+
+    #[inline]
+    fn get_caldav_filters(&self) -> Vec<String> {
+        let mut item_types = self.item_types.clone();
+        let mut timefilter = "".to_owned();
+
+        if let (Some(start), Some(end)) = (self.start_date, self.end_date) {
+            timefilter = format!(
+                "<C:time-range start=\"{}\" end=\"{}\" />",
+                start.format(CALDAV_DT_FORMAT),
+                end.format(CALDAV_DT_FORMAT)
+            );
+
+            if item_types.is_empty() {
+                item_types.push("VTODO");
+                item_types.push("VEVENT");
+            }
+        }
+
+        item_types
+            .into_iter()
+            .map(|item_type| format!("<C:comp-filter name=\"VCALENDAR\">\
+                                      <C:comp-filter name=\"{}\">{}</C:comp-filter>\
+                                      </C:comp-filter>", item_type, timefilter))
+            .collect()
     }
 }
 
 impl Storage for CaldavStorage {
     fn list<'a>(&'a mut self) -> Fallible<Box<Iterator<Item = (String, String)> + 'a>> {
-        // TODO: timeranges
-        self.inner.list("text/calendar")
+        let filters = self.get_caldav_filters();
+        if filters.is_empty() {
+            // If we don't have any filters (which is the default), taking the
+            // risk of sending a calendar-query is not necessary. There doesn't
+            // seem to be a widely-usable way to send calendar-queries with the
+            // same semantics as a PROPFIND request... so why not use PROPFIND
+            // instead?
+            //
+            // See https://github.com/dmfs/tasks/issues/118 for backstory.
+            self.inner.list("text/calendar")
+        } else {
+            let mut rv = vec![];
+            let mut headers = reqwest::header::Headers::new();
+            headers.set(ContentType::xml());
+            headers.set_raw("Depth", "1");
+
+            for filter in filters {
+                let data = format!(
+                    "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\
+                     <C:calendar-query xmlns:D=\"DAV:\" xmlns:C=\"urn:ietf:params:xml:ns:caldav\">\
+                     <D:prop><D:getcontenttype/><D:getetag/></D:prop>\
+                     <C:filter>{}</C:filter>\
+                     </C:calendar-query>", filter);
+
+                let response = self.inner.get_http()?
+                    .request(report(), &self.inner.url)
+                    .headers(headers.clone())
+                    .body(data)
+                    .send()?.error_for_status()?;
+                rv.extend(self.inner.parse_prop_response(response, "text/calendar")?);
+            }
+
+            Ok(Box::new(rv.into_iter()))
+        }
     }
 
     fn get(&mut self, href: &str) -> Fallible<(Item, String)> {
@@ -295,7 +368,10 @@ pub mod exports {
         verify_cert: *const c_char,
         auth_cert: *const c_char,
         start_date: i64,
-        end_date: i64
+        end_date: i64,
+        include_vevent: bool,
+        include_vjournal: bool,
+        include_vtodo: bool
     ) -> *mut Box<Storage> {
         let url = CStr::from_ptr(url);
 
@@ -310,6 +386,11 @@ pub mod exports {
             }
         };
 
+        let mut item_types = vec![];
+        if include_vevent { item_types.push("VEVENT"); }
+        if include_vjournal { item_types.push("VJOURNAL"); }
+        if include_vtodo { item_types.push("VTODO"); }
+
         Box::into_raw(Box::new(Box::new(CaldavStorage::new(
             url.to_str().unwrap().to_owned(),
             init_http_config(
@@ -321,6 +402,7 @@ pub mod exports {
             ),
             parse_date(start_date),
             parse_date(end_date),
+            item_types
         ))))
     }
 }

@@ -27,32 +27,9 @@ class TestCalDAVStorage(DAVStorageTests):
 
         try:
             s.upload(format_item(item_template=VCARD_TEMPLATE))
-        except Exception:
+        except exceptions.UnsupportedVobjectError:
             pass
         assert not list(s.list())
-
-    # The `arg` param is not named `item_types` because that would hit
-    # https://bitbucket.org/pytest-dev/pytest/issue/745/
-    @pytest.mark.parametrize('arg,calls_num', [
-        (('VTODO',), 1),
-        (('VEVENT',), 1),
-        (('VTODO', 'VEVENT'), 2),
-        (('VTODO', 'VEVENT', 'VJOURNAL'), 3),
-        ((), 0)
-    ])
-    def test_item_types_performance(self, get_storage_args, arg, calls_num,
-                                    monkeypatch):
-        s = self.storage_class(item_types=arg, **get_storage_args())
-        old_parse = s._parse_prop_responses
-        calls = []
-
-        def new_parse(*a, **kw):
-            calls.append(None)
-            return old_parse(*a, **kw)
-
-        monkeypatch.setattr(s, '_parse_prop_responses', new_parse)
-        list(s.list())
-        assert len(calls) == calls_num
 
     @pytest.mark.xfail(dav_server == 'radicale',
                        reason='Radicale doesn\'t support timeranges.')
@@ -113,18 +90,17 @@ class TestCalDAVStorage(DAVStorageTests):
 
     @pytest.mark.skipif(dav_server == 'icloud',
                         reason='iCloud only accepts VEVENT')
-    def test_item_types_general(self, s):
+    def test_item_types_general(self, get_storage_args):
+        args = get_storage_args()
+        s = self.storage_class(**args)
         event = s.upload(format_item(item_template=EVENT_TEMPLATE))[0]
         task = s.upload(format_item(item_template=TASK_TEMPLATE))[0]
-        s.item_types = ('VTODO', 'VEVENT')
 
-        def l():
-            return set(href for href, etag in s.list())
-
-        assert l() == {event, task}
-        s.item_types = ('VTODO',)
-        assert l() == {task}
-        s.item_types = ('VEVENT',)
-        assert l() == {event}
-        s.item_types = ()
-        assert l() == {event, task}
+        for item_types, expected_items in [
+            (('VTODO', 'VEVENT'), {event, task}),
+            (('VTODO',), {task}),
+            (('VEVENT',), {event}),
+        ]:
+            args['item_types'] = item_types
+            s = self.storage_class(**args)
+            assert set(href for href, etag in s.list()) == expected_items

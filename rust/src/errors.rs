@@ -45,6 +45,11 @@ pub enum Error {
         filepath: String,
     },
 
+    #[fail(display = "The item '{}' has been rejected by the server because the vobject type was unexpected", href)]
+    UnsupportedVobject {
+        href: String
+    },
+
     #[fail(display = "This storage is read-only.")]
     ReadOnly
 }

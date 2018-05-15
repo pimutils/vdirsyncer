@@ -33,3 +33,5 @@ def check_error(e):
         raise exceptions.WrongEtagError(e)
     except errors.Error.ReadOnly as e:
         raise exceptions.ReadOnlyError(e)
+    except errors.Error.UnsupportedVobject as e:
+        raise exceptions.UnsupportedVobjectError(e)

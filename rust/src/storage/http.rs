@@ -155,11 +155,11 @@ pub mod exports {
 }
 
 pub fn handle_http_error(href: &str, r: reqwest::Response) -> Fallible<reqwest::Response> {
-    if r.status() == reqwest::StatusCode::NotFound {
-        Err(Error::ItemNotFound { href: href.to_owned() })?;
+    match r.status() {
+        reqwest::StatusCode::NotFound => Err(Error::ItemNotFound { href: href.to_owned() }.into()),
+        reqwest::StatusCode::UnsupportedMediaType => Err(Error::UnsupportedVobject { href: href.to_owned() }.into()),
+        _ => r.error_for_status().map_err(|e| e.into())
     }
-
-    r.error_for_status().map_err(|e| e.into())
 }
 
 pub unsafe fn init_http_config(

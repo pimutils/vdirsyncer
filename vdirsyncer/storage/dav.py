@@ -430,56 +430,6 @@ class DAVStorage(RustStorageMixin, Storage):
     def _is_item_mimetype(self, mimetype):
         return _fuzzy_matches_mimetype(self.item_mimetype, mimetype)
 
-    def _parse_prop_responses(self, root, handled_hrefs=None):
-        if handled_hrefs is None:
-            handled_hrefs = set()
-        for response in root.iter('{DAV:}response'):
-            href = response.find('{DAV:}href')
-            if href is None:
-                dav_logger.error('Skipping response, href is missing.')
-                continue
-
-            href = self._normalize_href(href.text)
-
-            if href in handled_hrefs:
-                # Servers that send duplicate hrefs:
-                # - Zimbra
-                #   https://github.com/pimutils/vdirsyncer/issues/88
-                # - Davmail
-                #   https://github.com/pimutils/vdirsyncer/issues/144
-                dav_logger.warning('Skipping identical href: {!r}'
-                                   .format(href))
-                continue
-
-            props = response.findall('{DAV:}propstat/{DAV:}prop')
-            if props is None or not len(props):
-                dav_logger.debug('Skipping {!r}, properties are missing.'
-                                 .format(href))
-                continue
-            else:
-                props = _merge_xml(props)
-
-            if props.find('{DAV:}resourcetype/{DAV:}collection') is not None:
-                dav_logger.debug('Skipping {!r}, is collection.'.format(href))
-                continue
-
-            etag = getattr(props.find('{DAV:}getetag'), 'text', '')
-            if not etag:
-                dav_logger.debug('Skipping {!r}, etag property is missing.'
-                                 .format(href))
-                continue
-
-            contenttype = getattr(props.find('{DAV:}getcontenttype'),
-                                  'text', None)
-            if not self._is_item_mimetype(contenttype):
-                dav_logger.debug('Skipping {!r}, {!r} != {!r}.'
-                                 .format(href, contenttype,
-                                         self.item_mimetype))
-                continue
-
-            handled_hrefs.add(href)
-            yield href, etag, props
-
     def get_meta(self, key):
         try:
             tagname, namespace = self._property_table[key]
@@ -577,7 +527,7 @@ class CalDAVStorage(DAVStorage):
         if not isinstance(item_types, (list, tuple)):
             raise exceptions.UserError('item_types must be a list.')
 
-        self.item_types = tuple(item_types)
+        self.item_types = tuple(x.upper() for x in item_types)
         if (start_date is None) != (end_date is None):
             raise exceptions.UserError('If start_date is given, '
                                        'end_date has to be given too.')
@@ -601,82 +551,13 @@ class CalDAVStorage(DAVStorage):
                 kwargs.get('verify_cert', '').encode('utf-8'),
                 kwargs.get('auth_cert', '').encode('utf-8'),
                 int(self.start_date.timestamp()) if self.start_date else -1,
-                int(self.end_date.timestamp()) if self.end_date else -1
+                int(self.end_date.timestamp()) if self.end_date else -1,
+                'VEVENT' in item_types,
+                'VJOURNAL' in item_types,
+                'VTODO' in item_types
             ),
             native.lib.vdirsyncer_storage_free
         )
-
-    @staticmethod
-    def _get_list_filters(components, start, end):
-        caldavfilter = '''
-            <C:comp-filter name="VCALENDAR">
-                <C:comp-filter name="{component}">
-                    {timefilter}
-                </C:comp-filter>
-            </C:comp-filter>
-            '''
-
-        timefilter = ''
-
-        if start is not None and end is not None:
-            start = start.strftime(CALDAV_DT_FORMAT)
-            end = end.strftime(CALDAV_DT_FORMAT)
-
-            timefilter = ('<C:time-range start="{start}" end="{end}"/>'
-                          .format(start=start, end=end))
-            if not components:
-                components = ('VTODO', 'VEVENT')
-
-        for component in components:
-            yield caldavfilter.format(component=component,
-                                      timefilter=timefilter)
-
-    def list(self):
-        caldavfilters = list(self._get_list_filters(
-            self.item_types,
-            self.start_date,
-            self.end_date
-        ))
-        if not caldavfilters:
-            # If we don't have any filters (which is the default), taking the
-            # risk of sending a calendar-query is not necessary. There doesn't
-            # seem to be a widely-usable way to send calendar-queries with the
-            # same semantics as a PROPFIND request... so why not use PROPFIND
-            # instead?
-            #
-            # See https://github.com/dmfs/tasks/issues/118 for backstory.
-            yield from DAVStorage.list(self)
-            return
-
-        data = '''<?xml version="1.0" encoding="utf-8" ?>
-            <C:calendar-query xmlns:D="DAV:"
-                xmlns:C="urn:ietf:params:xml:ns:caldav">
-                <D:prop>
-                    <D:getcontenttype/>
-                    <D:getetag/>
-                </D:prop>
-                <C:filter>
-                {caldavfilter}
-                </C:filter>
-            </C:calendar-query>'''
-
-        headers = self.session.get_default_headers()
-        # https://github.com/pimutils/vdirsyncer/issues/166
-        # The default in CalDAV's calendar-queries is 0, but the examples use
-        # an explicit value of 1 for querying items. it is extremely unclear in
-        # the spec which values from WebDAV are actually allowed.
-        headers['Depth'] = '1'
-
-        handled_hrefs = set()
-
-        for caldavfilter in caldavfilters:
-            xml = data.format(caldavfilter=caldavfilter).encode('utf-8')
-            response = self.session.request('REPORT', '', data=xml,
-                                            headers=headers)
-            root = _parse_xml(response.content)
-            rv = self._parse_prop_responses(root, handled_hrefs)
-            for href, etag, _prop in rv:
-                yield href, etag
 
 
 class CardDAVStorage(DAVStorage):

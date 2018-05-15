@@ -36,6 +36,8 @@ extern const uint8_t SHIPPAI_VARIANT_Error_UnexpectedVobject;
 
 extern const uint8_t SHIPPAI_VARIANT_Error_UnexpectedVobjectVersion;
 
+extern const uint8_t SHIPPAI_VARIANT_Error_UnsupportedVobject;
+
 extern const uint8_t SHIPPAI_VARIANT_Error_WrongEtag;
 
 void shippai_free_failure(ShippaiError *t);
@@ -79,7 +81,10 @@ Box_Storage *vdirsyncer_init_caldav(const char *url,
                                     const char *verify_cert,
                                     const char *auth_cert,
                                     int64_t start_date,
-                                    int64_t end_date);
+                                    int64_t end_date,
+                                    bool include_vevent,
+                                    bool include_vjournal,
+                                    bool include_vtodo);
 
 Box_Storage *vdirsyncer_init_carddav(const char *url,
                                      const char *username,
