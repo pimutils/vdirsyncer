@@ -5,8 +5,6 @@ from textwrap import dedent
 
 import pytest
 
-import requests
-
 from tests import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE
 
 from vdirsyncer.storage.dav import CalDAVStorage
