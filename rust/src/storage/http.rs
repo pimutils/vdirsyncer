@@ -32,7 +32,9 @@ pub fn send_request(
     debug!("> ---");
     let response = client.execute(request)?;
     debug!("< {:?}", response.status());
-    //if let Ok(text) = response.text() { debug!("< {}", text); }
+    for header in response.headers().iter() {
+        debug!("< {}: {}", header.name(), header.value_string());
+    }
     Ok(response)
 }
 

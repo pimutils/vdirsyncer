@@ -132,6 +132,8 @@ class StorageTests(object):
 
     def test_delete(self, s, get_item):
         href, etag = s.upload(get_item())
+        if etag is None:
+            _, etag = s.get(href)
         s.delete(href, etag)
         assert not list(s.list())
 
@@ -149,6 +151,8 @@ class StorageTests(object):
     def test_has(self, s, get_item):
         assert not s.has('asd')
         href, etag = s.upload(get_item())
+        if etag is None:
+            _, etag = s.get(href)
         assert s.has(href)
         assert not s.has('asd')
         s.delete(href, etag)
