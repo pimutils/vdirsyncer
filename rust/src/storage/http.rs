@@ -7,9 +7,9 @@ use std::os::raw::c_char;
 
 use reqwest;
 
+use super::singlefile::split_collection;
 use super::Storage;
 use errors::*;
-use super::singlefile::split_collection;
 
 use item::Item;
 
@@ -20,7 +20,10 @@ pub type Auth = (Username, Password);
 
 /// Wrapper around Client.execute to enable logging
 #[inline]
-pub fn send_request(client: &reqwest::Client, request: reqwest::Request) -> Fallible<reqwest::Response> {
+pub fn send_request(
+    client: &reqwest::Client,
+    request: reqwest::Request,
+) -> Fallible<reqwest::Response> {
     debug!("> {} {}", request.method(), request.url());
     for header in request.headers().iter() {
         debug!("> {}: {}", header.name(), header.value_string());
@@ -33,13 +36,12 @@ pub fn send_request(client: &reqwest::Client, request: reqwest::Request) -> Fall
     Ok(response)
 }
 
-
 #[derive(Clone)]
 pub struct HttpConfig {
     pub auth: Option<Auth>,
     pub useragent: Option<String>,
     pub verify_cert: Option<String>,
-    pub auth_cert: Option<String>
+    pub auth_cert: Option<String>,
 }
 
 impl HttpConfig {
@@ -76,7 +78,7 @@ pub struct HttpStorage {
     url: String,
     // href -> (item, etag)
     items_cache: Option<ItemCache>,
-    http_config: HttpConfig
+    http_config: HttpConfig,
 }
 
 impl HttpStorage {
@@ -84,7 +86,7 @@ impl HttpStorage {
         HttpStorage {
             url,
             items_cache: None,
-            http_config
+            http_config,
         }
     }
 
@@ -158,13 +160,7 @@ pub mod exports {
 
         Box::into_raw(Box::new(Box::new(HttpStorage::new(
             url.to_str().unwrap().to_owned(),
-            init_http_config(
-                username,
-                password,
-                useragent,
-                verify_cert,
-                auth_cert
-            )
+            init_http_config(username, password, useragent, verify_cert, auth_cert),
         ))))
     }
 }
@@ -176,9 +172,13 @@ pub fn handle_http_error(href: &str, mut r: reqwest::Response) -> Fallible<reqwe
     }
 
     match r.status() {
-        reqwest::StatusCode::NotFound => Err(Error::ItemNotFound { href: href.to_owned() })?,
-        reqwest::StatusCode::UnsupportedMediaType => Err(Error::UnsupportedVobject { href: href.to_owned() })?,
-        _ => Ok(r.error_for_status()?)
+        reqwest::StatusCode::NotFound => Err(Error::ItemNotFound {
+            href: href.to_owned(),
+        })?,
+        reqwest::StatusCode::UnsupportedMediaType => Err(Error::UnsupportedVobject {
+            href: href.to_owned(),
+        })?,
+        _ => Ok(r.error_for_status()?),
     }
 }
 
@@ -209,8 +209,20 @@ pub unsafe fn init_http_config(
 
     HttpConfig {
         auth,
-        useragent: if useragent_dec.is_empty() { None } else { Some(useragent_dec.to_owned()) },
-        verify_cert: if verify_cert_dec.is_empty() { None } else { Some(verify_cert_dec.to_owned()) },
-        auth_cert: if auth_cert_dec.is_empty() { None } else { Some(auth_cert_dec.to_owned()) },
+        useragent: if useragent_dec.is_empty() {
+            None
+        } else {
+            Some(useragent_dec.to_owned())
+        },
+        verify_cert: if verify_cert_dec.is_empty() {
+            None
+        } else {
+            Some(verify_cert_dec.to_owned())
+        },
+        auth_cert: if auth_cert_dec.is_empty() {
+            None
+        } else {
+            Some(auth_cert_dec.to_owned())
+        },
     }
 }

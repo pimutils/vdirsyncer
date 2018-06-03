@@ -2,19 +2,19 @@ mod parser;
 
 use chrono;
 
-use std::io::{Read,BufReader};
 use std::collections::BTreeSet;
+use std::io::{BufReader, Read};
 use std::str::FromStr;
 
-use reqwest;
-use reqwest::header::{ContentType,IfMatch,IfNoneMatch,ETag,EntityTag};
 use quick_xml;
+use reqwest;
+use reqwest::header::{ContentType, ETag, EntityTag, IfMatch, IfNoneMatch};
 use url::Url;
 
-use super::Storage;
+use super::http::{handle_http_error, send_request, HttpConfig};
 use super::utils::generate_href;
+use super::Storage;
 use errors::*;
-use super::http::{HttpConfig,handle_http_error,send_request};
 
 use item::Item;
 
@@ -33,15 +33,15 @@ static CALDAV_DT_FORMAT: &'static str = "%Y%m%dT%H%M%SZ";
 struct DavStorage {
     pub url: String,
     pub http_config: HttpConfig,
-    pub http: Option<reqwest::Client>
+    pub http: Option<reqwest::Client>,
 }
 
 impl DavStorage {
-    pub fn new(url: String, http_config: HttpConfig) -> Self {
+    pub fn new(url: &str, http_config: HttpConfig) -> Self {
         DavStorage {
             url: format!("{}/", url.trim_right_matches('/')),
             http_config,
-            http: None
+            http: None,
         }
     }
 }
@@ -67,7 +67,9 @@ impl DavStorage {
         let base = Url::parse(&self.url)?;
         let url = base.join(href)?;
         if href != url.path() {
-            Err(Error::ItemNotFound { href: href.to_owned() })?;
+            Err(Error::ItemNotFound {
+                href: href.to_owned(),
+            })?;
         }
 
         let request = self.get_http()?.get(url).build()?;
@@ -76,14 +78,15 @@ impl DavStorage {
         response.read_to_string(&mut s)?;
         let etag = match response.headers().get::<ETag>() {
             Some(x) => format!("\"{}\"", x.tag()),
-            None => Err(DavError::EtagNotFound)?
+            None => Err(DavError::EtagNotFound)?,
         };
         Ok((Item::from_raw(s), etag))
     }
 
-    pub fn list<'a>(&'a mut self, mimetype_contains: &'a str)
-        -> Fallible<Box<Iterator<Item = (String, String)> + 'a>> {
-
+    pub fn list<'a>(
+        &'a mut self,
+        mimetype_contains: &'a str,
+    ) -> Fallible<Box<Iterator<Item = (String, String)> + 'a>> {
         let mut headers = reqwest::header::Headers::new();
         headers.set(ContentType::xml());
         headers.set_raw("Depth", "1");
@@ -91,21 +94,26 @@ impl DavStorage {
         let request = self.get_http()?
             .request(propfind(), &self.url)
             .headers(headers)
-            .body(r#"<?xml version="1.0" encoding="utf-8" ?>
+            .body(
+                r#"<?xml version="1.0" encoding="utf-8" ?>
                 <D:propfind xmlns:D="DAV:">
                     <D:prop>
                         <D:resourcetype/>
                         <D:getcontenttype/>
                         <D:getetag/>
                     </D:prop>
-                </D:propfind>"#)
+                </D:propfind>"#,
+            )
             .build()?;
         let response = self.send_request(request)?;
         self.parse_prop_response(response, mimetype_contains)
     }
 
-    fn parse_prop_response<'a>(&'a mut self, response: reqwest::Response, mimetype_contains: &'a str)
-        -> Fallible<Box<Iterator<Item = (String, String)> + 'a>> {
+    fn parse_prop_response<'a>(
+        &'a mut self,
+        response: reqwest::Response,
+        mimetype_contains: &'a str,
+    ) -> Fallible<Box<Iterator<Item = (String, String)> + 'a>> {
         let buf_reader = BufReader::new(response);
         let xml_reader = quick_xml::Reader::from_reader(buf_reader);
 
@@ -113,28 +121,45 @@ impl DavStorage {
         let base = Url::parse(&self.url)?;
         let mut seen_hrefs = BTreeSet::new();
 
-        Ok(Box::new(parser
-                    .get_all_responses()?
-                    .into_iter()
-                    .filter_map(move |response| {
-                        if response.has_collection_tag { return None; }
-                        if !response.mimetype?.contains(mimetype_contains) { return None; }
+        Ok(Box::new(
+            parser
+                .get_all_responses()?
+                .into_iter()
+                .filter_map(move |response| {
+                    if response.has_collection_tag {
+                        return None;
+                    }
+                    if !response.mimetype?.contains(mimetype_contains) {
+                        return None;
+                    }
 
-                        let href = base.join(&response.href?).ok()?.path().to_owned();
+                    let href = base.join(&response.href?).ok()?.path().to_owned();
 
-                        if seen_hrefs.contains(&href) { return None; }
-                        seen_hrefs.insert(href.clone());
-                        Some((href, response.etag?))
-                    })))
-        }
+                    if seen_hrefs.contains(&href) {
+                        return None;
+                    }
+                    seen_hrefs.insert(href.clone());
+                    Some((href, response.etag?))
+                }),
+        ))
+    }
 
-    fn put(&mut self, href: &str, item: Item, mimetype: &str, etag: Option<&str>) -> Fallible<(String, String)> {
+    fn put(
+        &mut self,
+        href: &str,
+        item: &Item,
+        mimetype: &str,
+        etag: Option<&str>,
+    ) -> Fallible<(String, String)> {
         let base = Url::parse(&self.url)?;
         let url = base.join(href)?;
         let mut request = self.get_http()?.request(reqwest::Method::Put, url);
         request.header(ContentType(reqwest::mime::Mime::from_str(mimetype)?));
         if let Some(etag) = etag {
-            request.header(IfMatch::Items(vec![EntityTag::new(false, etag.trim_matches('"').to_owned())]));
+            request.header(IfMatch::Items(vec![EntityTag::new(
+                false,
+                etag.trim_matches('"').to_owned(),
+            )]));
         } else {
             request.header(IfNoneMatch::Any);
         }
@@ -143,9 +168,13 @@ impl DavStorage {
         let response = send_request(&self.get_http()?, request.body(raw).build()?)?;
 
         match (etag, response.status()) {
-            (Some(_), reqwest::StatusCode::PreconditionFailed) => Err(Error::WrongEtag { href: href.to_owned() })?,
-            (None, reqwest::StatusCode::PreconditionFailed) => Err(Error::ItemAlreadyExisting { href: href.to_owned() })?,
-            _ => ()
+            (Some(_), reqwest::StatusCode::PreconditionFailed) => Err(Error::WrongEtag {
+                href: href.to_owned(),
+            })?,
+            (None, reqwest::StatusCode::PreconditionFailed) => Err(Error::ItemAlreadyExisting {
+                href: href.to_owned(),
+            })?,
+            _ => (),
         }
 
         let response = assert_multistatus_success(handle_http_error(href, response)?)?;
@@ -166,7 +195,7 @@ impl DavStorage {
         // will then detect an etag change and will download the new item.
         let etag = match response.headers().get::<ETag>() {
             Some(x) => format!("\"{}\"", x.tag()),
-            None => "".to_owned()
+            None => "".to_owned(),
         };
         Ok((response.url().path().to_owned(), etag))
     }
@@ -176,12 +205,17 @@ impl DavStorage {
         let url = base.join(href)?;
         let request = self.get_http()?
             .request(reqwest::Method::Delete, url)
-            .header(IfMatch::Items(vec![EntityTag::new(false, etag.trim_matches('"').to_owned())]))
+            .header(IfMatch::Items(vec![EntityTag::new(
+                false,
+                etag.trim_matches('"').to_owned(),
+            )]))
             .build()?;
         let response = send_request(&self.get_http()?, request)?;
 
         if response.status() == reqwest::StatusCode::PreconditionFailed {
-            Err(Error::WrongEtag { href: href.to_owned() })?;
+            Err(Error::WrongEtag {
+                href: href.to_owned(),
+            })?;
         }
 
         assert_multistatus_success(handle_http_error(href, response)?)?;
@@ -195,16 +229,13 @@ fn assert_multistatus_success(r: reqwest::Response) -> Fallible<reqwest::Respons
 }
 
 struct CarddavStorage {
-    inner: DavStorage
+    inner: DavStorage,
 }
 
 impl CarddavStorage {
-    pub fn new(
-        url: String,
-        http_config: HttpConfig
-    ) -> Self {
+    pub fn new(url: &str, http_config: HttpConfig) -> Self {
         CarddavStorage {
-            inner: DavStorage::new(url, http_config)
+            inner: DavStorage::new(url, http_config),
         }
     }
 }
@@ -220,11 +251,13 @@ impl Storage for CarddavStorage {
 
     fn upload(&mut self, item: Item) -> Fallible<(String, String)> {
         let href = format!("{}.vcf", generate_href(&item.get_ident()?));
-        self.inner.put(&href, item, "text/vcard", None)
+        self.inner.put(&href, &item, "text/vcard", None)
     }
 
     fn update(&mut self, href: &str, item: Item, etag: &str) -> Fallible<String> {
-        self.inner.put(&href, item, "text/vcard", Some(etag)).map(|x| x.1)
+        self.inner
+            .put(&href, &item, "text/vcard", Some(etag))
+            .map(|x| x.1)
     }
 
     fn delete(&mut self, href: &str, etag: &str) -> Fallible<()> {
@@ -236,22 +269,22 @@ struct CaldavStorage {
     inner: DavStorage,
     start_date: Option<chrono::DateTime<chrono::Utc>>, // FIXME: store as Option<(start, end)>
     end_date: Option<chrono::DateTime<chrono::Utc>>,
-    item_types: Vec<&'static str>
+    item_types: Vec<&'static str>,
 }
 
 impl CaldavStorage {
     pub fn new(
-        url: String,
+        url: &str,
         http_config: HttpConfig,
         start_date: Option<chrono::DateTime<chrono::Utc>>,
         end_date: Option<chrono::DateTime<chrono::Utc>>,
-        item_types: Vec<&'static str>
+        item_types: Vec<&'static str>,
     ) -> Self {
         CaldavStorage {
             inner: DavStorage::new(url, http_config),
             start_date,
             end_date,
-            item_types
+            item_types,
         }
     }
 
@@ -275,9 +308,14 @@ impl CaldavStorage {
 
         item_types
             .into_iter()
-            .map(|item_type| format!("<C:comp-filter name=\"VCALENDAR\">\
-                                      <C:comp-filter name=\"{}\">{}</C:comp-filter>\
-                                      </C:comp-filter>", item_type, timefilter))
+            .map(|item_type| {
+                format!(
+                    "<C:comp-filter name=\"VCALENDAR\">\
+                     <C:comp-filter name=\"{}\">{}</C:comp-filter>\
+                     </C:comp-filter>",
+                    item_type, timefilter
+                )
+            })
             .collect()
     }
 }
@@ -301,14 +339,16 @@ impl Storage for CaldavStorage {
             headers.set_raw("Depth", "1");
 
             for filter in filters {
-                let data = format!(
+                let data =
+                    format!(
                     "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\
                      <C:calendar-query xmlns:D=\"DAV:\" xmlns:C=\"urn:ietf:params:xml:ns:caldav\">\
                      <D:prop><D:getcontenttype/><D:getetag/></D:prop>\
                      <C:filter>{}</C:filter>\
                      </C:calendar-query>", filter);
 
-                let request = self.inner.get_http()?
+                let request = self.inner
+                    .get_http()?
                     .request(report(), &self.inner.url)
                     .headers(headers.clone())
                     .body(data)
@@ -327,11 +367,13 @@ impl Storage for CaldavStorage {
 
     fn upload(&mut self, item: Item) -> Fallible<(String, String)> {
         let href = format!("{}.ics", generate_href(&item.get_ident()?));
-        self.inner.put(&href, item, "text/calendar", None)
+        self.inner.put(&href, &item, "text/calendar", None)
     }
 
     fn update(&mut self, href: &str, item: Item, etag: &str) -> Fallible<String> {
-        self.inner.put(href, item, "text/calendar", Some(etag)).map(|x| x.1)
+        self.inner
+            .put(href, &item, "text/calendar", Some(etag))
+            .map(|x| x.1)
     }
 
     fn delete(&mut self, href: &str, etag: &str) -> Fallible<()> {
@@ -340,13 +382,13 @@ impl Storage for CaldavStorage {
 }
 
 pub mod exports {
-    use super::*;
     use super::super::http::init_http_config;
+    use super::*;
 
     #[derive(Debug, Fail, Shippai)]
     pub enum DavError {
         #[fail(display = "Server did not return etag.")]
-        EtagNotFound
+        EtagNotFound,
     }
 
     use std::ffi::CStr;
@@ -364,14 +406,8 @@ pub mod exports {
         let url = CStr::from_ptr(url);
 
         Box::into_raw(Box::new(Box::new(CarddavStorage::new(
-            url.to_str().unwrap().to_owned(),
-            init_http_config(
-                username,
-                password,
-                useragent,
-                verify_cert,
-                auth_cert
-            )
+            url.to_str().unwrap(),
+            init_http_config(username, password, useragent, verify_cert, auth_cert),
         ))))
     }
 
@@ -387,7 +423,7 @@ pub mod exports {
         end_date: i64,
         include_vevent: bool,
         include_vjournal: bool,
-        include_vtodo: bool
+        include_vtodo: bool,
     ) -> *mut Box<Storage> {
         let url = CStr::from_ptr(url);
 
@@ -395,7 +431,7 @@ pub mod exports {
             if i > 0 {
                 Some(chrono::DateTime::from_utc(
                     chrono::NaiveDateTime::from_timestamp(i, 0),
-                    chrono::Utc
+                    chrono::Utc,
                 ))
             } else {
                 None
@@ -403,22 +439,22 @@ pub mod exports {
         };
 
         let mut item_types = vec![];
-        if include_vevent { item_types.push("VEVENT"); }
-        if include_vjournal { item_types.push("VJOURNAL"); }
-        if include_vtodo { item_types.push("VTODO"); }
+        if include_vevent {
+            item_types.push("VEVENT");
+        }
+        if include_vjournal {
+            item_types.push("VJOURNAL");
+        }
+        if include_vtodo {
+            item_types.push("VTODO");
+        }
 
         Box::into_raw(Box::new(Box::new(CaldavStorage::new(
-            url.to_str().unwrap().to_owned(),
-            init_http_config(
-                username,
-                password,
-                useragent,
-                verify_cert,
-                auth_cert
-            ),
+            url.to_str().unwrap(),
+            init_http_config(username, password, useragent, verify_cert, auth_cert),
             parse_date(start_date),
             parse_date(end_date),
-            item_types
+            item_types,
         ))))
     }
 }

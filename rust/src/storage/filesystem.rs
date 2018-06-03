@@ -1,13 +1,13 @@
-use std::path::{Path, PathBuf};
+use super::Storage;
+use errors::*;
+use failure;
+use libc;
 use std::fs;
 use std::io;
 use std::io::{Read, Write};
 use std::os::unix::fs::MetadataExt;
+use std::path::{Path, PathBuf};
 use std::process::Command;
-use super::Storage;
-use errors::*;
-use libc;
-use failure;
 
 use super::utils;
 

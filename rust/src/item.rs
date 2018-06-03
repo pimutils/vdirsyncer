@@ -1,7 +1,7 @@
 use vobject;
 
-use std::fmt::Write;
 use sha2::{Digest, Sha256};
+use std::fmt::Write;
 
 use errors::*;
 
@@ -190,10 +190,10 @@ fn hash_component(c: &vobject::Component) -> String {
 
 pub mod exports {
     use super::Item;
-    use std::ptr;
+    use errors::*;
     use std::ffi::{CStr, CString};
     use std::os::raw::c_char;
-    use errors::*;
+    use std::ptr;
 
     const EMPTY_STRING: *const c_char = b"\0" as *const u8 as *const c_char;
 

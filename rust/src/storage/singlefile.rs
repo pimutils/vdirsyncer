@@ -1,11 +1,11 @@
-use std::path::{Path, PathBuf};
-use std::collections::{BTreeMap, BTreeSet};
-use std::collections::btree_map::Entry::*;
-use std::fs::{metadata, File};
-use std::io::{Read, Write};
-use std::time::SystemTime;
 use super::Storage;
 use errors::*;
+use std::collections::btree_map::Entry::*;
+use std::collections::{BTreeMap, BTreeSet};
+use std::fs::{metadata, File};
+use std::io::{Read, Write};
+use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 use vobject;
 
 use atomicwrites::{AllowOverwrite, AtomicFile};

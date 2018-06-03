@@ -1,8 +1,8 @@
+mod dav;
 pub mod exports;
-mod singlefile;
 mod filesystem;
 mod http;
-mod dav;
+mod singlefile;
 mod utils;
 use errors::Fallible;
 use item::Item;

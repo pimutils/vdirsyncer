@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "cargo-clippy", allow(single_match))]
+
 extern crate atomicwrites;
 #[macro_use]
 extern crate failure;
@@ -8,16 +10,16 @@ extern crate uuid;
 extern crate vobject;
 #[macro_use]
 extern crate log;
-extern crate reqwest;
-extern crate sha2;
-extern crate quick_xml;
-extern crate url;
 extern crate chrono;
 extern crate env_logger;
+extern crate quick_xml;
+extern crate reqwest;
+extern crate sha2;
+extern crate url;
 
+pub mod errors;
 mod item;
 mod storage;
-pub mod errors;
 
 pub mod exports {
     use std::ffi::CStr;
