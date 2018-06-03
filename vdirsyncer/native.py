@@ -3,6 +3,8 @@ import shippai
 from . import exceptions
 from ._native import ffi, lib
 
+lib.vdirsyncer_init_logger()
+
 
 errors = shippai.Shippai(ffi, lib)
 

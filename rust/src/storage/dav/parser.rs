@@ -37,7 +37,7 @@ impl<T: BufRead> ListingParser<T> {
     fn next_response(&mut self) -> Fallible<Option<Response>> {
         let mut buf = vec![];
 
-        #[derive(Clone, Copy)]
+        #[derive(Debug, Clone, Copy)]
         enum State {
             Outer,
             Response,
@@ -62,6 +62,8 @@ impl<T: BufRead> ListingParser<T> {
                         },
                         _ => ()
                     }
+
+                    debug!("State: {:?}", state);
                 },
                 (_, Event::Text(e)) => {
                     let txt = e.unescape_and_decode(&self.reader)?;

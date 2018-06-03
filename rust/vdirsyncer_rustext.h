@@ -104,6 +104,8 @@ Box_Storage *vdirsyncer_init_http(const char *url,
                                   const char *verify_cert,
                                   const char *auth_cert);
 
+void vdirsyncer_init_logger(void);
+
 Box_Storage *vdirsyncer_init_singlefile(const char *path);
 
 Item *vdirsyncer_item_from_raw(const char *s);

@@ -14,7 +14,7 @@ use url::Url;
 use super::Storage;
 use super::utils::generate_href;
 use errors::*;
-use super::http::{HttpConfig,handle_http_error};
+use super::http::{HttpConfig,handle_http_error,send_request};
 
 use item::Item;
 
@@ -47,6 +47,7 @@ impl DavStorage {
 }
 
 impl DavStorage {
+    #[inline]
     pub fn get_http(&mut self) -> Fallible<reqwest::Client> {
         if let Some(ref http) = self.http {
             return Ok(http.clone());
@@ -56,6 +57,12 @@ impl DavStorage {
         Ok(client)
     }
 
+    #[inline]
+    pub fn send_request(&mut self, request: reqwest::Request) -> Fallible<reqwest::Response> {
+        let url = request.url().to_string();
+        handle_http_error(&url, send_request(&self.get_http()?, request)?)
+    }
+
     pub fn get(&mut self, href: &str) -> Fallible<(Item, String)> {
         let base = Url::parse(&self.url)?;
         let url = base.join(href)?;
@@ -63,7 +70,8 @@ impl DavStorage {
             Err(Error::ItemNotFound { href: href.to_owned() })?;
         }
 
-        let mut response = handle_http_error(href, self.get_http()?.get(url).send()?)?;
+        let request = self.get_http()?.get(url).build()?;
+        let mut response = self.send_request(request)?;
         let mut s = String::new();
         response.read_to_string(&mut s)?;
         let etag = match response.headers().get::<ETag>() {
@@ -75,9 +83,14 @@ impl DavStorage {
 
     pub fn list<'a>(&'a mut self, mimetype_contains: &'a str)
         -> Fallible<Box<Iterator<Item = (String, String)> + 'a>> {
-        let response = self.get_http()?
+
+        let mut headers = reqwest::header::Headers::new();
+        headers.set(ContentType::xml());
+        headers.set_raw("Depth", "1");
+
+        let request = self.get_http()?
             .request(propfind(), &self.url)
-            .header(ContentType::xml())
+            .headers(headers)
             .body(r#"<?xml version="1.0" encoding="utf-8" ?>
                 <D:propfind xmlns:D="DAV:">
                     <D:prop>
@@ -86,7 +99,8 @@ impl DavStorage {
                         <D:getetag/>
                     </D:prop>
                 </D:propfind>"#)
-            .send()?.error_for_status()?;
+            .build()?;
+        let response = self.send_request(request)?;
         self.parse_prop_response(response, mimetype_contains)
     }
 
@@ -126,7 +140,7 @@ impl DavStorage {
         }
 
         let raw = item.get_raw();
-        let response = request.body(raw).send()?;
+        let response = send_request(&self.get_http()?, request.body(raw).build()?)?;
 
         match (etag, response.status()) {
             (Some(_), reqwest::StatusCode::PreconditionFailed) => Err(Error::WrongEtag { href: href.to_owned() })?,
@@ -160,10 +174,11 @@ impl DavStorage {
     fn delete(&mut self, href: &str, etag: &str) -> Fallible<()> {
         let base = Url::parse(&self.url)?;
         let url = base.join(href)?;
-        let response = self.get_http()?
+        let request = self.get_http()?
             .request(reqwest::Method::Delete, url)
             .header(IfMatch::Items(vec![EntityTag::new(false, etag.trim_matches('"').to_owned())]))
-            .send()?;
+            .build()?;
+        let response = send_request(&self.get_http()?, request)?;
 
         if response.status() == reqwest::StatusCode::PreconditionFailed {
             Err(Error::WrongEtag { href: href.to_owned() })?;
@@ -293,11 +308,12 @@ impl Storage for CaldavStorage {
                      <C:filter>{}</C:filter>\
                      </C:calendar-query>", filter);
 
-                let response = self.inner.get_http()?
+                let request = self.inner.get_http()?
                     .request(report(), &self.inner.url)
                     .headers(headers.clone())
                     .body(data)
-                    .send()?.error_for_status()?;
+                    .build()?;
+                let response = self.inner.send_request(request)?;
                 rv.extend(self.inner.parse_prop_response(response, "text/calendar")?);
             }
 

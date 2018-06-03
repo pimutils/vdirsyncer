@@ -13,6 +13,7 @@ extern crate sha2;
 extern crate quick_xml;
 extern crate url;
 extern crate chrono;
+extern crate env_logger;
 
 mod item;
 mod storage;
@@ -28,5 +29,10 @@ pub mod exports {
     #[no_mangle]
     pub unsafe extern "C" fn vdirsyncer_free_str(s: *const c_char) {
         CStr::from_ptr(s);
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn vdirsyncer_init_logger() {
+        ::env_logger::init();
     }
 }

@@ -26,6 +26,9 @@ export RUST_BACKTRACE := $(CI)
 # Whether to generate coverage data while running tests.
 export COVERAGE := $(CI)
 
+# Log everything
+export RUST_LOG := vdirsyncer_rustext=debug
+
 # Additional arguments that should be passed to py.test.
 PYTEST_ARGS =
 

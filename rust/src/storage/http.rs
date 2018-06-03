@@ -18,6 +18,21 @@ pub type Username = String;
 pub type Password = String;
 pub type Auth = (Username, Password);
 
+/// Wrapper around Client.execute to enable logging
+#[inline]
+pub fn send_request(client: &reqwest::Client, request: reqwest::Request) -> Fallible<reqwest::Response> {
+    debug!("> {} {}", request.method(), request.url());
+    for header in request.headers().iter() {
+        debug!("> {}: {}", header.name(), header.value_string());
+    }
+    debug!("> {:?}", request.body());
+    debug!("> ---");
+    let response = client.execute(request)?;
+    debug!("< {:?}", response.status());
+    //if let Ok(text) = response.text() { debug!("< {}", text); }
+    Ok(response)
+}
+
 
 #[derive(Clone)]
 pub struct HttpConfig {
@@ -85,7 +100,7 @@ impl Storage for HttpStorage {
     fn list<'a>(&'a mut self) -> Fallible<Box<Iterator<Item = (String, String)> + 'a>> {
         let client = self.http_config.clone().into_connection()?.build()?;
 
-        let mut response = client.get(&self.url).send()?.error_for_status()?;
+        let mut response = handle_http_error(&self.url, client.get(&self.url).send()?)?;
         let s = response.text()?;
 
         let mut new_cache = BTreeMap::new();
@@ -154,11 +169,16 @@ pub mod exports {
     }
 }
 
-pub fn handle_http_error(href: &str, r: reqwest::Response) -> Fallible<reqwest::Response> {
+pub fn handle_http_error(href: &str, mut r: reqwest::Response) -> Fallible<reqwest::Response> {
+    if !r.status().is_success() {
+        debug!("< Error response, dumping body:");
+        debug!("< {:?}", r.text());
+    }
+
     match r.status() {
-        reqwest::StatusCode::NotFound => Err(Error::ItemNotFound { href: href.to_owned() }.into()),
-        reqwest::StatusCode::UnsupportedMediaType => Err(Error::UnsupportedVobject { href: href.to_owned() }.into()),
-        _ => r.error_for_status().map_err(|e| e.into())
+        reqwest::StatusCode::NotFound => Err(Error::ItemNotFound { href: href.to_owned() })?,
+        reqwest::StatusCode::UnsupportedMediaType => Err(Error::UnsupportedVobject { href: href.to_owned() })?,
+        _ => Ok(r.error_for_status()?)
     }
 }
 
