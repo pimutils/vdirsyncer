@@ -240,7 +240,8 @@ fn split_vcalendar(mut vcalendar: vobject::Component) -> Fallible<Vec<vobject::C
     for component in subcomponents {
         let uid = component.get_only("UID").cloned();
 
-        let mut wrapper = match uid.as_ref()
+        let mut wrapper = match uid
+            .as_ref()
             .and_then(|u| by_uid.remove(&u.value_as_string()))
         {
             Some(x) => x,

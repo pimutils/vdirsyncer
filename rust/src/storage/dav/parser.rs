@@ -58,7 +58,8 @@ impl<T: BufRead> ListingParser<T> {
         let mut current_response = Response::new();
 
         loop {
-            match self.reader
+            match self
+                .reader
                 .read_namespaced_event(&mut buf, &mut self.ns_buf)?
             {
                 (ns, Event::Start(ref e)) => {

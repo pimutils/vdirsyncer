@@ -91,7 +91,8 @@ impl DavStorage {
         headers.set(ContentType::xml());
         headers.set_raw("Depth", "1");
 
-        let request = self.get_http()?
+        let request = self
+            .get_http()?
             .request(propfind(), &self.url)
             .headers(headers)
             .body(
@@ -203,7 +204,8 @@ impl DavStorage {
     fn delete(&mut self, href: &str, etag: &str) -> Fallible<()> {
         let base = Url::parse(&self.url)?;
         let url = base.join(href)?;
-        let request = self.get_http()?
+        let request = self
+            .get_http()?
             .request(reqwest::Method::Delete, url)
             .header(IfMatch::Items(vec![EntityTag::new(
                 false,
@@ -347,7 +349,8 @@ impl Storage for CaldavStorage {
                      <C:filter>{}</C:filter>\
                      </C:calendar-query>", filter);
 
-                let request = self.inner
+                let request = self
+                    .inner
                     .get_http()?
                     .request(report(), &self.inner.url)
                     .headers(headers.clone())
