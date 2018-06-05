@@ -6,11 +6,11 @@ references:
   restore_caches: &restore_caches
     restore_cache:
       keys:
-        - cache-{{ arch }}-{{ .Branch }}
+        - cache2-{{ arch }}-{{ .Branch }}
 
   save_caches: &save_caches
     save_cache:
-      key: cache-{{ arch }}-{{ .Branch }}
+      key: cache2-{{ arch }}-{{ .Branch }}
       paths:
         - "rust/target/"
         - "~/.cargo/"
