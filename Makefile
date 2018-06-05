@@ -99,11 +99,8 @@ install-test: install-servers
 
 install-style: install-docs
 	pip install -U flake8 flake8-import-order 'flake8-bugbear>=17.3.0'
-	cargo install-update --help > /dev/null || cargo install --force cargo-update
-	# cargo +nightly install-update -i clippy
+	rustup component add rustfmt-preview
 	cargo install --force --git https://github.com/rust-lang-nursery/rust-clippy clippy
-	cargo +nightly install-update -i rustfmt-nightly
-	cargo +nightly install-update -i cargo-update
 
 style:
 	flake8
@@ -111,7 +108,7 @@ style:
 	! git grep -i 'text/icalendar' */*
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
 	cd rust/ && cargo +nightly clippy
-	cd rust/ && cargo +nightly fmt --all -- --write-mode=diff
+	cd rust/ && cargo +nightly fmt --all -- --check
 
 install-docs:
 	pip install -Ur docs-requirements.txt
