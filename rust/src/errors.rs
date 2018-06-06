@@ -10,40 +10,39 @@ pub enum Error {
     ItemUnparseable,
 
     #[fail(display = "Unexpected version {}, expected {}", found, expected)]
-    UnexpectedVobjectVersion {
-        found: String,
-        expected: String,
-    },
+    UnexpectedVobjectVersion { found: String, expected: String },
 
     #[fail(display = "Unexpected component {}, expected {}", found, expected)]
-    UnexpectedVobject {
-        found: String,
-        expected: String,
-    },
+    UnexpectedVobject { found: String, expected: String },
 
     #[fail(display = "Item '{}' not found", href)]
-    ItemNotFound {
-        href: String,
-    },
+    ItemNotFound { href: String },
 
     #[fail(display = "The href '{}' is already taken", href)]
-    ItemAlreadyExisting {
-        href: String,
-    },
+    ItemAlreadyExisting { href: String },
 
-    #[fail(display = "A wrong etag for '{}' was provided. Another client's requests might \
-                      conflict with vdirsyncer.",
-           href)]
-    WrongEtag {
-        href: String,
-    },
+    #[fail(
+        display = "A wrong etag for '{}' was provided. Another client's requests might \
+                   conflict with vdirsyncer.",
+        href
+    )]
+    WrongEtag { href: String },
 
-    #[fail(display = "The mtime for '{}' has unexpectedly changed. Please close other programs\
-                      accessing this file.",
-           filepath)]
-    MtimeMismatch {
-        filepath: String,
-    },
+    #[fail(
+        display = "The mtime for '{}' has unexpectedly changed. Please close other programs\
+                   accessing this file.",
+        filepath
+    )]
+    MtimeMismatch { filepath: String },
+
+    #[fail(
+        display = "The item '{}' has been rejected by the server because the vobject type was unexpected",
+        href
+    )]
+    UnsupportedVobject { href: String },
+
+    #[fail(display = "This storage is read-only.")]
+    ReadOnly,
 }
 
 pub unsafe fn export_result<V>(

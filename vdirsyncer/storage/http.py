@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import urllib.parse as urlparse
-
 from .base import Storage
-from .. import exceptions
-from ..http import USERAGENT, prepare_auth, \
-    prepare_client_cert, prepare_verify, request
-from ..vobject import Item, split_collection
+from ._rust import RustStorageMixin
+from .. import exceptions, native
+from ..http import USERAGENT
 
 
-class HttpStorage(Storage):
+class HttpStorage(RustStorageMixin, Storage):
     storage_name = 'http'
     read_only = True
     _repr_attributes = ('username', 'url')
@@ -18,49 +15,27 @@ class HttpStorage(Storage):
     # Required for tests.
     _ignore_uids = True
 
-    def __init__(self, url, username='', password='', verify=True, auth=None,
-                 useragent=USERAGENT, verify_fingerprint=None, auth_cert=None,
-                 **kwargs):
+    def __init__(self, url, username='', password='', useragent=USERAGENT,
+                 verify_cert=None, auth_cert=None, **kwargs):
+        if kwargs.get('collection') is not None:
+            raise exceptions.UserError('HttpStorage does not support '
+                                       'collections.')
+
+        assert auth_cert is None, "not yet supported"
+
         super(HttpStorage, self).__init__(**kwargs)
 
-        self._settings = {
-            'auth': prepare_auth(auth, username, password),
-            'cert': prepare_client_cert(auth_cert),
-            'latin1_fallback': False,
-        }
-        self._settings.update(prepare_verify(verify, verify_fingerprint))
+        self._native_storage = native.ffi.gc(
+            native.lib.vdirsyncer_init_http(
+                url.encode('utf-8'),
+                (username or "").encode('utf-8'),
+                (password or "").encode('utf-8'),
+                (useragent or "").encode('utf-8'),
+                (verify_cert or "").encode('utf-8'),
+                (auth_cert or "").encode('utf-8')
+            ),
+            native.lib.vdirsyncer_storage_free
+        )
 
-        self.username, self.password = username, password
-        self.useragent = useragent
-
-        collection = kwargs.get('collection')
-        if collection is not None:
-            url = urlparse.urljoin(url, collection)
+        self.username = username
         self.url = url
-        self.parsed_url = urlparse.urlparse(self.url)
-
-    def _default_headers(self):
-        return {'User-Agent': self.useragent}
-
-    def list(self):
-        r = request('GET', self.url, headers=self._default_headers(),
-                    **self._settings)
-        self._items = {}
-
-        for item in split_collection(r.text):
-            item = Item(item)
-            if self._ignore_uids:
-                item = item.with_uid(item.hash)
-
-            self._items[item.ident] = item, item.hash
-
-        return ((href, etag) for href, (item, etag) in self._items.items())
-
-    def get(self, href):
-        if self._items is None:
-            self.list()
-
-        try:
-            return self._items[href]
-        except KeyError:
-            raise exceptions.NotFoundError(href)

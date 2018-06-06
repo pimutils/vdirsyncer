@@ -20,8 +20,14 @@ export ETESYNC_TESTS := false
 # systemwide.
 export CI := false
 
+# Enable debug symbols and backtrace printing for rust lib
+export RUST_BACKTRACE := $(CI)
+
 # Whether to generate coverage data while running tests.
 export COVERAGE := $(CI)
+
+# Log everything
+export RUST_LOG := vdirsyncer_rustext=debug
 
 # Additional arguments that should be passed to py.test.
 PYTEST_ARGS =
@@ -93,10 +99,8 @@ install-test: install-servers
 
 install-style: install-docs
 	pip install -U flake8 flake8-import-order 'flake8-bugbear>=17.3.0'
-	which cargo-install-update || cargo install cargo-update
-	cargo +nightly install-update -i clippy
-	cargo +nightly install-update -i rustfmt-nightly
-	cargo +nightly install-update -i cargo-update
+	rustup component add rustfmt-preview
+	cargo install --force --git https://github.com/rust-lang-nursery/rust-clippy clippy
 
 style:
 	flake8
@@ -104,7 +108,7 @@ style:
 	! git grep -i 'text/icalendar' */*
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
 	cd rust/ && cargo +nightly clippy
-	cd rust/ && cargo +nightly fmt --all -- --write-mode=diff
+	cd rust/ && cargo +nightly fmt --all -- --check
 
 install-docs:
 	pip install -Ur docs-requirements.txt
@@ -149,6 +153,11 @@ install-rust:
 	rustup update nightly
 
 rust/vdirsyncer_rustext.h:
-	cbindgen -c rust/cbindgen.toml rust/ > $@
+	cd rust/ && cargo build # hack to work around cbindgen bugs
+	CARGO_EXPAND_TARGET_DIR=rust/target/ cbindgen -c rust/cbindgen.toml rust/ > $@
 
-.PHONY: docs rust/vdirsyncer_rustext.h
+docker/xandikos:
+	docker build -t vdirsyncer/xandikos:0.0.1 $@
+	docker push vdirsyncer/xandikos:0.0.1
+
+.PHONY: docs rust/vdirsyncer_rustext.h docker/xandikos

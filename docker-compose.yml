@@ -4,8 +4,15 @@ services:
     nextcloud:
         image: nextcloud
         ports:
-            - '8080:80'
+            - '5000:80'
         environment:
             - SQLITE_DATABASE=nextcloud
             - NEXTCLOUD_ADMIN_USER=asdf
             - NEXTCLOUD_ADMIN_PASSWORD=asdf
+
+    xandikos:
+        build:
+            context: .
+            dockerfile: docker/xandikos/Dockerfile
+        ports:
+            - '5001:5001'

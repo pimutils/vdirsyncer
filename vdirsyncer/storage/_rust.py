@@ -46,7 +46,7 @@ class RustStorageMixin:
             result, native.lib.vdirsyncer_free_storage_upload_result)
         href = native.string_rv(result.href)
         etag = native.string_rv(result.etag)
-        return href, etag
+        return href, etag or None
 
     def update(self, href, item, etag):
         href = href.encode('utf-8')
@@ -54,7 +54,7 @@ class RustStorageMixin:
         e = native.get_error_pointer()
         etag = self._native('update')(href, item._native, etag, e)
         native.check_error(e)
-        return native.string_rv(etag)
+        return native.string_rv(etag) or None
 
     def delete(self, href, etag):
         href = href.encode('utf-8')

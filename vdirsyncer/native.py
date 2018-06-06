@@ -3,6 +3,8 @@ import shippai
 from . import exceptions
 from ._native import ffi, lib
 
+lib.vdirsyncer_init_logger()
+
 
 errors = shippai.Shippai(ffi, lib)
 
@@ -31,3 +33,7 @@ def check_error(e):
         raise exceptions.AlreadyExistingError(e)
     except errors.Error.WrongEtag as e:
         raise exceptions.WrongEtagError(e)
+    except errors.Error.ReadOnly as e:
+        raise exceptions.ReadOnlyError(e)
+    except errors.Error.UnsupportedVobject as e:
+        raise exceptions.UnsupportedVobjectError(e)

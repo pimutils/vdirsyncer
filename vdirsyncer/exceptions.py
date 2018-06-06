@@ -83,3 +83,7 @@ class CollectionRequired(Error):
 
 class VobjectParseError(Error, ValueError):
     '''The parsed vobject is invalid.'''
+
+
+class UnsupportedVobjectError(Error, ValueError):
+    '''The server rejected the vobject because of its type'''

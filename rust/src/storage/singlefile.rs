@@ -1,11 +1,11 @@
-use std::path::{Path, PathBuf};
-use std::collections::{BTreeMap, BTreeSet};
-use std::collections::btree_map::Entry::*;
-use std::fs::{metadata, File};
-use std::io::{Read, Write};
-use std::time::SystemTime;
 use super::Storage;
 use errors::*;
+use std::collections::btree_map::Entry::*;
+use std::collections::{BTreeMap, BTreeSet};
+use std::fs::{metadata, File};
+use std::io::{Read, Write};
+use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 use vobject;
 
 use atomicwrites::{AllowOverwrite, AtomicFile};
@@ -180,7 +180,7 @@ impl Storage for SinglefileStorage {
     }
 }
 
-fn split_collection(mut input: &str) -> Fallible<Vec<vobject::Component>> {
+pub fn split_collection(mut input: &str) -> Fallible<Vec<vobject::Component>> {
     let mut rv = vec![];
     while !input.is_empty() {
         let (component, remainder) =
@@ -240,7 +240,8 @@ fn split_vcalendar(mut vcalendar: vobject::Component) -> Fallible<Vec<vobject::C
     for component in subcomponents {
         let uid = component.get_only("UID").cloned();
 
-        let mut wrapper = match uid.as_ref()
+        let mut wrapper = match uid
+            .as_ref()
             .and_then(|u| by_uid.remove(&u.value_as_string()))
         {
             Some(x) => x,

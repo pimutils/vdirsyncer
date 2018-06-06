@@ -3,15 +3,14 @@ version: 2
 references:
   basic_env: &basic_env
     CI: true
-    DAV_SERVER: xandikos
   restore_caches: &restore_caches
     restore_cache:
       keys:
-        - cache-{{ arch }}-{{ .Branch }}
+        - cache2-{{ arch }}-{{ .Branch }}
 
   save_caches: &save_caches
     save_cache:
-      key: cache-{{ arch }}-{{ .Branch }}
+      key: cache2-{{ arch }}-{{ .Branch }}
       paths:
         - "rust/target/"
         - "~/.cargo/"
@@ -87,6 +86,23 @@ jobs:
       - run: make -e install-dev install-test
       - *save_caches
 
+      - run: make -e storage-test
+
+  xandikos:
+    docker:
+      - image: circleci/python:3.6
+        environment:
+          <<: *basic_env
+          DAV_SERVER: xandikos
+      - image: vdirsyncer/xandikos:0.0.1
+    steps:
+      - checkout
+      - *restore_caches
+      - *basic_setup
+      - run: make -e install-dev install-test
+      - *save_caches
+
+      - run: wget -O - --retry-connrefused http://localhost:5001/
       - run: make -e storage-test
 
   style:
@@ -178,22 +194,6 @@ jobs:
 
       - run: make -e test
 
-  py36-release-radicale:
-    docker:
-      - image: circleci/python:3.6
-        environment:
-          <<: *basic_env
-          REQUIREMENTS: release
-          DAV_SERVER: radicale
-    steps:
-      - checkout
-      - *restore_caches
-      - *basic_setup
-      - run: make -e install-dev install-test
-      - *save_caches
-
-      - run: make -e test
-
   py36-devel:
     docker:
       - image: circleci/python:3.6
@@ -232,6 +232,7 @@ workflows:
       - fastmail
       - icloud
       - davical
+      - xandikos
       - style
       - py34-minimal
       - py34-release

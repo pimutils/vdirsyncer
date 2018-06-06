@@ -11,10 +11,10 @@ import requests
 from requests.exceptions import HTTPError
 
 from .base import Storage, normalize_meta_value
-from .. import exceptions, http, utils
+from ._rust import RustStorageMixin
+from .. import exceptions, http, native, utils
 from ..http import USERAGENT, prepare_auth, \
     prepare_client_cert, prepare_verify
-from ..vobject import Item
 
 
 dav_logger = logging.getLogger(__name__)
@@ -39,22 +39,6 @@ def _contains_quoted_reserved_chars(x):
             dav_logger.debug('Unsafe character: {!r}'.format(y))
             return True
     return False
-
-
-def _assert_multistatus_success(r):
-    # Xandikos returns a multistatus on PUT.
-    try:
-        root = _parse_xml(r.content)
-    except InvalidXMLResponse:
-        return
-    for status in root.findall('.//{DAV:}status'):
-        parts = status.text.strip().split()
-        try:
-            st = int(parts[1])
-        except (ValueError, IndexError):
-            continue
-        if st < 200 or st >= 400:
-            raise HTTPError('Server error: {}'.format(st))
 
 
 def _normalize_href(base, href):
@@ -396,7 +380,7 @@ class DAVSession(object):
         }
 
 
-class DAVStorage(Storage):
+class DAVStorage(RustStorageMixin, Storage):
     # the file extension of items. Useful for testing against radicale.
     fileext = None
     # mimetype of items
@@ -443,199 +427,8 @@ class DAVStorage(Storage):
     def _normalize_href(self, *args, **kwargs):
         return _normalize_href(self.session.url, *args, **kwargs)
 
-    def _get_href(self, item):
-        href = utils.generate_href(item.ident)
-        return self._normalize_href(href + self.fileext)
-
     def _is_item_mimetype(self, mimetype):
         return _fuzzy_matches_mimetype(self.item_mimetype, mimetype)
-
-    def get(self, href):
-        ((actual_href, item, etag),) = self.get_multi([href])
-        assert href == actual_href
-        return item, etag
-
-    def get_multi(self, hrefs):
-        hrefs = set(hrefs)
-        href_xml = []
-        for href in hrefs:
-            if href != self._normalize_href(href):
-                raise exceptions.NotFoundError(href)
-            href_xml.append('<D:href>{}</D:href>'.format(href))
-        if not href_xml:
-            return ()
-
-        data = self.get_multi_template \
-            .format(hrefs='\n'.join(href_xml)).encode('utf-8')
-        response = self.session.request(
-            'REPORT',
-            '',
-            data=data,
-            headers=self.session.get_default_headers()
-        )
-        root = _parse_xml(response.content)  # etree only can handle bytes
-        rv = []
-        hrefs_left = set(hrefs)
-        for href, etag, prop in self._parse_prop_responses(root):
-            raw = prop.find(self.get_multi_data_query)
-            if raw is None:
-                dav_logger.warning('Skipping {}, the item content is missing.'
-                                   .format(href))
-                continue
-
-            raw = raw.text or u''
-
-            if isinstance(raw, bytes):
-                raw = raw.decode(response.encoding)
-            if isinstance(etag, bytes):
-                etag = etag.decode(response.encoding)
-
-            try:
-                hrefs_left.remove(href)
-            except KeyError:
-                if href in hrefs:
-                    dav_logger.warning('Server sent item twice: {}'
-                                       .format(href))
-                else:
-                    dav_logger.warning('Server sent unsolicited item: {}'
-                                       .format(href))
-            else:
-                rv.append((href, Item(raw), etag))
-        for href in hrefs_left:
-            raise exceptions.NotFoundError(href)
-        return rv
-
-    def _put(self, href, item, etag):
-        headers = self.session.get_default_headers()
-        headers['Content-Type'] = self.item_mimetype
-        if etag is None:
-            headers['If-None-Match'] = '*'
-        else:
-            headers['If-Match'] = etag
-
-        response = self.session.request(
-            'PUT',
-            href,
-            data=item.raw.encode('utf-8'),
-            headers=headers
-        )
-
-        _assert_multistatus_success(response)
-
-        # The server may not return an etag under certain conditions:
-        #
-        #   An origin server MUST NOT send a validator header field (Section
-        #   7.2), such as an ETag or Last-Modified field, in a successful
-        #   response to PUT unless the request's representation data was saved
-        #   without any transformation applied to the body (i.e., the
-        #   resource's new representation data is identical to the
-        #   representation data received in the PUT request) and the validator
-        #   field value reflects the new representation.
-        #
-        # -- https://tools.ietf.org/html/rfc7231#section-4.3.4
-        #
-        # In such cases we return a constant etag. The next synchronization
-        # will then detect an etag change and will download the new item.
-        etag = response.headers.get('etag', None)
-        href = self._normalize_href(response.url)
-        return href, etag
-
-    def update(self, href, item, etag):
-        if etag is None:
-            raise ValueError('etag must be given and must not be None.')
-        href, etag = self._put(self._normalize_href(href), item, etag)
-        return etag
-
-    def upload(self, item):
-        href = self._get_href(item)
-        return self._put(href, item, None)
-
-    def delete(self, href, etag):
-        href = self._normalize_href(href)
-        headers = self.session.get_default_headers()
-        headers.update({
-            'If-Match': etag
-        })
-
-        self.session.request(
-            'DELETE',
-            href,
-            headers=headers
-        )
-
-    def _parse_prop_responses(self, root, handled_hrefs=None):
-        if handled_hrefs is None:
-            handled_hrefs = set()
-        for response in root.iter('{DAV:}response'):
-            href = response.find('{DAV:}href')
-            if href is None:
-                dav_logger.error('Skipping response, href is missing.')
-                continue
-
-            href = self._normalize_href(href.text)
-
-            if href in handled_hrefs:
-                # Servers that send duplicate hrefs:
-                # - Zimbra
-                #   https://github.com/pimutils/vdirsyncer/issues/88
-                # - Davmail
-                #   https://github.com/pimutils/vdirsyncer/issues/144
-                dav_logger.warning('Skipping identical href: {!r}'
-                                   .format(href))
-                continue
-
-            props = response.findall('{DAV:}propstat/{DAV:}prop')
-            if props is None or not len(props):
-                dav_logger.debug('Skipping {!r}, properties are missing.'
-                                 .format(href))
-                continue
-            else:
-                props = _merge_xml(props)
-
-            if props.find('{DAV:}resourcetype/{DAV:}collection') is not None:
-                dav_logger.debug('Skipping {!r}, is collection.'.format(href))
-                continue
-
-            etag = getattr(props.find('{DAV:}getetag'), 'text', '')
-            if not etag:
-                dav_logger.debug('Skipping {!r}, etag property is missing.'
-                                 .format(href))
-                continue
-
-            contenttype = getattr(props.find('{DAV:}getcontenttype'),
-                                  'text', None)
-            if not self._is_item_mimetype(contenttype):
-                dav_logger.debug('Skipping {!r}, {!r} != {!r}.'
-                                 .format(href, contenttype,
-                                         self.item_mimetype))
-                continue
-
-            handled_hrefs.add(href)
-            yield href, etag, props
-
-    def list(self):
-        headers = self.session.get_default_headers()
-        headers['Depth'] = '1'
-
-        data = '''<?xml version="1.0" encoding="utf-8" ?>
-            <D:propfind xmlns:D="DAV:">
-                <D:prop>
-                    <D:resourcetype/>
-                    <D:getcontenttype/>
-                    <D:getetag/>
-                </D:prop>
-            </D:propfind>
-            '''.encode('utf-8')
-
-        # We use a PROPFIND request instead of addressbook-query due to issues
-        # with Zimbra. See https://github.com/pimutils/vdirsyncer/issues/83
-        response = self.session.request('PROPFIND', '', data=data,
-                                        headers=headers)
-        root = _parse_xml(response.content)
-
-        rv = self._parse_prop_responses(root)
-        for href, etag, _prop in rv:
-            yield href, etag
 
     def get_meta(self, key):
         try:
@@ -734,7 +527,7 @@ class CalDAVStorage(DAVStorage):
         if not isinstance(item_types, (list, tuple)):
             raise exceptions.UserError('item_types must be a list.')
 
-        self.item_types = tuple(item_types)
+        self.item_types = tuple(x.upper() for x in item_types)
         if (start_date is None) != (end_date is None):
             raise exceptions.UserError('If start_date is given, '
                                        'end_date has to be given too.')
@@ -749,77 +542,22 @@ class CalDAVStorage(DAVStorage):
                  if isinstance(end_date, (bytes, str))
                  else end_date)
 
-    @staticmethod
-    def _get_list_filters(components, start, end):
-        caldavfilter = '''
-            <C:comp-filter name="VCALENDAR">
-                <C:comp-filter name="{component}">
-                    {timefilter}
-                </C:comp-filter>
-            </C:comp-filter>
-            '''
-
-        timefilter = ''
-
-        if start is not None and end is not None:
-            start = start.strftime(CALDAV_DT_FORMAT)
-            end = end.strftime(CALDAV_DT_FORMAT)
-
-            timefilter = ('<C:time-range start="{start}" end="{end}"/>'
-                          .format(start=start, end=end))
-            if not components:
-                components = ('VTODO', 'VEVENT')
-
-        for component in components:
-            yield caldavfilter.format(component=component,
-                                      timefilter=timefilter)
-
-    def list(self):
-        caldavfilters = list(self._get_list_filters(
-            self.item_types,
-            self.start_date,
-            self.end_date
-        ))
-        if not caldavfilters:
-            # If we don't have any filters (which is the default), taking the
-            # risk of sending a calendar-query is not necessary. There doesn't
-            # seem to be a widely-usable way to send calendar-queries with the
-            # same semantics as a PROPFIND request... so why not use PROPFIND
-            # instead?
-            #
-            # See https://github.com/dmfs/tasks/issues/118 for backstory.
-            yield from DAVStorage.list(self)
-            return
-
-        data = '''<?xml version="1.0" encoding="utf-8" ?>
-            <C:calendar-query xmlns:D="DAV:"
-                xmlns:C="urn:ietf:params:xml:ns:caldav">
-                <D:prop>
-                    <D:getcontenttype/>
-                    <D:getetag/>
-                </D:prop>
-                <C:filter>
-                {caldavfilter}
-                </C:filter>
-            </C:calendar-query>'''
-
-        headers = self.session.get_default_headers()
-        # https://github.com/pimutils/vdirsyncer/issues/166
-        # The default in CalDAV's calendar-queries is 0, but the examples use
-        # an explicit value of 1 for querying items. it is extremely unclear in
-        # the spec which values from WebDAV are actually allowed.
-        headers['Depth'] = '1'
-
-        handled_hrefs = set()
-
-        for caldavfilter in caldavfilters:
-            xml = data.format(caldavfilter=caldavfilter).encode('utf-8')
-            response = self.session.request('REPORT', '', data=xml,
-                                            headers=headers)
-            root = _parse_xml(response.content)
-            rv = self._parse_prop_responses(root, handled_hrefs)
-            for href, etag, _prop in rv:
-                yield href, etag
+        self._native_storage = native.ffi.gc(
+            native.lib.vdirsyncer_init_caldav(
+                kwargs['url'].encode('utf-8'),
+                kwargs.get('username', '').encode('utf-8'),
+                kwargs.get('password', '').encode('utf-8'),
+                kwargs.get('useragent', '').encode('utf-8'),
+                kwargs.get('verify_cert', '').encode('utf-8'),
+                kwargs.get('auth_cert', '').encode('utf-8'),
+                int(self.start_date.timestamp()) if self.start_date else -1,
+                int(self.end_date.timestamp()) if self.end_date else -1,
+                'VEVENT' in item_types,
+                'VJOURNAL' in item_types,
+                'VTODO' in item_types
+            ),
+            native.lib.vdirsyncer_storage_free
+        )
 
 
 class CardDAVStorage(DAVStorage):
@@ -839,3 +577,18 @@ class CardDAVStorage(DAVStorage):
             </C:addressbook-multiget>'''
 
     get_multi_data_query = '{urn:ietf:params:xml:ns:carddav}address-data'
+
+    def __init__(self, **kwargs):
+        self._native_storage = native.ffi.gc(
+            native.lib.vdirsyncer_init_carddav(
+                kwargs['url'].encode('utf-8'),
+                kwargs.get('username', '').encode('utf-8'),
+                kwargs.get('password', '').encode('utf-8'),
+                kwargs.get('useragent', '').encode('utf-8'),
+                kwargs.get('verify_cert', '').encode('utf-8'),
+                kwargs.get('auth_cert', '').encode('utf-8')
+            ),
+            native.lib.vdirsyncer_storage_free
+        )
+
+        super(CardDAVStorage, self).__init__(**kwargs)

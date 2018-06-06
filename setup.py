@@ -7,6 +7,7 @@ how to package vdirsyncer.
 '''
 
 
+import os
 from setuptools import Command, find_packages, setup
 
 milksnake = 'milksnake'
@@ -42,15 +43,19 @@ requirements = [
 
 
 def build_native(spec):
-    build = spec.add_external_build(
-        cmd=['cargo', 'build', '--release'],
-        path='./rust/'
-    )
+    cmd = ['cargo', 'build']
+    if os.environ.get('RUST_BACKTRACE', 'false') in ('true', '1', 'full'):
+        dylib_folder = 'target/debug'
+    else:
+        dylib_folder = 'target/release'
+        cmd.append('--release')
+
+    build = spec.add_external_build(cmd=cmd, path='./rust/')
 
     spec.add_cffi_module(
         module_path='vdirsyncer._native',
         dylib=lambda: build.find_dylib('vdirsyncer_rustext',
-                                       in_path='target/release'),
+                                       in_path=dylib_folder),
         header_filename='rust/vdirsyncer_rustext.h',
         # Rust bug: If thread-local storage is used, this flag is necessary
         # (mitsuhiko)
