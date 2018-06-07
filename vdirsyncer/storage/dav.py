@@ -33,45 +33,6 @@ _path_reserved_chars = frozenset(_generate_path_reserved_chars())
 del _generate_path_reserved_chars
 
 
-def _contains_quoted_reserved_chars(x):
-    for y in _path_reserved_chars:
-        if y in x:
-            dav_logger.debug('Unsafe character: {!r}'.format(y))
-            return True
-    return False
-
-
-def _normalize_href(base, href):
-    '''Normalize the href to be a path only relative to hostname and
-    schema.'''
-    orig_href = href
-    if not href:
-        raise ValueError(href)
-
-    x = urlparse.urljoin(base, href)
-    x = urlparse.urlsplit(x).path
-
-    # Encoding issues:
-    # - https://github.com/owncloud/contacts/issues/581
-    # - https://github.com/Kozea/Radicale/issues/298
-    old_x = None
-    while old_x is None or x != old_x:
-        if _contains_quoted_reserved_chars(x):
-            break
-        old_x = x
-        x = urlparse.unquote(x)
-
-    x = urlparse.quote(x, '/@%:')
-
-    if orig_href == x:
-        dav_logger.debug('Already normalized: {!r}'.format(x))
-    else:
-        dav_logger.debug('Normalized URL from {!r} to {!r}'
-                         .format(orig_href, x))
-
-    return x
-
-
 class InvalidXMLResponse(exceptions.InvalidResponse):
     pass
 
@@ -108,20 +69,6 @@ def _merge_xml(items):
     for item in items[1:]:
         rv.extend(item.getiterator())
     return rv
-
-
-def _fuzzy_matches_mimetype(strict, weak):
-    # different servers give different getcontenttypes:
-    # "text/vcard", "text/x-vcard", "text/x-vcard; charset=utf-8",
-    # "text/directory;profile=vCard", "text/directory",
-    # "text/vcard; charset=utf-8"
-    if strict is None or weak is None:
-        return True
-
-    mediatype, subtype = strict.split('/')
-    if subtype in weak:
-        return True
-    return False
 
 
 class Discover(object):
@@ -360,10 +307,6 @@ class DAVSession(object):
 
         self._session = requests.session()
 
-    @utils.cached_property
-    def parsed_url(self):
-        return urlparse.urlparse(self.url)
-
     def request(self, method, path, **kwargs):
         url = self.url
         if path:
@@ -423,9 +366,6 @@ class DAVStorage(RustStorageMixin, Storage):
         session, _ = cls.session_class.init_and_remaining_args(**kwargs)
         d = cls.discovery_class(session, kwargs)
         return d.create(collection)
-
-    def _normalize_href(self, *args, **kwargs):
-        return _normalize_href(self.session.url, *args, **kwargs)
 
     def _is_item_mimetype(self, mimetype):
         return _fuzzy_matches_mimetype(self.item_mimetype, mimetype)
