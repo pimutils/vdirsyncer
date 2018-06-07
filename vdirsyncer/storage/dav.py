@@ -367,9 +367,6 @@ class DAVStorage(RustStorageMixin, Storage):
         d = cls.discovery_class(session, kwargs)
         return d.create(collection)
 
-    def _is_item_mimetype(self, mimetype):
-        return _fuzzy_matches_mimetype(self.item_mimetype, mimetype)
-
     def get_meta(self, key):
         try:
             tagname, namespace = self._property_table[key]
