@@ -43,6 +43,12 @@ pub enum Error {
 
     #[fail(display = "This storage is read-only.")]
     ReadOnly,
+
+    #[fail(display = "The storage is incorrectly configured for discovery. {}", msg)]
+    BadDiscoveryConfig { msg: String },
+
+    #[fail(display = "The storage config is not directly pointing to a collection. {}", msg)]
+    BadCollectionConfig { msg: String }
 }
 
 pub unsafe fn export_result<V>(

@@ -33,36 +33,6 @@ class SingleFileStorage(RustStorageMixin, Storage):
         )
 
     @classmethod
-    def discover(cls, path, **kwargs):
-        if kwargs.pop('collection', None) is not None:
-            raise TypeError('collection argument must not be given.')
-
-        path = os.path.abspath(expand_path(path))
-        try:
-            path_glob = path % '*'
-        except TypeError:
-            # If not exactly one '%s' is present, we cannot discover
-            # collections because we wouldn't know which name to assign.
-            raise NotImplementedError()
-
-        placeholder_pos = path.index('%s')
-
-        for subpath in glob.iglob(path_glob):
-            if os.path.isfile(subpath):
-                args = dict(kwargs)
-                args['path'] = subpath
-
-                collection_end = (
-                    placeholder_pos +
-                    2 +  # length of '%s'
-                    len(subpath) - len(path)
-                )
-                collection = subpath[placeholder_pos:collection_end]
-                args['collection'] = collection
-
-                yield args
-
-    @classmethod
     def create_collection(cls, collection, **kwargs):
         path = os.path.abspath(expand_path(kwargs['path']))
 

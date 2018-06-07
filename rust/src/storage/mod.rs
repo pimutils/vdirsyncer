@@ -6,10 +6,26 @@ mod singlefile;
 mod utils;
 use errors::Fallible;
 use item::Item;
+use serde::{Serialize,Deserialize};
 
 type ItemAndEtag = (Item, String);
 
+pub trait StorageConfig: Serialize + Deserialize<'static> {
+    fn get_collection(&self) -> Option<String>;
+}
+
+pub trait ConfigurableStorage: Storage + Sized {
+    type Config: StorageConfig;
+
+    /// load storage from configuration
+    fn from_config(_config: Self::Config) -> Fallible<Self>;
+
+    /// discover collections
+    fn discover(_config: Self::Config) -> Fallible<Box<Iterator<Item = Self::Config>>>;
+}
+
 pub trait Storage {
+
     /// returns an iterator of `(href, etag)`
     fn list<'a>(&'a mut self) -> Fallible<Box<Iterator<Item = (String, String)> + 'a>>;
 

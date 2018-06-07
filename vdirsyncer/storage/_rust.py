@@ -2,6 +2,8 @@ from .. import native
 from ..vobject import Item
 from functools import partial
 
+import json
+
 
 class RustStorageMixin:
     _native_storage = None
@@ -10,6 +12,13 @@ class RustStorageMixin:
         return partial(
             getattr(native.lib, 'vdirsyncer_storage_{}'.format(name)),
             self._native_storage
+        )
+
+    @classmethod
+    def _static_native(cls, name):
+        return getattr(
+            native.lib,
+            'vdirsyncer_storage_{}_{}'.format(name, cls.storage_name)
         )
 
     def list(self):
@@ -70,3 +79,19 @@ class RustStorageMixin:
         e = native.get_error_pointer()
         self._native('flush')(e)
         native.check_error(e)
+
+    @classmethod
+    def discover(cls, **kwargs):
+        try:
+            discover = cls._static_native('discover')
+        except AttributeError:
+            raise NotImplementedError()
+
+        e = native.get_error_pointer()
+        rv = discover(
+            json.dumps(kwargs).encode('utf-8'),
+            e
+        )
+        native.check_error(e)
+        rv = native.string_rv(rv)
+        return json.loads(rv)

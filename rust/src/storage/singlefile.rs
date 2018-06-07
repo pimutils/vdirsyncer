@@ -1,4 +1,4 @@
-use super::Storage;
+use super::{Storage,ConfigurableStorage,StorageConfig};
 use errors::*;
 use std::collections::btree_map::Entry::*;
 use std::collections::{BTreeMap, BTreeSet};
@@ -7,6 +7,7 @@ use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use vobject;
+use glob::glob;
 
 use atomicwrites::{AllowOverwrite, AtomicFile};
 
@@ -177,6 +178,68 @@ impl Storage for SinglefileStorage {
         self.dirty_cache = false;
 
         Ok(())
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Config {
+    path: String,
+    collection: Option<String>
+}
+
+impl StorageConfig for Config {
+    fn get_collection(&self) -> Option<String> { self.collection.clone() }
+}
+
+impl ConfigurableStorage for SinglefileStorage {
+    type Config = Config;
+
+    fn from_config(config: Self::Config) -> Fallible<Self> {
+        Ok(SinglefileStorage::new(config.path))
+    }
+
+    fn discover(config: Self::Config) -> Fallible<Box<Iterator<Item = Self::Config>>> {
+        let basepath = config.path;
+
+        if config.collection.is_some() {
+            Err(Error::BadDiscoveryConfig {
+                msg: "collection argument must not be given when discovering collections/storages".to_owned()
+            })?;
+        }
+
+        if basepath.contains("*") {
+            Err(Error::BadDiscoveryConfig {
+                msg: "Wildcards are not allowed. Use '%s' exactly once as placeholder for the collection name.".to_owned()
+            })?;
+        }
+
+        let placeholder_start = {
+            let mut placeholders = basepath.match_indices("%s");
+            if let Some((i, _)) = placeholders.next() {
+                if placeholders.next().is_some() {
+                    Err(Error::BadDiscoveryConfig {
+                        msg: "Too many occurences of '%s'. May occur only once!".to_owned()
+                    })?;
+                }
+
+                i
+            } else {
+                Err(Error::BadDiscoveryConfig { msg: "Put '%s' into your 'path' as a wildcard.".to_owned() })?
+            }
+        };
+
+        Ok(Box::new(
+            glob(&basepath.replace("%s", "*"))?
+            .filter_map(move |entry| {
+                let path = entry.ok()?;
+                let path_str = path.to_str()?;
+                let collection_end = placeholder_start + 2 + path_str.len() - basepath.len();
+                Some(Config {
+                    path: path_str.to_owned(),
+                    collection: Some(path_str[placeholder_start..collection_end].to_owned())
+                })
+            })
+        ))
     }
 }
 
