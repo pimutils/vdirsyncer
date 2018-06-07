@@ -44,7 +44,7 @@ following things are installed:
 - Python 3.4+ and pip.
 - ``libxml`` and ``libxslt``
 - ``zlib``
-- `Rust <https://www.rust-lang.org/>`, the programming language, together with
+- `Rust <https://www.rust-lang.org/>`_, the programming language, together with
   its package manager ``cargo``.
 - Linux or OS X. **Windows is not supported**, see :gh:`535`.
 
