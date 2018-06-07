@@ -11,7 +11,7 @@ import click
 
 from click_threading import get_ui_worker
 
-from . import base, dav
+from . import base, olddav as dav
 from .. import exceptions
 from ..utils import checkdir, expand_path, open_graphical_browser
 
