@@ -13,7 +13,7 @@ from setuptools import Command, find_packages, setup
 requirements = [
     # https://github.com/mitsuhiko/click/issues/200
     'click>=5.0',
-    'click-log>=0.2.0, <0.3.0',
+    'click-log>=0.3.0, <0.4.0',
 
     # https://github.com/pimutils/vdirsyncer/issues/478
     'click-threading>=0.2',
