@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.16.6
 ==============
 
+*released on 13 June 2018*
+
 - **Packagers:** Documentation building no longer needs a working installation
   of vdirsyncer.
 
