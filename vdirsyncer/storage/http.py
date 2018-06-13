@@ -7,6 +7,7 @@ from ..http import USERAGENT
 
 
 class HttpStorage(RustStorageMixin, Storage):
+
     storage_name = 'http'
     read_only = True
     _repr_attributes = ('username', 'url')

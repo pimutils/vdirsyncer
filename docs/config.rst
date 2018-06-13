@@ -360,6 +360,7 @@ password. Neither are stored.
    Contacts for etesync.
 
    ::
+
        [storage example_for_etesync_contacts]
        email = ...
        secrets_dir = ...
@@ -377,6 +378,7 @@ password. Neither are stored.
    Calendars for etesync.
 
    ::
+
        [storage example_for_etesync_calendars]
        email = ...
        secrets_dir = ...

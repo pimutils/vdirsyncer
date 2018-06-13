@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class SingleFileStorage(RustStorageMixin, Storage):
+
     storage_name = 'singlefile'
     _repr_attributes = ('path',)
 
