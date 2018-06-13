@@ -161,19 +161,19 @@ CalDAV and CardDAV
 
     ::
 
-      [storage example_for_caldav]
-      type = "caldav"
-      #start_date = null
-      #end_date = null
-      #item_types = []
-      url = "..."
-      #username = ""
-      #password = ""
-      #verify = true
-      #auth = null
-      #useragent = "vdirsyncer/0.16.4"
-      #verify_fingerprint = null
-      #auth_cert = null
+        [storage example_for_caldav]
+        type = "caldav"
+        #start_date = null
+        #end_date = null
+        #item_types = []
+        url = "..."
+        #username = ""
+        #password = ""
+        #verify = true
+        #auth = null
+        #useragent = "vdirsyncer/0.16.4"
+        #verify_fingerprint = null
+        #auth_cert = null
 
     You can set a timerange to synchronize with the parameters ``start_date``
     and ``end_date``. Inside those parameters, you can use any Python
@@ -223,34 +223,36 @@ CalDAV and CardDAV
    CardDAV.
 
    ::
-       [storage example_for_carddav]
-       type = "carddav"
-       url = "..."
-       #username = ""
-       #password = ""
-       #verify = true
-       #auth = null
-       #useragent = "vdirsyncer/0.16.4"
-       #verify_fingerprint = null
-       #auth_cert = null
 
-    :param url: Base URL or an URL to an addressbook.
-    :param username: Username for authentication.
-    :param password: Password for authentication.
-    :param verify: Verify SSL certificate, default True. This can also be a
-        local path to a self-signed SSL certificate. See :ref:`ssl-tutorial`
-        for more information.
-    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
-        expected server certificate. See :ref:`ssl-tutorial` for more
-        information.
-    :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. The
-        default is preemptive Basic auth, sending credentials even if server
-        didn't request them. This saves from an additional roundtrip per
-        request. Consider setting ``guess`` if this causes issues with your
-        server.
-    :param auth_cert: Optional. Either a path to a certificate with a client
-        certificate and the key or a list of paths to the files with them.
-    :param useragent: Default ``vdirsyncer``.
+     [storage example_for_carddav]
+     type = "carddav"
+     url = "..."
+     #username = ""
+     #password = ""
+     #verify = true
+     #auth = null
+     #useragent = "vdirsyncer/0.16.4"
+     #verify_fingerprint = null
+     #auth_cert = null
+
+   :param url: Base URL or an URL to an addressbook.
+   :param username: Username for authentication.
+   :param password: Password for authentication.
+   :param verify: Verify SSL certificate, default True. This can also be a
+                  local path to a self-signed SSL certificate. See
+                  :ref:`ssl-tutorial` for more information.
+   :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the expected
+                              server certificate. See :ref:`ssl-tutorial` for
+                              more information.
+   :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. The
+                default is preemptive Basic auth, sending credentials even if
+                server didn't request them. This saves from an additional
+                roundtrip per request. Consider setting ``guess`` if this
+                causes issues with your server.
+   :param auth_cert: Optional. Either a path to a certificate with a client
+                     certificate and the key or a list of paths to the files
+                     with them.
+   :param useragent: Default ``vdirsyncer``.
 
 Google
 ++++++
@@ -321,9 +323,9 @@ or write anything to it.
 
    Please refer to :storage:`caldav` regarding the ``item_types`` and timerange parameters.
 
-    :param token_file: A filepath where access tokens are stored.
-    :param client_id/client_secret: OAuth credentials, obtained from the Google
-        API Manager.
+   :param token_file: A filepath where access tokens are stored.
+   :param client_id/client_secret: OAuth credentials, obtained from the Google
+                                   API Manager.
 
 .. storage:: google_contacts
 
@@ -337,9 +339,9 @@ or write anything to it.
        client_id = "..."
        client_secret = "..."
 
-    :param token_file: A filepath where access tokens are stored.
-    :param client_id/client_secret: OAuth credentials, obtained from the Google
-        API Manager.
+   :param token_file: A filepath where access tokens are stored.
+   :param client_id/client_secret: OAuth credentials, obtained from the Google
+                                   API Manager.
 
 EteSync
 +++++++
@@ -357,37 +359,37 @@ password. Neither are stored.
 
 .. storage:: etesync_contacts
 
-   Contacts for etesync.
+    Contacts for etesync.
 
-   ::
+    ::
 
-       [storage example_for_etesync_contacts]
-       email = ...
-       secrets_dir = ...
-       #server_path = ...
-       #db_path = ...
+        [storage example_for_etesync_contacts]
+        email = ...
+        secrets_dir = ...
+        #server_path = ...
+        #db_path = ...
    
-    :param email: The email address of your account.
-    :param secrets_dir: A directory where vdirsyncer can store the encryption
-        key and authentication token.
-    :param server_url: Optional. URL to the root of your custom server.
-    :param db_path: Optional. Use a different path for the database.
+   :param email: The email address of your account.
+   :param secrets_dir: A directory where vdirsyncer can store the encryption
+                       key and authentication token.
+   :param server_url: Optional. URL to the root of your custom server.
+   :param db_path: Optional. Use a different path for the database.
 
 .. storage:: etesync_calendars
 
-   Calendars for etesync.
+    Calendars for etesync.
 
-   ::
+    ::
 
-       [storage example_for_etesync_calendars]
-       email = ...
-       secrets_dir = ...
-       #server_path = ...
-       #db_path = ...
+        [storage example_for_etesync_calendars]
+        email = ...
+        secrets_dir = ...
+        #server_path = ...
+        #db_path = ...
    
     :param email: The email address of your account.
     :param secrets_dir: A directory where vdirsyncer can store the encryption
-        key and authentication token.
+                        key and authentication token.
     :param server_url: Optional. URL to the root of your custom server.
     :param db_path: Optional. Use a different path for the database.
 
