@@ -18,6 +18,8 @@ Version 0.16.6
 Version 0.16.5
 ==============
 
+*released on 13 June 2018*
+
 - **Packagers:** click-log 0.3 is required.
 - All output will now happen on stderr (because of the upgrade of ``click-log``).
 
