@@ -44,9 +44,11 @@ class TestFilesystemStorage(StorageTests):
         s.upload(format_item('a/b/c'))
         assert not list(s.list())
 
-    def test_ignore_git_dirs(self, tmpdir):
+    def test_ignore_git_dirs(self, tmpdir, get_storage_args):
         tmpdir.mkdir('.git').mkdir('foo')
         tmpdir.mkdir('a')
         tmpdir.mkdir('b')
-        assert set(c['collection'] for c
-                   in self.storage_class.discover(str(tmpdir))) == {'a', 'b'}
+        assert set(
+            c['collection'] for c in
+            self.storage_class.discover(**get_storage_args(collection=None))
+        ) == {'a', 'b'}

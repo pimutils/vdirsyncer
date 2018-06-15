@@ -123,6 +123,8 @@ void vdirsyncer_storage_delete(Box_Storage *storage,
                                const char *c_etag,
                                ShippaiError **err);
 
+const char *vdirsyncer_storage_discover_filesystem(const char *config, ShippaiError **err);
+
 const char *vdirsyncer_storage_discover_singlefile(const char *config, ShippaiError **err);
 
 void vdirsyncer_storage_flush(Box_Storage *storage, ShippaiError **err);

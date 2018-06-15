@@ -223,3 +223,11 @@ pub unsafe extern "C" fn vdirsyncer_storage_discover_singlefile(
 ) -> *const c_char {
     discover_impl::<super::singlefile::SinglefileStorage>(config, err)
 }
+
+#[no_mangle]
+pub unsafe extern "C" fn vdirsyncer_storage_discover_filesystem(
+    config: *const c_char,
+    err: *mut *mut ShippaiError,
+) -> *const c_char {
+    discover_impl::<super::filesystem::FilesystemStorage>(config, err)
+}

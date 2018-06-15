@@ -1,4 +1,4 @@
-use super::Storage;
+use super::{ConfigurableStorage, Storage, StorageConfig};
 use errors::*;
 use failure;
 use libc;
@@ -216,5 +216,91 @@ impl Storage for FilesystemStorage {
         }
         fs::remove_file(filepath)?;
         Ok(())
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Config {
+    path: String,
+    fileext: String,
+    post_hook: Option<String>,
+    collection: Option<String>,
+}
+
+impl StorageConfig for Config {
+    fn get_collection(&self) -> Option<String> {
+        self.collection.clone()
+    }
+}
+
+impl ConfigurableStorage for FilesystemStorage {
+    type Config = Config;
+    fn from_config(config: Self::Config) -> Fallible<Self> {
+        Ok(FilesystemStorage {
+            path: PathBuf::from(config.path),
+            fileext: config.fileext,
+            post_hook: config.post_hook,
+        })
+    }
+
+    fn discover(config: Self::Config) -> Fallible<Box<Iterator<Item = Self::Config>>> {
+        if config.collection.is_some() {
+            Err(Error::BadDiscoveryConfig {
+                msg: "collection argument must not be given when discovering collections/storages"
+                    .to_owned(),
+            })?;
+        }
+
+        match fs::read_dir(&config.path) {
+            Ok(collections) => Ok(Box::new(collections.filter_map(move |entry| {
+                let entry = match entry {
+                    Ok(x) => x,
+                    Err(e) => {
+                        error!("Failed to read directory entry: {}", e);
+                        return None;
+                    }
+                };
+
+                if !entry.path().is_dir() {
+                    return None;
+                }
+
+                let collection = match entry.file_name().into_string() {
+                    Ok(x) => x,
+                    Err(e) => {
+                        error!("Failed to convert filename into UTF-8: {:?}", e);
+                        return None;
+                    }
+                };
+
+                if collection.starts_with('.') {
+                    return None;
+                }
+
+                let path = entry.path();
+
+                let path = match path.to_str() {
+                    Some(x) => x,
+                    None => {
+                        error!("Failed to convert filepath into UTF-8: {:?}", path);
+                        return None;
+                    }
+                };
+
+                Some(Config {
+                    path: path.to_owned(),
+                    fileext: config.fileext.clone(),
+                    post_hook: config.post_hook.clone(),
+                    collection: Some(collection),
+                })
+            }))),
+            Err(e) => {
+                if e.kind() == io::ErrorKind::NotFound {
+                    Ok(Box::new(None.into_iter()))
+                } else {
+                    Err(e)?
+                }
+            }
+        }
     }
 }

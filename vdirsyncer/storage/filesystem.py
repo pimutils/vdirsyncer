@@ -39,33 +39,6 @@ class FilesystemStorage(RustStorageMixin, Storage):
         )
 
     @classmethod
-    def discover(cls, path, **kwargs):
-        if kwargs.pop('collection', None) is not None:
-            raise TypeError('collection argument must not be given.')
-        path = expand_path(path)
-        try:
-            collections = os.listdir(path)
-        except OSError as e:
-            if e.errno != errno.ENOENT:
-                raise
-        else:
-            for collection in collections:
-                collection_path = os.path.join(path, collection)
-                if not cls._validate_collection(collection_path):
-                    continue
-                args = dict(collection=collection, path=collection_path,
-                            **kwargs)
-                yield args
-
-    @classmethod
-    def _validate_collection(cls, path):
-        if not os.path.isdir(path):
-            return False
-        if os.path.basename(path).startswith('.'):
-            return False
-        return True
-
-    @classmethod
     def create_collection(cls, collection, **kwargs):
         kwargs = dict(kwargs)
         path = kwargs['path']
