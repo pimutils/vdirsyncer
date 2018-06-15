@@ -2,12 +2,14 @@ pub use super::dav::exports::*;
 pub use super::filesystem::exports::*;
 pub use super::http::exports::*;
 pub use super::singlefile::exports::*;
-use super::Storage;
+use super::{ConfigurableStorage, Storage};
 use errors::*;
 use item::Item;
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
 use std::ptr;
+
+use serde_json;
 
 #[no_mangle]
 pub unsafe extern "C" fn vdirsyncer_storage_free(storage: *mut Box<Storage>) {
@@ -193,4 +195,31 @@ pub unsafe extern "C" fn vdirsyncer_free_storage_upload_result(
     res: *mut VdirsyncerStorageUploadResult,
 ) {
     let _: Box<VdirsyncerStorageUploadResult> = Box::from_raw(res);
+}
+
+#[inline]
+unsafe fn discover_impl<S: ConfigurableStorage>(
+    config: *const c_char,
+    err: *mut *mut ShippaiError,
+) -> *const c_char {
+    unsafe fn inner<S: ConfigurableStorage>(config: *const c_char) -> Fallible<*const c_char> {
+        let config_str = CStr::from_ptr(config).to_str()?;
+        let configs: Vec<S::Config> = S::discover(serde_json::from_str(config_str)?)?.collect();
+        let string = serde_json::to_string(&configs)?;
+        Ok(CString::new(string)?.into_raw())
+    }
+
+    if let Some(json) = export_result(inner::<S>(config), err) {
+        json
+    } else {
+        ptr::null_mut()
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn vdirsyncer_storage_discover_singlefile(
+    config: *const c_char,
+    err: *mut *mut ShippaiError,
+) -> *const c_char {
+    discover_impl::<super::singlefile::SinglefileStorage>(config, err)
 }

@@ -12,10 +12,16 @@ extern crate vobject;
 extern crate log;
 extern crate chrono;
 extern crate env_logger;
+extern crate glob;
 extern crate quick_xml;
 extern crate reqwest;
 extern crate sha2;
 extern crate url;
+
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
+extern crate serde_json;
 
 pub mod errors;
 mod item;

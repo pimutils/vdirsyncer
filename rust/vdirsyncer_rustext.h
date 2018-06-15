@@ -22,6 +22,10 @@ typedef struct {
 
 extern const uint8_t SHIPPAI_VARIANT_DavError_EtagNotFound;
 
+extern const uint8_t SHIPPAI_VARIANT_Error_BadCollectionConfig;
+
+extern const uint8_t SHIPPAI_VARIANT_Error_BadDiscoveryConfig;
+
 extern const uint8_t SHIPPAI_VARIANT_Error_ItemAlreadyExisting;
 
 extern const uint8_t SHIPPAI_VARIANT_Error_ItemNotFound;
@@ -118,6 +122,8 @@ void vdirsyncer_storage_delete(Box_Storage *storage,
                                const char *c_href,
                                const char *c_etag,
                                ShippaiError **err);
+
+const char *vdirsyncer_storage_discover_singlefile(const char *config, ShippaiError **err);
 
 void vdirsyncer_storage_flush(Box_Storage *storage, ShippaiError **err);
 
