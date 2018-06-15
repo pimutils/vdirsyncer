@@ -30,15 +30,15 @@ fn report() -> reqwest::Method {
 
 static CALDAV_DT_FORMAT: &'static str = "%Y%m%dT%H%M%SZ";
 
-struct DavStorage {
+struct DavClient {
     pub url: String,
     pub http_config: HttpConfig,
     pub http: Option<reqwest::Client>,
 }
 
-impl DavStorage {
+impl DavClient {
     pub fn new(url: &str, http_config: HttpConfig) -> Self {
-        DavStorage {
+        DavClient {
             url: format!("{}/", url.trim_right_matches('/')),
             http_config,
             http: None,
@@ -46,7 +46,7 @@ impl DavStorage {
     }
 }
 
-impl DavStorage {
+impl DavClient {
     #[inline]
     pub fn get_http(&mut self) -> Fallible<reqwest::Client> {
         if let Some(ref http) = self.http {
@@ -107,10 +107,10 @@ impl DavStorage {
             )
             .build()?;
         let response = self.send_request(request)?;
-        self.parse_prop_response(response, mimetype_contains)
+        self.parse_item_listing_response(response, mimetype_contains)
     }
 
-    fn parse_prop_response<'a>(
+    fn parse_item_listing_response<'a>(
         &'a mut self,
         response: reqwest::Response,
         mimetype_contains: &'a str,
@@ -231,13 +231,13 @@ fn assert_multistatus_success(r: reqwest::Response) -> Fallible<reqwest::Respons
 }
 
 struct CarddavStorage {
-    inner: DavStorage,
+    inner: DavClient,
 }
 
 impl CarddavStorage {
     pub fn new(url: &str, http_config: HttpConfig) -> Self {
         CarddavStorage {
-            inner: DavStorage::new(url, http_config),
+            inner: DavClient::new(url, http_config),
         }
     }
 }
@@ -268,7 +268,7 @@ impl Storage for CarddavStorage {
 }
 
 struct CaldavStorage {
-    inner: DavStorage,
+    inner: DavClient,
     start_date: Option<chrono::DateTime<chrono::Utc>>, // FIXME: store as Option<(start, end)>
     end_date: Option<chrono::DateTime<chrono::Utc>>,
     item_types: Vec<&'static str>,
@@ -283,7 +283,7 @@ impl CaldavStorage {
         item_types: Vec<&'static str>,
     ) -> Self {
         CaldavStorage {
-            inner: DavStorage::new(url, http_config),
+            inner: DavClient::new(url, http_config),
             start_date,
             end_date,
             item_types,
@@ -357,7 +357,7 @@ impl Storage for CaldavStorage {
                     .body(data)
                     .build()?;
                 let response = self.inner.send_request(request)?;
-                rv.extend(self.inner.parse_prop_response(response, "text/calendar")?);
+                rv.extend(self.inner.parse_item_listing_response(response, "text/calendar")?);
             }
 
             Ok(Box::new(rv.into_iter()))
