@@ -2,7 +2,7 @@ pub use super::dav::exports::*;
 pub use super::filesystem::exports::*;
 pub use super::http::exports::*;
 pub use super::singlefile::exports::*;
-use super::{Storage,ConfigurableStorage};
+use super::{ConfigurableStorage, Storage};
 use errors::*;
 use item::Item;
 use std::ffi::{CStr, CString};
@@ -200,7 +200,7 @@ pub unsafe extern "C" fn vdirsyncer_free_storage_upload_result(
 #[inline]
 unsafe fn discover_impl<S: ConfigurableStorage>(
     config: *const c_char,
-    err: *mut *mut ShippaiError
+    err: *mut *mut ShippaiError,
 ) -> *const c_char {
     unsafe fn inner<S: ConfigurableStorage>(config: *const c_char) -> Fallible<*const c_char> {
         let config_str = CStr::from_ptr(config).to_str()?;
@@ -217,6 +217,9 @@ unsafe fn discover_impl<S: ConfigurableStorage>(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn vdirsyncer_storage_discover_singlefile(config: *const c_char, err: *mut *mut ShippaiError) -> *const c_char {
+pub unsafe extern "C" fn vdirsyncer_storage_discover_singlefile(
+    config: *const c_char,
+    err: *mut *mut ShippaiError,
+) -> *const c_char {
     discover_impl::<super::singlefile::SinglefileStorage>(config, err)
 }

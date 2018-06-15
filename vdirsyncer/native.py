@@ -37,5 +37,6 @@ def check_error(e):
         raise exceptions.ReadOnlyError(e)
     except errors.Error.UnsupportedVobject as e:
         raise exceptions.UnsupportedVobjectError(e)
-    except (errors.Error.BadDiscoveryConfig, errors.Error.BadCollectionConfig) as e:
+    except (errors.Error.BadDiscoveryConfig,
+            errors.Error.BadCollectionConfig) as e:
         raise TypeError(e)

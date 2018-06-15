@@ -6,7 +6,7 @@ mod singlefile;
 mod utils;
 use errors::Fallible;
 use item::Item;
-use serde::{Serialize,Deserialize};
+use serde::{Deserialize, Serialize};
 
 type ItemAndEtag = (Item, String);
 
@@ -25,7 +25,6 @@ pub trait ConfigurableStorage: Storage + Sized {
 }
 
 pub trait Storage {
-
     /// returns an iterator of `(href, etag)`
     fn list<'a>(&'a mut self) -> Fallible<Box<Iterator<Item = (String, String)> + 'a>>;
 

@@ -48,7 +48,7 @@ pub enum Error {
     BadDiscoveryConfig { msg: String },
 
     #[fail(display = "The storage config is not directly pointing to a collection. {}", msg)]
-    BadCollectionConfig { msg: String }
+    BadCollectionConfig { msg: String },
 }
 
 pub unsafe fn export_result<V>(
