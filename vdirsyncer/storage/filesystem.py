@@ -6,15 +6,15 @@ import os
 
 from atomicwrites import atomic_write
 
-from .base import Storage, normalize_meta_value
-from ._rust import RustStorageMixin
+from .base import normalize_meta_value
+from ._rust import RustStorage
 from .. import native
 from ..utils import checkdir, expand_path
 
 logger = logging.getLogger(__name__)
 
 
-class FilesystemStorage(RustStorageMixin, Storage):
+class FilesystemStorage(RustStorage):
 
     storage_name = 'filesystem'
     _repr_attributes = ('path',)

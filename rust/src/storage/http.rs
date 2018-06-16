@@ -14,9 +14,12 @@ use errors::*;
 use item::Item;
 
 type ItemCache = BTreeMap<String, (Item, String)>;
-pub type Username = String;
-pub type Password = String;
-pub type Auth = (Username, Password);
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Auth {
+    username: String,
+    password: String,
+}
 
 /// Wrapper around Client.execute to enable logging
 #[inline]
@@ -38,8 +41,9 @@ pub fn send_request(
     Ok(response)
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct HttpConfig {
+    #[serde(flatten)]
     pub auth: Option<Auth>,
     pub useragent: Option<String>,
     pub verify_cert: Option<String>,
@@ -50,16 +54,17 @@ impl HttpConfig {
     pub fn into_connection(self) -> Fallible<reqwest::ClientBuilder> {
         let mut headers = reqwest::header::Headers::new();
 
-        if let Some((username, password)) = self.auth {
+        if let Some(auth) = self.auth {
             headers.set(reqwest::header::Authorization(reqwest::header::Basic {
-                username,
-                password: Some(password),
+                username: auth.username,
+                password: Some(auth.password),
             }));
         }
 
-        if let Some(useragent) = self.useragent {
-            headers.set(reqwest::header::UserAgent::new(useragent));
-        }
+        headers.set(reqwest::header::UserAgent::new(
+            self.useragent
+                .unwrap_or_else(|| "vdirsyncer/0.17.0".to_owned()), // TODO
+        ));
 
         let mut client = reqwest::Client::builder();
         client.default_headers(headers);
@@ -204,7 +209,10 @@ pub unsafe fn init_http_config(
     let auth_cert_dec = auth_cert.to_str().unwrap();
 
     let auth = if !username_dec.is_empty() && !password_dec.is_empty() {
-        Some((username_dec.to_owned(), password_dec.to_owned()))
+        Some(Auth {
+            username: username_dec.to_owned(),
+            password: password_dec.to_owned(),
+        })
     } else {
         None
     };

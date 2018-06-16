@@ -22,9 +22,15 @@ typedef struct {
 
 extern const uint8_t SHIPPAI_VARIANT_DavError_EtagNotFound;
 
+extern const uint8_t SHIPPAI_VARIANT_DavError_NoHomesetUrl;
+
+extern const uint8_t SHIPPAI_VARIANT_DavError_NoPrincipalUrl;
+
 extern const uint8_t SHIPPAI_VARIANT_Error_BadCollectionConfig;
 
 extern const uint8_t SHIPPAI_VARIANT_Error_BadDiscoveryConfig;
+
+extern const uint8_t SHIPPAI_VARIANT_Error_DiscoveryNotPossible;
 
 extern const uint8_t SHIPPAI_VARIANT_Error_ItemAlreadyExisting;
 
@@ -122,6 +128,10 @@ void vdirsyncer_storage_delete(Box_Storage *storage,
                                const char *c_href,
                                const char *c_etag,
                                ShippaiError **err);
+
+const char *vdirsyncer_storage_discover_caldav(const char *config, ShippaiError **err);
+
+const char *vdirsyncer_storage_discover_carddav(const char *config, ShippaiError **err);
 
 const char *vdirsyncer_storage_discover_filesystem(const char *config, ShippaiError **err);
 

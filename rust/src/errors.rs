@@ -49,6 +49,9 @@ pub enum Error {
 
     #[fail(display = "The storage config is not directly pointing to a collection. {}", msg)]
     BadCollectionConfig { msg: String },
+
+    #[fail(display = "Discovery is not possible. {}", msg)]
+    DiscoveryNotPossible { msg: String },
 }
 
 pub unsafe fn export_result<V>(

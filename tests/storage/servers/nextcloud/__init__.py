@@ -16,10 +16,16 @@ class ServerMixin(object):
     def get_storage_args(self, item_type,
                          slow_create_collection):
         def inner(collection='test'):
+            url = 'http://{}/remote.php/dav/{}/asdf/'.format(
+                port,
+                'calendars'
+                if self.storage_class.fileext == '.ics'
+                else 'addressbooks/users'
+            )
             args = {
                 'username': user,
                 'password': pwd,
-                'url': 'http://{}/remote.php/dav/'.format(port)
+                'url': url
             }
 
             if collection is not None:

@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from .base import Storage
-from ._rust import RustStorageMixin
+from ._rust import RustStorage
 from .. import exceptions, native
 from ..http import USERAGENT
 
 
-class HttpStorage(RustStorageMixin, Storage):
+class HttpStorage(RustStorage):
 
     storage_name = 'http'
     read_only = True

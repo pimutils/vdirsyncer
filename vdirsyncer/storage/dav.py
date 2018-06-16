@@ -10,11 +10,11 @@ from inspect import getfullargspec
 import requests
 from requests.exceptions import HTTPError
 
-from .base import Storage, normalize_meta_value
-from ._rust import RustStorageMixin
+from .base import normalize_meta_value
+from ._rust import RustStorage
 from .. import exceptions, http, native, utils
 from ..http import USERAGENT, prepare_auth, \
-    prepare_client_cert, prepare_verify
+    prepare_client_cert
 
 
 dav_logger = logging.getLogger(__name__)
@@ -293,14 +293,16 @@ class DAVSession(object):
 
         return cls(**self_args), remainder
 
-    def __init__(self, url, username='', password='', verify=True, auth=None,
-                 useragent=USERAGENT, verify_fingerprint=None,
+    def __init__(self, url, username='', password='', verify_cert=None,
+                 auth=None, useragent=USERAGENT, verify_fingerprint=None,
                  auth_cert=None):
         self._settings = {
             'cert': prepare_client_cert(auth_cert),
             'auth': prepare_auth(auth, username, password)
         }
-        self._settings.update(prepare_verify(verify, verify_fingerprint))
+
+        if verify_cert is not None:
+            self._settings['verify'] = utils.expand_path(verify_cert)
 
         self.useragent = useragent
         self.url = url.rstrip('/') + '/'
@@ -323,7 +325,7 @@ class DAVSession(object):
         }
 
 
-class DAVStorage(RustStorageMixin, Storage):
+class DAVStorage(RustStorage):
     # the file extension of items. Useful for testing against radicale.
     fileext = None
     # mimetype of items
@@ -354,12 +356,6 @@ class DAVStorage(RustStorageMixin, Storage):
 
     import inspect
     __init__.__signature__ = inspect.signature(session_class.__init__)
-
-    @classmethod
-    def discover(cls, **kwargs):
-        session, _ = cls.session_class.init_and_remaining_args(**kwargs)
-        d = cls.discovery_class(session, kwargs)
-        return d.discover()
 
     @classmethod
     def create_collection(cls, collection, **kwargs):
@@ -482,11 +478,11 @@ class CalDAVStorage(DAVStorage):
         self._native_storage = native.ffi.gc(
             native.lib.vdirsyncer_init_caldav(
                 kwargs['url'].encode('utf-8'),
-                kwargs.get('username', '').encode('utf-8'),
-                kwargs.get('password', '').encode('utf-8'),
-                kwargs.get('useragent', '').encode('utf-8'),
-                kwargs.get('verify_cert', '').encode('utf-8'),
-                kwargs.get('auth_cert', '').encode('utf-8'),
+                (kwargs.get('username', None) or '').encode('utf-8'),
+                (kwargs.get('password', None) or '').encode('utf-8'),
+                (kwargs.get('useragent', None) or '').encode('utf-8'),
+                (kwargs.get('verify_cert', None) or '').encode('utf-8'),
+                (kwargs.get('auth_cert', None) or'').encode('utf-8'),
                 int(self.start_date.timestamp()) if self.start_date else -1,
                 int(self.end_date.timestamp()) if self.end_date else -1,
                 'VEVENT' in item_types,
@@ -519,11 +515,11 @@ class CardDAVStorage(DAVStorage):
         self._native_storage = native.ffi.gc(
             native.lib.vdirsyncer_init_carddav(
                 kwargs['url'].encode('utf-8'),
-                kwargs.get('username', '').encode('utf-8'),
-                kwargs.get('password', '').encode('utf-8'),
-                kwargs.get('useragent', '').encode('utf-8'),
-                kwargs.get('verify_cert', '').encode('utf-8'),
-                kwargs.get('auth_cert', '').encode('utf-8')
+                (kwargs.get('username', None) or '').encode('utf-8'),
+                (kwargs.get('password', None) or '').encode('utf-8'),
+                (kwargs.get('useragent', None) or '').encode('utf-8'),
+                (kwargs.get('verify_cert', None) or '').encode('utf-8'),
+                (kwargs.get('auth_cert', None) or '').encode('utf-8')
             ),
             native.lib.vdirsyncer_storage_free
         )
