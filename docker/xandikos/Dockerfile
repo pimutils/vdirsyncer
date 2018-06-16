@@ -1,6 +1,6 @@
 # Original file copyright 2017 Jelmer Vernooij
 
-FROM ubuntu:latest
+FROM ubuntu:bionic
 RUN apt-get update && apt-get -y install xandikos locales
 EXPOSE 8080
 
