@@ -233,10 +233,15 @@ impl DavClient {
 
     pub fn get_principal_url(&mut self, well_known_path: &str) -> Fallible<Url> {
         let well_known_url = self.get_well_known_url(well_known_path)?;
+
+        let mut headers = reqwest::header::Headers::new();
+        headers.set(ContentType::xml());
+        headers.set_raw("Depth", "0");
+
         let request = self
             .get_http()?
             .request(propfind(), well_known_url)
-            .header(ContentType::xml())
+            .headers(headers)
             .body(
                 "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\
                  <d:propfind xmlns:d=\"DAV:\">\
