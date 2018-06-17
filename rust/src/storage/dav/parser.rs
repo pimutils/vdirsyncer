@@ -72,12 +72,11 @@ impl<T: BufRead> ListingParser<T> {
         let mut current_response = Response::new();
 
         loop {
-            match self
+            let event = self
                 .reader
-                .read_namespaced_event(&mut buf, &mut self.ns_buf)?
-            {
+                .read_namespaced_event(&mut buf, &mut self.ns_buf)?;
+            match event {
                 (ns, Event::Start(ref e)) => {
-                    let old_state = state;
                     match (state, ns, e.local_name()) {
                         // Item listings
                         (State::Outer, Some(b"DAV:"), b"response") => state = State::Response,
@@ -125,8 +124,6 @@ impl<T: BufRead> ListingParser<T> {
                         }
                         _ => (),
                     }
-
-                    debug!("State: {:?} => {:?}", old_state, state);
                 }
                 (_, Event::Text(e)) => {
                     let txt = e.unescape_and_decode(&self.reader)?;
