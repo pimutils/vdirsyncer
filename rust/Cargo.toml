@@ -11,7 +11,7 @@ crate-type = ["cdylib"]
 vobject = "0.4.2"
 sha2 = "0.7.0"
 failure = "0.1"
-shippai = "0.2.3"
+shippai = "0.3.0"
 atomicwrites = "0.2.0"
 uuid = { version = "0.6", features = ["v4"] }
 libc = "0.2"
