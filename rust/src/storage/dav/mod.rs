@@ -357,7 +357,10 @@ impl Storage for CaldavStorage {
                     .body(data)
                     .build()?;
                 let response = self.inner.send_request(request)?;
-                rv.extend(self.inner.parse_item_listing_response(response, "text/calendar")?);
+                rv.extend(
+                    self.inner
+                        .parse_item_listing_response(response, "text/calendar")?,
+                );
             }
 
             Ok(Box::new(rv.into_iter()))
