@@ -15,7 +15,7 @@ pub struct Response {
     pub addressbook_home_set: Option<String>,
     pub is_collection: bool,
     pub is_calendar: bool,
-    pub is_addressbook: bool
+    pub is_addressbook: bool,
 }
 
 impl Response {
@@ -29,7 +29,7 @@ impl Response {
             addressbook_home_set: None,
             is_collection: false,
             is_calendar: false,
-            is_addressbook: false
+            is_addressbook: false,
         }
     }
 }
