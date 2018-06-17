@@ -9,6 +9,8 @@ use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use shellexpand;
+
 use super::utils;
 
 use item::Item;
@@ -237,7 +239,7 @@ impl ConfigurableStorage for FilesystemStorage {
     type Config = Config;
     fn from_config(config: Self::Config) -> Fallible<Self> {
         Ok(FilesystemStorage {
-            path: PathBuf::from(config.path),
+            path: PathBuf::from(&*shellexpand::tilde(&config.path)),
             fileext: config.fileext,
             post_hook: config.post_hook,
         })
@@ -251,7 +253,7 @@ impl ConfigurableStorage for FilesystemStorage {
             })?;
         }
 
-        match fs::read_dir(&config.path) {
+        match fs::read_dir(&*shellexpand::tilde(&config.path)) {
             Ok(collections) => Ok(Box::new(collections.filter_map(move |entry| {
                 let entry = match entry {
                     Ok(x) => x,
@@ -274,6 +276,7 @@ impl ConfigurableStorage for FilesystemStorage {
                 };
 
                 if collection.starts_with('.') {
+                    debug!("Skipping collection {}: starts with .", collection);
                     return None;
                 }
 

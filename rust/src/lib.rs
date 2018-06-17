@@ -17,6 +17,7 @@ extern crate quick_xml;
 extern crate reqwest;
 extern crate sha2;
 extern crate url;
+extern crate shellexpand;
 
 #[macro_use]
 extern crate serde_derive;
