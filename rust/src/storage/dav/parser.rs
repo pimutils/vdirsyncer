@@ -10,17 +10,12 @@ pub struct Response {
     pub href: Option<String>,
     pub etag: Option<String>,
     pub mimetype: Option<String>,
-    pub has_collection_tag: bool,
     pub current_user_principal: Option<String>,
     pub calendar_home_set: Option<String>,
     pub addressbook_home_set: Option<String>,
-    pub resource_type: Option<ResourceType>,
-}
-
-#[derive(Debug, Eq, PartialEq, Clone, Copy)]
-pub enum ResourceType {
-    Calendar,
-    Addressbook,
+    pub is_collection: bool,
+    pub is_calendar: bool,
+    pub is_addressbook: bool
 }
 
 impl Response {
@@ -28,12 +23,13 @@ impl Response {
         Response {
             href: None,
             etag: None,
-            has_collection_tag: false,
             mimetype: None,
             current_user_principal: None,
             calendar_home_set: None,
             addressbook_home_set: None,
-            resource_type: None,
+            is_collection: false,
+            is_calendar: false,
+            is_addressbook: false
         }
     }
 }
@@ -90,10 +86,6 @@ impl<T: BufRead> ListingParser<T> {
                         (State::Response, Some(b"DAV:"), b"getcontenttype") => {
                             state = State::ContentType
                         }
-                        (State::Response, Some(b"DAV:"), b"collection") => {
-                            current_response.has_collection_tag = true;
-                        }
-
                         // Collection discovery
                         (State::Response, Some(b"DAV:"), b"current-user-principal") => {
                             state = State::CurrentUserPrincipal
@@ -111,12 +103,16 @@ impl<T: BufRead> ListingParser<T> {
                         (State::Response, Some(b"DAV:"), b"resourcetype") => {
                             state = State::ResourceType
                         }
+                        (State::ResourceType, Some(b"DAV:"), b"collection") => {
+                            current_response.is_collection = true;
+                            state = State::Response;
+                        }
                         (
                             State::ResourceType,
                             Some(b"urn:ietf:params:xml:ns:caldav"),
                             b"calendar",
                         ) => {
-                            current_response.resource_type = Some(ResourceType::Calendar);
+                            current_response.is_calendar = true;
                             state = State::Response;
                         }
                         (
@@ -124,7 +120,7 @@ impl<T: BufRead> ListingParser<T> {
                             Some(b"urn:ietf:params:xml:ns:carddav"),
                             b"addressbook",
                         ) => {
-                            current_response.resource_type = Some(ResourceType::Addressbook);
+                            current_response.is_addressbook = true;
                             state = State::Response;
                         }
                         _ => (),

@@ -127,7 +127,7 @@ impl DavClient {
                 .get_all_responses()?
                 .into_iter()
                 .filter_map(move |response| {
-                    if response.has_collection_tag {
+                    if response.is_collection || response.is_calendar || response.is_addressbook {
                         return None;
                     }
                     if !response.mimetype?.contains(mimetype_contains) {
@@ -412,7 +412,7 @@ impl ConfigurableStorage for CarddavStorage {
                 .get_all_responses()?
                 .into_iter()
                 .filter_map(move |response| {
-                    if response.resource_type != Some(parser::ResourceType::Addressbook) {
+                    if !response.is_addressbook {
                         debug!("Skipping {:?}, not an addressbook", response.href);
                         return None;
                     }
@@ -637,7 +637,7 @@ impl ConfigurableStorage for CaldavStorage {
                 .get_all_responses()?
                 .into_iter()
                 .filter_map(move |response| {
-                    if response.resource_type != Some(parser::ResourceType::Calendar) {
+                    if !response.is_calendar {
                         debug!("Skipping {:?}, not a calendar", response.href);
                         return None;
                     }
