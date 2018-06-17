@@ -104,7 +104,7 @@ impl<T: BufRead> ListingParser<T> {
                         }
                         (State::ResourceType, Some(b"DAV:"), b"collection") => {
                             current_response.is_collection = true;
-                            state = State::Response;
+                            state = State::ResourceType;
                         }
                         (
                             State::ResourceType,
@@ -112,7 +112,7 @@ impl<T: BufRead> ListingParser<T> {
                             b"calendar",
                         ) => {
                             current_response.is_calendar = true;
-                            state = State::Response;
+                            state = State::ResourceType;
                         }
                         (
                             State::ResourceType,
@@ -120,7 +120,7 @@ impl<T: BufRead> ListingParser<T> {
                             b"addressbook",
                         ) => {
                             current_response.is_addressbook = true;
-                            state = State::Response;
+                            state = State::ResourceType;
                         }
                         _ => (),
                     }
