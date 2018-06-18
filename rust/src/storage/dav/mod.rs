@@ -227,8 +227,14 @@ impl DavClient {
     fn get_well_known_url(&mut self, well_known_path: &str) -> Fallible<Url> {
         let url = Url::parse(&self.url)?;
         let request = self.get_http()?.get(url.join(well_known_path)?).build()?;
-        let response = self.send_request(request)?;
-        Ok(response.url().clone())
+        match self.send_request(request) {
+            Ok(response) => Ok(response.url().clone()),
+            Err(e) => {
+                debug!("Failed to discover DAV through well-known URIs, just using configured URL as base");
+                debug!("Error message: {:?}", e);
+                Ok(url)
+            }
+        }
     }
 
     pub fn get_principal_url(&mut self, well_known_path: &str) -> Fallible<Url> {
