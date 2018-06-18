@@ -156,7 +156,7 @@ services (:doc:`Fastmail <tutorials/fastmail>`, :doc:`iCloud
 <tutorials/icloud>`) support both protocols.
 
 CalDAV and CardDAV consist of a set of many `RFCs
-<https://de.wikipedia.org/wiki/Request_for_Comments>`_ which sometimes overlap
+<https://en.wikipedia.org/wiki/Request_for_Comments>`_ which sometimes overlap
 and sometimes, in an effort to deduplicate functionality, make the entire
 standard more complex. Many RFCs are considered optional, and a few proprietary
 undocumented extensions to those standards are widely used.

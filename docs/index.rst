@@ -16,7 +16,7 @@ servers. It can also be used to synchronize calendars and/or addressbooks
 between two servers directly.
 
 It aims to be for calendars and contacts what `OfflineIMAP
-<http://offlineimap.org/>`_ is for emails.
+<http://www.offlineimap.org/>`_ is for emails.
 
 .. toctree::
    :caption: Users

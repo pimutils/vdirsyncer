@@ -5,7 +5,7 @@ When do I need Vdirsyncer?
 Why not Dropbox + todo.txt?
 ---------------------------
 
-Projects like `todo.txt <http://todotxt.com/>`_ criticize the complexity of
+Projects like `todo.txt <http://todotxt.org/>`_ criticize the complexity of
 modern productivity apps, and that rightfully. So they set out to create a new,
 super-simple, human-readable format, such that vim suffices for viewing the raw
 data. However, when they're faced with the question how to synchronize that
@@ -52,5 +52,5 @@ program chosen:
   hand, synchronizes with CardDAV/CalDAV servers, which can be accessed with
   e.g. DAVDroid_ or the apps by dmfs_.
 
-.. _DAVDroid: http://davdroid.bitfire.at/
+.. _DAVDroid: https://www.davdroid.com/
 .. _dmfs: https://dmfs.org/

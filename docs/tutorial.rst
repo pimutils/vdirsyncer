@@ -35,7 +35,7 @@ locations:
 - ``$XDG_CONFIG_HOME/vdirsyncer/config``, which is normally
   ``~/.config/vdirsyncer/config``. See the XDG-Basedir_ specification.
 
-.. _XDG-Basedir: http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html#variables
+.. _XDG-Basedir: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html#variables
 
 The config file should start with a :ref:`general section <general_config>`,
 where the only required parameter is ``status_path``. The following is a

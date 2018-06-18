@@ -23,4 +23,4 @@ latest PyPI release of Radicale.
   You have to set ``item_types = ["VTODO", "VEVENT"]`` in
   :storage:`caldav` for vdirsyncer to work with those versions.
 
-.. _Radicale: http://radicale.org/
+.. _Radicale: https://radicale.org/

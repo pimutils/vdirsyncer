@@ -37,7 +37,7 @@ Further applications, with missing pages:
 
 .. _khal: http://lostpackets.de/khal/
 .. _dayplanner: http://www.day-planner.org/
-.. _Orage: http://www.kolumbus.fi/~w408237/orage/
+.. _Orage: https://xfce.org/projects
 .. _rainlendar: http://www.rainlendar.net/
 .. _khard: https://github.com/scheibler/khard/
 .. _contactquery.c: https://github.com/t-8ch/snippets/blob/master/contactquery.c

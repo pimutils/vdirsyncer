@@ -13,10 +13,10 @@ convenience too.
 Obtaining the source code
 =========================
 
-The main distribution channel is `PyPI
-<https://pypi.python.org/pypi/vdirsyncer>`_, and source tarballs can be
-obtained there. Do not use the ones from GitHub: Their tarballs contain useless
-junk and are more of a distraction than anything else.
+The main distribution channel is `PyPI <https://pypi.org/project/vdirsyncer>`_,
+and source tarballs can be obtained there. Do not use the ones from GitHub:
+Their tarballs contain useless junk and are more of a distraction than anything
+else.
 
 I give each release a tag in the git repo. If you want to get notified of new
 releases, `GitHub's feed

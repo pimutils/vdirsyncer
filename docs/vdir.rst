@@ -38,8 +38,8 @@ other programs.
 
 .. _vCard: https://tools.ietf.org/html/rfc6350
 .. _iCalendar: https://tools.ietf.org/html/rfc5545
-.. _CardDAV: http://tools.ietf.org/html/rfc6352
-.. _CalDAV: http://tools.ietf.org/search/rfc4791
+.. _CardDAV: https://tools.ietf.org/html/rfc6352
+.. _CalDAV: https://tools.ietf.org/search/rfc4791
 
 Metadata
 ========
