@@ -150,10 +150,40 @@ Supported Storages
 CalDAV and CardDAV
 ++++++++++++++++++
 
-.. note::
+CalDAV and CardDAV are the most important protocols for vdirsyncer. Most
+self-hosted "cloud" solutions (:doc:`NextCloud <tutorials/nextcloud>`) and some
+services (:doc:`Fastmail <tutorials/fastmail>`, :doc:`iCloud
+<tutorials/icloud>`) support both protocols.
 
-    Please also see :ref:`supported-servers`, as some servers may not work
-    well.
+CalDAV and CardDAV consist of a set of many `RFCs
+<https://de.wikipedia.org/wiki/Request_for_Comments>`_ which sometimes overlap
+and sometimes, in an effort to deduplicate functionality, make the entire
+standard more complex. Many RFCs are considered optional, and a few proprietary
+undocumented extensions to those standards are widely used.
+
+All of this allows for wildly different interpretations of what it means to
+"support CalDAV". A client that claims to support CalDAV server that claims to
+do so might not work with vdirsyncer out of the box. Please refer to
+:ref:`supported-servers` as well.
+
+.. note:: As with almost every other storage, the CalDAV and CardDAV storages support
+   two modes of configuration:
+
+    + **Direct link to collection:** If you set ``collections = null`` in your pair
+      config, both storages will be treated as if they were pointing directly to a
+      calendar/addressbook. In the case of :storage:`caldav` and :storage:`carddav`
+      this means that ``url`` must point directly to a calendar. Typically the name
+      of the calendar is contained within the path, such as
+      ``https://nextcloud.example/remote.php/dav/addressbooks/users/myuser/default/``.
+
+    + **Auto-discovery:** If you set ``collections = ["from a", "from b"]`` or
+      ``collections = ["foo"]``, set the ``url`` to something without a path, such
+      as ``https://nextcloud.example/``. Vdirsyncer will attempt to find all
+      calendars/addressbooks by itself.
+
+      If this does not work, you can also set it to an URL with a full path such as
+      ``https://nextcloud.example/remote.php/dav/addressbooks/users/myuser/`` to
+      shortcut vdirsyncer's discovery heuristics.
 
 .. storage:: caldav
 

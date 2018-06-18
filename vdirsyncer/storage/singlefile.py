@@ -3,15 +3,14 @@
 import logging
 import os
 
-from .base import Storage
-from ._rust import RustStorageMixin
+from ._rust import RustStorage
 from .. import native
 from ..utils import checkfile, expand_path
 
 logger = logging.getLogger(__name__)
 
 
-class SingleFileStorage(RustStorageMixin, Storage):
+class SingleFileStorage(RustStorage):
 
     storage_name = 'singlefile'
     _repr_attributes = ('path',)

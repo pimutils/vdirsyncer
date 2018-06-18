@@ -38,7 +38,7 @@ requirements = [
 
     milksnake,
 
-    'shippai >= 0.2.3',
+    'shippai >= 0.3.0',
 ]
 
 

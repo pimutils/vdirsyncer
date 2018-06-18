@@ -889,17 +889,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "shellexpand"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "shippai"
-version = "0.2.4"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "failure 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "shippai_derive 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "shippai_derive 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "shippai_derive"
-version = "0.2.3"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "quote 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1307,7 +1312,8 @@ dependencies = [
  "serde_derive 1.0.66 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.17 (registry+https://github.com/rust-lang/crates.io-index)",
  "sha2 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "shippai 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "shellexpand 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "shippai 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "url 1.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "uuid 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "vobject 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1486,8 +1492,9 @@ dependencies = [
 "checksum serde_json 1.0.17 (registry+https://github.com/rust-lang/crates.io-index)" = "f3ad6d546e765177cf3dded3c2e424a8040f870083a0e64064746b958ece9cb1"
 "checksum serde_urlencoded 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "ce0fd303af908732989354c6f02e05e2e6d597152870f2c6990efb0577137480"
 "checksum sha2 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)" = "9eb6be24e4c23a84d7184280d2722f7f2731fcdd4a9d886efbfe4413e4847ea0"
-"checksum shippai 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)" = "fab6cea07a38cb2f45ab82a8396764b358ac3662c97c8c64ceaa5512c4248e74"
-"checksum shippai_derive 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "7d00a1043d0e6407aa7312b3eb8c7dc7f63993e5060306d4a2cac0bf8b9d85e7"
+"checksum shellexpand 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "de7a5b5a9142fd278a10e0209b021a1b85849352e6951f4f914735c976737564"
+"checksum shippai 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "745d2b29d79dbdb60aa13b96591e22679b492f70e34c41b01f15ba0b01e186f7"
+"checksum shippai_derive 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "406b871695a428e4d8bc66a97799f60d6881e573725db560606fb78b58a90672"
 "checksum siphasher 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "0df90a788073e8d0235a67e50441d47db7c8ad9debd91cbf43736a2a92d36537"
 "checksum slab 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "17b4fcaed89ab08ef143da37bc52adbcc04d4a69014f4c1208d6b51f0c47bc23"
 "checksum slab 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "fdeff4cd9ecff59ec7e3744cbca73dfe5ac35c2aedb2cfba8a1c715a18912e9d"

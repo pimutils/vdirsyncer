@@ -231,3 +231,19 @@ pub unsafe extern "C" fn vdirsyncer_storage_discover_filesystem(
 ) -> *const c_char {
     discover_impl::<super::filesystem::FilesystemStorage>(config, err)
 }
+
+#[no_mangle]
+pub unsafe extern "C" fn vdirsyncer_storage_discover_carddav(
+    config: *const c_char,
+    err: *mut *mut ShippaiError,
+) -> *const c_char {
+    discover_impl::<super::dav::CarddavStorage>(config, err)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn vdirsyncer_storage_discover_caldav(
+    config: *const c_char,
+    err: *mut *mut ShippaiError,
+) -> *const c_char {
+    discover_impl::<super::dav::CaldavStorage>(config, err)
+}

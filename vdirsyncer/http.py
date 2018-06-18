@@ -60,31 +60,6 @@ def prepare_auth(auth, username, password):
         return None
 
 
-def prepare_verify(verify, verify_fingerprint):
-    if isinstance(verify, (str, bytes)):
-        verify = expand_path(verify)
-    elif not isinstance(verify, bool):
-        raise exceptions.UserError('Invalid value for verify ({}), '
-                                   'must be a path to a PEM-file or boolean.'
-                                   .format(verify))
-
-    if verify_fingerprint is not None:
-        if not isinstance(verify_fingerprint, (bytes, str)):
-            raise exceptions.UserError('Invalid value for verify_fingerprint '
-                                       '({}), must be a string or null.'
-                                       .format(verify_fingerprint))
-    elif not verify:
-        raise exceptions.UserError(
-            'Disabling all SSL validation is forbidden. Consider setting '
-            'verify_fingerprint if you have a broken or self-signed cert.'
-        )
-
-    return {
-        'verify': verify,
-        'verify_fingerprint': verify_fingerprint,
-    }
-
-
 def prepare_client_cert(cert):
     if isinstance(cert, (str, bytes)):
         cert = expand_path(cert)

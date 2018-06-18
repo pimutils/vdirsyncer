@@ -4,6 +4,10 @@
 
 typedef struct Box_Storage Box_Storage;
 
+typedef struct DavError DavError;
+
+typedef struct Error Error;
+
 typedef struct Item Item;
 
 typedef struct ShippaiError ShippaiError;
@@ -22,9 +26,15 @@ typedef struct {
 
 extern const uint8_t SHIPPAI_VARIANT_DavError_EtagNotFound;
 
+extern const uint8_t SHIPPAI_VARIANT_DavError_NoHomesetUrl;
+
+extern const uint8_t SHIPPAI_VARIANT_DavError_NoPrincipalUrl;
+
 extern const uint8_t SHIPPAI_VARIANT_Error_BadCollectionConfig;
 
 extern const uint8_t SHIPPAI_VARIANT_Error_BadDiscoveryConfig;
+
+extern const uint8_t SHIPPAI_VARIANT_Error_DiscoveryNotPossible;
 
 extern const uint8_t SHIPPAI_VARIANT_Error_ItemAlreadyExisting;
 
@@ -44,6 +54,10 @@ extern const uint8_t SHIPPAI_VARIANT_Error_UnsupportedVobject;
 
 extern const uint8_t SHIPPAI_VARIANT_Error_WrongEtag;
 
+const DavError *shippai_cast_error_DavError(const ShippaiError *t);
+
+const Error *shippai_cast_error_Error(const ShippaiError *t);
+
 void shippai_free_failure(ShippaiError *t);
 
 void shippai_free_str(char *t);
@@ -52,13 +66,9 @@ const char *shippai_get_debug(ShippaiError *t);
 
 const char *shippai_get_display(ShippaiError *t);
 
-uint8_t shippai_get_variant_DavError(ShippaiError *t);
+uint8_t shippai_get_variant_DavError(const DavError *f);
 
-uint8_t shippai_get_variant_Error(ShippaiError *t);
-
-bool shippai_is_error_DavError(ShippaiError *t);
-
-bool shippai_is_error_Error(ShippaiError *t);
+uint8_t shippai_get_variant_Error(const Error *f);
 
 bool vdirsyncer_advance_storage_listing(VdirsyncerStorageListing *listing);
 
@@ -122,6 +132,10 @@ void vdirsyncer_storage_delete(Box_Storage *storage,
                                const char *c_href,
                                const char *c_etag,
                                ShippaiError **err);
+
+const char *vdirsyncer_storage_discover_caldav(const char *config, ShippaiError **err);
+
+const char *vdirsyncer_storage_discover_carddav(const char *config, ShippaiError **err);
 
 const char *vdirsyncer_storage_discover_filesystem(const char *config, ShippaiError **err);
 

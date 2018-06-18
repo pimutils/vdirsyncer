@@ -13,7 +13,7 @@ use url::Url;
 
 use super::http::{handle_http_error, send_request, HttpConfig};
 use super::utils::generate_href;
-use super::Storage;
+use super::{ConfigurableStorage, Storage, StorageConfig};
 use errors::*;
 
 use item::Item;
@@ -127,7 +127,7 @@ impl DavClient {
                 .get_all_responses()?
                 .into_iter()
                 .filter_map(move |response| {
-                    if response.has_collection_tag {
+                    if response.is_collection || response.is_calendar || response.is_addressbook {
                         return None;
                     }
                     if !response.mimetype?.contains(mimetype_contains) {
@@ -223,6 +223,82 @@ impl DavClient {
         assert_multistatus_success(handle_http_error(href, response)?)?;
         Ok(())
     }
+
+    fn get_well_known_url(&mut self, well_known_path: &str) -> Fallible<Url> {
+        let url = Url::parse(&self.url)?;
+        let request = self.get_http()?.get(url.join(well_known_path)?).build()?;
+        match self.send_request(request) {
+            Ok(response) => Ok(response.url().clone()),
+            Err(e) => {
+                debug!("Failed to discover DAV through well-known URIs, just using configured URL as base");
+                debug!("Error message: {:?}", e);
+                Ok(url)
+            }
+        }
+    }
+
+    pub fn get_principal_url(&mut self, well_known_path: &str) -> Fallible<Url> {
+        let well_known_url = self.get_well_known_url(well_known_path)?;
+
+        let mut headers = reqwest::header::Headers::new();
+        headers.set(ContentType::xml());
+        headers.set_raw("Depth", "0");
+
+        let request = self
+            .get_http()?
+            .request(propfind(), well_known_url)
+            .headers(headers)
+            .body(
+                "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\
+                 <d:propfind xmlns:d=\"DAV:\">\
+                 <d:prop>\
+                 <d:current-user-principal />\
+                 </d:prop>\
+                 </d:propfind>",
+            )
+            .build()?;
+        let response = self.send_request(request)?;
+
+        let buf_reader = BufReader::new(response);
+        let xml_reader = quick_xml::Reader::from_reader(buf_reader);
+        let mut parser = parser::ListingParser::new(xml_reader);
+        let base = Url::parse(&self.url)?;
+
+        while let Some(response) = parser.next_response()? {
+            if let Some(href) = response.current_user_principal {
+                return Ok(base.join(&href)?);
+            }
+        }
+
+        Err(DavError::NoPrincipalUrl)?
+    }
+
+    pub fn discover_impl(
+        &mut self,
+        homeset_url: Url,
+    ) -> Fallible<parser::ListingParser<impl ::std::io::BufRead>> {
+        let mut headers = reqwest::header::Headers::new();
+        headers.set(ContentType::xml());
+        headers.set_raw("Depth", "1");
+
+        let request = self
+            .get_http()?
+            .request(propfind(), homeset_url)
+            .headers(headers)
+            .body(
+                "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\
+                 <d:propfind xmlns:d=\"DAV:\">\
+                 <d:prop>\
+                 <d:resourcetype />\
+                 </d:prop>\
+                 </d:propfind>",
+            )
+            .build()?;
+        let response = self.send_request(request)?;
+        let buf_reader = BufReader::new(response);
+        let xml_reader = quick_xml::Reader::from_reader(buf_reader);
+        Ok(parser::ListingParser::new(xml_reader))
+    }
 }
 
 fn assert_multistatus_success(r: reqwest::Response) -> Fallible<reqwest::Response> {
@@ -230,7 +306,7 @@ fn assert_multistatus_success(r: reqwest::Response) -> Fallible<reqwest::Respons
     Ok(r)
 }
 
-struct CarddavStorage {
+pub struct CarddavStorage {
     inner: DavClient,
 }
 
@@ -238,6 +314,43 @@ impl CarddavStorage {
     pub fn new(url: &str, http_config: HttpConfig) -> Self {
         CarddavStorage {
             inner: DavClient::new(url, http_config),
+        }
+    }
+
+    fn get_homeset_url(dav: &mut DavClient) -> Fallible<Url> {
+        let base = Url::parse(&dav.url)?;
+        if base.path() != "/" {
+            Ok(base)
+        } else {
+            let principal_url = dav.get_principal_url("/.well-known/carddav")?;
+
+            let mut headers = reqwest::header::Headers::new();
+            headers.set(ContentType::xml());
+            headers.set_raw("Depth", "0");
+
+            let request = dav
+                .get_http()?
+                .request(propfind(), principal_url)
+                .headers(headers)
+                .body(
+                    "<d:propfind xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:carddav\">\
+                     <d:prop>\
+                     <c:addressbook-home-set />\
+                     </d:prop>\
+                     </d:propfind>",
+                )
+                .build()?;
+            let response = dav.send_request(request)?;
+            let buf_reader = BufReader::new(response);
+            let xml_reader = quick_xml::Reader::from_reader(buf_reader);
+            let mut parser = parser::ListingParser::new(xml_reader);
+            while let Some(response) = parser.next_response()? {
+                if let Some(href) = response.addressbook_home_set {
+                    return Ok(base.join(&href)?);
+                }
+            }
+
+            Err(DavError::NoHomesetUrl)?
         }
     }
 }
@@ -267,11 +380,78 @@ impl Storage for CarddavStorage {
     }
 }
 
-struct CaldavStorage {
+#[derive(Serialize, Deserialize)]
+pub struct CarddavConfig {
+    url: String,
+
+    #[serde(flatten)]
+    http: HttpConfig,
+
+    collection: Option<String>,
+}
+
+impl StorageConfig for CarddavConfig {
+    fn get_collection(&self) -> Option<String> {
+        self.collection.clone()
+    }
+}
+
+impl ConfigurableStorage for CarddavStorage {
+    type Config = CarddavConfig;
+
+    fn from_config(config: Self::Config) -> Fallible<Self> {
+        Ok(CarddavStorage::new(&config.url, config.http))
+    }
+
+    fn discover(config: Self::Config) -> Fallible<Box<Iterator<Item = Self::Config>>> {
+        if config.collection.is_some() {
+            Err(Error::BadDiscoveryConfig {
+                msg: "collection argument must not be given when discovering collections/storages"
+                    .to_owned(),
+            })?;
+        }
+
+        let mut dav = DavClient::new(&config.url, config.http.clone());
+        let homeset_url = Self::get_homeset_url(&mut dav)?;
+        let mut parser = dav.discover_impl(homeset_url)?;
+        let mut seen_urls = BTreeSet::new();
+
+        let base = Url::parse(&config.url)?;
+
+        Ok(Box::new(
+            parser
+                .get_all_responses()?
+                .into_iter()
+                .filter_map(move |response| {
+                    if !response.is_addressbook {
+                        debug!("Skipping {:?}, not an addressbook", response.href);
+                        return None;
+                    }
+
+                    let collection_url = base.join(&response.href?).ok()?;
+                    let collection = collection_name_from_url(&collection_url)?;
+                    let collection_url_str = collection_url.as_str().to_owned();
+
+                    if seen_urls.contains(&collection_url) {
+                        return None;
+                    }
+                    seen_urls.insert(collection_url);
+
+                    Some(CarddavConfig {
+                        url: collection_url_str,
+                        http: config.http.clone(),
+                        collection: Some(collection),
+                    })
+                }),
+        ))
+    }
+}
+
+pub struct CaldavStorage {
     inner: DavClient,
     start_date: Option<chrono::DateTime<chrono::Utc>>, // FIXME: store as Option<(start, end)>
     end_date: Option<chrono::DateTime<chrono::Utc>>,
-    item_types: Vec<&'static str>,
+    item_types: Vec<String>,
 }
 
 impl CaldavStorage {
@@ -280,7 +460,7 @@ impl CaldavStorage {
         http_config: HttpConfig,
         start_date: Option<chrono::DateTime<chrono::Utc>>,
         end_date: Option<chrono::DateTime<chrono::Utc>>,
-        item_types: Vec<&'static str>,
+        item_types: Vec<String>,
     ) -> Self {
         CaldavStorage {
             inner: DavClient::new(url, http_config),
@@ -303,8 +483,8 @@ impl CaldavStorage {
             );
 
             if item_types.is_empty() {
-                item_types.push("VTODO");
-                item_types.push("VEVENT");
+                item_types.push("VTODO".to_owned());
+                item_types.push("VEVENT".to_owned());
             }
         }
 
@@ -312,13 +492,50 @@ impl CaldavStorage {
             .into_iter()
             .map(|item_type| {
                 format!(
-                    "<C:comp-filter name=\"VCALENDAR\">\
+                    "<C:comp-filter name=\"VCALENDAR\">
                      <C:comp-filter name=\"{}\">{}</C:comp-filter>\
                      </C:comp-filter>",
                     item_type, timefilter
                 )
             })
             .collect()
+    }
+
+    fn get_homeset_url(dav: &mut DavClient) -> Fallible<Url> {
+        let base = Url::parse(&dav.url)?;
+        if base.path() != "/" {
+            Ok(base)
+        } else {
+            let principal_url = dav.get_principal_url("/.well-known/caldav")?;
+
+            let mut headers = reqwest::header::Headers::new();
+            headers.set(ContentType::xml());
+            headers.set_raw("Depth", "0");
+
+            let request = dav
+                .get_http()?
+                .request(propfind(), principal_url)
+                .headers(headers)
+                .body(
+                    "<d:propfind xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:caldav\">\
+                     <d:prop>\
+                     <c:calendar-home-set />\
+                     </d:prop>\
+                     </d:propfind>",
+                )
+                .build()?;
+            let response = dav.send_request(request)?;
+            let buf_reader = BufReader::new(response);
+            let xml_reader = quick_xml::Reader::from_reader(buf_reader);
+            let mut parser = parser::ListingParser::new(xml_reader);
+            while let Some(response) = parser.next_response()? {
+                if let Some(href) = response.calendar_home_set {
+                    return Ok(base.join(&href)?);
+                }
+            }
+
+            Err(DavError::NoHomesetUrl)?
+        }
     }
 }
 
@@ -387,6 +604,77 @@ impl Storage for CaldavStorage {
     }
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct CaldavConfig {
+    url: String,
+    item_types: Option<Vec<String>>,
+    start_date: Option<String>,
+    end_date: Option<String>,
+    collection: Option<String>,
+    #[serde(flatten)]
+    http: HttpConfig,
+}
+
+impl StorageConfig for CaldavConfig {
+    fn get_collection(&self) -> Option<String> {
+        self.collection.clone()
+    }
+}
+
+impl ConfigurableStorage for CaldavStorage {
+    type Config = CaldavConfig;
+
+    fn from_config(_config: Self::Config) -> Fallible<Self> {
+        unimplemented!();
+    }
+
+    fn discover(config: Self::Config) -> Fallible<Box<Iterator<Item = Self::Config>>> {
+        if config.collection.is_some() {
+            Err(Error::BadDiscoveryConfig {
+                msg: "collection argument must not be given when discovering collections/storages"
+                    .to_owned(),
+            })?;
+        }
+
+        let mut dav = DavClient::new(&config.url, config.http.clone());
+        let homeset_url = Self::get_homeset_url(&mut dav)?;
+        let mut parser = dav.discover_impl(homeset_url)?;
+        let mut seen_urls = BTreeSet::new();
+
+        let base = Url::parse(&config.url)?;
+
+        Ok(Box::new(
+            parser
+                .get_all_responses()?
+                .into_iter()
+                .filter_map(move |response| {
+                    if !response.is_calendar {
+                        debug!("Skipping {:?}, not a calendar", response.href);
+                        return None;
+                    }
+
+                    let collection_url = base.join(&response.href?).ok()?;
+                    let collection = collection_name_from_url(&collection_url)?;
+                    let collection_url_str = collection_url.as_str().to_owned();
+
+                    if seen_urls.contains(&collection_url) {
+                        return None;
+                    }
+                    seen_urls.insert(collection_url);
+
+                    Some(CaldavConfig {
+                        url: collection_url_str,
+                        item_types: config.item_types.clone(),
+                        start_date: config.start_date.clone(),
+                        end_date: config.end_date.clone(),
+                        collection: Some(collection),
+                        http: config.http.clone(),
+                    })
+                }),
+        ))
+    }
+}
+
 pub mod exports {
     use super::super::http::init_http_config;
     use super::*;
@@ -395,6 +683,12 @@ pub mod exports {
     pub enum DavError {
         #[fail(display = "Server did not return etag.")]
         EtagNotFound,
+
+        #[fail(display = "Server did not return a current-user-principal URL")]
+        NoPrincipalUrl,
+
+        #[fail(display = "Server did not return a home-set URL")]
+        NoHomesetUrl,
     }
 
     use std::ffi::CStr;
@@ -446,13 +740,13 @@ pub mod exports {
 
         let mut item_types = vec![];
         if include_vevent {
-            item_types.push("VEVENT");
+            item_types.push("VEVENT".to_owned());
         }
         if include_vjournal {
-            item_types.push("VJOURNAL");
+            item_types.push("VJOURNAL".to_owned());
         }
         if include_vtodo {
-            item_types.push("VTODO");
+            item_types.push("VTODO".to_owned());
         }
 
         Box::into_raw(Box::new(Box::new(CaldavStorage::new(
@@ -466,3 +760,12 @@ pub mod exports {
 }
 
 use exports::DavError;
+
+fn collection_name_from_url(url: &Url) -> Option<String> {
+    Some(
+        url.path_segments()?
+            .rev()
+            .find(|x| !x.is_empty())?
+            .to_owned(),
+    )
+}

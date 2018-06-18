@@ -1,11 +1,12 @@
 from .. import native
+from .base import Storage
 from ..vobject import Item
 from functools import partial
 
 import json
 
 
-class RustStorageMixin:
+class RustStorage(Storage):
     _native_storage = None
 
     def _native(self, name):

@@ -10,7 +10,12 @@ pub struct Response {
     pub href: Option<String>,
     pub etag: Option<String>,
     pub mimetype: Option<String>,
-    pub has_collection_tag: bool,
+    pub current_user_principal: Option<String>,
+    pub calendar_home_set: Option<String>,
+    pub addressbook_home_set: Option<String>,
+    pub is_collection: bool,
+    pub is_calendar: bool,
+    pub is_addressbook: bool,
 }
 
 impl Response {
@@ -18,8 +23,13 @@ impl Response {
         Response {
             href: None,
             etag: None,
-            has_collection_tag: false,
             mimetype: None,
+            current_user_principal: None,
+            calendar_home_set: None,
+            addressbook_home_set: None,
+            is_collection: false,
+            is_calendar: false,
+            is_addressbook: false,
         }
     }
 }
@@ -42,7 +52,7 @@ impl<T: BufRead> ListingParser<T> {
         }
     }
 
-    fn next_response(&mut self) -> Fallible<Option<Response>> {
+    pub fn next_response(&mut self) -> Fallible<Option<Response>> {
         let mut buf = vec![];
 
         #[derive(Debug, Clone, Copy)]
@@ -52,38 +62,85 @@ impl<T: BufRead> ListingParser<T> {
             Href,
             ContentType,
             Etag,
+            CurrentUserPrincipal,
+            CalendarHomeSet,
+            AddressbookHomeSet,
+            ResourceType,
         };
 
         let mut state = State::Outer;
         let mut current_response = Response::new();
 
         loop {
-            match self
+            let event = self
                 .reader
-                .read_namespaced_event(&mut buf, &mut self.ns_buf)?
-            {
+                .read_namespaced_event(&mut buf, &mut self.ns_buf)?;
+            match event {
                 (ns, Event::Start(ref e)) => {
                     match (state, ns, e.local_name()) {
+                        // Item listings
                         (State::Outer, Some(b"DAV:"), b"response") => state = State::Response,
                         (State::Response, Some(b"DAV:"), b"href") => state = State::Href,
                         (State::Response, Some(b"DAV:"), b"getetag") => state = State::Etag,
                         (State::Response, Some(b"DAV:"), b"getcontenttype") => {
                             state = State::ContentType
                         }
-                        (State::Response, Some(b"DAV:"), b"collection") => {
-                            current_response.has_collection_tag = true;
+                        // Collection discovery
+                        (State::Response, Some(b"DAV:"), b"current-user-principal") => {
+                            state = State::CurrentUserPrincipal
+                        }
+                        (
+                            State::Response,
+                            Some(b"urn:ietf:params:xml:ns:caldav"),
+                            b"calendar-home-set",
+                        ) => state = State::CalendarHomeSet,
+                        (
+                            State::Response,
+                            Some(b"urn:ietf:params:xml:ns:carddav"),
+                            b"addressbook-home-set",
+                        ) => state = State::AddressbookHomeSet,
+                        (State::Response, Some(b"DAV:"), b"resourcetype") => {
+                            state = State::ResourceType
+                        }
+                        (State::ResourceType, Some(b"DAV:"), b"collection") => {
+                            current_response.is_collection = true;
+                            state = State::ResourceType;
+                        }
+                        (
+                            State::ResourceType,
+                            Some(b"urn:ietf:params:xml:ns:caldav"),
+                            b"calendar",
+                        ) => {
+                            current_response.is_calendar = true;
+                            state = State::ResourceType;
+                        }
+                        (
+                            State::ResourceType,
+                            Some(b"urn:ietf:params:xml:ns:carddav"),
+                            b"addressbook",
+                        ) => {
+                            current_response.is_addressbook = true;
+                            state = State::ResourceType;
                         }
                         _ => (),
                     }
-
-                    debug!("State: {:?}", state);
                 }
                 (_, Event::Text(e)) => {
                     let txt = e.unescape_and_decode(&self.reader)?;
                     match state {
+                        // Item listings
                         State::Href => current_response.href = Some(txt),
                         State::ContentType => current_response.mimetype = Some(txt),
                         State::Etag => current_response.etag = Some(txt),
+
+                        // Collection discovery
+                        State::CurrentUserPrincipal => {
+                            current_response.current_user_principal = Some(txt)
+                        }
+                        State::CalendarHomeSet => current_response.calendar_home_set = Some(txt),
+                        State::AddressbookHomeSet => {
+                            current_response.addressbook_home_set = Some(txt)
+                        }
                         _ => continue,
                     }
                     state = State::Response;
@@ -92,6 +149,13 @@ impl<T: BufRead> ListingParser<T> {
                     (State::Response, Some(b"DAV:"), b"response") => {
                         return Ok(Some(current_response))
                     }
+                    (State::Href, Some(b"DAV:"), b"href")
+                    | (_, Some(b"DAV:"), b"getetag")
+                    | (_, Some(b"DAV:"), b"getcontenttype")
+                    | (_, Some(b"DAV:"), b"current-user-principal")
+                    | (_, Some(b"urn:ietf:params:xml:ns:caldav"), b"calendar-home-set")
+                    | (_, Some(b"urn:ietf:params:xml:ns:carddav"), b"addressbook-home-set")
+                    | (_, Some(b"DAV:"), b"resourcetype") => state = State::Response,
                     _ => (),
                 },
                 (_, Event::Eof) => return Ok(None),

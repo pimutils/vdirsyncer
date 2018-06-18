@@ -7,7 +7,7 @@ try:
         # Those credentials are configured through the Travis UI
         'username': os.environ['DAVICAL_USERNAME'].strip(),
         'password': os.environ['DAVICAL_PASSWORD'].strip(),
-        'url': 'https://caesar.lostpackets.de/davical-test/caldav.php/',
+        'url': 'https://caesar.lostpackets.de/davical-test/caldav.php/travis/',
     }
 except KeyError as e:
     caldav_args = None
