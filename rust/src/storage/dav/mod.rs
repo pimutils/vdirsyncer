@@ -391,8 +391,8 @@ pub struct CarddavConfig {
 }
 
 impl StorageConfig for CarddavConfig {
-    fn get_collection(&self) -> Option<String> {
-        self.collection.clone()
+    fn get_collection(&self) -> Option<&str> {
+        self.collection.as_ref().map(|x| &**x)
     }
 }
 
@@ -449,8 +449,7 @@ impl ConfigurableStorage for CarddavStorage {
 
 pub struct CaldavStorage {
     inner: DavClient,
-    start_date: Option<chrono::DateTime<chrono::Utc>>, // FIXME: store as Option<(start, end)>
-    end_date: Option<chrono::DateTime<chrono::Utc>>,
+    date_range: Option<(chrono::DateTime<chrono::Utc>, chrono::DateTime<chrono::Utc>)>,
     item_types: Vec<String>,
 }
 
@@ -458,14 +457,12 @@ impl CaldavStorage {
     pub fn new(
         url: &str,
         http_config: HttpConfig,
-        start_date: Option<chrono::DateTime<chrono::Utc>>,
-        end_date: Option<chrono::DateTime<chrono::Utc>>,
+        date_range: Option<(chrono::DateTime<chrono::Utc>, chrono::DateTime<chrono::Utc>)>,
         item_types: Vec<String>,
     ) -> Self {
         CaldavStorage {
             inner: DavClient::new(url, http_config),
-            start_date,
-            end_date,
+            date_range,
             item_types,
         }
     }
@@ -475,7 +472,7 @@ impl CaldavStorage {
         let mut item_types = self.item_types.clone();
         let mut timefilter = "".to_owned();
 
-        if let (Some(start), Some(end)) = (self.start_date, self.end_date) {
+        if let Some((start, end)) = self.date_range {
             timefilter = format!(
                 "<C:time-range start=\"{}\" end=\"{}\" />",
                 start.format(CALDAV_DT_FORMAT),
@@ -616,8 +613,8 @@ pub struct CaldavConfig {
 }
 
 impl StorageConfig for CaldavConfig {
-    fn get_collection(&self) -> Option<String> {
-        self.collection.clone()
+    fn get_collection(&self) -> Option<&str> {
+        self.collection.as_ref().map(|x| &**x)
     }
 }
 
@@ -752,8 +749,7 @@ pub mod exports {
         Box::into_raw(Box::new(Box::new(CaldavStorage::new(
             url.to_str().unwrap(),
             init_http_config(username, password, useragent, verify_cert, auth_cert),
-            parse_date(start_date),
-            parse_date(end_date),
+            parse_date(start_date).and_then(|start| Some((start, parse_date(end_date)?))),
             item_types,
         ))))
     }

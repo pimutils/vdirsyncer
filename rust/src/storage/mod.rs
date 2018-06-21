@@ -11,17 +11,24 @@ use serde::{Deserialize, Serialize};
 type ItemAndEtag = (Item, String);
 
 pub trait StorageConfig: Serialize + Deserialize<'static> {
-    fn get_collection(&self) -> Option<String>;
+    /// Get the collection key of the object, if any.
+    fn get_collection(&self) -> Option<&str>;
 }
 
 pub trait ConfigurableStorage: Storage + Sized {
+    /// An instance of a configuration can be used to configure a storage and/or to discover
+    /// storages.
+    ///
+    /// If a user configures a storage, the entire map in the configuration file is serialized into
+    /// an instance of this type.
     type Config: StorageConfig;
 
-    /// load storage from configuration
-    fn from_config(_config: Self::Config) -> Fallible<Self>;
+    /// Load storage from configuration
+    fn from_config(config: Self::Config) -> Fallible<Self>;
 
-    /// discover collections
-    fn discover(_config: Self::Config) -> Fallible<Box<Iterator<Item = Self::Config>>>;
+    /// Discover collections. Take a configuration like the user specified and yield configurations
+    /// that actually point to valid storages.
+    fn discover(config: Self::Config) -> Fallible<Box<Iterator<Item = Self::Config>>>;
 }
 
 pub trait Storage {

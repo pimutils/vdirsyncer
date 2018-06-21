@@ -13,6 +13,7 @@ extern crate log;
 extern crate chrono;
 extern crate env_logger;
 extern crate glob;
+extern crate lazy_init;
 extern crate quick_xml;
 extern crate reqwest;
 extern crate sha2;
@@ -29,15 +30,15 @@ mod item;
 mod storage;
 
 pub mod exports {
-    use std::ffi::CStr;
+    use std::ffi::CString;
     use std::os::raw::c_char;
 
     pub use super::item::exports::*;
     pub use super::storage::exports::*;
 
     #[no_mangle]
-    pub unsafe extern "C" fn vdirsyncer_free_str(s: *const c_char) {
-        CStr::from_ptr(s);
+    pub unsafe extern "C" fn vdirsyncer_free_str(s: *mut c_char) {
+        let _ = CString::from_raw(s);
     }
 
     #[no_mangle]

@@ -230,8 +230,8 @@ pub struct Config {
 }
 
 impl StorageConfig for Config {
-    fn get_collection(&self) -> Option<String> {
-        self.collection.clone()
+    fn get_collection(&self) -> Option<&str> {
+        self.collection.as_ref().map(|x| &**x)
     }
 }
 

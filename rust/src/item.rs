@@ -3,46 +3,66 @@ use vobject;
 use sha2::{Digest, Sha256};
 use std::fmt::Write;
 
+use lazy_init::Lazy;
+
 use errors::*;
 
 #[derive(Clone)]
-pub enum Item {
+enum ItemInner {
     Parsed(vobject::Component),
     Unparseable(String), // FIXME: maybe use https://crates.io/crates/terminated
 }
 
+pub struct Item {
+    inner: ItemInner,
+    uid: Lazy<Option<String>>,
+    hash: Lazy<Option<String>>,
+}
+
 impl Item {
     pub fn from_raw(raw: String) -> Self {
-        match vobject::parse_component(&raw) {
-            Ok(x) => Item::Parsed(x),
+        Self::from_inner(match vobject::parse_component(&raw) {
+            Ok(x) => ItemInner::Parsed(x),
             // Don't chain vobject error here because it cannot be stored/cloned FIXME
-            _ => Item::Unparseable(raw),
-        }
+            _ => ItemInner::Unparseable(raw),
+        })
     }
 
     pub fn from_component(component: vobject::Component) -> Self {
-        Item::Parsed(component)
+        Self::from_inner(ItemInner::Parsed(component))
+    }
+
+    fn from_inner(inner: ItemInner) -> Self {
+        Item {
+            inner,
+            uid: Lazy::new(),
+            hash: Lazy::new(),
+        }
     }
 
     /// Global identifier of the item, across storages, doesn't change after a modification of the
     /// item.
-    pub fn get_uid(&self) -> Option<String> {
-        // FIXME: Cache
-        if let Item::Parsed(ref c) = *self {
-            let mut stack: Vec<&vobject::Component> = vec![c];
+    pub fn get_uid(&self) -> Option<&str> {
+        self.uid
+            .get_or_create(|| {
+                if let ItemInner::Parsed(ref c) = self.inner {
+                    let mut stack: Vec<&vobject::Component> = vec![c];
 
-            while let Some(vobj) = stack.pop() {
-                if let Some(prop) = vobj.get_only("UID") {
-                    return Some(prop.value_as_string());
+                    while let Some(vobj) = stack.pop() {
+                        if let Some(prop) = vobj.get_only("UID") {
+                            return Some(prop.value_as_string());
+                        }
+                        stack.extend(vobj.subcomponents.iter());
+                    }
                 }
-                stack.extend(vobj.subcomponents.iter());
-            }
-        }
-        None
+                None
+            })
+            .as_ref()
+            .map(|x| &**x)
     }
 
     pub fn with_uid(&self, uid: &str) -> Fallible<Self> {
-        if let Item::Parsed(ref component) = *self {
+        if let ItemInner::Parsed(ref component) = self.inner {
             let mut new_component = component.clone();
             change_uid(&mut new_component, uid);
             Ok(Item::from_raw(vobject::write_component(&new_component)))
@@ -53,41 +73,46 @@ impl Item {
 
     /// Raw unvalidated content of the item
     pub fn get_raw(&self) -> String {
-        match *self {
-            Item::Parsed(ref component) => vobject::write_component(component),
-            Item::Unparseable(ref x) => x.to_owned(),
+        match self.inner {
+            ItemInner::Parsed(ref component) => vobject::write_component(component),
+            ItemInner::Unparseable(ref x) => x.to_owned(),
         }
     }
 
     /// Component of item if parseable
     pub fn get_component(&self) -> Fallible<&vobject::Component> {
-        match *self {
-            Item::Parsed(ref component) => Ok(component),
+        match self.inner {
+            ItemInner::Parsed(ref component) => Ok(component),
             _ => Err(Error::ItemUnparseable.into()),
         }
     }
 
     /// Component of item if parseable
     pub fn into_component(self) -> Fallible<vobject::Component> {
-        match self {
-            Item::Parsed(component) => Ok(component),
+        match self.inner {
+            ItemInner::Parsed(component) => Ok(component),
             _ => Err(Error::ItemUnparseable.into()),
         }
     }
 
     /// Used for etags
-    pub fn get_hash(&self) -> Fallible<String> {
-        // FIXME: cache
-        if let Item::Parsed(ref component) = *self {
-            Ok(hash_component(component))
-        } else {
-            Err(Error::ItemUnparseable.into())
-        }
+    pub fn get_hash(&self) -> Fallible<&str> {
+        self.hash
+            .get_or_create(|| {
+                if let ItemInner::Parsed(ref component) = self.inner {
+                    Some(hash_component(component))
+                } else {
+                    None
+                }
+            })
+            .as_ref()
+            .map(|x| &**x)
+            .ok_or_else(|| Error::ItemUnparseable.into())
     }
 
     /// Used for generating hrefs and matching up items during synchronization. This is either the
     /// UID or the hash of the item's content.
-    pub fn get_ident(&self) -> Fallible<String> {
+    pub fn get_ident(&self) -> Fallible<&str> {
         if let Some(x) = self.get_uid() {
             return Ok(x);
         }
@@ -100,11 +125,17 @@ impl Item {
     }
 
     pub fn is_parseable(&self) -> bool {
-        if let Item::Parsed(_) = *self {
+        if let ItemInner::Parsed(_) = self.inner {
             true
         } else {
             false
         }
+    }
+}
+
+impl Clone for Item {
+    fn clone(&self) -> Item {
+        Item::from_inner(self.inner.clone())
     }
 }
 
@@ -195,14 +226,11 @@ pub mod exports {
     use std::os::raw::c_char;
     use std::ptr;
 
-    const EMPTY_STRING: *const c_char = b"\0" as *const u8 as *const c_char;
-
     #[no_mangle]
     pub unsafe extern "C" fn vdirsyncer_get_uid(c: *mut Item) -> *const c_char {
-        match (*c).get_uid() {
-            Some(x) => CString::new(x).unwrap().into_raw(),
-            None => EMPTY_STRING,
-        }
+        CString::new((*c).get_uid().unwrap_or(""))
+            .unwrap()
+            .into_raw()
     }
 
     #[no_mangle]
