@@ -35,10 +35,10 @@ class ServerMixin(object):
             assert collection.startswith('test')
 
             for _ in range(4):
-                args = self.storage_class.create_collection(
-                    collection + str(uuid.uuid4()),
-                    **davical_args
-                )
+                args = dict(davical_args)
+                args['collection'] = collection + str(uuid.uuid4())
+                args = self.storage_class.create_collection(**args)
+
                 s = self.storage_class(**args)
                 if not list(s.list()):
                     request.addfinalizer(
