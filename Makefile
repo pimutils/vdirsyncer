@@ -33,8 +33,10 @@ export RUST_LOG := vdirsyncer_rustext=debug
 PYTEST_ARGS =
 
 # Variables below this line are not very interesting for getting started.
-
 TEST_EXTRA_PACKAGES =
+
+# The rust toolchain to install. You need nightly to run clippy
+RUST_TOOLCHAIN = nightly-2018-06-18
 
 ifeq ($(COVERAGE), true)
 	TEST_EXTRA_PACKAGES += pytest-cov
@@ -149,8 +151,8 @@ ssh-submodule-urls:
 		git remote get-url origin"
 
 install-rust:
-	curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain nightly
-	rustup update nightly
+	curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $(RUST_TOOLCHAIN)
+	rustup update $(RUST_TOOLCHAIN)
 
 rust/vdirsyncer_rustext.h:
 	cd rust/ && cargo build # hack to work around cbindgen bugs
