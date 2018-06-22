@@ -203,7 +203,7 @@ impl Storage for SinglefileStorage {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Config {
     path: String,
     collection: Option<String>,
@@ -266,6 +266,10 @@ impl ConfigurableStorage for SinglefileStorage {
                 })
             },
         )))
+    }
+
+    fn create(_config: Self::Config) -> Fallible<Self::Config> {
+        unimplemented!();
     }
 }
 

@@ -96,3 +96,19 @@ class RustStorage(Storage):
         native.check_error(e)
         rv = native.string_rv(rv)
         return json.loads(rv)
+
+    @classmethod
+    def create_collection(cls, **kwargs):
+        try:
+            discover = cls._static_native('create')
+        except AttributeError:
+            raise NotImplementedError()
+
+        e = native.get_error_pointer()
+        rv = discover(
+            json.dumps(kwargs).encode('utf-8'),
+            e
+        )
+        native.check_error(e)
+        rv = native.string_rv(rv)
+        return json.loads(rv)

@@ -202,6 +202,7 @@ unsafe fn discover_impl<S: ConfigurableStorage>(
     config: *const c_char,
     err: *mut *mut ShippaiError,
 ) -> *const c_char {
+    #[inline]
     unsafe fn inner<S: ConfigurableStorage>(config: *const c_char) -> Fallible<*const c_char> {
         let config_str = CStr::from_ptr(config).to_str()?;
         let configs: Vec<S::Config> = S::discover(serde_json::from_str(config_str)?)?.collect();
@@ -246,4 +247,32 @@ pub unsafe extern "C" fn vdirsyncer_storage_discover_caldav(
     err: *mut *mut ShippaiError,
 ) -> *const c_char {
     discover_impl::<super::dav::CaldavStorage>(config, err)
+}
+
+#[inline]
+unsafe fn create_impl<S: ConfigurableStorage>(
+    config: *const c_char,
+    err: *mut *mut ShippaiError,
+) -> *const c_char {
+    #[inline]
+    unsafe fn inner<S: ConfigurableStorage>(config: *const c_char) -> Fallible<*const c_char> {
+        let config_str = CStr::from_ptr(config).to_str()?;
+        let new_config = S::create(serde_json::from_str(config_str)?)?;
+        let string = serde_json::to_string(&new_config)?;
+        Ok(CString::new(string)?.into_raw())
+    }
+
+    if let Some(json) = export_result(inner::<S>(config), err) {
+        json
+    } else {
+        ptr::null_mut()
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn vdirsyncer_storage_create_caldav(
+    config: *const c_char,
+    err: *mut *mut ShippaiError,
+) -> *const c_char {
+    create_impl::<super::dav::CaldavStorage>(config, err)
 }

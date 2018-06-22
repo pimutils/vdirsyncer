@@ -28,6 +28,11 @@ fn report() -> reqwest::Method {
     reqwest::Method::Extension("REPORT".to_owned())
 }
 
+#[inline]
+fn mkcol() -> reqwest::Method {
+    reqwest::Method::Extension("MKCOL".to_owned())
+}
+
 static CALDAV_DT_FORMAT: &'static str = "%Y%m%dT%H%M%SZ";
 
 struct DavClient {
@@ -380,7 +385,7 @@ impl Storage for CarddavStorage {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct CarddavConfig {
     url: String,
 
@@ -430,20 +435,23 @@ impl ConfigurableStorage for CarddavStorage {
 
                     let collection_url = base.join(&response.href?).ok()?;
                     let collection = collection_name_from_url(&collection_url)?;
-                    let collection_url_str = collection_url.as_str().to_owned();
 
                     if seen_urls.contains(&collection_url) {
                         return None;
                     }
-                    seen_urls.insert(collection_url);
+                    seen_urls.insert(collection_url.clone());
 
                     Some(CarddavConfig {
-                        url: collection_url_str,
+                        url: collection_url.into_string(),
                         http: config.http.clone(),
                         collection: Some(collection),
                     })
                 }),
         ))
+    }
+
+    fn create(_config: Self::Config) -> Fallible<Self::Config> {
+        unimplemented!();
     }
 }
 
@@ -601,7 +609,7 @@ impl Storage for CaldavStorage {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct CaldavConfig {
     url: String,
     item_types: Option<Vec<String>>,
@@ -652,15 +660,14 @@ impl ConfigurableStorage for CaldavStorage {
 
                     let collection_url = base.join(&response.href?).ok()?;
                     let collection = collection_name_from_url(&collection_url)?;
-                    let collection_url_str = collection_url.as_str().to_owned();
 
                     if seen_urls.contains(&collection_url) {
                         return None;
                     }
-                    seen_urls.insert(collection_url);
+                    seen_urls.insert(collection_url.clone());
 
                     Some(CaldavConfig {
-                        url: collection_url_str,
+                        url: collection_url.into_string(),
                         item_types: config.item_types.clone(),
                         start_date: config.start_date.clone(),
                         end_date: config.end_date.clone(),
@@ -669,6 +676,52 @@ impl ConfigurableStorage for CaldavStorage {
                     })
                 }),
         ))
+    }
+
+    fn create(mut config: Self::Config) -> Fallible<Self::Config> {
+        let url = Url::parse(&config.url)?;
+        let mut dav = DavClient::new(&config.url, config.http.clone());
+
+        let (collection, collection_url) = match config.collection {
+            Some(ref x) => (x.clone(), Self::get_homeset_url(&mut dav)?.join(x)?),
+            None => match collection_name_from_url(&url) {
+                Some(x) => (x, url.clone()),
+                None => Err(Error::BadDiscoveryConfig {
+                    msg: "The URL is pointing to the root of the server, and `collection` is set to `null`. This means that vdirsyncer would attempt to create a collection at the root of the server. This is likely a misconfiguration. Set `collection` to an arbitrary name if you want auto-discovery.".to_owned()
+                })?
+            }
+        };
+
+        if let Ok(discover_iter) = Self::discover(config.clone()) {
+            for discover_res in discover_iter {
+                if discover_res.get_collection() == Some(&collection) {
+                    return Ok(discover_res);
+                }
+            }
+        }
+
+        let request = dav
+            .get_http()?
+            .request(mkcol(), collection_url)
+            .header(ContentType::xml())
+            .body(
+                r#"<?xml version="1.0" encoding="utf-8" ?>
+                <d:mkcol xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
+                    <d:set>
+                        <d:prop>
+                            <d:resourcetype>
+                                <d:collection/>
+                                <c:calendar/>
+                            </d:resourcetype>
+                        </d:prop>
+                    </d:set>
+                </d:mkcol>"#,
+            )
+            .build()?;
+
+        let response = dav.send_request(request)?;
+        config.url = response.url().clone().into_string();
+        Ok(config)
     }
 }
 

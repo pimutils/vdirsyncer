@@ -304,7 +304,7 @@ class DAVSession(object):
         if verify_cert is not None:
             self._settings['verify'] = utils.expand_path(verify_cert)
 
-        self.useragent = useragent
+        self.useragent = useragent or USERAGENT
         self.url = url.rstrip('/') + '/'
 
         self._session = requests.session()
@@ -356,12 +356,6 @@ class DAVStorage(RustStorage):
 
     import inspect
     __init__.__signature__ = inspect.signature(session_class.__init__)
-
-    @classmethod
-    def create_collection(cls, collection, **kwargs):
-        session, _ = cls.session_class.init_and_remaining_args(**kwargs)
-        d = cls.discovery_class(session, kwargs)
-        return d.create(collection)
 
     def get_meta(self, key):
         try:
@@ -457,6 +451,7 @@ class CalDAVStorage(DAVStorage):
     def __init__(self, start_date=None, end_date=None,
                  item_types=(), **kwargs):
         super(CalDAVStorage, self).__init__(**kwargs)
+        item_types = item_types or ()
         if not isinstance(item_types, (list, tuple)):
             raise exceptions.UserError('item_types must be a list.')
 
@@ -525,3 +520,9 @@ class CardDAVStorage(DAVStorage):
         )
 
         super(CardDAVStorage, self).__init__(**kwargs)
+
+    @classmethod
+    def create_collection(cls, collection, **kwargs):
+        session, _ = cls.session_class.init_and_remaining_args(**kwargs)
+        d = cls.discovery_class(session, kwargs)
+        return d.create(collection)

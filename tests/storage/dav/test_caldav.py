@@ -21,7 +21,9 @@ class TestCalDAVStorage(DAVStorageTests):
         return request.param
 
     def test_doesnt_accept_vcard(self, item_type, get_storage_args):
-        s = self.storage_class(item_types=(item_type,), **get_storage_args())
+        args = get_storage_args()
+        args['item_types'] = (item_type,)
+        s = self.storage_class(**args)
 
         try:
             s.upload(format_item(item_template=VCARD_TEMPLATE))
@@ -34,8 +36,10 @@ class TestCalDAVStorage(DAVStorageTests):
     def test_timerange_correctness(self, get_storage_args):
         start_date = datetime.datetime(2013, 9, 10)
         end_date = datetime.datetime(2013, 9, 13)
-        s = self.storage_class(start_date=start_date, end_date=end_date,
-                               **get_storage_args())
+        args = get_storage_args()
+        args['start_date'] = start_date
+        args['end_date'] = end_date
+        s = self.storage_class(**args)
 
         too_old_item = format_item(item_template=dedent(u'''
             BEGIN:VCALENDAR
