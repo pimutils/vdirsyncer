@@ -6,11 +6,11 @@ references:
   restore_caches: &restore_caches
     restore_cache:
       keys:
-        - cache6-{{ arch }}-{{ .Branch }}
+        - cache7-{{ arch }}-{{ .Branch }}
 
   save_caches: &save_caches
     save_cache:
-      key: cache6-{{ arch }}-{{ .Branch }}
+      key: cache7-{{ arch }}-{{ .Branch }}
       paths:
         - "~/.cargo/"
         - "~/.cache/pip/"
