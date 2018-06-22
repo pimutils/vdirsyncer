@@ -6,13 +6,12 @@ references:
   restore_caches: &restore_caches
     restore_cache:
       keys:
-        - cache3-{{ arch }}-{{ .Branch }}
+        - cache7-{{ arch }}-{{ .Branch }}
 
   save_caches: &save_caches
     save_cache:
-      key: cache3-{{ arch }}-{{ .Branch }}
+      key: cache7-{{ arch }}-{{ .Branch }}
       paths:
-        - "rust/target/"
         - "~/.cargo/"
         - "~/.cache/pip/"
         - "~/.rustup/"

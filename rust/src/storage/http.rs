@@ -116,8 +116,8 @@ impl Storage for HttpStorage {
         for component in split_collection(&s)? {
             let mut item = Item::from_component(component);
             item = item.with_uid(&item.get_hash()?)?;
-            let ident = item.get_ident()?;
-            let hash = item.get_hash()?;
+            let ident = item.get_ident()?.to_owned();
+            let hash = item.get_hash()?.to_owned();
             new_cache.insert(ident, (item, hash));
         }
 

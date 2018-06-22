@@ -33,8 +33,10 @@ export RUST_LOG := vdirsyncer_rustext=debug
 PYTEST_ARGS =
 
 # Variables below this line are not very interesting for getting started.
-
 TEST_EXTRA_PACKAGES =
+
+# The rust toolchain to install. You need nightly to run clippy
+RUST_TOOLCHAIN = nightly-2018-06-20
 
 ifeq ($(COVERAGE), true)
 	TEST_EXTRA_PACKAGES += pytest-cov
@@ -107,8 +109,8 @@ style:
 	! git grep -i syncroniz */*
 	! git grep -i 'text/icalendar' */*
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
-	cd rust/ && cargo +nightly clippy
-	cd rust/ && cargo +nightly fmt --all -- --check
+	cd rust/ && cargo +$(RUST_TOOLCHAIN) clippy
+	cd rust/ && cargo +$(RUST_TOOLCHAIN) fmt --all -- --check
 
 install-docs:
 	pip install -Ur docs-requirements.txt
@@ -149,8 +151,9 @@ ssh-submodule-urls:
 		git remote get-url origin"
 
 install-rust:
-	curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain nightly
-	rustup update nightly
+	curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $(RUST_TOOLCHAIN)
+	rustup update $(RUST_TOOLCHAIN)
+	rustup default $(RUST_TOOLCHAIN)
 
 rust/vdirsyncer_rustext.h:
 	cd rust/ && cargo build # hack to work around cbindgen bugs

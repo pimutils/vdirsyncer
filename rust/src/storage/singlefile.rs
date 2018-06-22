@@ -13,11 +13,34 @@ use atomicwrites::{AllowOverwrite, AtomicFile};
 
 use item::Item;
 
-type ItemCache = BTreeMap<String, (Item, String)>;
+#[derive(Clone)]
+struct HashableItem(Item);
+
+impl HashableItem {
+    /// Create a wrapper around `item` that guarantees the `get_hash()` method will return `Ok`.
+    pub fn new(item: Item) -> Fallible<Self> {
+        item.get_hash()?;
+        Ok(HashableItem(item))
+    }
+
+    #[inline]
+    pub fn get_etag(&self) -> &str {
+        self.0.get_hash().unwrap()
+    }
+}
+
+impl Into<Item> for HashableItem {
+    fn into(self) -> Item {
+        self.0
+    }
+}
+
+// href -> item
+// etag = item.get_hash()
+type ItemCache = BTreeMap<String, HashableItem>;
 
 pub struct SinglefileStorage {
     path: PathBuf,
-    // href -> (item, etag)
     items_cache: Option<(ItemCache, SystemTime)>,
     buffered_mode: bool,
     dirty_cache: bool,
@@ -74,21 +97,20 @@ impl Storage for SinglefileStorage {
         f.read_to_string(&mut s)?;
         for component in split_collection(&s)? {
             let item = Item::from_component(component);
-            let hash = item.get_hash()?;
-            let ident = item.get_ident()?;
-            new_cache.insert(ident, (item, hash));
+            let ident = item.get_ident()?.to_owned();
+            new_cache.insert(ident, HashableItem::new(item)?);
         }
 
         self.items_cache = Some((new_cache, mtime));
         self.dirty_cache = false;
         Ok(Box::new(self.items_cache.as_ref().unwrap().0.iter().map(
-            |(href, &(_, ref etag))| (href.clone(), etag.clone()),
+            |(href, item)| (href.clone(), item.get_etag().to_owned()),
         )))
     }
 
     fn get(&mut self, href: &str) -> Fallible<(Item, String)> {
         match self.get_items()?.get(href) {
-            Some(&(ref href, ref etag)) => Ok((href.clone(), etag.clone())),
+            Some(entry) => Ok((entry.clone().into(), entry.get_etag().to_owned())),
             None => Err(Error::ItemNotFound {
                 href: href.to_owned(),
             })?,
@@ -96,11 +118,11 @@ impl Storage for SinglefileStorage {
     }
 
     fn upload(&mut self, item: Item) -> Fallible<(String, String)> {
-        let hash = item.get_hash()?;
-        let href = item.get_ident()?;
+        let hash = item.get_hash()?.to_owned();
+        let href = item.get_ident()?.to_owned();
         match self.get_items()?.entry(href.clone()) {
             Occupied(_) => Err(Error::ItemAlreadyExisting { href: href.clone() })?,
-            Vacant(vc) => vc.insert((item, hash.clone())),
+            Vacant(vc) => vc.insert(HashableItem::new(item)?),
         };
         self.write_back()?;
         Ok((href, hash))
@@ -109,9 +131,9 @@ impl Storage for SinglefileStorage {
     fn update(&mut self, href: &str, item: Item, etag: &str) -> Fallible<String> {
         let hash = match self.get_items()?.entry(href.to_owned()) {
             Occupied(mut oc) => {
-                if oc.get().1 == etag {
-                    let hash = item.get_hash()?;
-                    oc.insert((item, hash.clone()));
+                if oc.get().get_etag() == etag {
+                    let hash = item.get_hash()?.to_owned();
+                    oc.insert(HashableItem::new(item)?);
                     hash
                 } else {
                     Err(Error::WrongEtag {
@@ -130,7 +152,7 @@ impl Storage for SinglefileStorage {
     fn delete(&mut self, href: &str, etag: &str) -> Fallible<()> {
         match self.get_items()?.entry(href.to_owned()) {
             Occupied(oc) => {
-                if oc.get().1 == etag {
+                if oc.get().get_etag() == etag {
                     oc.remove();
                 } else {
                     Err(Error::WrongEtag {
@@ -157,7 +179,7 @@ impl Storage for SinglefileStorage {
         let (items, mtime) = self.items_cache.take().unwrap();
 
         let af = AtomicFile::new(&self.path, AllowOverwrite);
-        let content = join_collection(items.into_iter().map(|(_, (item, _))| item))?;
+        let content = join_collection(items.into_iter().map(|(_, item)| item.into()))?;
 
         let path = &self.path;
         let write_inner = |f: &mut File| -> Fallible<()> {
@@ -188,8 +210,8 @@ pub struct Config {
 }
 
 impl StorageConfig for Config {
-    fn get_collection(&self) -> Option<String> {
-        self.collection.clone()
+    fn get_collection(&self) -> Option<&str> {
+        self.collection.as_ref().map(|x| &**x)
     }
 }
 

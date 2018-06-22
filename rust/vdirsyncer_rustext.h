@@ -80,7 +80,7 @@ void vdirsyncer_free_storage_listing(VdirsyncerStorageListing *listing);
 
 void vdirsyncer_free_storage_upload_result(VdirsyncerStorageUploadResult *res);
 
-void vdirsyncer_free_str(const char *s);
+void vdirsyncer_free_str(char *s);
 
 const char *vdirsyncer_get_hash(Item *c, ShippaiError **err);
 
