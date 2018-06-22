@@ -109,8 +109,8 @@ style:
 	! git grep -i syncroniz */*
 	! git grep -i 'text/icalendar' */*
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
-	cd rust/ && cargo +nightly clippy
-	cd rust/ && cargo +nightly fmt --all -- --check
+	cd rust/ && cargo +$(RUST_TOOLCHAIN) clippy
+	cd rust/ && cargo +$(RUST_TOOLCHAIN) fmt --all -- --check
 
 install-docs:
 	pip install -Ur docs-requirements.txt
