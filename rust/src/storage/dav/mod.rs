@@ -413,7 +413,7 @@ impl DavClient {
     fn mkcol(&mut self, url: Url, storage_type: StorageType) -> Fallible<Url> {
         let resourcetype_xml = match storage_type {
             StorageType::Caldav => "<c:calendar xmlns:c=\"urn:ietf:params:xml:ns:caldav\"/>",
-            StorageType::Carddav => "<c:addressbook xmlns:c=\"urn:ietf:params:xml:ns:carddav\"/>"
+            StorageType::Carddav => "<c:addressbook xmlns:c=\"urn:ietf:params:xml:ns:carddav\"/>",
         };
 
         let request = self
@@ -440,7 +440,11 @@ impl DavClient {
         Ok(response.url().clone())
     }
 
-    fn prepare_create(&mut self, config: DavConfig, storage_type: StorageType) -> Fallible<(String, Url)> {
+    fn prepare_create(
+        &mut self,
+        config: &DavConfig,
+        storage_type: StorageType,
+    ) -> Fallible<(String, Url)> {
         let url = Url::parse(&config.url)?;
         match config.collection {
             Some(ref x) => Ok((x.clone(), self.get_homeset_url(storage_type)?.join(x)?)),
@@ -527,7 +531,7 @@ impl ConfigurableStorage for CarddavStorage {
     fn create(mut config: Self::Config) -> Fallible<Self::Config> {
         let mut dav = DavClient::new(&config.url, config.http.clone());
 
-        let (collection, collection_url) = dav.prepare_create(config.clone(), StorageType::Carddav)?;
+        let (collection, collection_url) = dav.prepare_create(&config, StorageType::Carddav)?;
 
         if let Ok(discover_iter) = Self::discover(config.clone()) {
             for discover_res in discover_iter {
@@ -538,10 +542,7 @@ impl ConfigurableStorage for CarddavStorage {
         }
 
         config.url = dav
-            .mkcol(
-                collection_url,
-                StorageType::Carddav
-            )?
+            .mkcol(collection_url, StorageType::Carddav)?
             .into_string();
         Ok(config)
     }
@@ -699,7 +700,7 @@ impl ConfigurableStorage for CaldavStorage {
                     start_date: start_date.clone(),
                     end_date: end_date.clone(),
                     item_types: item_types.clone(),
-                    dav: dav,
+                    dav,
                 }),
         ))
     }
@@ -707,7 +708,7 @@ impl ConfigurableStorage for CaldavStorage {
     fn create(mut config: Self::Config) -> Fallible<Self::Config> {
         let mut dav = DavClient::new(&config.dav.url, config.dav.http.clone());
 
-        let (collection, collection_url) = dav.prepare_create(config.dav.clone(), StorageType::Caldav)?;
+        let (collection, collection_url) = dav.prepare_create(&config.dav, StorageType::Caldav)?;
 
         if let Ok(discover_iter) = Self::discover(config.clone()) {
             for discover_res in discover_iter {
@@ -718,10 +719,7 @@ impl ConfigurableStorage for CaldavStorage {
         }
 
         config.dav.url = dav
-            .mkcol(
-                collection_url,
-                StorageType::Caldav
-            )?
+            .mkcol(collection_url, StorageType::Caldav)?
             .into_string();
         Ok(config)
     }
