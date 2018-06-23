@@ -520,9 +520,3 @@ class CardDAVStorage(DAVStorage):
         )
 
         super(CardDAVStorage, self).__init__(**kwargs)
-
-    @classmethod
-    def create_collection(cls, collection, **kwargs):
-        session, _ = cls.session_class.init_and_remaining_args(**kwargs)
-        d = cls.discovery_class(session, kwargs)
-        return d.create(collection)

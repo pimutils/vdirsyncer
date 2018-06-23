@@ -276,3 +276,11 @@ pub unsafe extern "C" fn vdirsyncer_storage_create_caldav(
 ) -> *const c_char {
     create_impl::<super::dav::CaldavStorage>(config, err)
 }
+
+#[no_mangle]
+pub unsafe extern "C" fn vdirsyncer_storage_create_carddav(
+    config: *const c_char,
+    err: *mut *mut ShippaiError,
+) -> *const c_char {
+    create_impl::<super::dav::CarddavStorage>(config, err)
+}
