@@ -303,6 +303,30 @@ impl DavClient {
         let buf_reader = BufReader::new(response);
         let xml_reader = quick_xml::Reader::from_reader(buf_reader);
         Ok(parser::ListingParser::new(xml_reader))
+}
+
+    fn mkcol(&mut self, url: Url, resourcetype_xml: &str) -> Fallible<Url> {
+        let request = self
+            .get_http()?
+            .request(mkcol(), url)
+            .header(ContentType::xml())
+            .body(
+                format!(r#"<?xml version="1.0" encoding="utf-8" ?>
+                <d:mkcol xmlns:d="DAV:">
+                    <d:set>
+                        <d:prop>
+                            <d:resourcetype>
+                                <d:collection/>
+                                {}
+                            </d:resourcetype>
+                        </d:prop>
+                    </d:set>
+                </d:mkcol>"#, resourcetype_xml)
+            )
+            .build()?;
+
+        let response = self.send_request(request)?;
+        Ok(response.url().clone())
     }
 }
 
@@ -386,7 +410,7 @@ impl Storage for CarddavStorage {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct CarddavConfig {
+pub struct DavConfig {
     url: String,
 
     #[serde(flatten)]
@@ -395,14 +419,14 @@ pub struct CarddavConfig {
     collection: Option<String>,
 }
 
-impl StorageConfig for CarddavConfig {
+impl StorageConfig for DavConfig {
     fn get_collection(&self) -> Option<&str> {
         self.collection.as_ref().map(|x| &**x)
     }
 }
 
 impl ConfigurableStorage for CarddavStorage {
-    type Config = CarddavConfig;
+    type Config = DavConfig;
 
     fn from_config(config: Self::Config) -> Fallible<Self> {
         Ok(CarddavStorage::new(&config.url, config.http))
@@ -441,7 +465,7 @@ impl ConfigurableStorage for CarddavStorage {
                     }
                     seen_urls.insert(collection_url.clone());
 
-                    Some(CarddavConfig {
+                    Some(DavConfig {
                         url: collection_url.into_string(),
                         http: config.http.clone(),
                         collection: Some(collection),
@@ -611,18 +635,16 @@ impl Storage for CaldavStorage {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CaldavConfig {
-    url: String,
     item_types: Option<Vec<String>>,
     start_date: Option<String>,
     end_date: Option<String>,
-    collection: Option<String>,
     #[serde(flatten)]
-    http: HttpConfig,
+    dav: DavConfig,
 }
 
 impl StorageConfig for CaldavConfig {
     fn get_collection(&self) -> Option<&str> {
-        self.collection.as_ref().map(|x| &**x)
+        self.dav.get_collection()
     }
 }
 
@@ -634,19 +656,19 @@ impl ConfigurableStorage for CaldavStorage {
     }
 
     fn discover(config: Self::Config) -> Fallible<Box<Iterator<Item = Self::Config>>> {
-        if config.collection.is_some() {
+        if config.dav.collection.is_some() {
             Err(Error::BadDiscoveryConfig {
                 msg: "collection argument must not be given when discovering collections/storages"
                     .to_owned(),
             })?;
         }
 
-        let mut dav = DavClient::new(&config.url, config.http.clone());
+        let mut dav = DavClient::new(&config.dav.url, config.dav.http.clone());
         let homeset_url = Self::get_homeset_url(&mut dav)?;
         let mut parser = dav.discover_impl(homeset_url)?;
         let mut seen_urls = BTreeSet::new();
 
-        let base = Url::parse(&config.url)?;
+        let base = Url::parse(&config.dav.url)?;
 
         Ok(Box::new(
             parser
@@ -667,22 +689,24 @@ impl ConfigurableStorage for CaldavStorage {
                     seen_urls.insert(collection_url.clone());
 
                     Some(CaldavConfig {
-                        url: collection_url.into_string(),
                         item_types: config.item_types.clone(),
                         start_date: config.start_date.clone(),
                         end_date: config.end_date.clone(),
+                        dav: DavConfig {
+                        url: collection_url.into_string(),
                         collection: Some(collection),
-                        http: config.http.clone(),
+                        http: config.dav.http.clone(),
+                        }
                     })
                 }),
         ))
     }
 
     fn create(mut config: Self::Config) -> Fallible<Self::Config> {
-        let url = Url::parse(&config.url)?;
-        let mut dav = DavClient::new(&config.url, config.http.clone());
+        let url = Url::parse(&config.dav.url)?;
+        let mut dav = DavClient::new(&config.dav.url, config.dav.http.clone());
 
-        let (collection, collection_url) = match config.collection {
+        let (collection, collection_url) = match config.dav.collection {
             Some(ref x) => (x.clone(), Self::get_homeset_url(&mut dav)?.join(x)?),
             None => match collection_name_from_url(&url) {
                 Some(x) => (x, url.clone()),
@@ -700,27 +724,10 @@ impl ConfigurableStorage for CaldavStorage {
             }
         }
 
-        let request = dav
-            .get_http()?
-            .request(mkcol(), collection_url)
-            .header(ContentType::xml())
-            .body(
-                r#"<?xml version="1.0" encoding="utf-8" ?>
-                <d:mkcol xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
-                    <d:set>
-                        <d:prop>
-                            <d:resourcetype>
-                                <d:collection/>
-                                <c:calendar/>
-                            </d:resourcetype>
-                        </d:prop>
-                    </d:set>
-                </d:mkcol>"#,
-            )
-            .build()?;
-
-        let response = dav.send_request(request)?;
-        config.url = response.url().clone().into_string();
+        config.dav.url = dav.mkcol(
+            collection_url,
+            "<c:calendar xmlns:c=\"urn:ietf:params:xml:ns:caldav\"/>"
+        )?.into_string();
         Ok(config)
     }
 }
