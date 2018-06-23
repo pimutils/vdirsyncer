@@ -694,7 +694,7 @@ impl ConfigurableStorage for CaldavStorage {
         let end_date = config.end_date;
 
         Ok(Box::new(
-            dav.discover_impl(StorageType::Carddav, config.dav)?
+            dav.discover_impl(StorageType::Caldav, config.dav)?
                 .map(move |dav| CaldavConfig {
                     start_date: start_date.clone(),
                     end_date: end_date.clone(),

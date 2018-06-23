@@ -130,6 +130,8 @@ void vdirsyncer_storage_buffered(Box_Storage *storage);
 
 const char *vdirsyncer_storage_create_caldav(const char *config, ShippaiError **err);
 
+const char *vdirsyncer_storage_create_carddav(const char *config, ShippaiError **err);
+
 void vdirsyncer_storage_delete(Box_Storage *storage,
                                const char *c_href,
                                const char *c_etag,
