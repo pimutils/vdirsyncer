@@ -36,7 +36,7 @@ PYTEST_ARGS =
 TEST_EXTRA_PACKAGES =
 
 # The rust toolchain to install. You need nightly to run clippy
-RUST_TOOLCHAIN = nightly-2018-06-20
+RUST_TOOLCHAIN = nightly
 
 ifeq ($(COVERAGE), true)
 	TEST_EXTRA_PACKAGES += pytest-cov

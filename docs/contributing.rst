@@ -79,9 +79,12 @@ For many patches, it might suffice to just let Travis run the tests. However,
 Travis is slow, so you might want to run them locally too. For this, set up a
 virtualenv_ and run this inside of it::
 
+    # Install rust dependency
+    make install-rust
+
+    make install-rust
     # install:
     #  - vdirsyncer from the repo into the virtualenv
-    #  - stylecheckers (flake8) and code formatters (autopep8)
     make install-dev
 
     # Install git commit hook for the stylechecker
@@ -89,6 +92,9 @@ virtualenv_ and run this inside of it::
 
     # install test dependencies
     make install-test
+
+    # Install stylecheckers (flake8, clippy, rustfmt)
+    make install-style
 
 Then you can run::
 
