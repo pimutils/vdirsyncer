@@ -256,7 +256,11 @@ impl DavClient {
         Ok(())
     }
 
-    fn get_well_known_url(&mut self, well_known_path: &str) -> Fallible<Url> {
+    fn get_well_known_url(&mut self, storage_type: StorageType) -> Fallible<Url> {
+        let well_known_path = match storage_type {
+            StorageType::Caldav => "/.well-known/caldav",
+            StorageType::Carddav => "/.well-known/carddav",
+        };
         let url = Url::parse(&self.url)?;
         let request = self.get_http()?.get(url.join(well_known_path)?).build()?;
         match self.send_request(request) {
@@ -269,8 +273,8 @@ impl DavClient {
         }
     }
 
-    pub fn get_principal_url(&mut self, well_known_path: &str) -> Fallible<Url> {
-        let well_known_url = self.get_well_known_url(well_known_path)?;
+    pub fn get_principal_url(&mut self, storage_type: StorageType) -> Fallible<Url> {
+        let well_known_url = self.get_well_known_url(storage_type)?;
 
         let mut headers = reqwest::header::Headers::new();
         headers.set(ContentType::xml());
@@ -310,10 +314,7 @@ impl DavClient {
         if base.path() != "/" {
             Ok(base)
         } else {
-            let principal_url = self.get_principal_url(match storage_type {
-                StorageType::Caldav => "/.well-known/caldav",
-                StorageType::Carddav => "/.well-known/carddav",
-            })?;
+            let principal_url = self.get_principal_url(storage_type)?;
 
             let mut headers = reqwest::header::Headers::new();
             headers.set(ContentType::xml());
