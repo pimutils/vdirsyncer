@@ -4,7 +4,8 @@ mod filesystem;
 mod http;
 mod singlefile;
 mod utils;
-use errors::Fallible;
+
+use errors::{Error, Fallible};
 use item::Item;
 use serde::{Deserialize, Serialize};
 
@@ -83,5 +84,37 @@ pub trait Storage {
     /// Write back all changes to the collection.
     fn flush(&mut self) -> Fallible<()> {
         Ok(())
+    }
+
+    /// Get a metadata value
+    fn get_meta(&mut self, _key: Metadata) -> Fallible<String> {
+        Err(Error::MetadataUnsupported)?
+    }
+
+    /// Set a metadata value
+    fn set_meta(&mut self, _key: Metadata, _value: &str) -> Fallible<()> {
+        Err(Error::MetadataUnsupported)?
+    }
+
+    /// Attempt to delete collection
+    fn delete_collection(&mut self) -> Fallible<()> {
+        Err(Error::StorageDeletionUnsupported)?
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub enum Metadata {
+    Color,
+    Displayname,
+}
+
+#[inline]
+pub fn normalize_meta_value(value: &str) -> &str {
+    // `None` is returned by iCloud for empty properties.
+    if value.is_empty() || value == "None" {
+        ""
+    } else {
+        value.trim()
     }
 }

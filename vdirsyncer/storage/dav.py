@@ -10,7 +10,6 @@ from inspect import getfullargspec
 import requests
 from requests.exceptions import HTTPError
 
-from .base import normalize_meta_value
 from ._rust import RustStorage
 from .. import exceptions, http, native, utils
 from ..http import USERAGENT, prepare_auth, \
@@ -356,70 +355,6 @@ class DAVStorage(RustStorage):
 
     import inspect
     __init__.__signature__ = inspect.signature(session_class.__init__)
-
-    def get_meta(self, key):
-        try:
-            tagname, namespace = self._property_table[key]
-        except KeyError:
-            raise exceptions.UnsupportedMetadataError()
-
-        xpath = '{%s}%s' % (namespace, tagname)
-        data = '''<?xml version="1.0" encoding="utf-8" ?>
-            <D:propfind xmlns:D="DAV:">
-                <D:prop>
-                    {}
-                </D:prop>
-            </D:propfind>
-        '''.format(
-            etree.tostring(etree.Element(xpath), encoding='unicode')
-        ).encode('utf-8')
-
-        headers = self.session.get_default_headers()
-        headers['Depth'] = '0'
-
-        response = self.session.request(
-            'PROPFIND', '',
-            data=data, headers=headers
-        )
-
-        root = _parse_xml(response.content)
-
-        for prop in root.findall('.//' + xpath):
-            text = normalize_meta_value(getattr(prop, 'text', None))
-            if text:
-                return text
-        return u''
-
-    def set_meta(self, key, value):
-        try:
-            tagname, namespace = self._property_table[key]
-        except KeyError:
-            raise exceptions.UnsupportedMetadataError()
-
-        lxml_selector = '{%s}%s' % (namespace, tagname)
-        element = etree.Element(lxml_selector)
-        element.text = normalize_meta_value(value)
-
-        data = '''<?xml version="1.0" encoding="utf-8" ?>
-            <D:propertyupdate xmlns:D="DAV:">
-                <D:set>
-                    <D:prop>
-                        {}
-                    </D:prop>
-                </D:set>
-            </D:propertyupdate>
-        '''.format(etree.tostring(element, encoding='unicode')).encode('utf-8')
-
-        self.session.request(
-            'PROPPATCH', '',
-            data=data, headers=self.session.get_default_headers()
-        )
-
-        # XXX: Response content is currently ignored. Though exceptions are
-        # raised for HTTP errors, a multistatus with errorcodes inside is not
-        # parsed yet. Not sure how common those are, or how they look like. It
-        # might be easier (and safer in case of a stupid server) to just issue
-        # a PROPFIND to see if the value got actually set.
 
 
 class CalDAVStorage(DAVStorage):

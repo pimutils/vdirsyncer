@@ -1,4 +1,4 @@
-from .. import native
+from .. import exceptions, native
 from .base import Storage
 from ..vobject import Item
 from functools import partial
@@ -112,3 +112,35 @@ class RustStorage(Storage):
         native.check_error(e)
         rv = native.string_rv(rv)
         return json.loads(rv)
+
+    def get_meta(self, key):
+        enum_variant = _map_meta_key(key)
+        e = native.get_error_pointer()
+        rv = self._native('get_meta')(enum_variant, e)
+        native.check_error(e)
+        return native.string_rv(rv)
+
+    def set_meta(self, key, value):
+        enum_variant = _map_meta_key(key)
+        e = native.get_error_pointer()
+        self._native('set_meta')(
+            enum_variant,
+            (value or '').encode('utf-8'),
+            e
+        )
+        native.check_error(e)
+
+    def delete_collection(self):
+        e = native.get_error_pointer()
+        self._native('delete_collection')(e)
+        native.check_error(e)
+
+
+def _map_meta_key(key):
+    try:
+        return {
+            'color': native.lib.Color,
+            'displayname': native.lib.Displayname
+        }[key.lower()]
+    except KeyError:
+        raise exceptions.UnsupportedMetadataError()

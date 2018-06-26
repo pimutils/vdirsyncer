@@ -41,8 +41,7 @@ class ServerMixin(object):
 
                 s = self.storage_class(**args)
                 if not list(s.list()):
-                    request.addfinalizer(
-                        lambda: s.session.request('DELETE', ''))
+                    request.addfinalizer(s.delete_collection)
                     return args
 
             raise RuntimeError('Failed to find free collection.')

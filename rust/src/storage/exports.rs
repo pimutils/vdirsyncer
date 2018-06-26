@@ -2,6 +2,7 @@ pub use super::dav::exports::*;
 pub use super::filesystem::exports::*;
 pub use super::http::exports::*;
 pub use super::singlefile::exports::*;
+pub use super::Metadata;
 use super::{ConfigurableStorage, Storage};
 use errors::*;
 use item::Item;
@@ -111,6 +112,38 @@ pub unsafe extern "C" fn vdirsyncer_storage_flush(
     err: *mut *mut ShippaiError,
 ) {
     let _ = export_result((**storage).flush(), err);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn vdirsyncer_storage_get_meta(
+    storage: *mut Box<Storage>,
+    key: Metadata,
+    err: *mut *mut ShippaiError,
+) -> *const c_char {
+    if let Some(rv) = export_result((**storage).get_meta(key), err) {
+        CString::new(rv).unwrap().into_raw()
+    } else {
+        ptr::null_mut()
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn vdirsyncer_storage_set_meta(
+    storage: *mut Box<Storage>,
+    key: Metadata,
+    c_value: *const c_char,
+    err: *mut *mut ShippaiError,
+) {
+    let value = CStr::from_ptr(c_value);
+    let _ = export_result((**storage).set_meta(key, value.to_str().unwrap()), err);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn vdirsyncer_storage_delete_collection(
+    storage: *mut Box<Storage>,
+    err: *mut *mut ShippaiError,
+) {
+    let _ = export_result((**storage).delete_collection(), err);
 }
 
 pub struct VdirsyncerStorageListing {

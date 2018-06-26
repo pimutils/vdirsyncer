@@ -13,7 +13,7 @@ def slow_create_collection(request):
 
     def delete_collections():
         for s in to_delete:
-            s.session.request('DELETE', '')
+            s.delete_collection()
 
     request.addfinalizer(delete_collections)
 

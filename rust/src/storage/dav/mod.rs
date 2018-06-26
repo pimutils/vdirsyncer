@@ -13,7 +13,7 @@ use url::Url;
 
 use super::http::{handle_http_error, send_request, HttpConfig};
 use super::utils::generate_href;
-use super::{ConfigurableStorage, Storage, StorageConfig};
+use super::{normalize_meta_value, ConfigurableStorage, Metadata, Storage, StorageConfig};
 use errors::*;
 
 use item::Item;
@@ -24,6 +24,11 @@ fn propfind() -> reqwest::Method {
 }
 
 #[inline]
+fn proppatch() -> reqwest::Method {
+    reqwest::Method::Extension("PROPPATCH".to_owned())
+}
+
+#[inline]
 fn report() -> reqwest::Method {
     reqwest::Method::Extension("REPORT".to_owned())
 }
@@ -31,6 +36,22 @@ fn report() -> reqwest::Method {
 #[inline]
 fn mkcol() -> reqwest::Method {
     reqwest::Method::Extension("MKCOL".to_owned())
+}
+
+#[inline]
+fn tagname_and_namespace_for_meta_key(
+    storage_type: StorageType,
+    key: Metadata,
+) -> Fallible<(&'static str, &'static str)> {
+    match (storage_type, key) {
+        (_, Metadata::Displayname) => Ok(("displayname", "DAV:")),
+        (StorageType::Caldav, Metadata::Color) => {
+            Ok(("calendar-color", "http://apple.com/ns/ical/"))
+        }
+        (_, Metadata::Color) => Err(Error::MetadataValueUnsupported {
+            msg: "Colors are only supported on calendars (not a vdirsyncer limitation).",
+        })?,
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -456,6 +477,87 @@ impl DavClient {
             }
         }
     }
+
+    fn get_meta(&mut self, storage_type: StorageType, key: Metadata) -> Fallible<String> {
+        let (tagname, namespace) = tagname_and_namespace_for_meta_key(storage_type, key)?;
+
+        let mut headers = reqwest::header::Headers::new();
+        headers.set(ContentType::xml());
+        headers.set_raw("Depth", "0");
+
+        let request = self
+            .get_http()?
+            .request(propfind(), &self.url)
+            .headers(headers)
+            .body(format!(
+                r#"<?xml version="1.0" encoding="utf-8" ?>
+                    <D:propfind xmlns:D="DAV:">
+                        <D:prop>
+                            <p:{} xmlns:p="{}" />
+                        </D:prop>
+                    </D:propfind>"#,
+                tagname, namespace,
+            ))
+            .build()?;
+        let response = self.send_request(request)?;
+        let buf_reader = BufReader::new(response);
+        let xml_reader = quick_xml::Reader::from_reader(buf_reader);
+        let mut parser = parser::ListingParser::new(xml_reader);
+        while let Some(response) = parser.next_response()? {
+            match (key, response.displayname, response.apple_calendar_color) {
+                (Metadata::Color, _, Some(value)) => {
+                    return Ok(normalize_meta_value(&value).to_owned())
+                }
+                (Metadata::Displayname, Some(value), _) => {
+                    return Ok(normalize_meta_value(&value).to_owned())
+                }
+                _ => (),
+            }
+        }
+
+        Ok("".to_owned())
+    }
+
+    fn set_meta(&mut self, storage_type: StorageType, key: Metadata, value: &str) -> Fallible<()> {
+        let (tagname, namespace) = tagname_and_namespace_for_meta_key(storage_type, key)?;
+
+        let request = self
+            .get_http()?
+            .request(proppatch(), &self.url)
+            .header(ContentType::xml())
+            .body(format!(
+                r#"<?xml version="1.0" encoding="utf-8" ?>
+                    <D:propertyupdate xmlns:D="DAV:">
+                        <D:set>
+                            <D:prop>
+                                <p:{} xmlns:p="{}">{}</p:{}>
+                            </D:prop>
+                        </D:set>
+                    </D:propertyupdate>"#,
+                tagname, namespace, value, tagname
+            ))
+            .build()?;
+
+        let _ = self.send_request(request)?;
+
+        // XXX: Response content is currently ignored. Though exceptions are
+        // raised for HTTP errors, a multistatus with errorcodes inside is not
+        // parsed yet. Not sure how common those are, or how they look like. It
+        // might be easier (and safer in case of a stupid server) to just issue
+        // a PROPFIND to see if the value got actually set.
+
+        Ok(())
+    }
+
+    fn delete_collection(&mut self) -> Fallible<()> {
+        let request = self
+            .get_http()?
+            .request(reqwest::Method::Delete, &self.url)
+            .build()?;
+
+        let _ = self.send_request(request)?;
+        Ok(())
+    }
 }
 
 fn assert_multistatus_success(r: reqwest::Response) -> Fallible<reqwest::Response> {
@@ -497,6 +599,18 @@ impl Storage for CarddavStorage {
 
     fn delete(&mut self, href: &str, etag: &str) -> Fallible<()> {
         self.inner.delete(href, etag)
+    }
+
+    fn get_meta(&mut self, key: Metadata) -> Fallible<String> {
+        self.inner.get_meta(StorageType::Carddav, key)
+    }
+
+    fn set_meta(&mut self, key: Metadata, value: &str) -> Fallible<()> {
+        self.inner.set_meta(StorageType::Carddav, key, value)
+    }
+
+    fn delete_collection(&mut self) -> Fallible<()> {
+        self.inner.delete_collection()
     }
 }
 
@@ -662,6 +776,18 @@ impl Storage for CaldavStorage {
 
     fn delete(&mut self, href: &str, etag: &str) -> Fallible<()> {
         self.inner.delete(href, etag)
+    }
+
+    fn get_meta(&mut self, key: Metadata) -> Fallible<String> {
+        self.inner.get_meta(StorageType::Caldav, key)
+    }
+
+    fn set_meta(&mut self, key: Metadata, value: &str) -> Fallible<()> {
+        self.inner.set_meta(StorageType::Caldav, key, value)
+    }
+
+    fn delete_collection(&mut self) -> Fallible<()> {
+        self.inner.delete_collection()
     }
 }
 
