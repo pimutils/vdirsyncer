@@ -140,7 +140,7 @@ impl<T: BufRead> ListingParser<T> {
                         _ => (),
                     }
                 }
-                (_, Event::Text(e)) => {
+                (_, Event::Text(e)) | (_, Event::CData(e)) => {
                     let txt = e.unescape_and_decode(&self.reader)?;
                     match state {
                         // Item listings

@@ -493,7 +493,7 @@ impl DavClient {
                 r#"<?xml version="1.0" encoding="utf-8" ?>
                     <D:propfind xmlns:D="DAV:">
                         <D:prop>
-                            <p:{} xmlns:p="{}" />
+                            <{} xmlns="{}" />
                         </D:prop>
                     </D:propfind>"#,
                 tagname, namespace,
@@ -530,7 +530,7 @@ impl DavClient {
                     <D:propertyupdate xmlns:D="DAV:">
                         <D:set>
                             <D:prop>
-                                <p:{} xmlns:p="{}">{}</p:{}>
+                                <{} xmlns="{}">{}</{}>
                             </D:prop>
                         </D:set>
                     </D:propertyupdate>"#,
@@ -538,7 +538,8 @@ impl DavClient {
             ))
             .build()?;
 
-        let _ = self.send_request(request)?;
+        let mut response = self.send_request(request)?;
+        debug!("set_meta response: {:?}", response.text());
 
         // XXX: Response content is currently ignored. Though exceptions are
         // raised for HTTP errors, a multistatus with errorcodes inside is not
