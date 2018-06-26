@@ -17,6 +17,8 @@ Version 0.17.0
 - ownCloud and Baikal are no longer tested.
 - :storage:`caldav` and :storage:`carddav`'s ``url`` will no longer attempt
   autodiscovery if the URL's path is not the root (not equal to ``/``).
+- :storage:`caldav`, :storage:`carddav` and :storage:`http` changed in how SSL
+  certificates are configured. Support for ``verify_fingerprint`` is gone.
 
 Version 0.16.6
 ==============

@@ -105,6 +105,7 @@ Box_Storage *vdirsyncer_init_caldav(const char *url,
                                     const char *useragent,
                                     const char *verify_cert,
                                     const char *auth_cert,
+                                    const char *auth_cert_password,
                                     int64_t start_date,
                                     int64_t end_date,
                                     bool include_vevent,
@@ -116,7 +117,8 @@ Box_Storage *vdirsyncer_init_carddav(const char *url,
                                      const char *password,
                                      const char *useragent,
                                      const char *verify_cert,
-                                     const char *auth_cert);
+                                     const char *auth_cert,
+                                     const char *auth_cert_password);
 
 Box_Storage *vdirsyncer_init_filesystem(const char *path,
                                         const char *fileext,
@@ -127,7 +129,8 @@ Box_Storage *vdirsyncer_init_http(const char *url,
                                   const char *password,
                                   const char *useragent,
                                   const char *verify_cert,
-                                  const char *auth_cert);
+                                  const char *auth_cert,
+                                  const char *auth_cert_password);
 
 void vdirsyncer_init_logger(void);
 

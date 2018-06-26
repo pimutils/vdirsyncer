@@ -3,6 +3,7 @@
 import datetime
 
 from ._rust import RustStorage
+from ..http import USERAGENT
 from .. import exceptions, native
 
 
@@ -15,9 +16,9 @@ class CalDAVStorage(RustStorage):
     start_date = None
     end_date = None
 
-    def __init__(self, url, username=None, password=None, useragent=None,
-                 verify_cert=None, auth_cert=None, start_date=None,
-                 end_date=None, item_types=(), **kwargs):
+    def __init__(self, url, username=None, password=None, useragent=USERAGENT,
+                 verify_cert=None, auth_cert=None, auth_cert_password=None,
+                 start_date=None, end_date=None, item_types=(), **kwargs):
         super(CalDAVStorage, self).__init__(**kwargs)
 
         # defined for _repr_attributes
@@ -52,7 +53,8 @@ class CalDAVStorage(RustStorage):
                 (password or '').encode('utf-8'),
                 (useragent or '').encode('utf-8'),
                 (verify_cert or '').encode('utf-8'),
-                (auth_cert or'').encode('utf-8'),
+                (auth_cert or '').encode('utf-8'),
+                (auth_cert_password or '').encode('utf-8'),
                 int(self.start_date.timestamp()) if self.start_date else -1,
                 int(self.end_date.timestamp()) if self.end_date else -1,
                 'VEVENT' in item_types,
@@ -69,8 +71,9 @@ class CardDAVStorage(RustStorage):
 
     _repr_attributes = ('username', 'url')
 
-    def __init__(self, url, username=None, password=None, useragent=None,
-                 verify_cert=None, auth_cert=None, **kwargs):
+    def __init__(self, url, username=None, password=None, useragent=USERAGENT,
+                 verify_cert=None, auth_cert=None, auth_cert_password=None,
+                 **kwargs):
         super(CardDAVStorage, self).__init__(**kwargs)
 
         # defined for _repr_attributes
@@ -87,7 +90,8 @@ class CardDAVStorage(RustStorage):
                 (password or '').encode('utf-8'),
                 (useragent or '').encode('utf-8'),
                 (verify_cert or '').encode('utf-8'),
-                (auth_cert or '').encode('utf-8')
+                (auth_cert or '').encode('utf-8'),
+                (auth_cert_password or '').encode('utf-8')
             ),
             native.lib.vdirsyncer_storage_free
         )

@@ -48,6 +48,7 @@ pub struct HttpConfig {
     pub useragent: Option<String>,
     pub verify_cert: Option<String>,
     pub auth_cert: Option<String>,
+    pub auth_cert_password: Option<String>,
 }
 
 impl HttpConfig {
@@ -76,7 +77,16 @@ impl HttpConfig {
             client.add_root_certificate(cert);
         }
 
-        // TODO: auth_cert https://github.com/sfackler/rust-native-tls/issues/27
+        if let Some(auth_cert) = self.auth_cert {
+            let mut buf = Vec::new();
+            File::open(auth_cert)?.read_to_end(&mut buf)?;
+            let cert = reqwest::Identity::from_pkcs12_der(
+                &buf,
+                self.auth_cert_password.as_ref().map(|x| &**x).unwrap_or("")
+            )?;
+            client.identity(cert);
+        }
+
         Ok(client)
     }
 }
@@ -162,12 +172,13 @@ pub mod exports {
         useragent: *const c_char,
         verify_cert: *const c_char,
         auth_cert: *const c_char,
+        auth_cert_password: *const c_char,
     ) -> *mut Box<Storage> {
         let url = CStr::from_ptr(url);
 
         Box::into_raw(Box::new(Box::new(HttpStorage::new(
             url.to_str().unwrap().to_owned(),
-            init_http_config(username, password, useragent, verify_cert, auth_cert),
+            init_http_config(username, password, useragent, verify_cert, auth_cert, auth_cert_password),
         ))))
     }
 }
@@ -195,6 +206,7 @@ pub unsafe fn init_http_config(
     useragent: *const c_char,
     verify_cert: *const c_char,
     auth_cert: *const c_char,
+    auth_cert_password: *const c_char,
 ) -> HttpConfig {
     let username = CStr::from_ptr(username);
     let password = CStr::from_ptr(password);
@@ -207,6 +219,8 @@ pub unsafe fn init_http_config(
     let verify_cert_dec = verify_cert.to_str().unwrap();
     let auth_cert = CStr::from_ptr(auth_cert);
     let auth_cert_dec = auth_cert.to_str().unwrap();
+    let auth_cert_password = CStr::from_ptr(auth_cert_password);
+    let auth_cert_password_dec = auth_cert_password.to_str().unwrap();
 
     let auth = if !username_dec.is_empty() && !password_dec.is_empty() {
         Some(Auth {
@@ -234,5 +248,10 @@ pub unsafe fn init_http_config(
         } else {
             Some(auth_cert_dec.to_owned())
         },
+        auth_cert_password: if auth_cert_password_dec.is_empty() {
+            None
+        } else {
+            Some(auth_cert_password_dec.to_owned())
+        }
     }
 }

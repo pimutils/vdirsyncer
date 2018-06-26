@@ -880,12 +880,13 @@ pub mod exports {
         useragent: *const c_char,
         verify_cert: *const c_char,
         auth_cert: *const c_char,
+        auth_cert_password: *const c_char,
     ) -> *mut Box<Storage> {
         let url = CStr::from_ptr(url);
 
         Box::into_raw(Box::new(Box::new(CarddavStorage::new(
             url.to_str().unwrap(),
-            init_http_config(username, password, useragent, verify_cert, auth_cert),
+            init_http_config(username, password, useragent, verify_cert, auth_cert, auth_cert_password),
         ))))
     }
 
@@ -897,6 +898,7 @@ pub mod exports {
         useragent: *const c_char,
         verify_cert: *const c_char,
         auth_cert: *const c_char,
+        auth_cert_password: *const c_char,
         start_date: i64,
         end_date: i64,
         include_vevent: bool,
@@ -929,7 +931,7 @@ pub mod exports {
 
         Box::into_raw(Box::new(Box::new(CaldavStorage::new(
             url.to_str().unwrap(),
-            init_http_config(username, password, useragent, verify_cert, auth_cert),
+            init_http_config(username, password, useragent, verify_cert, auth_cert, auth_cert_password),
             parse_date(start_date).and_then(|start| Some((start, parse_date(end_date)?))),
             item_types,
         ))))

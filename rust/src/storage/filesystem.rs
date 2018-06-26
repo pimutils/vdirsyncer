@@ -6,7 +6,7 @@ use std::fs;
 use std::io;
 use std::io::{Read, Write};
 use std::os::unix::fs::MetadataExt;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
 
 use shellexpand;
@@ -24,9 +24,9 @@ pub struct FilesystemStorage {
 }
 
 impl FilesystemStorage {
-    pub fn new<P: AsRef<Path>>(path: P, fileext: &str, post_hook: Option<String>) -> Self {
+    pub fn new<P: AsRef<str>>(path: P, fileext: &str, post_hook: Option<String>) -> Self {
         FilesystemStorage {
-            path: path.as_ref().to_owned(),
+            path: PathBuf::from(&*shellexpand::tilde(path.as_ref())),
             fileext: fileext.into(),
             post_hook,
         }

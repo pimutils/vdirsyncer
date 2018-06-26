@@ -16,12 +16,11 @@ class HttpStorage(RustStorage):
     _ignore_uids = True
 
     def __init__(self, url, username='', password='', useragent=USERAGENT,
-                 verify_cert=None, auth_cert=None, **kwargs):
+                 verify_cert=None, auth_cert=None, auth_cert_password=None,
+                 **kwargs):
         if kwargs.get('collection') is not None:
             raise exceptions.UserError('HttpStorage does not support '
                                        'collections.')
-
-        assert auth_cert is None, "not yet supported"
 
         super(HttpStorage, self).__init__(**kwargs)
 
@@ -32,7 +31,8 @@ class HttpStorage(RustStorage):
                 (password or "").encode('utf-8'),
                 (useragent or "").encode('utf-8'),
                 (verify_cert or "").encode('utf-8'),
-                (auth_cert or "").encode('utf-8')
+                (auth_cert or "").encode('utf-8'),
+                (auth_cert_password or "").encode('utf-8')
             ),
             native.lib.vdirsyncer_storage_free
         )

@@ -230,21 +230,12 @@ do so might not work with vdirsyncer out of the box. Please refer to
         to show all. This depends on particular features on the server, the
         results are not validated.
     :param url: Base URL or an URL to a calendar.
-    :param username: Username for authentication.
-    :param password: Password for authentication.
-    :param verify: Verify SSL certificate, default True. This can also be a
-        local path to a self-signed SSL certificate. See :ref:`ssl-tutorial`
-        for more information.
-    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
-        expected server certificate. See :ref:`ssl-tutorial` for more
-        information.
-    :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. The
-        default is preemptive Basic auth, sending credentials even if server
-        didn't request them. This saves from an additional roundtrip per
-        request. Consider setting ``guess`` if this causes issues with your
-        server.
-    :param auth_cert: Optional. Either a path to a certificate with a client
-        certificate and the key or a list of paths to the files with them.
+    :param username: Optional. Username for authentication.
+    :param password: Optional. Password for authentication.
+    :param verify_cert: Optional. Path to a server certificate in ``.pem``
+                       format.
+    :param auth_cert: Optional. Path to a client certificate in
+                     ``.p12``/``.pfx`` format.
     :param useragent: Default ``vdirsyncer``.
 
 
@@ -266,22 +257,12 @@ do so might not work with vdirsyncer out of the box. Please refer to
      #auth_cert = null
 
    :param url: Base URL or an URL to an addressbook.
-   :param username: Username for authentication.
-   :param password: Password for authentication.
-   :param verify: Verify SSL certificate, default True. This can also be a
-                  local path to a self-signed SSL certificate. See
-                  :ref:`ssl-tutorial` for more information.
-   :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the expected
-                              server certificate. See :ref:`ssl-tutorial` for
-                              more information.
-   :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. The
-                default is preemptive Basic auth, sending credentials even if
-                server didn't request them. This saves from an additional
-                roundtrip per request. Consider setting ``guess`` if this
-                causes issues with your server.
-   :param auth_cert: Optional. Either a path to a certificate with a client
-                     certificate and the key or a list of paths to the files
-                     with them.
+   :param username: Optional. Username for authentication.
+   :param password: Optional. Password for authentication.
+   :param verify_cert: Optional. Path to a server certificate in ``.pem``
+                       format.
+   :param auth_cert: Optional. Path to a client certificate in
+                     ``.p12``/``.pfx`` format.
    :param useragent: Default ``vdirsyncer``.
 
 Google
@@ -547,8 +528,8 @@ leads to an error.
     :param url: URL to the ``.ics`` file.
     :param username: Username for HTTP basic authentication.
     :param password: Password for HTTP basic authentication.
+    :param verify_cert: Optional. Path to a server certificate in ``.pem``
+                        format.
+    :param auth_cert: Optional. Path to a client certificate in
+                      ``.p12``/``.pfx`` format.
     :param useragent: Default ``vdirsyncer``.
-    :param verify_cert: Add one new root certificate file in PEM format. Useful
-                        for servers with self-signed certificates.
-    :param auth_cert: Optional. Either a path to a certificate with a client
-        certificate and the key or a list of paths to the files with them.
