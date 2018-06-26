@@ -13,7 +13,7 @@ def slow_create_collection(request):
 
     def delete_collections():
         for s in to_delete:
-            s.session.request('DELETE', '')
+            s.delete_collection()
 
     request.addfinalizer(delete_collections)
 
@@ -21,7 +21,8 @@ def slow_create_collection(request):
         assert collection.startswith('test')
         collection += '-vdirsyncer-ci-' + str(uuid.uuid4())
 
-        args = cls.create_collection(collection, **args)
+        args['collection'] = collection
+        args = cls.create_collection(**args)
         s = cls(**args)
         _clear_collection(s)
         assert not list(s.list())

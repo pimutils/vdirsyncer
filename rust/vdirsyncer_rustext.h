@@ -2,6 +2,11 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+typedef enum {
+  Color,
+  Displayname,
+} Metadata;
+
 typedef struct Box_Storage Box_Storage;
 
 typedef struct DavError DavError;
@@ -42,9 +47,15 @@ extern const uint8_t SHIPPAI_VARIANT_Error_ItemNotFound;
 
 extern const uint8_t SHIPPAI_VARIANT_Error_ItemUnparseable;
 
+extern const uint8_t SHIPPAI_VARIANT_Error_MetadataUnsupported;
+
+extern const uint8_t SHIPPAI_VARIANT_Error_MetadataValueUnsupported;
+
 extern const uint8_t SHIPPAI_VARIANT_Error_MtimeMismatch;
 
 extern const uint8_t SHIPPAI_VARIANT_Error_ReadOnly;
+
+extern const uint8_t SHIPPAI_VARIANT_Error_StorageDeletionUnsupported;
 
 extern const uint8_t SHIPPAI_VARIANT_Error_UnexpectedVobject;
 
@@ -128,10 +139,16 @@ bool vdirsyncer_item_is_parseable(Item *c);
 
 void vdirsyncer_storage_buffered(Box_Storage *storage);
 
+const char *vdirsyncer_storage_create_caldav(const char *config, ShippaiError **err);
+
+const char *vdirsyncer_storage_create_carddav(const char *config, ShippaiError **err);
+
 void vdirsyncer_storage_delete(Box_Storage *storage,
                                const char *c_href,
                                const char *c_etag,
                                ShippaiError **err);
+
+void vdirsyncer_storage_delete_collection(Box_Storage *storage, ShippaiError **err);
 
 const char *vdirsyncer_storage_discover_caldav(const char *config, ShippaiError **err);
 
@@ -149,11 +166,18 @@ VdirsyncerStorageGetResult *vdirsyncer_storage_get(Box_Storage *storage,
                                                    const char *c_href,
                                                    ShippaiError **err);
 
+const char *vdirsyncer_storage_get_meta(Box_Storage *storage, Metadata key, ShippaiError **err);
+
 VdirsyncerStorageListing *vdirsyncer_storage_list(Box_Storage *storage, ShippaiError **err);
 
 const char *vdirsyncer_storage_listing_get_etag(VdirsyncerStorageListing *listing);
 
 const char *vdirsyncer_storage_listing_get_href(VdirsyncerStorageListing *listing);
+
+void vdirsyncer_storage_set_meta(Box_Storage *storage,
+                                 Metadata key,
+                                 const char *c_value,
+                                 ShippaiError **err);
 
 const char *vdirsyncer_storage_update(Box_Storage *storage,
                                       const char *c_href,

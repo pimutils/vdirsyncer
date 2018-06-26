@@ -52,6 +52,15 @@ pub enum Error {
 
     #[fail(display = "Discovery is not possible. {}", msg)]
     DiscoveryNotPossible { msg: String },
+
+    #[fail(display = "This storage does not support metadata sync.")]
+    MetadataUnsupported,
+
+    #[fail(display = "This storage does not support the metadata sync of this key. {}", msg)]
+    MetadataValueUnsupported { msg: &'static str },
+
+    #[fail(display = "This storage does not support deleting collections.")]
+    StorageDeletionUnsupported,
 }
 
 pub unsafe fn export_result<V>(

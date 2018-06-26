@@ -16,6 +16,8 @@ pub struct Response {
     pub is_collection: bool,
     pub is_calendar: bool,
     pub is_addressbook: bool,
+    pub displayname: Option<String>,
+    pub apple_calendar_color: Option<String>,
 }
 
 impl Response {
@@ -30,6 +32,8 @@ impl Response {
             is_collection: false,
             is_calendar: false,
             is_addressbook: false,
+            displayname: None,
+            apple_calendar_color: None,
         }
     }
 }
@@ -66,6 +70,8 @@ impl<T: BufRead> ListingParser<T> {
             CalendarHomeSet,
             AddressbookHomeSet,
             ResourceType,
+            Displayname,
+            AppleCalendarColor,
         };
 
         let mut state = State::Outer;
@@ -122,10 +128,19 @@ impl<T: BufRead> ListingParser<T> {
                             current_response.is_addressbook = true;
                             state = State::ResourceType;
                         }
+                        // Metadata
+                        (State::Response, Some(b"DAV:"), b"displayname") => {
+                            state = State::Displayname
+                        }
+                        (
+                            State::Response,
+                            Some(b"http://apple.com/ns/ical/"),
+                            b"calendar-color",
+                        ) => state = State::AppleCalendarColor,
                         _ => (),
                     }
                 }
-                (_, Event::Text(e)) => {
+                (_, Event::Text(e)) | (_, Event::CData(e)) => {
                     let txt = e.unescape_and_decode(&self.reader)?;
                     match state {
                         // Item listings
@@ -141,6 +156,12 @@ impl<T: BufRead> ListingParser<T> {
                         State::AddressbookHomeSet => {
                             current_response.addressbook_home_set = Some(txt)
                         }
+                        State::Displayname => {
+                            current_response.displayname = Some(txt);
+                        }
+                        State::AppleCalendarColor => {
+                            current_response.apple_calendar_color = Some(txt);
+                        }
                         _ => continue,
                     }
                     state = State::Response;
@@ -155,7 +176,11 @@ impl<T: BufRead> ListingParser<T> {
                     | (_, Some(b"DAV:"), b"current-user-principal")
                     | (_, Some(b"urn:ietf:params:xml:ns:caldav"), b"calendar-home-set")
                     | (_, Some(b"urn:ietf:params:xml:ns:carddav"), b"addressbook-home-set")
-                    | (_, Some(b"DAV:"), b"resourcetype") => state = State::Response,
+                    | (_, Some(b"DAV:"), b"resourcetype")
+                    | (_, Some(b"DAV:"), b"displayname")
+                    | (_, Some(b"http://apple.com/ns/ical/"), b"calendar-color") => {
+                        state = State::Response
+                    }
                     _ => (),
                 },
                 (_, Event::Eof) => return Ok(None),

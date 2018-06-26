@@ -2,6 +2,7 @@ pub use super::dav::exports::*;
 pub use super::filesystem::exports::*;
 pub use super::http::exports::*;
 pub use super::singlefile::exports::*;
+pub use super::Metadata;
 use super::{ConfigurableStorage, Storage};
 use errors::*;
 use item::Item;
@@ -113,6 +114,38 @@ pub unsafe extern "C" fn vdirsyncer_storage_flush(
     let _ = export_result((**storage).flush(), err);
 }
 
+#[no_mangle]
+pub unsafe extern "C" fn vdirsyncer_storage_get_meta(
+    storage: *mut Box<Storage>,
+    key: Metadata,
+    err: *mut *mut ShippaiError,
+) -> *const c_char {
+    if let Some(rv) = export_result((**storage).get_meta(key), err) {
+        CString::new(rv).unwrap().into_raw()
+    } else {
+        ptr::null_mut()
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn vdirsyncer_storage_set_meta(
+    storage: *mut Box<Storage>,
+    key: Metadata,
+    c_value: *const c_char,
+    err: *mut *mut ShippaiError,
+) {
+    let value = CStr::from_ptr(c_value);
+    let _ = export_result((**storage).set_meta(key, value.to_str().unwrap()), err);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn vdirsyncer_storage_delete_collection(
+    storage: *mut Box<Storage>,
+    err: *mut *mut ShippaiError,
+) {
+    let _ = export_result((**storage).delete_collection(), err);
+}
+
 pub struct VdirsyncerStorageListing {
     iterator: Box<Iterator<Item = (String, String)>>,
     href: Option<String>,
@@ -202,6 +235,7 @@ unsafe fn discover_impl<S: ConfigurableStorage>(
     config: *const c_char,
     err: *mut *mut ShippaiError,
 ) -> *const c_char {
+    #[inline]
     unsafe fn inner<S: ConfigurableStorage>(config: *const c_char) -> Fallible<*const c_char> {
         let config_str = CStr::from_ptr(config).to_str()?;
         let configs: Vec<S::Config> = S::discover(serde_json::from_str(config_str)?)?.collect();
@@ -246,4 +280,40 @@ pub unsafe extern "C" fn vdirsyncer_storage_discover_caldav(
     err: *mut *mut ShippaiError,
 ) -> *const c_char {
     discover_impl::<super::dav::CaldavStorage>(config, err)
+}
+
+#[inline]
+unsafe fn create_impl<S: ConfigurableStorage>(
+    config: *const c_char,
+    err: *mut *mut ShippaiError,
+) -> *const c_char {
+    #[inline]
+    unsafe fn inner<S: ConfigurableStorage>(config: *const c_char) -> Fallible<*const c_char> {
+        let config_str = CStr::from_ptr(config).to_str()?;
+        let new_config = S::create(serde_json::from_str(config_str)?)?;
+        let string = serde_json::to_string(&new_config)?;
+        Ok(CString::new(string)?.into_raw())
+    }
+
+    if let Some(json) = export_result(inner::<S>(config), err) {
+        json
+    } else {
+        ptr::null_mut()
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn vdirsyncer_storage_create_caldav(
+    config: *const c_char,
+    err: *mut *mut ShippaiError,
+) -> *const c_char {
+    create_impl::<super::dav::CaldavStorage>(config, err)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn vdirsyncer_storage_create_carddav(
+    config: *const c_char,
+    err: *mut *mut ShippaiError,
+) -> *const c_char {
+    create_impl::<super::dav::CarddavStorage>(config, err)
 }

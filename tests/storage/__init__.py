@@ -191,22 +191,6 @@ class StorageTests(object):
 
         assert actual >= collections
 
-    def test_create_collection(self, requires_collections, get_storage_args,
-                               get_item):
-        if getattr(self, 'dav_server', '') in \
-           ('icloud', 'fastmail', 'davical'):
-            pytest.skip('Manual cleanup would be necessary.')
-
-        args = get_storage_args(collection=None)
-        args['collection'] = 'test'
-
-        s = self.storage_class(
-            **self.storage_class.create_collection(**args)
-        )
-
-        href = s.upload(get_item())[0]
-        assert href in set(href for href, etag in s.list())
-
     def test_discover_collection_arg(self, requires_collections,
                                      get_storage_args):
         args = get_storage_args(collection='test2')

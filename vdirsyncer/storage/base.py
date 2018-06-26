@@ -227,6 +227,11 @@ class Storage(metaclass=StorageMeta):
         '''See documentation in rust/storage/mod.rs'''
         pass
 
+    def delete_collection(self):
+        '''Attempt to delete collection'''
+        raise NotImplementedError('This storage does not support deleting '
+                                  'collections.')
+
 
 def normalize_meta_value(value):
     # `None` is returned by iCloud for empty properties.

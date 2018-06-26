@@ -221,7 +221,7 @@ impl Storage for FilesystemStorage {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Config {
     path: String,
     fileext: String,
@@ -305,5 +305,9 @@ impl ConfigurableStorage for FilesystemStorage {
                 }
             }
         }
+    }
+
+    fn create(_config: Self::Config) -> Fallible<Self::Config> {
+        unimplemented!();
     }
 }

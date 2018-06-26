@@ -4,13 +4,14 @@ mod filesystem;
 mod http;
 mod singlefile;
 mod utils;
-use errors::Fallible;
+
+use errors::{Error, Fallible};
 use item::Item;
 use serde::{Deserialize, Serialize};
 
 type ItemAndEtag = (Item, String);
 
-pub trait StorageConfig: Serialize + Deserialize<'static> {
+pub trait StorageConfig: Clone + Serialize + Deserialize<'static> {
     /// Get the collection key of the object, if any.
     fn get_collection(&self) -> Option<&str>;
 }
@@ -29,6 +30,17 @@ pub trait ConfigurableStorage: Storage + Sized {
     /// Discover collections. Take a configuration like the user specified and yield configurations
     /// that actually point to valid storages.
     fn discover(config: Self::Config) -> Fallible<Box<Iterator<Item = Self::Config>>>;
+
+    /// Create a new collection, honoring the `collection` value:
+    ///
+    /// * `collection == Some(_)` means that the storage should use the given name for the
+    ///   collection. If it fails to do so, the `collection` in the return value may be different.
+    /// * `collection = None` means that the configuration already points to a new storage
+    ///   location. In that case the configuration can usually be returned as-is, but does not have
+    ///   to be.
+    ///
+    /// The return value should have a non-`None` collection value.
+    fn create(config: Self::Config) -> Fallible<Self::Config>;
 }
 
 pub trait Storage {
@@ -72,5 +84,37 @@ pub trait Storage {
     /// Write back all changes to the collection.
     fn flush(&mut self) -> Fallible<()> {
         Ok(())
+    }
+
+    /// Get a metadata value
+    fn get_meta(&mut self, _key: Metadata) -> Fallible<String> {
+        Err(Error::MetadataUnsupported)?
+    }
+
+    /// Set a metadata value
+    fn set_meta(&mut self, _key: Metadata, _value: &str) -> Fallible<()> {
+        Err(Error::MetadataUnsupported)?
+    }
+
+    /// Attempt to delete collection
+    fn delete_collection(&mut self) -> Fallible<()> {
+        Err(Error::StorageDeletionUnsupported)?
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub enum Metadata {
+    Color,
+    Displayname,
+}
+
+#[inline]
+pub fn normalize_meta_value(value: &str) -> &str {
+    // `None` is returned by iCloud for empty properties.
+    if value.is_empty() || value == "None" {
+        ""
+    } else {
+        value.trim()
     }
 }

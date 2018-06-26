@@ -46,3 +46,5 @@ def check_error(e):
     except (errors.Error.BadDiscoveryConfig,
             errors.Error.BadCollectionConfig) as e:
         raise TypeError(e) from e
+    except errors.Error.MetadataValueUnsupported as e:
+        raise exceptions.UnsupportedMetadataError(e) from e
