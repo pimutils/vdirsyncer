@@ -12,9 +12,6 @@ export REQUIREMENTS := release
 # Set this to true if you run vdirsyncer's test as part of e.g. packaging.
 export DETERMINISTIC_TESTS := false
 
-# Run the etesync testsuite.
-export ETESYNC_TESTS := false
-
 # Assume to run in Travis. Don't use this outside of a virtual machine. It will
 # heavily "pollute" your system, such as attempting to install a new Python
 # systemwide.
@@ -41,10 +38,6 @@ RUST_TOOLCHAIN = nightly
 ifeq ($(COVERAGE), true)
 	TEST_EXTRA_PACKAGES += pytest-cov
 	PYTEST_ARGS += --cov-config .coveragerc --cov vdirsyncer
-endif
-
-ifeq ($(ETESYNC_TESTS), true)
-	TEST_EXTRA_PACKAGES += django-etesync-journal django djangorestframework wsgi_intercept drf-nested-routers
 endif
 
 PYTEST = py.test $(PYTEST_ARGS)
@@ -132,7 +125,6 @@ release-deb:
 
 install-dev:
 	pip install -ve .
-	[ "$(ETESYNC_TESTS)" = "false" ] || pip install -Ue .[etesync]
 	set -xe && if [ "$(REQUIREMENTS)" = "devel" ]; then \
 	    pip install -U --force-reinstall \
 			git+https://github.com/mitsuhiko/click \
