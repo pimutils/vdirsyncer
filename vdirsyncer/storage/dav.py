@@ -1,17 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import logging
-import urllib.parse as urlparse
-import xml.etree.ElementTree as etree
-
-import requests
-from requests.exceptions import HTTPError
 
 from ._rust import RustStorage
-from .. import exceptions, http, native, utils
-from ..http import USERAGENT, prepare_auth, \
-    prepare_client_cert
+from .. import exceptions, native
 
 
 class DAVStorage(RustStorage):
