@@ -6,19 +6,11 @@ from ._rust import RustStorage
 from .. import exceptions, native
 
 
-class DAVStorage(RustStorage):
-    # the file extension of items. Useful for testing against radicale.
-    fileext = None
-    # mimetype of items
-    item_mimetype = None
-
-    _repr_attributes = ('username', 'url')
-
-
-class CalDAVStorage(DAVStorage):
+class CalDAVStorage(RustStorage):
     storage_name = 'caldav'
     fileext = '.ics'
-    item_mimetype = 'text/calendar'
+
+    _repr_attributes = ('username', 'url')
 
     start_date = None
     end_date = None
@@ -71,10 +63,11 @@ class CalDAVStorage(DAVStorage):
         )
 
 
-class CardDAVStorage(DAVStorage):
+class CardDAVStorage(RustStorage):
     storage_name = 'carddav'
     fileext = '.vcf'
-    item_mimetype = 'text/vcard'
+
+    _repr_attributes = ('username', 'url')
 
     def __init__(self, url, username=None, password=None, useragent=None,
                  verify_cert=None, auth_cert=None, **kwargs):
