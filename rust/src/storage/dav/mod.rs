@@ -886,7 +886,14 @@ pub mod exports {
 
         Box::into_raw(Box::new(Box::new(CarddavStorage::new(
             url.to_str().unwrap(),
-            init_http_config(username, password, useragent, verify_cert, auth_cert, auth_cert_password),
+            init_http_config(
+                username,
+                password,
+                useragent,
+                verify_cert,
+                auth_cert,
+                auth_cert_password,
+            ),
         ))))
     }
 
@@ -931,7 +938,14 @@ pub mod exports {
 
         Box::into_raw(Box::new(Box::new(CaldavStorage::new(
             url.to_str().unwrap(),
-            init_http_config(username, password, useragent, verify_cert, auth_cert, auth_cert_password),
+            init_http_config(
+                username,
+                password,
+                useragent,
+                verify_cert,
+                auth_cert,
+                auth_cert_password,
+            ),
             parse_date(start_date).and_then(|start| Some((start, parse_date(end_date)?))),
             item_types,
         ))))

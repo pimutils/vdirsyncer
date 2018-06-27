@@ -82,7 +82,7 @@ impl HttpConfig {
             File::open(auth_cert)?.read_to_end(&mut buf)?;
             let cert = reqwest::Identity::from_pkcs12_der(
                 &buf,
-                self.auth_cert_password.as_ref().map(|x| &**x).unwrap_or("")
+                self.auth_cert_password.as_ref().map(|x| &**x).unwrap_or(""),
             )?;
             client.identity(cert);
         }
@@ -178,7 +178,14 @@ pub mod exports {
 
         Box::into_raw(Box::new(Box::new(HttpStorage::new(
             url.to_str().unwrap().to_owned(),
-            init_http_config(username, password, useragent, verify_cert, auth_cert, auth_cert_password),
+            init_http_config(
+                username,
+                password,
+                useragent,
+                verify_cert,
+                auth_cert,
+                auth_cert_password,
+            ),
         ))))
     }
 }
@@ -252,6 +259,6 @@ pub unsafe fn init_http_config(
             None
         } else {
             Some(auth_cert_password_dec.to_owned())
-        }
+        },
     }
 }
