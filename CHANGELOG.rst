@@ -19,6 +19,8 @@ Version 0.17.0
   autodiscovery if the URL's path is not the root (not equal to ``/``).
 - :storage:`caldav`, :storage:`carddav` and :storage:`http` changed in how SSL
   certificates are configured. Support for ``verify_fingerprint`` is gone.
+- Support for EteSync has been dropped for now. Please use `its DAV bridge
+  <https://github.com/etesync/etesync-dav>`_. Support may reappear in a later version.
 
 Version 0.16.6
 ==============

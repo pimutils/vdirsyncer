@@ -354,56 +354,6 @@ or write anything to it.
    :param client_id/client_secret: OAuth credentials, obtained from the Google
                                    API Manager.
 
-EteSync
-+++++++
-
-`EteSync <https://www.etesync.com/>`_ is a new cloud provider for end to end
-encrypted contacts and calendar storage. Vdirsyncer contains **experimental**
-support for it.
-
-To use it, you need to install some optional dependencies::
-
-    pip install vdirsyncer[etesync]
-
-On first usage you will be prompted for the service password and the encryption
-password. Neither are stored.
-
-.. storage:: etesync_contacts
-
-    Contacts for etesync.
-
-    ::
-
-        [storage example_for_etesync_contacts]
-        email = ...
-        secrets_dir = ...
-        #server_path = ...
-        #db_path = ...
-   
-   :param email: The email address of your account.
-   :param secrets_dir: A directory where vdirsyncer can store the encryption
-                       key and authentication token.
-   :param server_url: Optional. URL to the root of your custom server.
-   :param db_path: Optional. Use a different path for the database.
-
-.. storage:: etesync_calendars
-
-    Calendars for etesync.
-
-    ::
-
-        [storage example_for_etesync_calendars]
-        email = ...
-        secrets_dir = ...
-        #server_path = ...
-        #db_path = ...
-   
-    :param email: The email address of your account.
-    :param secrets_dir: A directory where vdirsyncer can store the encryption
-                        key and authentication token.
-    :param server_url: Optional. URL to the root of your custom server.
-    :param db_path: Optional. Use a different path for the database.
-
 Local
 +++++
 

@@ -36,9 +36,7 @@ class _StorageIndex(object):
             http='vdirsyncer.storage.http.HttpStorage',
             singlefile='vdirsyncer.storage.singlefile.SingleFileStorage',
             google_calendar='vdirsyncer.storage.google.GoogleCalendarStorage',
-            google_contacts='vdirsyncer.storage.google.GoogleContactsStorage',
-            etesync_calendars='vdirsyncer.storage.etesync.EtesyncCalendars',
-            etesync_contacts='vdirsyncer.storage.etesync.EtesyncContacts'
+            google_contacts='vdirsyncer.storage.google.GoogleContactsStorage'
         )
 
     def __getitem__(self, name):
