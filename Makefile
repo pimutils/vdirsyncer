@@ -96,6 +96,7 @@ install-style: install-docs
 	pip install -U flake8 flake8-import-order 'flake8-bugbear>=17.3.0'
 	rustup component add rustfmt-preview
 	cargo install --force --git https://github.com/rust-lang-nursery/rust-clippy clippy
+	cargo install --force cargo-audit
 
 style:
 	flake8
@@ -104,6 +105,7 @@ style:
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
 	cd rust/ && cargo +$(RUST_TOOLCHAIN) clippy
 	cd rust/ && cargo +$(RUST_TOOLCHAIN) fmt --all -- --check
+	cd rust/ && cargo audit
 
 install-docs:
 	pip install -Ur docs-requirements.txt
