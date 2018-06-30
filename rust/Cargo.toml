@@ -8,7 +8,7 @@ name = "vdirsyncer_rustext"
 crate-type = ["cdylib"]
 
 [dependencies]
-vobject = "0.4.2"
+vobject = "0.6.0"
 sha2 = "0.7.0"
 failure = "0.1"
 shippai = "0.3.0"
