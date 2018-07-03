@@ -2,8 +2,8 @@ mod parser;
 
 use chrono;
 
-use std::fmt;
 use std::collections::BTreeSet;
+use std::fmt;
 use std::io::{BufReader, Read};
 use std::str::FromStr;
 
@@ -68,7 +68,7 @@ impl StorageType for CaldavType {
     fn tagname_and_namespace_for_meta_key(key: Metadata) -> Fallible<XmlTag> {
         match key {
             Metadata::Displayname => Ok(XmlTag("displayname", "DAV:")),
-            Metadata::Color => Ok(XmlTag("calendar-color", "http://apple.com/ns/ical/"))
+            Metadata::Color => Ok(XmlTag("calendar-color", "http://apple.com/ns/ical/")),
         }
     }
 
@@ -77,11 +77,11 @@ impl StorageType for CaldavType {
     }
 
     fn homeset_body() -> &'static str {
-                    "<d:propfind xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:caldav\">\
-                     <d:prop>\
-                     <c:calendar-home-set />\
-                     </d:prop>\
-                     </d:propfind>"
+        "<d:propfind xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:caldav\">\
+         <d:prop>\
+         <c:calendar-home-set />\
+         </d:prop>\
+         </d:propfind>"
     }
 
     fn get_homeset_url(response: &parser::Response) -> Option<&str> {
@@ -96,7 +96,6 @@ impl StorageType for CaldavType {
         XmlTag("calendar", "urn:ietf:params:xml:ns:caldav")
     }
 }
-
 
 enum CarddavType {}
 
@@ -115,12 +114,11 @@ impl StorageType for CarddavType {
     }
 
     fn homeset_body() -> &'static str {
-
-                    "<d:propfind xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:carddav\">\
-                     <d:prop>\
-                     <c:addressbook-home-set />\
-                     </d:prop>\
-                     </d:propfind>"
+        "<d:propfind xmlns:d=\"DAV:\" xmlns:c=\"urn:ietf:params:xml:ns:carddav\">\
+         <d:prop>\
+         <c:addressbook-home-set />\
+         </d:prop>\
+         </d:propfind>"
     }
 
     fn get_homeset_url(response: &parser::Response) -> Option<&str> {
@@ -334,7 +332,10 @@ impl DavClient {
 
     fn get_well_known_url<S: StorageType>(&mut self) -> Fallible<Url> {
         let url = Url::parse(&self.url)?;
-        let request = self.get_http()?.get(url.join(S::well_known_path())?).build()?;
+        let request = self
+            .get_http()?
+            .get(url.join(S::well_known_path())?)
+            .build()?;
         match self.send_request(request) {
             Ok(response) => Ok(response.url().clone()),
             Err(e) => {
@@ -501,10 +502,7 @@ impl DavClient {
         Ok(response.url().clone())
     }
 
-    fn prepare_create<S: StorageType>(
-        &mut self,
-        config: &DavConfig,
-    ) -> Fallible<(String, Url)> {
+    fn prepare_create<S: StorageType>(&mut self, config: &DavConfig) -> Fallible<(String, Url)> {
         let url = Url::parse(&config.url)?;
         match config.collection {
             Some(ref x) => Ok((x.clone(), self.get_homeset_url::<S>()?.join(x)?)),
@@ -535,7 +533,7 @@ impl DavClient {
                             {}
                         </D:prop>
                     </D:propfind>"#,
-                    xmltag
+                xmltag
             ))
             .build()?;
         let response = self.send_request(request)?;
@@ -695,9 +693,7 @@ impl ConfigurableStorage for CarddavStorage {
             }
         }
 
-        config.url = dav
-            .mkcol::<CarddavType>(collection_url)?
-            .into_string();
+        config.url = dav.mkcol::<CarddavType>(collection_url)?.into_string();
         Ok(config)
     }
 }
@@ -860,15 +856,14 @@ impl ConfigurableStorage for CaldavStorage {
         let start_date = config.start_date;
         let end_date = config.end_date;
 
-        Ok(Box::new(
-            dav.discover_impl::<CaldavType>(config.dav)?
-                .map(move |dav| CaldavConfig {
-                    start_date: start_date.clone(),
-                    end_date: end_date.clone(),
-                    item_types: item_types.clone(),
-                    dav,
-                }),
-        ))
+        Ok(Box::new(dav.discover_impl::<CaldavType>(config.dav)?.map(
+            move |dav| CaldavConfig {
+                start_date: start_date.clone(),
+                end_date: end_date.clone(),
+                item_types: item_types.clone(),
+                dav,
+            },
+        )))
     }
 
     fn create(mut config: Self::Config) -> Fallible<Self::Config> {
@@ -884,9 +879,7 @@ impl ConfigurableStorage for CaldavStorage {
             }
         }
 
-        config.dav.url = dav
-            .mkcol::<CaldavType>(collection_url)?
-            .into_string();
+        config.dav.url = dav.mkcol::<CaldavType>(collection_url)?.into_string();
         Ok(config)
     }
 }
