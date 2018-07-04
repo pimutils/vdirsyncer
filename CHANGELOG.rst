@@ -14,7 +14,7 @@ Version 0.17.0
 
 - Fix bug where collection discovery under DAV-storages would produce invalid
   XML. See :gh:`688`.
-- ownCloud and Baikal are no longer tested.
+- ownCloud, Baikal and Radicale are no longer tested.
 - :storage:`caldav` and :storage:`carddav`'s ``url`` will no longer attempt
   autodiscovery if the URL's path is not the root (not equal to ``/``).
 - :storage:`caldav`, :storage:`carddav` and :storage:`http` changed in how SSL
