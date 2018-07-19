@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import sys
 import logging
 
 import click_log
-
 import pytest
-
 import requests
 
 from vdirsyncer import http, utils
@@ -64,9 +63,12 @@ def test_request_ssl_fingerprints(httpsserver, fingerprint):
 
 def test_open_graphical_browser(monkeypatch):
     import webbrowser
-    # Just assert that this internal attribute still exists and is some sort of
-    # collection.
-    iter(webbrowser._tryorder)
+    # Just assert that this internal attribute still exists and behaves the way
+    # expected
+    if sys.version_info < (3, 7):
+        iter(webbrowser._tryorder)
+    else:
+        assert webbrowser._tryorder is None
 
     monkeypatch.setattr('webbrowser._tryorder', [])
 
