@@ -9,6 +9,13 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.16.7
+==============
+
+*released on July 19*
+
+- Fixes for Python 3.7
+
 Version 0.16.6
 ==============
 
