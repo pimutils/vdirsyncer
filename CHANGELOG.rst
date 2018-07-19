@@ -22,6 +22,13 @@ Version 0.17.0
 - Support for EteSync has been dropped for now. Please use `its DAV bridge
   <https://github.com/etesync/etesync-dav>`_. Support may reappear in a later version.
 
+Version 0.16.7
+==============
+
+*released on July 19*
+
+- Fixes for Python 3.7
+
 Version 0.16.6
 ==============
 
