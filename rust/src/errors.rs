@@ -9,10 +9,18 @@ pub enum Error {
     #[fail(display = "The item cannot be parsed")]
     ItemUnparseable,
 
-    #[fail(display = "Unexpected version {}, expected {}", found, expected)]
+    #[fail(
+        display = "Unexpected version {}, expected {}",
+        found,
+        expected
+    )]
     UnexpectedVobjectVersion { found: String, expected: String },
 
-    #[fail(display = "Unexpected component {}, expected {}", found, expected)]
+    #[fail(
+        display = "Unexpected component {}, expected {}",
+        found,
+        expected
+    )]
     UnexpectedVobject { found: String, expected: String },
 
     #[fail(display = "Item '{}' not found", href)]
@@ -44,10 +52,16 @@ pub enum Error {
     #[fail(display = "This storage is read-only.")]
     ReadOnly,
 
-    #[fail(display = "The storage is incorrectly configured for discovery. {}", msg)]
+    #[fail(
+        display = "The storage is incorrectly configured for discovery. {}",
+        msg
+    )]
     BadDiscoveryConfig { msg: String },
 
-    #[fail(display = "The storage config is not directly pointing to a collection. {}", msg)]
+    #[fail(
+        display = "The storage config is not directly pointing to a collection. {}",
+        msg
+    )]
     BadCollectionConfig { msg: String },
 
     #[fail(display = "Discovery is not possible. {}", msg)]
@@ -56,7 +70,10 @@ pub enum Error {
     #[fail(display = "This storage does not support metadata sync.")]
     MetadataUnsupported,
 
-    #[fail(display = "This storage does not support the metadata sync of this key. {}", msg)]
+    #[fail(
+        display = "This storage does not support the metadata sync of this key. {}",
+        msg
+    )]
     MetadataValueUnsupported { msg: &'static str },
 
     #[fail(display = "This storage does not support deleting collections.")]

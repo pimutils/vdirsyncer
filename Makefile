@@ -95,7 +95,7 @@ install-test: install-servers
 install-style: install-docs
 	pip install -U flake8 flake8-import-order 'flake8-bugbear>=17.3.0'
 	rustup component add rustfmt-preview
-	cargo install --force --git https://github.com/rust-lang-nursery/rust-clippy clippy
+	rustup component add clippy-preview --toolchain=nightly
 	cargo install --force cargo-audit
 
 style:

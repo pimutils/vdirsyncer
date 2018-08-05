@@ -153,8 +153,7 @@ impl DavClient {
                         <D:getetag/>
                     </D:prop>
                 </D:propfind>"#,
-            )
-            .build()?;
+            ).build()?;
         let response = self.send_request(request)?;
         self.parse_item_listing_response(response, mimetype_contains)
     }
@@ -259,8 +258,7 @@ impl DavClient {
             .header(IfMatch::Items(vec![EntityTag::new(
                 false,
                 etag.trim_matches('"').to_owned(),
-            )]))
-            .build()?;
+            )])).build()?;
         let response = send_request(&self.get_http()?, request)?;
 
         if response.status() == reqwest::StatusCode::PreconditionFailed {
@@ -307,8 +305,7 @@ impl DavClient {
                  <d:current-user-principal />\
                  </d:prop>\
                  </d:propfind>",
-            )
-            .build()?;
+            ).build()?;
         let response = self.send_request(request)?;
 
         let buf_reader = BufReader::new(response);
@@ -383,8 +380,7 @@ impl DavClient {
                  <d:resourcetype />\
                  </d:prop>\
                  </d:propfind>",
-            )
-            .build()?;
+            ).build()?;
         let response = self.send_request(request)?;
         let buf_reader = BufReader::new(response);
         let xml_reader = quick_xml::Reader::from_reader(buf_reader);
@@ -438,8 +434,7 @@ impl DavClient {
                     </d:set>
                 </d:mkcol>"#,
                 xmltag
-            ))
-            .build()?;
+            )).build()?;
 
         let response = self.send_request(request)?;
         Ok(response.url().clone())
@@ -477,8 +472,7 @@ impl DavClient {
                         </D:prop>
                     </D:propfind>"#,
                 xmltag
-            ))
-            .build()?;
+            )).build()?;
         let response = self.send_request(request)?;
         let buf_reader = BufReader::new(response);
         let xml_reader = quick_xml::Reader::from_reader(buf_reader);
@@ -515,8 +509,7 @@ impl DavClient {
                         </D:set>
                     </D:propertyupdate>"#,
                 xmltag.0, xmltag.1, value, xmltag.0
-            ))
-            .build()?;
+            )).build()?;
 
         let mut response = self.send_request(request)?;
         debug!("set_meta response: {:?}", response.text());

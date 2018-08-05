@@ -56,8 +56,7 @@ impl Item {
                     }
                 }
                 None
-            })
-            .as_ref()
+            }).as_ref()
             .map(|x| &**x)
     }
 
@@ -104,8 +103,7 @@ impl Item {
                 } else {
                     None
                 }
-            })
-            .as_ref()
+            }).as_ref()
             .map(|x| &**x)
             .ok_or_else(|| Error::ItemUnparseable.into())
     }
