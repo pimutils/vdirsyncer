@@ -51,7 +51,7 @@ def test_split_collection_simple(benchmark, check_roundtrip):
         [x.splitlines() for x in _simple_split]
 
 
-def test_split_collection_multiple_wrappers(benchmark):
+def test_split_collection_multiple_wrappers(benchmark, check_roundtrip):
     joined = u'\r\n'.join(
         u'BEGIN:VADDRESSBOOK\r\n' +
         x +
