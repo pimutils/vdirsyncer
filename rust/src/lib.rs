@@ -10,6 +10,7 @@ extern crate uuid;
 extern crate vobject;
 #[macro_use]
 extern crate log;
+extern crate base64;
 extern crate chrono;
 extern crate env_logger;
 extern crate glob;

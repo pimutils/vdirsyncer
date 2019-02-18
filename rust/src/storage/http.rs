@@ -5,6 +5,7 @@ use std::io::Read;
 use std::ffi::CStr;
 use std::os::raw::c_char;
 
+use base64;
 use reqwest;
 
 use super::singlefile::split_collection;
@@ -28,15 +29,15 @@ pub fn send_request(
     request: reqwest::Request,
 ) -> Fallible<reqwest::Response> {
     debug!("> {} {}", request.method(), request.url());
-    for header in request.headers().iter() {
-        debug!("> {}: {}", header.name(), header.value_string());
+    for (name, value) in request.headers().iter() {
+        debug!("> {}: {:?}", name, value);
     }
     debug!("> {:?}", request.body());
     debug!("> ---");
     let response = client.execute(request)?;
     debug!("< {:?}", response.status());
-    for header in response.headers().iter() {
-        debug!("< {}: {}", header.name(), header.value_string());
+    for (name, value) in response.headers().iter() {
+        debug!("< {}: {:?}", name, value);
     }
     Ok(response)
 }
@@ -53,28 +54,39 @@ pub struct HttpConfig {
 
 impl HttpConfig {
     pub fn into_connection(self) -> Fallible<reqwest::ClientBuilder> {
-        let mut headers = reqwest::header::Headers::new();
+        use reqwest::header;
+        use reqwest::header::{HeaderMap, HeaderValue};
+
+        let mut headers = HeaderMap::new();
 
         if let Some(auth) = self.auth {
-            headers.set(reqwest::header::Authorization(reqwest::header::Basic {
-                username: auth.username,
-                password: Some(auth.password),
-            }));
+            headers.insert(
+                header::AUTHORIZATION,
+                // Base64-encoded strings cannot contain invalid characters, so Err should never be
+                // returned.
+                HeaderValue::from_str(&format!(
+                    "Basic {}",
+                    base64::encode(&format!("{}:{}", auth.username, auth.password))
+                ))
+                .unwrap(),
+            );
         }
 
-        headers.set(reqwest::header::UserAgent::new(
-            self.useragent
-                .unwrap_or_else(|| "vdirsyncer/0.17.0".to_owned()), // TODO
-        ));
+        let user_agent_header = self
+            .useragent
+            .as_ref()
+            .and_then(|s| HeaderValue::from_str(&s).ok())
+            .unwrap_or_else(|| HeaderValue::from_static("vdirsyncer/0.17.0"));
+        headers.insert(header::USER_AGENT, user_agent_header);
 
         let mut client = reqwest::Client::builder();
-        client.default_headers(headers);
+        client = client.default_headers(headers);
 
         if let Some(verify_cert) = self.verify_cert {
             let mut buf = Vec::new();
             File::open(verify_cert)?.read_to_end(&mut buf)?;
             let cert = reqwest::Certificate::from_pem(&buf)?;
-            client.add_root_certificate(cert);
+            client = client.add_root_certificate(cert);
         }
 
         if let Some(auth_cert) = self.auth_cert {
@@ -84,7 +96,7 @@ impl HttpConfig {
                 &buf,
                 self.auth_cert_password.as_ref().map(|x| &**x).unwrap_or(""),
             )?;
-            client.identity(cert);
+            client = client.identity(cert);
         }
 
         Ok(client)
@@ -197,10 +209,10 @@ pub fn handle_http_error(href: &str, mut r: reqwest::Response) -> Fallible<reqwe
     }
 
     match r.status() {
-        reqwest::StatusCode::NotFound => Err(Error::ItemNotFound {
+        reqwest::StatusCode::NOT_FOUND => Err(Error::ItemNotFound {
             href: href.to_owned(),
         })?,
-        reqwest::StatusCode::UnsupportedMediaType => Err(Error::UnsupportedVobject {
+        reqwest::StatusCode::UNSUPPORTED_MEDIA_TYPE => Err(Error::UnsupportedVobject {
             href: href.to_owned(),
         })?,
         _ => Ok(r.error_for_status()?),

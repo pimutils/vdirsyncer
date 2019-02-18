@@ -16,7 +16,8 @@ atomicwrites = "0.2.0"
 uuid = { version = "0.6", features = ["v4"] }
 libc = "0.2"
 log = "0.4"
-reqwest = "0.8"
+reqwest = "0.9"
+base64 = "0.9" # Used to encode HTTP Basic Auth in HTTP storage
 quick-xml = "0.12.0"
 url = "1.7"
 chrono = "0.4.0"

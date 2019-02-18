@@ -9,11 +9,11 @@ pub use self::carddav::CarddavStorage;
 use std::collections::BTreeSet;
 use std::fmt;
 use std::io::{BufReader, Read};
-use std::str::FromStr;
 
 use quick_xml;
 use reqwest;
-use reqwest::header::{ContentType, ETag, EntityTag, IfMatch, IfNoneMatch};
+use reqwest::header;
+use reqwest::header::{HeaderMap, HeaderValue};
 use url::Url;
 
 use super::http::{handle_http_error, send_request, HttpConfig};
@@ -35,22 +35,22 @@ mod dav_methods {
     use reqwest;
     #[inline]
     pub fn propfind() -> reqwest::Method {
-        reqwest::Method::Extension("PROPFIND".to_owned())
+        "PROPFIND".parse().unwrap()
     }
 
     #[inline]
     pub fn proppatch() -> reqwest::Method {
-        reqwest::Method::Extension("PROPPATCH".to_owned())
+        "PROPPATCH".parse().unwrap()
     }
 
     #[inline]
     pub fn report() -> reqwest::Method {
-        reqwest::Method::Extension("REPORT".to_owned())
+        "REPORT".parse().unwrap()
     }
 
     #[inline]
     pub fn mkcol() -> reqwest::Method {
-        reqwest::Method::Extension("MKCOL".to_owned())
+        "MKCOL".parse().unwrap()
     }
 }
 
@@ -125,8 +125,8 @@ impl DavClient {
         let mut response = self.send_request(request)?;
         let mut s = String::new();
         response.read_to_string(&mut s)?;
-        let etag = match response.headers().get::<ETag>() {
-            Some(x) => format!("\"{}\"", x.tag()),
+        let etag = match response.headers().get(header::ETAG) {
+            Some(x) => x.to_str().unwrap().to_owned(),
             None => Err(DavError::EtagNotFound)?,
         };
         Ok((Item::from_raw(s), etag))
@@ -136,9 +136,12 @@ impl DavClient {
         &'a mut self,
         mimetype_contains: &'a str,
     ) -> Fallible<Box<Iterator<Item = (String, String)> + 'a>> {
-        let mut headers = reqwest::header::Headers::new();
-        headers.set(ContentType::xml());
-        headers.set_raw("Depth", "1");
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static("application/xml"),
+        );
+        headers.insert("Depth", HeaderValue::from_static("1"));
 
         let request = self
             .get_http()?
@@ -153,7 +156,8 @@ impl DavClient {
                         <D:getetag/>
                     </D:prop>
                 </D:propfind>"#,
-            ).build()?;
+            )
+            .build()?;
         let response = self.send_request(request)?;
         self.parse_item_listing_response(response, mimetype_contains)
     }
@@ -202,25 +206,29 @@ impl DavClient {
     ) -> Fallible<(String, String)> {
         let base = Url::parse(&self.url)?;
         let url = base.join(href)?;
-        let mut request = self.get_http()?.request(reqwest::Method::Put, url);
-        request.header(ContentType(reqwest::mime::Mime::from_str(mimetype)?));
+        let mut request = self.get_http()?.request(reqwest::Method::PUT, url);
+        request = request.header(
+            header::CONTENT_TYPE,
+            HeaderValue::from_str(mimetype).expect("Invalid mimetype"),
+        );
         if let Some(etag) = etag {
-            request.header(IfMatch::Items(vec![EntityTag::new(
-                false,
-                etag.trim_matches('"').to_owned(),
-            )]));
+            request = request.header(
+                header::IF_MATCH,
+                HeaderValue::from_str(&format!("\"{}\"", etag.trim_matches('"')))
+                    .expect("Etag contained forbidden characters"),
+            );
         } else {
-            request.header(IfNoneMatch::Any);
+            request = request.header(header::IF_NONE_MATCH, HeaderValue::from_static("*"));
         }
 
         let raw = item.get_raw();
         let response = send_request(&self.get_http()?, request.body(raw).build()?)?;
 
         match (etag, response.status()) {
-            (Some(_), reqwest::StatusCode::PreconditionFailed) => Err(Error::WrongEtag {
+            (Some(_), reqwest::StatusCode::PRECONDITION_FAILED) => Err(Error::WrongEtag {
                 href: href.to_owned(),
             })?,
-            (None, reqwest::StatusCode::PreconditionFailed) => Err(Error::ItemAlreadyExisting {
+            (None, reqwest::StatusCode::PRECONDITION_FAILED) => Err(Error::ItemAlreadyExisting {
                 href: href.to_owned(),
             })?,
             _ => (),
@@ -242,9 +250,9 @@ impl DavClient {
         //
         // In such cases we return a constant etag. The next synchronization
         // will then detect an etag change and will download the new item.
-        let etag = match response.headers().get::<ETag>() {
-            Some(x) => format!("\"{}\"", x.tag()),
-            None => "".to_owned(),
+        let etag = match response.headers().get(header::ETAG) {
+            Some(x) => x.to_str().unwrap().to_owned(),
+            None => Err(DavError::EtagNotFound)?,
         };
         Ok((response.url().path().to_owned(), etag))
     }
@@ -254,14 +262,16 @@ impl DavClient {
         let url = base.join(href)?;
         let request = self
             .get_http()?
-            .request(reqwest::Method::Delete, url)
-            .header(IfMatch::Items(vec![EntityTag::new(
-                false,
-                etag.trim_matches('"').to_owned(),
-            )])).build()?;
+            .request(reqwest::Method::DELETE, url)
+            .header(
+                header::IF_MATCH,
+                HeaderValue::from_str(&format!("\"{}\"", etag.trim_matches('"')))
+                    .expect("Etag contained forbidden characters"),
+            )
+            .build()?;
         let response = send_request(&self.get_http()?, request)?;
 
-        if response.status() == reqwest::StatusCode::PreconditionFailed {
+        if response.status() == reqwest::StatusCode::PRECONDITION_FAILED {
             Err(Error::WrongEtag {
                 href: href.to_owned(),
             })?;
@@ -290,9 +300,12 @@ impl DavClient {
     pub fn get_principal_url<S: StorageType>(&mut self) -> Fallible<Url> {
         let well_known_url = self.get_well_known_url::<S>()?;
 
-        let mut headers = reqwest::header::Headers::new();
-        headers.set(ContentType::xml());
-        headers.set_raw("Depth", "0");
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static("application/xml"),
+        );
+        headers.insert("Depth", HeaderValue::from_static("0"));
 
         let request = self
             .get_http()?
@@ -305,7 +318,8 @@ impl DavClient {
                  <d:current-user-principal />\
                  </d:prop>\
                  </d:propfind>",
-            ).build()?;
+            )
+            .build()?;
         let response = self.send_request(request)?;
 
         let buf_reader = BufReader::new(response);
@@ -329,9 +343,12 @@ impl DavClient {
         } else {
             let principal_url = self.get_principal_url::<S>()?;
 
-            let mut headers = reqwest::header::Headers::new();
-            headers.set(ContentType::xml());
-            headers.set_raw("Depth", "0");
+            let mut headers = HeaderMap::new();
+            headers.insert(
+                header::CONTENT_TYPE,
+                HeaderValue::from_static("application/xml"),
+            );
+            headers.insert("Depth", HeaderValue::from_static("0"));
 
             let request = self
                 .get_http()?
@@ -365,9 +382,12 @@ impl DavClient {
         }
 
         let homeset_url = self.get_homeset_url::<S>()?;
-        let mut headers = reqwest::header::Headers::new();
-        headers.set(ContentType::xml());
-        headers.set_raw("Depth", "1");
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static("application/xml"),
+        );
+        headers.insert("Depth", HeaderValue::from_static("1"));
 
         let request = self
             .get_http()?
@@ -380,7 +400,8 @@ impl DavClient {
                  <d:resourcetype />\
                  </d:prop>\
                  </d:propfind>",
-            ).build()?;
+            )
+            .build()?;
         let response = self.send_request(request)?;
         let buf_reader = BufReader::new(response);
         let xml_reader = quick_xml::Reader::from_reader(buf_reader);
@@ -420,7 +441,7 @@ impl DavClient {
         let request = self
             .get_http()?
             .request(mkcol(), url)
-            .header(ContentType::xml())
+            .header(header::CONTENT_TYPE, "application/xml")
             .body(format!(
                 r#"<?xml version="1.0" encoding="utf-8" ?>
                 <d:mkcol xmlns:d="DAV:">
@@ -434,7 +455,8 @@ impl DavClient {
                     </d:set>
                 </d:mkcol>"#,
                 xmltag
-            )).build()?;
+            ))
+            .build()?;
 
         let response = self.send_request(request)?;
         Ok(response.url().clone())
@@ -456,9 +478,12 @@ impl DavClient {
     fn get_meta<S: StorageType>(&mut self, key: Metadata) -> Fallible<String> {
         let xmltag = S::tagname_and_namespace_for_meta_key(key)?;
 
-        let mut headers = reqwest::header::Headers::new();
-        headers.set(ContentType::xml());
-        headers.set_raw("Depth", "0");
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static("application/xml"),
+        );
+        headers.insert("Depth", HeaderValue::from_static("0"));
 
         let request = self
             .get_http()?
@@ -472,7 +497,8 @@ impl DavClient {
                         </D:prop>
                     </D:propfind>"#,
                 xmltag
-            )).build()?;
+            ))
+            .build()?;
         let response = self.send_request(request)?;
         let buf_reader = BufReader::new(response);
         let xml_reader = quick_xml::Reader::from_reader(buf_reader);
@@ -480,10 +506,10 @@ impl DavClient {
         while let Some(response) = parser.next_response()? {
             match (key, response.displayname, response.apple_calendar_color) {
                 (Metadata::Color, _, Some(value)) => {
-                    return Ok(normalize_meta_value(&value).to_owned())
+                    return Ok(normalize_meta_value(&value).to_owned());
                 }
                 (Metadata::Displayname, Some(value), _) => {
-                    return Ok(normalize_meta_value(&value).to_owned())
+                    return Ok(normalize_meta_value(&value).to_owned());
                 }
                 _ => (),
             }
@@ -498,7 +524,7 @@ impl DavClient {
         let request = self
             .get_http()?
             .request(proppatch(), &self.url)
-            .header(ContentType::xml())
+            .header(header::CONTENT_TYPE, "application/xml")
             .body(format!(
                 r#"<?xml version="1.0" encoding="utf-8" ?>
                     <D:propertyupdate xmlns:D="DAV:">
@@ -509,7 +535,8 @@ impl DavClient {
                         </D:set>
                     </D:propertyupdate>"#,
                 xmltag.0, xmltag.1, value, xmltag.0
-            )).build()?;
+            ))
+            .build()?;
 
         let mut response = self.send_request(request)?;
         debug!("set_meta response: {:?}", response.text());
@@ -526,7 +553,7 @@ impl DavClient {
     fn delete_collection(&mut self) -> Fallible<()> {
         let request = self
             .get_http()?
-            .request(reqwest::Method::Delete, &self.url)
+            .request(reqwest::Method::DELETE, &self.url)
             .build()?;
 
         let _ = self.send_request(request)?;

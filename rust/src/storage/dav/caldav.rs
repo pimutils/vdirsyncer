@@ -1,6 +1,6 @@
 use chrono;
 
-use reqwest::header::{ContentType, Headers};
+use reqwest::header;
 
 use super::dav_methods::*;
 use super::parser;
@@ -79,9 +79,12 @@ impl Storage for CaldavStorage {
             self.inner.list("text/calendar")
         } else {
             let mut rv = vec![];
-            let mut headers = Headers::new();
-            headers.set(ContentType::xml());
-            headers.set_raw("Depth", "1");
+            let mut headers = header::HeaderMap::new();
+            headers.insert(
+                header::CONTENT_TYPE,
+                header::HeaderValue::from_static("application/xml"),
+            );
+            headers.insert("Depth", header::HeaderValue::from_static("1"));
 
             for filter in filters {
                 let data =
