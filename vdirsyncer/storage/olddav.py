@@ -13,7 +13,7 @@ from requests.exceptions import HTTPError
 from .base import Storage, normalize_meta_value
 from .. import exceptions, http, utils
 from ..http import USERAGENT, prepare_auth, \
-    prepare_client_cert, prepare_verify
+    prepare_client_cert
 from ..vobject import Item
 
 
@@ -819,3 +819,28 @@ class CardDAVStorage(DAVStorage):
             </C:addressbook-multiget>'''
 
     get_multi_data_query = '{urn:ietf:params:xml:ns:carddav}address-data'
+
+
+def prepare_verify(verify, verify_fingerprint):
+    if isinstance(verify, (str, bytes)):
+        verify = expand_path(verify)
+    elif not isinstance(verify, bool):
+        raise exceptions.UserError('Invalid value for verify ({}), '
+                                   'must be a path to a PEM-file or boolean.'
+                                   .format(verify))
+
+    if verify_fingerprint is not None:
+        if not isinstance(verify_fingerprint, (bytes, str)):
+            raise exceptions.UserError('Invalid value for verify_fingerprint '
+                                       '({}), must be a string or null.'
+                                       .format(verify_fingerprint))
+    elif not verify:
+        raise exceptions.UserError(
+            'Disabling all SSL validation is forbidden. Consider setting '
+            'verify_fingerprint if you have a broken or self-signed cert.'
+        )
+
+    return {
+        'verify': verify,
+        'verify_fingerprint': verify_fingerprint,
+    }
