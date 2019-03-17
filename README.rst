@@ -2,6 +2,8 @@
 vdirsyncer
 ==========
 
+`**looking for new maintainers** <https://github.com/pimutils/vdirsyncer/issues/790>`_
+
 - `Documentation <https://vdirsyncer.pimutils.org/en/stable/>`_
 - `Source code <https://github.com/pimutils/vdirsyncer>`_
 
