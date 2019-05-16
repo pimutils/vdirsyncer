@@ -9,18 +9,10 @@ pub enum Error {
     #[fail(display = "The item cannot be parsed")]
     ItemUnparseable,
 
-    #[fail(
-        display = "Unexpected version {}, expected {}",
-        found,
-        expected
-    )]
+    #[fail(display = "Unexpected version {}, expected {}", found, expected)]
     UnexpectedVobjectVersion { found: String, expected: String },
 
-    #[fail(
-        display = "Unexpected component {}, expected {}",
-        found,
-        expected
-    )]
+    #[fail(display = "Unexpected component {}, expected {}", found, expected)]
     UnexpectedVobject { found: String, expected: String },
 
     #[fail(display = "Item '{}' not found", href)]

@@ -283,15 +283,17 @@ pub fn split_collection(mut input: &str) -> Fallible<Vec<vobject::Component>> {
         match component.name.as_ref() {
             "VCALENDAR" => rv.extend(split_vcalendar(component)?),
             "VCARD" => rv.push(component),
-            "VADDRESSBOOK" => for vcard in component.subcomponents {
-                if vcard.name != "VCARD" {
-                    Err(Error::UnexpectedVobject {
-                        found: vcard.name.clone(),
-                        expected: "VCARD".to_owned(),
-                    })?;
+            "VADDRESSBOOK" => {
+                for vcard in component.subcomponents {
+                    if vcard.name != "VCARD" {
+                        Err(Error::UnexpectedVobject {
+                            found: vcard.name.clone(),
+                            expected: "VCARD".to_owned(),
+                        })?;
+                    }
+                    rv.push(vcard);
                 }
-                rv.push(vcard);
-            },
+            }
             _ => Err(Error::UnexpectedVobject {
                 found: component.name.clone(),
                 expected: "VCALENDAR | VCARD | VADDRESSBOOK".to_owned(),
@@ -399,7 +401,8 @@ fn join_collection<I: Iterator<Item = Item>>(item_iter: I) -> Fallible<String> {
             return Err(Error::UnexpectedVobject {
                 found: c.name,
                 expected: item_name.clone(),
-            }.into());
+            }
+            .into());
         }
 
         if item_name == wrapper_name {
@@ -409,7 +412,8 @@ fn join_collection<I: Iterator<Item = Item>>(item_iter: I) -> Fallible<String> {
                     return Err(Error::UnexpectedVobjectVersion {
                         expected: x.raw_value.clone(),
                         found: y.raw_value.clone(),
-                    }.into());
+                    }
+                    .into());
                 }
                 (None, Some(_)) => (),
                 _ => continue,

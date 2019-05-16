@@ -61,7 +61,8 @@ impl CaldavStorage {
                      </C:comp-filter>",
                     item_type, timefilter
                 )
-            }).collect()
+            })
+            .collect()
     }
 }
 

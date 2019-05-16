@@ -70,10 +70,12 @@ fn handle_io_error(href: &str, e: io::Error) -> failure::Error {
     match e.kind() {
         io::ErrorKind::NotFound => Error::ItemNotFound {
             href: href.to_owned(),
-        }.into(),
+        }
+        .into(),
         io::ErrorKind::AlreadyExists => Error::ItemAlreadyExisting {
             href: href.to_owned(),
-        }.into(),
+        }
+        .into(),
         _ => e.into(),
     }
 }
