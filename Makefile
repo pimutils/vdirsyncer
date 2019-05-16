@@ -32,14 +32,15 @@ PYTEST_ARGS =
 # Variables below this line are not very interesting for getting started.
 TEST_EXTRA_PACKAGES =
 
-# The rust toolchain to install. You need nightly to run clippy
-RUST_TOOLCHAIN = nightly
+# The rust toolchain to install.
+RUST_TOOLCHAIN = stable
 
 ifeq ($(COVERAGE), true)
 	TEST_EXTRA_PACKAGES += pytest-cov
 	PYTEST_ARGS += --cov-config .coveragerc --cov vdirsyncer
 endif
 
+PIP = pip
 PYTEST = py.test $(PYTEST_ARGS)
 
 export TESTSERVER_BASE := ./tests/storage/servers/
@@ -83,23 +84,23 @@ install-servers:
 	done
 
 install-test: install-servers
-	pip install -Ur test-requirements.txt
+	$(PIP) install -Ur test-requirements.txt
 	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
-		pip install -U --force-reinstall \
+		$(PIP) install -U --force-reinstall \
 			'git+https://github.com/HypothesisWorks/hypothesis#egg=hypothesis&subdirectory=hypothesis-python' \
 			git+https://github.com/kennethreitz/requests \
 			git+https://github.com/pytest-dev/pytest; \
 	fi
-	[ -z "$(TEST_EXTRA_PACKAGES)" ] || pip install $(TEST_EXTRA_PACKAGES)
+	[ -z "$(TEST_EXTRA_PACKAGES)" ] || $(PIP) install $(TEST_EXTRA_PACKAGES)
 
 install-style: install-docs
-	pip install -U flake8 flake8-import-order 'flake8-bugbear>=17.3.0'
-	rustup component add rustfmt-preview
-	rustup component add clippy-preview --toolchain=nightly
+	$(PIP) install -U flake8 flake8-import-order 'flake8-bugbear>=17.3.0'
+	rustup component add rustfmt
+	rustup component add clippy
 	cargo install --force cargo-audit
 
 style:
-	flake8
+	flake8 --ignore=E731,W504
 	! git grep -i syncroniz */*
 	! git grep -i 'text/icalendar' */*
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
@@ -108,7 +109,7 @@ style:
 	cd rust/ && cargo audit
 
 install-docs:
-	pip install -Ur docs-requirements.txt
+	$(PIP) install -Ur docs-requirements.txt
 
 docs:
 	cd docs && make html
@@ -126,14 +127,14 @@ release-deb:
 	sh scripts/release-deb.sh ubuntu xenial
 
 install-dev:
-	pip install -ve .
+	$(PIP) install -ve .
 	set -xe && if [ "$(REQUIREMENTS)" = "devel" ]; then \
-	    pip install -U --force-reinstall \
+	    $(PIP) install -U --force-reinstall \
 			git+https://github.com/mitsuhiko/click \
 			git+https://github.com/click-contrib/click-log \
 			git+https://github.com/kennethreitz/requests; \
 	elif [ "$(REQUIREMENTS)" = "minimal" ]; then \
-		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
+		$(PIP) install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
 	fi
 
 ssh-submodule-urls:
