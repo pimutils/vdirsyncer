@@ -9,7 +9,7 @@ try:
         'password': os.environ['DAVICAL_PASSWORD'].strip(),
         'url': 'https://caesar.lostpackets.de/davical-test/caldav.php/travis/',
     }
-except KeyError as e:
+except KeyError:
     caldav_args = None
 
 

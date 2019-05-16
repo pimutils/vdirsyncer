@@ -134,7 +134,7 @@ def handle_cli_error(status_name=None, e=None):
             'the issue tracker at {}'
             .format(e, BUGTRACKER_HOME)
         )
-    except exceptions.CollectionRequired as e:
+    except exceptions.CollectionRequired:
         cli_logger.error(
             'One or more storages don\'t support `collections = null`. '
             'You probably want to set `collections = ["from a", "from b"]`.'
