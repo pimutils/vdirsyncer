@@ -1,7 +1,7 @@
 import datetime
 import os
 
-import setuptools_scm
+from pkg_resources import get_distribution
 
 extensions = ['sphinx.ext.autodoc']
 
@@ -14,7 +14,7 @@ project = 'vdirsyncer'
 copyright = ('2014-{}, Markus Unterwaditzer & contributors'
              .format(datetime.date.today().strftime('%Y')))
 
-release = setuptools_scm.get_version(root='..', relative_to=__file__)
+release = get_distribution('vdirsyncer').version
 version = '.'.join(release.split('.')[:2])  # The short X.Y version.
 
 rst_epilog = '.. |vdirsyncer_version| replace:: %s' % release
