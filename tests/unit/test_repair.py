@@ -11,7 +11,7 @@ from vdirsyncer.vobject import Item
 
 
 @given(uid=uid_strategy)
-@settings(perform_health_check=False)  # Using the random module for UIDs
+@settings(deadline=None, max_examples=1)  # Using the random module for UIDs
 def test_repair_uids(uid):
     s = MemoryStorage()
     s.items = {
@@ -35,7 +35,7 @@ def test_repair_uids(uid):
 
 
 @given(uid=uid_strategy.filter(lambda x: not href_safe(x)))
-@settings(perform_health_check=False)  # Using the random module for UIDs
+@settings(deadline=None, max_examples=1)  # Using the random module for UIDs
 def test_repair_unsafe_uids(uid):
     s = MemoryStorage()
     item = Item(u'BEGIN:VCARD\nUID:123\nEND:VCARD').with_uid(uid)

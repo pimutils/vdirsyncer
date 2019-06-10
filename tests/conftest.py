@@ -37,8 +37,7 @@ settings.register_profile("ci", settings(
     verbosity=Verbosity.verbose,
 ))
 settings.register_profile("deterministic", settings(
-    derandomize=True,
-    perform_health_check=False
+    derandomize=True
 ))
 
 if os.environ.get('DETERMINISTIC_TESTS', 'false').lower() == 'true':
