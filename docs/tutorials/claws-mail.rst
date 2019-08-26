@@ -69,7 +69,7 @@ Now we discover and sync our contacts::
 Claws Mail
 ----------
 
-Open Claws-Mail. Got to **Tools** => **Addressbook**.
+Open Claws-Mail. Go to **Tools** => **Addressbook**.
 
 Click on **Addressbook** => **New vCard**. Choose a name for the book.
 
