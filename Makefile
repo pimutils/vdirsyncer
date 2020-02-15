@@ -32,8 +32,8 @@ PYTEST_ARGS =
 # Variables below this line are not very interesting for getting started.
 TEST_EXTRA_PACKAGES =
 
-# The rust toolchain to install. You need nightly to run clippy
-RUST_TOOLCHAIN = nightly
+# The rust toolchain to install.
+RUST_TOOLCHAIN = stable
 
 ifeq ($(COVERAGE), true)
 	TEST_EXTRA_PACKAGES += pytest-cov
@@ -94,8 +94,8 @@ install-test: install-servers
 
 install-style: install-docs
 	pip install -U flake8 flake8-import-order 'flake8-bugbear>=17.3.0'
-	rustup component add rustfmt-preview
-	rustup component add clippy-preview --toolchain=nightly
+	rustup component add rustfmt
+	rustup component add clippy
 	cargo install --force cargo-audit
 
 style:
