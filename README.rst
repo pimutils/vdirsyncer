@@ -28,9 +28,6 @@ It aims to be for calendars and contacts what `OfflineIMAP
 .. image:: https://codecov.io/github/pimutils/vdirsyncer/coverage.svg?branch=master
     :target: https://codecov.io/github/pimutils/vdirsyncer?branch=master
 
-.. image:: https://badge.waffle.io/pimutils/vdirsyncer.svg?label=ready&title=Ready
-    :target: https://waffle.io/pimutils/vdirsyncer
-
 .. image:: https://img.shields.io/badge/deb-packagecloud.io-844fec.svg
     :target: https://packagecloud.io/pimutils/vdirsyncer
 
