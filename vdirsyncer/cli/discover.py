@@ -8,7 +8,9 @@ import aiohttp
 import aiostream
 
 from .. import exceptions
+from . import cli_logger
 from .utils import handle_collection_not_found
+from .utils import handle_collection_was_removed
 from .utils import handle_storage_init_error
 from .utils import load_status
 from .utils import save_status
@@ -118,6 +120,33 @@ async def collections_for_pair(
             "cache_key": cache_key,
         },
     )
+
+    if "from b" in (pair.collections or []):
+        only_in_a = set(a_discovered.get_self().keys()) - set(
+            b_discovered.get_self().keys()
+        )
+        if only_in_a and "delete" in pair.config_a["implicit"]:
+            for a in only_in_a:
+                try:
+                    handle_collection_was_removed(pair.config_a, a)
+                    save_status(status_path, pair.name, a, data_type="metadata")
+                    save_status(status_path, pair.name, a, data_type="items")
+                except NotImplementedError as e:
+                    cli_logger.error(e)
+
+    if "from a" in (pair.collections or []):
+        only_in_b = set(b_discovered.get_self().keys()) - set(
+            a_discovered.get_self().keys()
+        )
+        if only_in_b and "delete" in pair.config_b["implicit"]:
+            for b in only_in_b:
+                try:
+                    handle_collection_was_removed(pair.config_b, b)
+                    save_status(status_path, pair.name, b, data_type="metadata")
+                    save_status(status_path, pair.name, b, data_type="items")
+                except NotImplementedError as e:
+                    cli_logger.error(e)
+
     return rv
 
 

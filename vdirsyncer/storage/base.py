@@ -42,6 +42,9 @@ class Storage(metaclass=StorageMeta):
 
     :param read_only: Whether the synchronization algorithm should avoid writes
         to this storage. Some storages accept no value other than ``True``.
+    :param implicit: Whether the synchronization shall create/delete collections
+        in the destination, when these were created/removed from the source.  Must
+        be a possibly empty list of strings.
     """
 
     fileext = ".txt"
@@ -65,9 +68,16 @@ class Storage(metaclass=StorageMeta):
     # The attribute values to show in the representation of the storage.
     _repr_attributes = ()
 
-    def __init__(self, instance_name=None, read_only=None, collection=None):
+    def __init__(
+        self,
+        instance_name=None,
+        read_only=None,
+        collection=None,
+        implicit=None,
+    ):
         if read_only is None:
             read_only = self.read_only
+        self.implicit = implicit  # unused from within the Storage classes
         if self.read_only and not read_only:
             raise exceptions.UserError("This storage can only be read-only.")
         self.read_only = bool(read_only)
@@ -101,6 +111,18 @@ class Storage(metaclass=StorageMeta):
     async def create_collection(cls, collection, **kwargs):
         """
         Create the specified collection and return the new arguments.
+
+        ``collection=None`` means the arguments are already pointing to a
+        possible collection location.
+
+        The returned args should contain the collection name, for UI purposes.
+        """
+        raise NotImplementedError()
+
+    @classmethod
+    def delete_collection(cls, collection, **kwargs):
+        """
+        Delete the specified collection and return the new arguments.
 
         ``collection=None`` means the arguments are already pointing to a
         possible collection location.

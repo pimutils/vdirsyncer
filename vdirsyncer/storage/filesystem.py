@@ -1,6 +1,7 @@
 import errno
 import logging
 import os
+import shutil
 import subprocess
 
 from atomicwrites import atomic_write
@@ -62,9 +63,7 @@ class FilesystemStorage(Storage):
     def _validate_collection(cls, path):
         if not os.path.isdir(path):
             return False
-        if os.path.basename(path).startswith("."):
-            return False
-        return True
+        return not os.path.basename(path).startswith(".")
 
     @classmethod
     async def create_collection(cls, collection, **kwargs):
@@ -75,6 +74,19 @@ class FilesystemStorage(Storage):
             path = os.path.join(path, collection)
 
         checkdir(expand_path(path), create=True)
+
+        kwargs["path"] = path
+        kwargs["collection"] = collection
+        return kwargs
+
+    @classmethod
+    def delete_collection(cls, collection, **kwargs):
+        kwargs = dict(kwargs)
+        path = kwargs["path"]
+
+        if collection is not None:
+            path = os.path.join(path, collection)
+        shutil.rmtree(path, ignore_errors=True)
 
         kwargs["path"] = path
         kwargs["collection"] = collection
