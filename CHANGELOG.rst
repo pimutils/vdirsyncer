@@ -21,6 +21,7 @@ Version 0.17.0
   certificates are configured. Support for ``verify_fingerprint`` is gone.
 - Support for EteSync has been dropped for now. Please use `its DAV bridge
   <https://github.com/etesync/etesync-dav>`_. Support may reappear in a later version.
+- Drop support for Python 3.4, and add support for Python 3.7 and Python 3.8.
 
 Version 0.16.7
 ==============

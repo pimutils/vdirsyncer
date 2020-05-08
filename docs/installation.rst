@@ -41,7 +41,7 @@ If your distribution doesn't provide a package for vdirsyncer, you still can
 use Python's package manager "pip". First, you'll have to check that the
 following things are installed:
 
-- Python 3.4+ and pip.
+- Python 3.5+ and pip.
 - ``libxml`` and ``libxslt``
 - ``zlib``
 - `Rust <https://www.rust-lang.org/>`_, the programming language, together with
