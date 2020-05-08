@@ -22,7 +22,7 @@ references:
 jobs:
   nextcloud:
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.8
         environment:
           <<: *basic_env
           NEXTCLOUD_HOST: localhost:80
@@ -44,7 +44,7 @@ jobs:
 
   fastmail:
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.8
         environment:
           <<: *basic_env
           DAV_SERVER: fastmail
@@ -59,7 +59,7 @@ jobs:
 
   icloud:
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.8
         environment:
           <<: *basic_env
           DAV_SERVER: icloud
@@ -74,7 +74,7 @@ jobs:
 
   davical:
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.8
         environment:
           <<: *basic_env
           DAV_SERVER: davical
@@ -89,7 +89,7 @@ jobs:
 
   xandikos:
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.8
         environment:
           <<: *basic_env
           DAV_SERVER: xandikos
@@ -106,7 +106,7 @@ jobs:
 
   style:
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.8
         environment:
           <<: *basic_env
     steps:
@@ -163,9 +163,9 @@ jobs:
 
       - run: make -e test
 
-  py37-minimal:
+  py38-minimal:
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.8
         environment:
           <<: *basic_env
           REQUIREMENTS: minimal
@@ -178,9 +178,9 @@ jobs:
 
       - run: make -e test
 
-  py37-release:
+  py38-release:
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.8
         environment:
           <<: *basic_env
           REQUIREMENTS: release
@@ -193,9 +193,9 @@ jobs:
 
       - run: make -e test
 
-  py37-devel:
+  py38-devel:
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.8
         environment:
           <<: *basic_env
           REQUIREMENTS: devel
@@ -210,7 +210,7 @@ jobs:
 
   rust:
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.8
         environment:
           <<: *basic_env
           REQUIREMENTS: release
@@ -236,7 +236,7 @@ workflows:
       - py34-minimal
       - py34-release
       - py34-devel
-      - py37-minimal
-      - py37-release
-      - py37-devel
+      - py38-minimal
+      - py38-release
+      - py38-devel
       - rust
