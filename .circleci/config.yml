@@ -118,9 +118,9 @@ jobs:
 
       - run: make -e style
 
-  py34-minimal:
+  py35-minimal:
     docker:
-      - image: circleci/python:3.4
+      - image: circleci/python:3.5
         environment:
           <<: *basic_env
           REQUIREMENTS: minimal
@@ -133,9 +133,9 @@ jobs:
 
       - run: make -e test
 
-  py34-release:
+  py35-release:
     docker:
-      - image: circleci/python:3.4
+      - image: circleci/python:3.5
         environment:
           <<: *basic_env
           REQUIREMENTS: release
@@ -148,9 +148,9 @@ jobs:
 
       - run: make -e test
 
-  py34-devel:
+  py35-devel:
     docker:
-      - image: circleci/python:3.4
+      - image: circleci/python:3.5
         environment:
           <<: *basic_env
           REQUIREMENTS: devel
@@ -233,9 +233,9 @@ workflows:
       - davical
       - xandikos
       - style
-      - py34-minimal
-      - py34-release
-      - py34-devel
+      - py35-minimal
+      - py35-release
+      - py35-devel
       - py38-minimal
       - py38-release
       - py38-devel
