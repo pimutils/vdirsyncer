@@ -72,10 +72,10 @@ matrix.append({
             "REQUIREMENTS=latest")
 })
 
-matrix.append({
-    'language': 'generic',
-    'os': 'osx',
-    'env': 'BUILD=test'
-})
+# matrix.append({
+#     'language': 'generic',
+#     'os': 'osx',
+#     'env': 'BUILD=test'
+# })
 
 json.dump(cfg, sys.stdout, sort_keys=True, indent=2)
