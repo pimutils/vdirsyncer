@@ -14,9 +14,9 @@ class ServerMixin:
             }
 
             if self.storage_class.fileext == '.ics':
-                args['url'] = 'https://caldav.messagingengine.com/'
+                args['url'] = 'https://caldav.fastmail.com/'
             elif self.storage_class.fileext == '.vcf':
-                args['url'] = 'https://carddav.messagingengine.com/'
+                args['url'] = 'https://carddav.fastmail.com/'
             else:
                 raise RuntimeError()
 
