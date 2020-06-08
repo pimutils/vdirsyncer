@@ -77,7 +77,7 @@ Then search for the for the vCard in the folder **~/.contacts/**. Click
 ok, and you we will see your contacts.
 
 .. note::
-    
+
     Claws-Mail shows only contacts that have a mail address.
 
 Crontab

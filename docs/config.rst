@@ -286,7 +286,7 @@ Service to hardcode those into opensource software [googleterms]_:
 
 3. In the sidebar, select "Credentials" and create a new "OAuth Client ID". The
    application type is "Other".
-   
+
    You'll be prompted to create a OAuth consent screen first. Fill out that
    form however you like.
 
@@ -368,7 +368,7 @@ password. Neither are stored.
         secrets_dir = ...
         #server_path = ...
         #db_path = ...
-   
+
    :param email: The email address of your account.
    :param secrets_dir: A directory where vdirsyncer can store the encryption
                        key and authentication token.
@@ -386,7 +386,7 @@ password. Neither are stored.
         secrets_dir = ...
         #server_path = ...
         #db_path = ...
-   
+
     :param email: The email address of your account.
     :param secrets_dir: A directory where vdirsyncer can store the encryption
                         key and authentication token.

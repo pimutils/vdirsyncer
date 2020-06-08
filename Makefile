@@ -83,7 +83,7 @@ install-test: install-servers install-dev
 
 install-style: install-docs install-dev
 	pip install -U flake8 flake8-import-order flake8-bugbear autopep8
-	
+
 style:
 	flake8
 	! git grep -i syncroniz */*
