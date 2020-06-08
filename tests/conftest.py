@@ -35,8 +35,13 @@ settings.register_profile("deterministic", settings(
     derandomize=True,
     suppress_health_check=HealthCheck.all(),
 ))
+settings.register_profile("dev", settings(
+    suppress_health_check=[HealthCheck.too_slow]
+))
 
 if os.environ.get('DETERMINISTIC_TESTS', 'false').lower() == 'true':
     settings.load_profile("deterministic")
 elif os.environ.get('CI', 'false').lower() == 'true':
     settings.load_profile("ci")
+else:
+    settings.load_profile("dev")
