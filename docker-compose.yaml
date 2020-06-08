@@ -10,3 +10,8 @@ services:
     build: docker/radicale/
     ports:
       - '8001:8001'
+
+  baikal:
+    build: docker/baikal/
+    ports:
+      - '8002:80'
