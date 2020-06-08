@@ -1,0 +1,7 @@
+version: '3'
+
+services:
+  xandikos:
+    build: docker/xandikos/
+    ports:
+      - '8000:8000'
