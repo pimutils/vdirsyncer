@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 '''
 There are storage classes which control the access to one vdir-collection and
 offer basic CRUD-ish methods for modifying those collections. The exact

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import uuid
 
 import os
@@ -27,7 +25,7 @@ class DAVStorageTests(ServerMixin, StorageTests):
     @pytest.mark.skipif(dav_server == 'radicale',
                         reason='Radicale is very tolerant.')
     def test_dav_broken_item(self, s):
-        item = Item(u'HAHA:YES')
+        item = Item('HAHA:YES')
         with pytest.raises((exceptions.Error, requests.exceptions.HTTPError)):
             s.upload(item)
         assert not list(s.list())
@@ -50,7 +48,7 @@ class DAVStorageTests(ServerMixin, StorageTests):
 
         monkeypatch.setattr(s, '_get_href',
                             lambda item: item.ident + s.fileext)
-        item = get_item(uid=u'град сатану' + str(uuid.uuid4()))
+        item = get_item(uid='град сатану' + str(uuid.uuid4()))
         href, etag = s.upload(item)
         item2, etag2 = s.get(href)
         assert_item_equals(item, item2)

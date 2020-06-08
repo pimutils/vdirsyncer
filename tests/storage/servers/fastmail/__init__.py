@@ -3,7 +3,7 @@ import os
 import pytest
 
 
-class ServerMixin(object):
+class ServerMixin:
 
     @pytest.fixture
     def get_storage_args(self, slow_create_collection):
@@ -14,9 +14,9 @@ class ServerMixin(object):
             }
 
             if self.storage_class.fileext == '.ics':
-                args['url'] = 'https://caldav.messagingengine.com/'
+                args['url'] = 'https://caldav.fastmail.com/'
             elif self.storage_class.fileext == '.vcf':
-                args['url'] = 'https://carddav.messagingengine.com/'
+                args['url'] = 'https://carddav.fastmail.com/'
             else:
                 raise RuntimeError()
 

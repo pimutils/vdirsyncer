@@ -14,7 +14,7 @@ except KeyError as e:
 
 
 @pytest.mark.flaky(reruns=5)
-class ServerMixin(object):
+class ServerMixin:
     @pytest.fixture
     def davical_args(self):
         if self.storage_class.fileext == '.ics':

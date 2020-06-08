@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import urllib.parse as urlparse
 
 from .base import Storage
@@ -21,7 +19,7 @@ class HttpStorage(Storage):
     def __init__(self, url, username='', password='', verify=True, auth=None,
                  useragent=USERAGENT, verify_fingerprint=None, auth_cert=None,
                  **kwargs):
-        super(HttpStorage, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         self._settings = {
             'auth': prepare_auth(auth, username, password),

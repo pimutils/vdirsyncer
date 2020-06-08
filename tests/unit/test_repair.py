@@ -1,4 +1,4 @@
-from hypothesis import given, settings
+from hypothesis import HealthCheck, given, settings
 
 import pytest
 
@@ -11,17 +11,18 @@ from vdirsyncer.vobject import Item
 
 
 @given(uid=uid_strategy)
-@settings(perform_health_check=False)  # Using the random module for UIDs
+# Using the random module for UIDs:
+@settings(suppress_health_check=HealthCheck.all())
 def test_repair_uids(uid):
     s = MemoryStorage()
     s.items = {
         'one': (
             'asdf',
-            Item(u'BEGIN:VCARD\nFN:Hans\nUID:{}\nEND:VCARD'.format(uid))
+            Item('BEGIN:VCARD\nFN:Hans\nUID:{}\nEND:VCARD'.format(uid))
         ),
         'two': (
             'asdf',
-            Item(u'BEGIN:VCARD\nFN:Peppi\nUID:{}\nEND:VCARD'.format(uid))
+            Item('BEGIN:VCARD\nFN:Peppi\nUID:{}\nEND:VCARD'.format(uid))
         )
     }
 
@@ -35,10 +36,11 @@ def test_repair_uids(uid):
 
 
 @given(uid=uid_strategy.filter(lambda x: not href_safe(x)))
-@settings(perform_health_check=False)  # Using the random module for UIDs
+# Using the random module for UIDs:
+@settings(suppress_health_check=HealthCheck.all())
 def test_repair_unsafe_uids(uid):
     s = MemoryStorage()
-    item = Item(u'BEGIN:VCARD\nUID:{}\nEND:VCARD'.format(uid))
+    item = Item('BEGIN:VCARD\nUID:{}\nEND:VCARD'.format(uid))
     href, etag = s.upload(item)
     assert s.get(href)[0].uid == uid
     assert not href_safe(uid)

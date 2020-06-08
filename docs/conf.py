@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 import datetime
 import os
 
-import setuptools_scm
+from pkg_resources import get_distribution
 
 extensions = ['sphinx.ext.autodoc']
 
@@ -12,11 +10,11 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 master_doc = 'index'
 
-project = u'vdirsyncer'
-copyright = (u'2014-{}, Markus Unterwaditzer & contributors'
+project = 'vdirsyncer'
+copyright = ('2014-{}, Markus Unterwaditzer & contributors'
              .format(datetime.date.today().strftime('%Y')))
 
-release = setuptools_scm.get_version(root='..', relative_to=__file__)
+release = get_distribution('vdirsyncer').version
 version = '.'.join(release.split('.')[:2])  # The short X.Y version.
 
 rst_epilog = '.. |vdirsyncer_version| replace:: %s' % release
@@ -44,18 +42,18 @@ htmlhelp_basename = 'vdirsyncerdoc'
 
 latex_elements = {}
 latex_documents = [
-    ('index', 'vdirsyncer.tex', u'vdirsyncer Documentation',
-     u'Markus Unterwaditzer', 'manual'),
+    ('index', 'vdirsyncer.tex', 'vdirsyncer Documentation',
+     'Markus Unterwaditzer', 'manual'),
 ]
 
 man_pages = [
-    ('index', 'vdirsyncer', u'vdirsyncer Documentation',
-     [u'Markus Unterwaditzer'], 1)
+    ('index', 'vdirsyncer', 'vdirsyncer Documentation',
+     ['Markus Unterwaditzer'], 1)
 ]
 
 texinfo_documents = [
-    ('index', 'vdirsyncer', u'vdirsyncer Documentation',
-     u'Markus Unterwaditzer', 'vdirsyncer',
+    ('index', 'vdirsyncer', 'vdirsyncer Documentation',
+     'Markus Unterwaditzer', 'vdirsyncer',
      'Synchronize calendars and contacts.', 'Miscellaneous'),
 ]
 

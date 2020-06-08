@@ -39,7 +39,7 @@ program chosen:
 * Like with ``todo.txt``, Dropbox and friends are obviously agnostic/unaware of
   the files' contents. If a file has changed on both sides, Dropbox just copies
   both versions to both sides.
-  
+
   This is a good idea if the user is directly interfacing with the file system
   and is able to resolve conflicts themselves.  Here it might lead to
   erroneous behavior with e.g. ``khal``, since there are now two events with

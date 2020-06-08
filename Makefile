@@ -71,7 +71,7 @@ install-servers:
 		(cd $(TESTSERVER_BASE)$$server && sh install.sh); \
 	done
 
-install-test: install-servers
+install-test: install-servers install-dev
 	pip install -Ur test-requirements.txt
 	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
 		pip install -U --force-reinstall \
@@ -81,9 +81,9 @@ install-test: install-servers
 	fi
 	[ -z "$(TEST_EXTRA_PACKAGES)" ] || pip install $(TEST_EXTRA_PACKAGES)
 
-install-style: install-docs
-	pip install -U flake8==3.5.0 flake8-import-order 'flake8-bugbear>=17.3.0' autopep8
-	
+install-style: install-docs install-dev
+	pip install -U flake8 flake8-import-order flake8-bugbear autopep8
+
 style:
 	flake8
 	! git grep -i syncroniz */*
@@ -114,6 +114,7 @@ release-deb:
 	sh scripts/release-deb.sh ubuntu zesty
 
 install-dev:
+	pip install -U pip setuptools wheel
 	pip install -e .
 	[ "$(ETESYNC_TESTS)" = "false" ] || pip install -Ue .[etesync]
 	set -xe && if [ "$(REQUIREMENTS)" = "devel" ]; then \

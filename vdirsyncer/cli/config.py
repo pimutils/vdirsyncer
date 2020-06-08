@@ -33,17 +33,17 @@ def _validate_general_section(general_config):
     problems = []
 
     if invalid:
-        problems.append(u'general section doesn\'t take the parameters: {}'
-                        .format(u', '.join(invalid)))
+        problems.append('general section doesn\'t take the parameters: {}'
+                        .format(', '.join(invalid)))
 
     if missing:
-        problems.append(u'general section is missing the parameters: {}'
-                        .format(u', '.join(missing)))
+        problems.append('general section is missing the parameters: {}'
+                        .format(', '.join(missing)))
 
     if problems:
         raise exceptions.UserError(
-            u'Invalid general section. Copy the example '
-            u'config from the repository and edit it: {}'
+            'Invalid general section. Copy the example '
+            'config from the repository and edit it: {}'
             .format(PROJECT_HOME), problems=problems)
 
 
@@ -64,7 +64,7 @@ def _validate_collections_param(collections):
                 e = ValueError(
                     'Expected list of format '
                     '["config_name", "storage_a_name", "storage_b_name"]'
-                    .format(len(collection)))
+                )
                 if len(collection) != 3:
                     raise e
 
@@ -151,7 +151,7 @@ def _parse_options(items, section=None):
                              .format(section, key, e))
 
 
-class Config(object):
+class Config:
     def __init__(self, general, pairs, storages):
         self.general = general
         self.storages = storages
@@ -209,7 +209,7 @@ class Config(object):
             raise exceptions.PairNotFound(e, pair_name=pair_name)
 
 
-class PairConfig(object):
+class PairConfig:
     def __init__(self, full_config, name, options):
         self._config = full_config
         self.name = name
@@ -299,7 +299,7 @@ class PairConfig(object):
         return partial_sync
 
 
-class CollectionConfig(object):
+class CollectionConfig:
     def __init__(self, pair, name, config_a, config_b):
         self.pair = pair
         self._config = pair._config

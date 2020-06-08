@@ -110,7 +110,7 @@ class EtesyncStorage(Storage):
             raise ValueError('Collection argument required')
 
         self._session = _Session(email, secrets_dir, server_url, db_path)
-        super(EtesyncStorage, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._journal = self._session.etesync.get(self.collection)
 
     def _sync_journal(self):

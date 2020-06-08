@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import datetime
 from textwrap import dedent
 
@@ -64,7 +62,7 @@ class TestCalDAVStorage(DAVStorageTests):
         s = self.storage_class(start_date=start_date, end_date=end_date,
                                **get_storage_args())
 
-        too_old_item = format_item(dedent(u'''
+        too_old_item = format_item(dedent('''
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN
@@ -78,7 +76,7 @@ class TestCalDAVStorage(DAVStorageTests):
             END:VCALENDAR
             ''').strip())
 
-        too_new_item = format_item(dedent(u'''
+        too_new_item = format_item(dedent('''
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN
@@ -92,7 +90,7 @@ class TestCalDAVStorage(DAVStorageTests):
             END:VCALENDAR
             ''').strip())
 
-        good_item = format_item(dedent(u'''
+        good_item = format_item(dedent('''
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN
@@ -140,13 +138,13 @@ class TestCalDAVStorage(DAVStorageTests):
         task = s.upload(format_item(TASK_TEMPLATE))[0]
         s.item_types = ('VTODO', 'VEVENT')
 
-        def l():
-            return set(href for href, etag in s.list())
+        def hrefs():
+            return {href for href, etag in s.list()}
 
-        assert l() == {event, task}
+        assert hrefs() == {event, task}
         s.item_types = ('VTODO',)
-        assert l() == {task}
+        assert hrefs() == {task}
         s.item_types = ('VEVENT',)
-        assert l() == {event}
+        assert hrefs() == {event}
         s.item_types = ()
-        assert l() == {event, task}
+        assert hrefs() == {event, task}

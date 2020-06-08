@@ -60,7 +60,7 @@ passwords from the OS's password store. Installation::
 Basic usage::
 
     password.fetch = ["command", "keyring", "get", "example.com", "foouser"]
-    
+
 .. _keyring: https://github.com/jaraco/keyring/
 
 Password Prompt

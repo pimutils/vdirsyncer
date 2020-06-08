@@ -1,0 +1,15 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.4.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-toml
+      - id: check-added-large-files
+      - id: debug-statements
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: "master" # pick a git hash / tag to point to
+    hooks:
+      - id: flake8
+        additional_dependencies: [flake8-import-order, flake8-bugbear]

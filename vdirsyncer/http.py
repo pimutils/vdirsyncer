@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import logging
 
 import requests
@@ -134,7 +133,7 @@ def request(method, url, session=None, latin1_fallback=True,
 
     func = session.request
 
-    logger.debug(u'{} {}'.format(method, url))
+    logger.debug('{} {}'.format(method, url))
     logger.debug(kwargs.get('headers', {}))
     logger.debug(kwargs.get('data', None))
     logger.debug('Sending request...')

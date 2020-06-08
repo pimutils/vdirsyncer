@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import logging
 from os.path import basename
 
@@ -17,7 +15,7 @@ def repair_storage(storage, repair_unsafe_uid):
     all_hrefs = list(storage.list())
     for i, (href, _) in enumerate(all_hrefs):
         item, etag = storage.get(href)
-        logger.info(u'[{}/{}] Processing {}'
+        logger.info('[{}/{}] Processing {}'
                     .format(i, len(all_hrefs), href))
 
         try:

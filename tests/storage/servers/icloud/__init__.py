@@ -3,7 +3,7 @@ import os
 import pytest
 
 
-class ServerMixin(object):
+class ServerMixin:
 
     @pytest.fixture
     def get_storage_args(self, item_type, slow_create_collection):

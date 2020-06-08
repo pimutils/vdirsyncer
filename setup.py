@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 '''
 Vdirsyncer synchronizes calendars and contacts.
 
@@ -18,14 +17,7 @@ requirements = [
     # https://github.com/pimutils/vdirsyncer/issues/478
     'click-threading>=0.2',
 
-    # !=2.9.0: https://github.com/kennethreitz/requests/issues/2930
-    #
-    # >=2.4.1: https://github.com/shazow/urllib3/pull/444
-    # Without the above pull request, `verify=False` also disables fingerprint
-    # validation. This is *not* what we want, and it's not possible to
-    # replicate vdirsyncer's current behavior (verifying fingerprints without
-    # verifying against CAs) with older versions of urllib3.
-    'requests >=2.4.1, !=2.9.0',
+    'requests >=2.20.0',
 
     # https://github.com/sigmavirus24/requests-toolbelt/pull/28
     # And https://github.com/sigmavirus24/requests-toolbelt/issues/54

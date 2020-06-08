@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 import subprocess
 import time
@@ -28,7 +26,7 @@ def wait():
     return False
 
 
-class ServerMixin(object):
+class ServerMixin:
     @pytest.fixture(scope='session')
     def setup_mysteryshack_server(self, xprocess):
         def preparefunc(cwd):

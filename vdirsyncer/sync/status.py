@@ -313,7 +313,7 @@ class SqliteStatus(_StatusBase):
         return self._get_by_href_impl(*a, **kw)
 
 
-class SubStatus(object):
+class SubStatus:
     def __init__(self, parent, side):
         self.parent = parent
         assert side in 'ab'

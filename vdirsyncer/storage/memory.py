@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import random
 
 from .base import Storage, normalize_meta_value
@@ -26,7 +24,7 @@ class MemoryStorage(Storage):
         self.items = {}  # href => (etag, item)
         self.metadata = {}
         self.fileext = fileext
-        super(MemoryStorage, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def _get_href(self, item):
         return item.ident + self.fileext

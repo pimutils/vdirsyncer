@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import errno
 import logging
 import os
@@ -22,7 +20,7 @@ class FilesystemStorage(Storage):
 
     def __init__(self, path, fileext, encoding='utf-8', post_hook=None,
                  **kwargs):
-        super(FilesystemStorage, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         path = expand_path(path)
         checkdir(path, create=False)
         self.path = path
@@ -174,7 +172,7 @@ class FilesystemStorage(Storage):
                 return normalize_meta_value(f.read().decode(self.encoding))
         except OSError as e:
             if e.errno == errno.ENOENT:
-                return u''
+                return ''
             else:
                 raise
 

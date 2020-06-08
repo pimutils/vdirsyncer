@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 from textwrap import dedent
 
 import pytest

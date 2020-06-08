@@ -69,7 +69,7 @@ Now we discover and sync our contacts::
 Claws Mail
 ----------
 
-Open Claws-Mail. Got to **Tools** => **Addressbook**.
+Open Claws-Mail. Go to **Tools** => **Addressbook**.
 
 Click on **Addressbook** => **New vCard**. Choose a name for the book.
 
@@ -77,7 +77,7 @@ Then search for the for the vCard in the folder **~/.contacts/**. Click
 ok, and you we will see your contacts.
 
 .. note::
-    
+
     Claws-Mail shows only contacts that have a mail address.
 
 Crontab

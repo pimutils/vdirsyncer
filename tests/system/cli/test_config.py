@@ -23,7 +23,7 @@ def read_config(tmpdir, monkeypatch):
 
 
 def test_read_config(read_config):
-    errors, c = read_config(u'''
+    errors, c = read_config('''
         [general]
         status_path = "/tmp/status/"
 
@@ -59,7 +59,7 @@ def test_read_config(read_config):
 
 def test_missing_collections_param(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
-        read_config(u'''
+        read_config('''
             [general]
             status_path = "/tmp/status/"
 
@@ -79,7 +79,7 @@ def test_missing_collections_param(read_config):
 
 def test_invalid_section_type(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
-        read_config(u'''
+        read_config('''
             [general]
             status_path = "/tmp/status/"
 
@@ -92,7 +92,7 @@ def test_invalid_section_type(read_config):
 
 def test_missing_general_section(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
-        read_config(u'''
+        read_config('''
             [pair my_pair]
             a = "my_a"
             b = "my_b"
@@ -114,7 +114,7 @@ def test_missing_general_section(read_config):
 
 def test_wrong_general_section(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
-        read_config(u'''
+        read_config('''
             [general]
             wrong = true
             ''')
@@ -128,7 +128,7 @@ def test_wrong_general_section(read_config):
 
 def test_invalid_storage_name(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
-        read_config(u'''
+        read_config('''
         [general]
         status_path = "{base}/status/"
 
@@ -140,7 +140,7 @@ def test_invalid_storage_name(read_config):
 
 def test_invalid_collections_arg(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
-        read_config(u'''
+        read_config('''
         [general]
         status_path = "/tmp/status/"
 
@@ -165,7 +165,7 @@ def test_invalid_collections_arg(read_config):
 
 def test_duplicate_sections(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
-        read_config(u'''
+        read_config('''
         [general]
         status_path = "/tmp/status/"
 

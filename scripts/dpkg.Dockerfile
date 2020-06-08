@@ -9,7 +9,7 @@ ARG distrover
 RUN apt-get update
 RUN apt-get install -y build-essential fakeroot debhelper git
 RUN apt-get install -y python3-all python3-pip
-RUN apt-get install -y ruby ruby-dev 
+RUN apt-get install -y ruby ruby-dev
 RUN apt-get install -y python-all python-pip
 
 RUN gem install fpm
