@@ -2,6 +2,26 @@
 vdirsyncer
 ==========
 
+.. image:: https://travis-ci.org/pimutils/vdirsyncer.svg?branch=master
+  :target: https://travis-ci.org/pimutils/vdirsyncer
+  :alt: CI status
+
+.. image:: https://codecov.io/github/pimutils/vdirsyncer/coverage.svg?branch=master
+  :target: https://codecov.io/github/pimutils/vdirsyncer?branch=master
+  :alt: Codecov coverage report
+
+.. image:: https://readthedocs.org/projects/vdirsyncer/badge/
+  :target: https://vdirsyncer.rtfd.org/
+  :alt: documentation
+
+.. image:: https://img.shields.io/pypi/v/vdirsyncer.svg
+  :target: https://pypi.python.org/pypi/vdirsyncer
+  :alt: version on pypi
+
+.. image:: https://img.shields.io/pypi/l/vdirsyncer.svg
+  :target: https://github.com/pimutils/vdirsyncer/blob/master/LICENCE
+  :alt: licence: BSD
+
 - `Documentation <https://vdirsyncer.pimutils.org/en/stable/>`_
 - `Source code <https://github.com/pimutils/vdirsyncer>`_
 
@@ -19,15 +39,6 @@ It aims to be for calendars and contacts what `OfflineIMAP
 <http://offlineimap.org/>`_ is for emails.
 
 .. _programs: https://vdirsyncer.pimutils.org/en/latest/tutorials/
-
-.. image:: https://travis-ci.org/pimutils/vdirsyncer.svg?branch=master
-    :target: https://travis-ci.org/pimutils/vdirsyncer
-
-.. image:: https://codecov.io/github/pimutils/vdirsyncer/coverage.svg?branch=master
-    :target: https://codecov.io/github/pimutils/vdirsyncer?branch=master
-
-.. image:: https://badge.waffle.io/pimutils/vdirsyncer.svg?label=ready&title=Ready
-    :target: https://waffle.io/pimutils/vdirsyncer
 
 Links of interest
 =================
