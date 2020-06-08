@@ -71,7 +71,7 @@ setup(
     # Optional dependencies
     extras_require={
         'google': ['requests-oauthlib'],
-        'etesync': ['etesync']
+        'etesync': ['etesync==0.5.2']
     },
 
     # Build dependencies
