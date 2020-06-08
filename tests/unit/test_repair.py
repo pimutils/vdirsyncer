@@ -1,4 +1,4 @@
-from hypothesis import given, settings
+from hypothesis import HealthCheck, given, settings
 
 import pytest
 
@@ -11,7 +11,8 @@ from vdirsyncer.vobject import Item
 
 
 @given(uid=uid_strategy)
-@settings(perform_health_check=False)  # Using the random module for UIDs
+# Using the random module for UIDs:
+@settings(suppress_health_check=HealthCheck.all())
 def test_repair_uids(uid):
     s = MemoryStorage()
     s.items = {
@@ -35,7 +36,8 @@ def test_repair_uids(uid):
 
 
 @given(uid=uid_strategy.filter(lambda x: not href_safe(x)))
-@settings(perform_health_check=False)  # Using the random module for UIDs
+# Using the random module for UIDs:
+@settings(suppress_health_check=HealthCheck.all())
 def test_repair_unsafe_uids(uid):
     s = MemoryStorage()
     item = Item(u'BEGIN:VCARD\nUID:{}\nEND:VCARD'.format(uid))
