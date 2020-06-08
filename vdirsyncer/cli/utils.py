@@ -136,7 +136,7 @@ def handle_cli_error(status_name=None, e=None):
             'the issue tracker at {}'
             .format(e, BUGTRACKER_HOME)
         )
-    except exceptions.CollectionRequired as e:
+    except exceptions.CollectionRequired:
         cli_logger.error(
             'One or more storages don\'t support `collections = null`. '
             'You probably want to set `collections = ["from a", "from b"]`.'
@@ -214,7 +214,7 @@ def manage_sync_status(base_path, pair_name, collection_name):
                 f.seek(0)
                 # json.load doesn't work on binary files for Python 3.5
                 legacy_status = dict(json.loads(f.read().decode('utf-8')))
-    except (OSError, IOError, ValueError):
+    except (OSError, ValueError):
         pass
 
     if legacy_status is not None:

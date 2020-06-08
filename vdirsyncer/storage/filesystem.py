@@ -89,7 +89,7 @@ class FilesystemStorage(Storage):
             with open(fpath, 'rb') as f:
                 return (Item(f.read().decode(self.encoding)),
                         get_etag_from_file(fpath))
-        except IOError as e:
+        except OSError as e:
             if e.errno == errno.ENOENT:
                 raise exceptions.NotFoundError(href)
             else:
@@ -172,7 +172,7 @@ class FilesystemStorage(Storage):
         try:
             with open(fpath, 'rb') as f:
                 return normalize_meta_value(f.read().decode(self.encoding))
-        except IOError as e:
+        except OSError as e:
             if e.errno == errno.ENOENT:
                 return u''
             else:

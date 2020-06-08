@@ -127,7 +127,7 @@ def checkdir(path, create=False, mode=0o750):
 
     if not os.path.isdir(path):
         if os.path.exists(path):
-            raise IOError('{} is not a directory.'.format(path))
+            raise OSError('{} is not a directory.'.format(path))
         if create:
             os.makedirs(path, mode)
         else:
@@ -145,7 +145,7 @@ def checkfile(path, create=False):
     checkdir(os.path.dirname(path), create=create)
     if not os.path.isfile(path):
         if os.path.exists(path):
-            raise IOError('{} is not a file.'.format(path))
+            raise OSError('{} is not a file.'.format(path))
         if create:
             with open(path, 'wb'):
                 pass

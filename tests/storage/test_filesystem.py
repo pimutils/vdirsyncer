@@ -24,7 +24,7 @@ class TestFilesystemStorage(StorageTests):
         return inner
 
     def test_is_not_directory(self, tmpdir):
-        with pytest.raises(IOError):
+        with pytest.raises(OSError):
             f = tmpdir.join('hue')
             f.write('stub')
             self.storage_class(str(tmpdir) + '/hue', '.txt')
@@ -55,7 +55,7 @@ class TestFilesystemStorage(StorageTests):
     def test_post_hook_inactive(self, tmpdir, monkeypatch):
 
         def check_call_mock(*args, **kwargs):
-            assert False
+            raise AssertionError()
 
         monkeypatch.setattr(subprocess, 'call', check_call_mock)
 

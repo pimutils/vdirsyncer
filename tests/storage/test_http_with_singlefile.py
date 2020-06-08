@@ -63,7 +63,7 @@ class TestHttpStorage(StorageTests):
             try:
                 with open(self.tmpfile, 'rb') as f:
                     r._content = f.read()
-            except IOError:
+            except OSError:
                 r._content = b''
 
             r.headers['Content-Type'] = 'text/calendar'

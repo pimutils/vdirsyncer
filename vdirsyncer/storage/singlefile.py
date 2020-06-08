@@ -105,7 +105,7 @@ class SingleFileStorage(Storage):
         except OSError as e:
             import errno
             if e.errno != errno.ENOENT:  # file not found
-                raise IOError(e)
+                raise OSError(e)
             text = None
 
         if not text:

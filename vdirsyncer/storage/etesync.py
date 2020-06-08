@@ -76,7 +76,7 @@ class _Session:
         try:
             with open(self._auth_token_path) as f:
                 return f.read().strip() or None
-        except (OSError, IOError):
+        except OSError:
             pass
 
     def _set_auth_token(self, token):
@@ -89,7 +89,7 @@ class _Session:
         try:
             with open(self._key_path, 'rb') as f:
                 return f.read()
-        except (OSError, IOError):
+        except OSError:
             pass
 
     def _set_key(self, content):

@@ -50,7 +50,7 @@ class GoogleSession(dav.DAVSession):
         try:
             with open(token_file) as f:
                 token = json.load(f)
-        except (OSError, IOError):
+        except OSError:
             pass
         except ValueError as e:
             raise exceptions.UserError(
