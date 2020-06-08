@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import json
 import logging
 import os
@@ -123,7 +121,7 @@ class GoogleCalendarStorage(dav.CalDAVStorage):
         if not kwargs.get('collection'):
             raise exceptions.CollectionRequired()
 
-        super(GoogleCalendarStorage, self).__init__(
+        super().__init__(
             token_file=token_file, client_id=client_id,
             client_secret=client_secret, start_date=start_date,
             end_date=end_date, item_types=item_types,
@@ -158,7 +156,7 @@ class GoogleContactsStorage(dav.CardDAVStorage):
         if not kwargs.get('collection'):
             raise exceptions.CollectionRequired()
 
-        super(GoogleContactsStorage, self).__init__(
+        super().__init__(
             token_file=token_file, client_id=client_id,
             client_secret=client_secret,
             **kwargs

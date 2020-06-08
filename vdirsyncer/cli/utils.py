@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import contextlib
 import errno
 import importlib
@@ -27,7 +25,7 @@ STATUS_PERMISSIONS = 0o600
 STATUS_DIR_PERMISSIONS = 0o700
 
 
-class _StorageIndex(object):
+class _StorageIndex:
     def __init__(self):
         self._storages = dict(
             caldav='vdirsyncer.storage.dav.CalDAVStorage',
@@ -288,24 +286,24 @@ def handle_storage_init_error(cls, config):
 
     if missing:
         problems.append(
-            u'{} storage requires the parameters: {}'
-            .format(cls.storage_name, u', '.join(missing)))
+            '{} storage requires the parameters: {}'
+            .format(cls.storage_name, ', '.join(missing)))
 
     if invalid:
         problems.append(
-            u'{} storage doesn\'t take the parameters: {}'
-            .format(cls.storage_name, u', '.join(invalid)))
+            '{} storage doesn\'t take the parameters: {}'
+            .format(cls.storage_name, ', '.join(invalid)))
 
     if not problems:
         raise e
 
     raise exceptions.UserError(
-        u'Failed to initialize {}'.format(config['instance_name']),
+        'Failed to initialize {}'.format(config['instance_name']),
         problems=problems
     )
 
 
-class WorkerQueue(object):
+class WorkerQueue:
     '''
     A simple worker-queue setup.
 

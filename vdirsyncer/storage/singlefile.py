@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import collections
 import contextlib
 import functools
@@ -41,7 +39,7 @@ class SingleFileStorage(Storage):
     _last_etag = None
 
     def __init__(self, path, encoding='utf-8', **kwargs):
-        super(SingleFileStorage, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         path = os.path.abspath(expand_path(path))
         checkfile(path, create=False)
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import functools
 import logging
 import sys
@@ -15,7 +13,7 @@ cli_logger = logging.getLogger(__name__)
 click_log.basic_config('vdirsyncer')
 
 
-class AppContext(object):
+class AppContext:
     def __init__(self):
         self.config = None
         self.fetched_params = {}

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 '''
 Vdirsyncer synchronizes calendars and contacts.
 

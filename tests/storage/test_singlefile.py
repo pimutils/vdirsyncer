@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
 from vdirsyncer.storage.singlefile import SingleFileStorage

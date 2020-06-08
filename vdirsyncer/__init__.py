@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
 '''
 Vdirsyncer synchronizes calendars and contacts.
 '''
 
-from __future__ import print_function
 
 PROJECT_HOME = 'https://github.com/pimutils/vdirsyncer'
 BUGTRACKER_HOME = PROJECT_HOME + '/issues'

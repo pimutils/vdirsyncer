@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
 from requests import Response
@@ -14,25 +12,25 @@ def test_list(monkeypatch):
     collection_url = 'http://127.0.0.1/calendar/collection.ics'
 
     items = [
-        (u'BEGIN:VEVENT\n'
-         u'SUMMARY:Eine Kurzinfo\n'
-         u'DESCRIPTION:Beschreibung des Termines\n'
-         u'END:VEVENT'),
-        (u'BEGIN:VEVENT\n'
-         u'SUMMARY:Eine zweite Küèrzinfo\n'
-         u'DESCRIPTION:Beschreibung des anderen Termines\n'
-         u'BEGIN:VALARM\n'
-         u'ACTION:AUDIO\n'
-         u'TRIGGER:19980403T120000\n'
-         u'ATTACH;FMTTYPE=audio/basic:http://host.com/pub/ssbanner.aud\n'
-         u'REPEAT:4\n'
-         u'DURATION:PT1H\n'
-         u'END:VALARM\n'
-         u'END:VEVENT')
+        ('BEGIN:VEVENT\n'
+         'SUMMARY:Eine Kurzinfo\n'
+         'DESCRIPTION:Beschreibung des Termines\n'
+         'END:VEVENT'),
+        ('BEGIN:VEVENT\n'
+         'SUMMARY:Eine zweite Küèrzinfo\n'
+         'DESCRIPTION:Beschreibung des anderen Termines\n'
+         'BEGIN:VALARM\n'
+         'ACTION:AUDIO\n'
+         'TRIGGER:19980403T120000\n'
+         'ATTACH;FMTTYPE=audio/basic:http://host.com/pub/ssbanner.aud\n'
+         'REPEAT:4\n'
+         'DURATION:PT1H\n'
+         'END:VALARM\n'
+         'END:VEVENT')
     ]
 
     responses = [
-        u'\n'.join([u'BEGIN:VCALENDAR'] + items + [u'END:VCALENDAR'])
+        '\n'.join(['BEGIN:VCALENDAR'] + items + ['END:VCALENDAR'])
     ] * 2
 
     def get(self, method, url, *a, **kw):
@@ -58,8 +56,8 @@ def test_list(monkeypatch):
         assert etag2 == etag
         found_items[normalize_item(item)] = href
 
-    expected = set(normalize_item(u'BEGIN:VCALENDAR\n' + x + '\nEND:VCALENDAR')
-                   for x in items)
+    expected = {normalize_item('BEGIN:VCALENDAR\n' + x + '\nEND:VCALENDAR')
+                for x in items}
 
     assert set(found_items) == expected
 

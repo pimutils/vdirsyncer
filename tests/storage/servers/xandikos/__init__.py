@@ -6,7 +6,7 @@ import wsgi_intercept
 import wsgi_intercept.requests_intercept
 
 
-class ServerMixin(object):
+class ServerMixin:
     @pytest.fixture
     def get_storage_args(self, request, tmpdir, slow_create_collection):
         tmpdir.mkdir('xandikos')

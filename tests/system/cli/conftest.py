@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from textwrap import dedent
 
 from click.testing import CliRunner
@@ -9,7 +7,7 @@ import pytest
 import vdirsyncer.cli as cli
 
 
-class _CustomRunner(object):
+class _CustomRunner:
     def __init__(self, tmpdir):
         self.tmpdir = tmpdir
         self.cfg = tmpdir.join('config')

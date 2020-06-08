@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import hypothesis.strategies as st
 from hypothesis import example, given
 
@@ -130,7 +128,7 @@ metadata = st.dictionaries(keys, values)
     status=metadata, keys=st.sets(keys),
     conflict_resolution=st.just('a wins') | st.just('b wins')
 )
-@example(a={u'0': u'0'}, b={}, status={u'0': u'0'}, keys={u'0'},
+@example(a={'0': '0'}, b={}, status={'0': '0'}, keys={'0'},
          conflict_resolution='a wins')
 @example(a={'0': '0'}, b={'0': '1'}, status={'0': '0'}, keys={'0'},
          conflict_resolution='a wins')
@@ -144,9 +142,9 @@ def test_fuzzing(a, b, status, keys, conflict_resolution):
     b = _get_storage(b, 'B')
 
     winning_storage = (a if conflict_resolution == 'a wins' else b)
-    expected_values = dict((key, winning_storage.get_meta(key))
-                           for key in keys
-                           if key not in status)
+    expected_values = {key: winning_storage.get_meta(key)
+                       for key in keys
+                       if key not in status}
 
     metasync(a, b, status,
              keys=keys, conflict_resolution=conflict_resolution)

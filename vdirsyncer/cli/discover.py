@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import hashlib
 import json
 import logging
@@ -224,7 +222,7 @@ def _print_collections(instance_name, get_discovered):
             storage = storage_instance_from_config(args, create=False)
             displayname = storage.get_meta('displayname')
         except Exception:
-            displayname = u''
+            displayname = ''
 
         logger.info('  - {}{}'.format(
             json.dumps(collection),

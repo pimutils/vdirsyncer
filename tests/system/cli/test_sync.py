@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import json
 import sys
 from textwrap import dedent
@@ -257,17 +255,17 @@ def test_multiple_pairs(tmpdir, runner):
 
     result = runner.invoke(['discover'])
     assert not result.exception
-    assert set(result.output.splitlines()) > set([
+    assert set(result.output.splitlines()) > {
         'Discovering collections for pair bambaz',
         'Discovering collections for pair foobar'
-    ])
+    }
 
     result = runner.invoke(['sync'])
     assert not result.exception
-    assert set(result.output.splitlines()) == set([
+    assert set(result.output.splitlines()) == {
         'Syncing bambaz',
         'Syncing foobar',
-    ])
+    }
 
 
 # XXX: https://github.com/pimutils/vdirsyncer/issues/617
@@ -277,17 +275,17 @@ def test_multiple_pairs(tmpdir, runner):
     st.text(
         st.characters(
             blacklist_characters=set(
-                u'./\x00'  # Invalid chars on POSIX filesystems
+                './\x00'  # Invalid chars on POSIX filesystems
             ),
             # Surrogates can't be encoded to utf-8 in Python
-            blacklist_categories=set(['Cs'])
+            blacklist_categories={'Cs'}
         ),
         min_size=1,
         max_size=50
     ),
     min_size=1
 ))
-@example(collections=[u'persönlich'])
+@example(collections=['persönlich'])
 @example(collections={'a', 'A'})
 @example(collections={'\ufffe'})
 def test_create_collections(subtest, collections):
@@ -322,8 +320,8 @@ def test_create_collections(subtest, collections):
         )
         assert not result.exception, result.output
 
-        assert set(x.basename for x in tmpdir.join('foo').listdir()) == \
-            set(x.basename for x in tmpdir.join('bar').listdir())
+        assert {x.basename for x in tmpdir.join('foo').listdir()} == \
+            {x.basename for x in tmpdir.join('bar').listdir()}
 
 
 def test_ident_conflict(tmpdir, runner):

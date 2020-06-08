@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import datetime
 import logging
 import urllib.parse as urlparse
@@ -140,7 +138,7 @@ def _fuzzy_matches_mimetype(strict, weak):
     return False
 
 
-class Discover(object):
+class Discover:
     _namespace = None
     _resourcetype = None
     _homeset_xml = None
@@ -349,7 +347,7 @@ class CardDiscover(Discover):
     _well_known_uri = '/.well-known/carddav'
 
 
-class DAVSession(object):
+class DAVSession:
     '''
     A helper class to connect to DAV servers.
     '''
@@ -423,7 +421,7 @@ class DAVStorage(Storage):
 
         self.session, kwargs = \
             self.session_class.init_and_remaining_args(**kwargs)
-        super(DAVStorage, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     import inspect
     __init__.__signature__ = inspect.signature(session_class.__init__)
@@ -483,7 +481,7 @@ class DAVStorage(Storage):
                                    .format(href))
                 continue
 
-            raw = raw.text or u''
+            raw = raw.text or ''
 
             if isinstance(raw, bytes):
                 raw = raw.decode(response.encoding)
@@ -617,7 +615,7 @@ class DAVStorage(Storage):
         headers = self.session.get_default_headers()
         headers['Depth'] = '1'
 
-        data = '''<?xml version="1.0" encoding="utf-8" ?>
+        data = b'''<?xml version="1.0" encoding="utf-8" ?>
             <D:propfind xmlns:D="DAV:">
                 <D:prop>
                     <D:resourcetype/>
@@ -625,7 +623,7 @@ class DAVStorage(Storage):
                     <D:getetag/>
                 </D:prop>
             </D:propfind>
-            '''.encode('utf-8')
+            '''
 
         # We use a PROPFIND request instead of addressbook-query due to issues
         # with Zimbra. See https://github.com/pimutils/vdirsyncer/issues/83
@@ -643,7 +641,7 @@ class DAVStorage(Storage):
         except KeyError:
             raise exceptions.UnsupportedMetadataError()
 
-        xpath = '{%s}%s' % (namespace, tagname)
+        xpath = '{{{}}}{}'.format(namespace, tagname)
         data = '''<?xml version="1.0" encoding="utf-8" ?>
             <D:propfind xmlns:D="DAV:">
                 <D:prop>
@@ -668,7 +666,7 @@ class DAVStorage(Storage):
             text = normalize_meta_value(getattr(prop, 'text', None))
             if text:
                 return text
-        return u''
+        return ''
 
     def set_meta(self, key, value):
         try:
@@ -676,7 +674,7 @@ class DAVStorage(Storage):
         except KeyError:
             raise exceptions.UnsupportedMetadataError()
 
-        lxml_selector = '{%s}%s' % (namespace, tagname)
+        lxml_selector = '{{{}}}{}'.format(namespace, tagname)
         element = etree.Element(lxml_selector)
         element.text = normalize_meta_value(value)
 
@@ -730,7 +728,7 @@ class CalDAVStorage(DAVStorage):
 
     def __init__(self, start_date=None, end_date=None,
                  item_types=(), **kwargs):
-        super(CalDAVStorage, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         if not isinstance(item_types, (list, tuple)):
             raise exceptions.UserError('item_types must be a list.')
 
@@ -774,9 +772,8 @@ class CalDAVStorage(DAVStorage):
                                           timefilter=timefilter)
         else:
             if start is not None and end is not None:
-                for x in CalDAVStorage._get_list_filters(('VTODO', 'VEVENT'),
-                                                         start, end):
-                    yield x
+                yield from CalDAVStorage._get_list_filters(('VTODO', 'VEVENT'),
+                                                           start, end)
 
     def list(self):
         caldavfilters = list(self._get_list_filters(
@@ -792,8 +789,7 @@ class CalDAVStorage(DAVStorage):
             # instead?
             #
             # See https://github.com/dmfs/tasks/issues/118 for backstory.
-            for x in DAVStorage.list(self):
-                yield x
+            yield from DAVStorage.list(self)
 
         data = '''<?xml version="1.0" encoding="utf-8" ?>
             <C:calendar-query xmlns:D="DAV:"

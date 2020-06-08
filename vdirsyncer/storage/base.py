@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import contextlib
 import functools
 
@@ -20,7 +18,7 @@ class StorageMeta(type):
     def __init__(cls, name, bases, d):
         for method in ('update', 'upload', 'delete'):
             setattr(cls, method, mutating_storage_method(getattr(cls, method)))
-        return super(StorageMeta, cls).__init__(name, bases, d)
+        return super().__init__(name, bases, d)
 
 
 class Storage(metaclass=StorageMeta):
@@ -116,7 +114,7 @@ class Storage(metaclass=StorageMeta):
 
         return '<{}(**{})>'.format(
             self.__class__.__name__,
-            dict((x, getattr(self, x)) for x in self._repr_attributes)
+            {x: getattr(self, x) for x in self._repr_attributes}
         )
 
     def list(self):

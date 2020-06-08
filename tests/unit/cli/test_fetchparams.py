@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import hypothesis.strategies as st
 from hypothesis import given
 
@@ -23,7 +21,7 @@ def mystrategy(monkeypatch):
 def value_cache(monkeypatch):
     _cache = {}
 
-    class FakeContext(object):
+    class FakeContext:
         fetched_params = _cache
 
         def find_object(self, _):

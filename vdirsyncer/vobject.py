@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import hashlib
 from itertools import chain, tee
 
@@ -34,7 +32,7 @@ IGNORE_PROPS = (
 )
 
 
-class Item(object):
+class Item:
 
     '''Immutable wrapper class for VCALENDAR (VEVENT, VTODO) and
     VCARD'''
@@ -117,7 +115,7 @@ def normalize_item(item, ignore_props=IGNORE_PROPS):
         del x[prop]
 
     x.props.sort()
-    return u'\r\n'.join(filter(bool, (line.strip() for line in x.props)))
+    return '\r\n'.join(filter(bool, (line.strip() for line in x.props)))
 
 
 def _strip_timezones(item):
@@ -146,16 +144,16 @@ def split_collection(text):
 
     for item in chain(items.values(), ungrouped_items):
         item.subcomponents.extend(inline)
-        yield u'\r\n'.join(item.dump_lines())
+        yield '\r\n'.join(item.dump_lines())
 
 
 def _split_collection_impl(item, main, inline, items, ungrouped_items):
-    if item.name == u'VTIMEZONE':
+    if item.name == 'VTIMEZONE':
         inline.append(item)
-    elif item.name == u'VCARD':
+    elif item.name == 'VCARD':
         ungrouped_items.append(item)
-    elif item.name in (u'VTODO', u'VEVENT', u'VJOURNAL'):
-        uid = item.get(u'UID', u'')
+    elif item.name in ('VTODO', 'VEVENT', 'VJOURNAL'):
+        uid = item.get('UID', '')
         wrapper = _Component(main.name, main.props[:], [])
 
         if uid.strip():
@@ -164,7 +162,7 @@ def _split_collection_impl(item, main, inline, items, ungrouped_items):
             ungrouped_items.append(wrapper)
 
         wrapper.subcomponents.append(item)
-    elif item.name in (u'VCALENDAR', u'VADDRESSBOOK'):
+    elif item.name in ('VCALENDAR', 'VADDRESSBOOK'):
         if item.name == 'VCALENDAR':
             del item['METHOD']
         for subitem in item.subcomponents:
@@ -176,10 +174,10 @@ def _split_collection_impl(item, main, inline, items, ungrouped_items):
 
 
 _default_join_wrappers = {
-    u'VCALENDAR': u'VCALENDAR',
-    u'VEVENT': u'VCALENDAR',
-    u'VTODO': u'VCALENDAR',
-    u'VCARD': u'VADDRESSBOOK'
+    'VCALENDAR': 'VCALENDAR',
+    'VEVENT': 'VCALENDAR',
+    'VTODO': 'VCALENDAR',
+    'VCARD': 'VADDRESSBOOK'
 }
 
 
@@ -207,16 +205,16 @@ def join_collection(items, wrappers=_default_join_wrappers):
 
     if wrapper_type is not None:
         lines = chain(*(
-            [u'BEGIN:{}'.format(wrapper_type)],
+            ['BEGIN:{}'.format(wrapper_type)],
             # XXX: wrapper_props is a list of lines (with line-wrapping), so
             # filtering out duplicate lines will almost certainly break
             # multiline-values.  Since the only props we usually need to
             # support are PRODID and VERSION, I don't care.
             uniq(wrapper_props),
             lines,
-            [u'END:{}'.format(wrapper_type)]
+            ['END:{}'.format(wrapper_type)]
         ))
-    return u''.join(line + u'\r\n' for line in lines)
+    return ''.join(line + '\r\n' for line in lines)
 
 
 def _get_item_type(components, wrappers):
@@ -237,7 +235,7 @@ def _get_item_type(components, wrappers):
         raise ValueError('Not sure how to join components.')
 
 
-class _Component(object):
+class _Component:
     '''
     Raw outline of the components.
 
@@ -277,10 +275,10 @@ class _Component(object):
         rv = []
         try:
             for _i, line in enumerate(lines):
-                if line.startswith(u'BEGIN:'):
-                    c_name = line[len(u'BEGIN:'):].strip().upper()
+                if line.startswith('BEGIN:'):
+                    c_name = line[len('BEGIN:'):].strip().upper()
                     stack.append(cls(c_name, [], []))
-                elif line.startswith(u'END:'):
+                elif line.startswith('END:'):
                     component = stack.pop()
                     if stack:
                         stack[-1].subcomponents.append(component)
@@ -301,16 +299,14 @@ class _Component(object):
             return rv[0]
 
     def dump_lines(self):
-        yield u'BEGIN:{}'.format(self.name)
-        for line in self.props:
-            yield line
+        yield 'BEGIN:{}'.format(self.name)
+        yield from self.props
         for c in self.subcomponents:
-            for line in c.dump_lines():
-                yield line
-        yield u'END:{}'.format(self.name)
+            yield from c.dump_lines()
+        yield 'END:{}'.format(self.name)
 
     def __delitem__(self, key):
-        prefix = (u'{}:'.format(key), u'{};'.format(key))
+        prefix = ('{}:'.format(key), '{};'.format(key))
         new_lines = []
         lineiter = iter(self.props)
         while True:
@@ -323,7 +319,7 @@ class _Component(object):
                 break
 
             for line in lineiter:
-                if not line.startswith((u' ', u'\t')):
+                if not line.startswith((' ', '\t')):
                     new_lines.append(line)
                     break
 
@@ -331,9 +327,9 @@ class _Component(object):
 
     def __setitem__(self, key, val):
         assert isinstance(val, str)
-        assert u'\n' not in val
+        assert '\n' not in val
         del self[key]
-        line = u'{}:{}'.format(key, val)
+        line = '{}:{}'.format(key, val)
         self.props.append(line)
 
     def __contains__(self, obj):
@@ -360,7 +356,7 @@ class _Component(object):
             raise KeyError()
 
         for line in iterlines:
-            if line.startswith((u' ', u'\t')):
+            if line.startswith((' ', '\t')):
                 rv += line[1:]
             else:
                 break

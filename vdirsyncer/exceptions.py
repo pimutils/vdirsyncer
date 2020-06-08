@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 '''
 Contains exception classes used by vdirsyncer. Not all exceptions are here,
 only the most commonly used ones.
@@ -14,7 +13,7 @@ class Error(Exception):
                 raise TypeError('Invalid argument: {}'.format(key))
             setattr(self, key, value)
 
-        super(Error, self).__init__(*args)
+        super().__init__(*args)
 
 
 class UserError(Error, ValueError):
@@ -26,7 +25,7 @@ class UserError(Error, ValueError):
     def __str__(self):
         msg = Error.__str__(self)
         for problem in self.problems or ():
-            msg += u'\n  - {}'.format(problem)
+            msg += '\n  - {}'.format(problem)
 
         return msg
 

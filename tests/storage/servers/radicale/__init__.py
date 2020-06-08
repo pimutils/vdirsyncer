@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import logging
 import pytest
 
@@ -14,7 +12,7 @@ import wsgi_intercept.requests_intercept
 logger = logging.getLogger(__name__)
 
 
-class ServerMixin(object):
+class ServerMixin:
 
     @pytest.fixture(autouse=True)
     def setup(self, request, tmpdir):

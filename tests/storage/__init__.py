@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import random
 import uuid
 
@@ -31,7 +29,7 @@ def format_item(item_template, uid=None):
     return Item(item_template.format(r=r, uid=uid or r))
 
 
-class StorageTests(object):
+class StorageTests:
     storage_class = None
     supports_collections = True
     supports_metadata = True
@@ -173,10 +171,10 @@ class StorageTests(object):
                 _, etag = s.get(href)
             info[href] = etag
 
-        assert dict(
-            (href, etag) for href, item, etag
+        assert {
+            href: etag for href, item, etag
             in s.get_multi(href for href, etag in info.items())
-        ) == info
+        } == info
 
     def test_repr(self, s, get_storage_args):
         assert self.storage_class.__name__ in repr(s)
@@ -191,10 +189,10 @@ class StorageTests(object):
             s.upload(get_item())
             collections.add(s.collection)
 
-        actual = set(
+        actual = {
             c['collection'] for c in
             self.storage_class.discover(**get_storage_args(collection=None))
-        )
+        }
 
         assert actual >= collections
 
@@ -212,7 +210,7 @@ class StorageTests(object):
         )
 
         href = s.upload(get_item())[0]
-        assert href in set(href for href, etag in s.list())
+        assert href in {href for href, etag in s.list()}
 
     def test_discover_collection_arg(self, requires_collections,
                                      get_storage_args):
@@ -255,7 +253,7 @@ class StorageTests(object):
 
         monkeypatch.setattr('vdirsyncer.utils.generate_href', lambda x: x)
 
-        uid = u'test @ foo ät bar град сатану'
+        uid = 'test @ foo ät bar град сатану'
         collection = 'test @ foo ät bar'
 
         s = self.storage_class(**get_storage_args(collection=collection))
@@ -286,12 +284,12 @@ class StorageTests(object):
         try:
             s.set_meta('color', None)
             assert not s.get_meta('color')
-            s.set_meta('color', u'#ff0000')
-            assert s.get_meta('color') == u'#ff0000'
+            s.set_meta('color', '#ff0000')
+            assert s.get_meta('color') == '#ff0000'
         except exceptions.UnsupportedMetadataError:
             pass
 
-        for x in (u'hello world', u'hello wörld'):
+        for x in ('hello world', 'hello wörld'):
             s.set_meta('displayname', x)
             rv = s.get_meta('displayname')
             assert rv == x
@@ -315,7 +313,7 @@ class StorageTests(object):
             pytest.skip('This storage instance doesn\'t support iCalendar.')
 
         uid = str(uuid.uuid4())
-        item = Item(textwrap.dedent(u'''
+        item = Item(textwrap.dedent('''
         BEGIN:VCALENDAR
         VERSION:2.0
         BEGIN:VEVENT

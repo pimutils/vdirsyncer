@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 '''
 General-purpose fixtures for vdirsyncer's testsuite.
 '''

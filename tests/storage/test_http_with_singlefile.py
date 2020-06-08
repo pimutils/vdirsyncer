@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
 from requests import Response
@@ -21,7 +19,7 @@ class CombinedStorage(Storage):
         if kwargs.get('collection', None) is not None:
             raise ValueError()
 
-        super(CombinedStorage, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.url = url
         self.path = path
         self._reader = vdirsyncer.storage.http.HttpStorage(url=url)

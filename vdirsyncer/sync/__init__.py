@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 '''
 The `sync` function in `vdirsyncer.sync` can be called on two instances of
 `Storage` to synchronize them. Apart from the defined errors, this is the only
@@ -24,7 +23,7 @@ from .exceptions import BothReadOnly, IdentAlreadyExists, PartialSync, \
 sync_logger = logging.getLogger(__name__)
 
 
-class _StorageInfo(object):
+class _StorageInfo:
     '''A wrapper class that holds prefetched items, the status and other
     things.'''
     def __init__(self, storage, status):
@@ -199,7 +198,7 @@ class Upload(Action):
         if self.dest.storage.read_only:
             href = etag = None
         else:
-            sync_logger.info(u'Copying (uploading) item {} to {}'
+            sync_logger.info('Copying (uploading) item {} to {}'
                              .format(self.ident, self.dest.storage))
             href, etag = self.dest.storage.upload(self.item)
             assert href is not None
@@ -221,7 +220,7 @@ class Update(Action):
         if self.dest.storage.read_only:
             meta = ItemMetadata(hash=self.item.hash)
         else:
-            sync_logger.info(u'Copying (updating) item {} to {}'
+            sync_logger.info('Copying (updating) item {} to {}'
                              .format(self.ident, self.dest.storage))
             meta = self.dest.status.get_new(self.ident)
             meta.etag = \
@@ -238,7 +237,7 @@ class Delete(Action):
     def _run_impl(self, a, b):
         meta = self.dest.status.get_new(self.ident)
         if not self.dest.storage.read_only:
-            sync_logger.info(u'Deleting item {} from {}'
+            sync_logger.info('Deleting item {} from {}'
                              .format(self.ident, self.dest.storage))
             self.dest.storage.delete(meta.href, meta.etag)
 
@@ -251,14 +250,14 @@ class ResolveConflict(Action):
 
     def run(self, a, b, conflict_resolution, partial_sync):
         with self.auto_rollback(a, b):
-            sync_logger.info(u'Doing conflict resolution for item {}...'
+            sync_logger.info('Doing conflict resolution for item {}...'
                              .format(self.ident))
 
             meta_a = a.status.get_new(self.ident)
             meta_b = b.status.get_new(self.ident)
 
             if meta_a.hash == meta_b.hash:
-                sync_logger.info(u'...same content on both sides.')
+                sync_logger.info('...same content on both sides.')
             elif conflict_resolution is None:
                 raise SyncConflict(ident=self.ident, href_a=meta_a.href,
                                    href_b=meta_b.href)

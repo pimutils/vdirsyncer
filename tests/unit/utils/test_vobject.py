@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from textwrap import dedent
 
 import hypothesis.strategies as st
@@ -21,10 +19,10 @@ _simple_split = [
     VCARD_TEMPLATE.format(r=678, uid=678)
 ]
 
-_simple_joined = u'\r\n'.join(
-    [u'BEGIN:VADDRESSBOOK']
+_simple_joined = '\r\n'.join(
+    ['BEGIN:VADDRESSBOOK']
     + _simple_split
-    + [u'END:VADDRESSBOOK\r\n']
+    + ['END:VADDRESSBOOK\r\n']
 )
 
 
@@ -39,10 +37,10 @@ def test_split_collection_simple(benchmark):
 
 
 def test_split_collection_multiple_wrappers(benchmark):
-    joined = u'\r\n'.join(
-        u'BEGIN:VADDRESSBOOK\r\n'
+    joined = '\r\n'.join(
+        'BEGIN:VADDRESSBOOK\r\n'
         + x
-        + u'\r\nEND:VADDRESSBOOK\r\n'
+        + '\r\nEND:VADDRESSBOOK\r\n'
         for x in _simple_split
     )
     given = benchmark(lambda: list(vobject.split_collection(joined)))
@@ -105,29 +103,29 @@ def test_split_collection_timezones():
     ]
 
     timezone = (
-        u'BEGIN:VTIMEZONE\r\n'
-        u'TZID:/mozilla.org/20070129_1/Asia/Tokyo\r\n'
-        u'X-LIC-LOCATION:Asia/Tokyo\r\n'
-        u'BEGIN:STANDARD\r\n'
-        u'TZOFFSETFROM:+0900\r\n'
-        u'TZOFFSETTO:+0900\r\n'
-        u'TZNAME:JST\r\n'
-        u'DTSTART:19700101T000000\r\n'
-        u'END:STANDARD\r\n'
-        u'END:VTIMEZONE'
+        'BEGIN:VTIMEZONE\r\n'
+        'TZID:/mozilla.org/20070129_1/Asia/Tokyo\r\n'
+        'X-LIC-LOCATION:Asia/Tokyo\r\n'
+        'BEGIN:STANDARD\r\n'
+        'TZOFFSETFROM:+0900\r\n'
+        'TZOFFSETTO:+0900\r\n'
+        'TZNAME:JST\r\n'
+        'DTSTART:19700101T000000\r\n'
+        'END:STANDARD\r\n'
+        'END:VTIMEZONE'
     )
 
-    full = u'\r\n'.join(
-        [u'BEGIN:VCALENDAR']
+    full = '\r\n'.join(
+        ['BEGIN:VCALENDAR']
         + items
-        + [timezone, u'END:VCALENDAR']
+        + [timezone, 'END:VCALENDAR']
     )
 
     given = {normalize_item(item)
              for item in vobject.split_collection(full)}
     expected = {
-        normalize_item(u'\r\n'.join((
-            u'BEGIN:VCALENDAR', item, timezone, u'END:VCALENDAR'
+        normalize_item('\r\n'.join((
+            'BEGIN:VCALENDAR', item, timezone, 'END:VCALENDAR'
         )))
         for item in items
     }
@@ -148,20 +146,20 @@ def test_split_contacts():
 
 def test_hash_item():
     a = EVENT_TEMPLATE.format(r=1, uid=1)
-    b = u'\n'.join(line for line in a.splitlines()
-                   if u'PRODID' not in line)
+    b = '\n'.join(line for line in a.splitlines()
+                  if 'PRODID' not in line)
     assert vobject.hash_item(a) == vobject.hash_item(b)
 
 
 def test_multiline_uid(benchmark):
-    a = (u'BEGIN:FOO\r\n'
-         u'UID:123456789abcd\r\n'
-         u' efgh\r\n'
-         u'END:FOO\r\n')
-    assert benchmark(lambda: vobject.Item(a).uid) == u'123456789abcdefgh'
+    a = ('BEGIN:FOO\r\n'
+         'UID:123456789abcd\r\n'
+         ' efgh\r\n'
+         'END:FOO\r\n')
+    assert benchmark(lambda: vobject.Item(a).uid) == '123456789abcdefgh'
 
 
-complex_uid_item = dedent(u'''
+complex_uid_item = dedent('''
     BEGIN:VCALENDAR
     BEGIN:VTIMEZONE
     TZID:Europe/Rome
@@ -202,9 +200,9 @@ complex_uid_item = dedent(u'''
 
 def test_multiline_uid_complex(benchmark):
     assert benchmark(lambda: vobject.Item(complex_uid_item).uid) == (
-        u'040000008200E00074C5B7101A82E008000000005'
-        u'0AAABEEF50DCF001000000062548482FA830A46B9'
-        u'EA62114AC9F0EF'
+        '040000008200E00074C5B7101A82E008000000005'
+        '0AAABEEF50DCF001000000062548482FA830A46B9'
+        'EA62114AC9F0EF'
     )
 
 
