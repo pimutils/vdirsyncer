@@ -70,9 +70,10 @@ class SingleFileStorage(Storage):
                 args['path'] = subpath
 
                 collection_end = (
-                    placeholder_pos +
-                    2 +  # length of '%s'
-                    len(subpath) - len(path)
+                    placeholder_pos
+                    + 2  # length of '%s'
+                    + len(subpath)
+                    - len(path)
                 )
                 collection = subpath[placeholder_pos:collection_end]
                 args['collection'] = collection
@@ -162,10 +163,11 @@ class SingleFileStorage(Storage):
     def _write(self):
         if self._last_etag is not None and \
            self._last_etag != get_etag_from_file(self.path):
-            raise exceptions.PreconditionFailed(
-                'Some other program modified the file {r!}. Re-run the '
+            raise exceptions.PreconditionFailed((
+                'Some other program modified the file {!r}. Re-run the '
                 'synchronization and make sure absolutely no other program is '
-                'writing into the same file.'.format(self.path))
+                'writing into the same file.'
+            ).format(self.path))
         text = join_collection(
             item.raw for item, etag in self._items.values()
         )

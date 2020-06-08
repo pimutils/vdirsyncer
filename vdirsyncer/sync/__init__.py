@@ -74,9 +74,9 @@ class _StorageInfo(object):
         new_meta = self.status.get_new(ident)
 
         return (
-            new_meta.etag != old_meta.etag and  # etag changed
+            new_meta.etag != old_meta.etag  # etag changed
             # item actually changed
-            (old_meta.hash is None or new_meta.hash != old_meta.hash)
+            and (old_meta.hash is None or new_meta.hash != old_meta.hash)
         )
 
     def set_item_cache(self, ident, item):

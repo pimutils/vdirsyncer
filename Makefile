@@ -82,7 +82,7 @@ install-test: install-servers
 	[ -z "$(TEST_EXTRA_PACKAGES)" ] || pip install $(TEST_EXTRA_PACKAGES)
 
 install-style: install-docs
-	pip install -U flake8==3.5.0 flake8-import-order 'flake8-bugbear>=17.3.0' autopep8
+	pip install -U flake8 flake8-import-order flake8-bugbear autopep8
 	
 style:
 	flake8

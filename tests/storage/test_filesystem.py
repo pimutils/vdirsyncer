@@ -67,10 +67,10 @@ class TestFilesystemStorage(StorageTests):
         calls = []
         exe = 'foo'
 
-        def check_call_mock(l, *args, **kwargs):
+        def check_call_mock(call, *args, **kwargs):
             calls.append(True)
-            assert len(l) == 2
-            assert l[0] == exe
+            assert len(call) == 2
+            assert call[0] == exe
 
         monkeypatch.setattr(subprocess, 'call', check_call_mock)
 
@@ -82,5 +82,5 @@ class TestFilesystemStorage(StorageTests):
         tmpdir.mkdir('.git').mkdir('foo')
         tmpdir.mkdir('a')
         tmpdir.mkdir('b')
-        assert set(c['collection'] for c
-                   in self.storage_class.discover(str(tmpdir))) == {'a', 'b'}
+        assert {c['collection'] for c
+                in self.storage_class.discover(str(tmpdir))} == {'a', 'b'}

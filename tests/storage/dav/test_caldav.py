@@ -140,13 +140,13 @@ class TestCalDAVStorage(DAVStorageTests):
         task = s.upload(format_item(TASK_TEMPLATE))[0]
         s.item_types = ('VTODO', 'VEVENT')
 
-        def l():
-            return set(href for href, etag in s.list())
+        def hrefs():
+            return {href for href, etag in s.list()}
 
-        assert l() == {event, task}
+        assert hrefs() == {event, task}
         s.item_types = ('VTODO',)
-        assert l() == {task}
+        assert hrefs() == {task}
         s.item_types = ('VEVENT',)
-        assert l() == {event}
+        assert hrefs() == {event}
         s.item_types = ()
-        assert l() == {event, task}
+        assert hrefs() == {event, task}

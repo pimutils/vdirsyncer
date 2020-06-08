@@ -22,9 +22,9 @@ _simple_split = [
 ]
 
 _simple_joined = u'\r\n'.join(
-    [u'BEGIN:VADDRESSBOOK'] +
-    _simple_split +
-    [u'END:VADDRESSBOOK\r\n']
+    [u'BEGIN:VADDRESSBOOK']
+    + _simple_split
+    + [u'END:VADDRESSBOOK\r\n']
 )
 
 
@@ -40,9 +40,9 @@ def test_split_collection_simple(benchmark):
 
 def test_split_collection_multiple_wrappers(benchmark):
     joined = u'\r\n'.join(
-        u'BEGIN:VADDRESSBOOK\r\n' +
-        x +
-        u'\r\nEND:VADDRESSBOOK\r\n'
+        u'BEGIN:VADDRESSBOOK\r\n'
+        + x
+        + u'\r\nEND:VADDRESSBOOK\r\n'
         for x in _simple_split
     )
     given = benchmark(lambda: list(vobject.split_collection(joined)))
@@ -118,19 +118,19 @@ def test_split_collection_timezones():
     )
 
     full = u'\r\n'.join(
-        [u'BEGIN:VCALENDAR'] +
-        items +
-        [timezone, u'END:VCALENDAR']
+        [u'BEGIN:VCALENDAR']
+        + items
+        + [timezone, u'END:VCALENDAR']
     )
 
-    given = set(normalize_item(item)
-                for item in vobject.split_collection(full))
-    expected = set(
+    given = {normalize_item(item)
+             for item in vobject.split_collection(full)}
+    expected = {
         normalize_item(u'\r\n'.join((
             u'BEGIN:VCALENDAR', item, timezone, u'END:VCALENDAR'
         )))
         for item in items
-    )
+    }
 
     assert given == expected
 
