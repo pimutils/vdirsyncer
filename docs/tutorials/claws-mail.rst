@@ -52,7 +52,7 @@ this:
   setup. We also set the storage to read-only such that no changes get
   synchronized back. Claws-Mail should not be able to do any changes anyway,
   but this is one extra safety step in case files get corrupted or vdirsyncer
-  behaves eratically. You can leave that part out if you want to be able to
+  behaves erratically. You can leave that part out if you want to be able to
   edit those files locally.
 - In the last section we configure that online contacts win in a conflict
   situation. Configure this part however you like. A correct value depends on
