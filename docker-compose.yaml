@@ -5,3 +5,8 @@ services:
     build: docker/xandikos/
     ports:
       - '8000:8000'
+
+  radicale:
+    build: docker/radicale/
+    ports:
+      - '8001:8001'
