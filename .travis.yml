@@ -25,40 +25,56 @@
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release ",
+        "env": "BUILD=test REQUIREMENTS=release",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=xandikos REQUIREMENTS=release ",
+        "env": "BUILD=test-storage DAV_SERVER=radicale REQUIREMENTS=release ",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal ",
+        "env": "BUILD=test-storage DAV_SERVER=xandikos REQUIREMENTS=release ",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=xandikos REQUIREMENTS=minimal ",
+        "env": "BUILD=test REQUIREMENTS=minimal",
         "python": "3.5"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release ",
+        "env": "BUILD=test-storage DAV_SERVER=radicale REQUIREMENTS=minimal ",
+        "python": "3.5"
+      },
+      {
+        "env": "BUILD=test-storage DAV_SERVER=xandikos REQUIREMENTS=minimal ",
+        "python": "3.5"
+      },
+      {
+        "env": "BUILD=test REQUIREMENTS=release",
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=xandikos REQUIREMENTS=release ",
+        "env": "BUILD=test-storage DAV_SERVER=radicale REQUIREMENTS=release ",
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=fastmail REQUIREMENTS=release ",
+        "env": "BUILD=test-storage DAV_SERVER=xandikos REQUIREMENTS=release ",
+        "python": "3.6"
+      },
+      {
+        "env": "BUILD=test-storage DAV_SERVER=fastmail REQUIREMENTS=release ",
         "if": "NOT (type IN (pull_request))",
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=minimal ",
+        "env": "BUILD=test REQUIREMENTS=minimal",
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=xandikos REQUIREMENTS=minimal ",
+        "env": "BUILD=test-storage DAV_SERVER=radicale REQUIREMENTS=minimal ",
+        "python": "3.6"
+      },
+      {
+        "env": "BUILD=test-storage DAV_SERVER=xandikos REQUIREMENTS=minimal ",
         "python": "3.6"
       },
       {
