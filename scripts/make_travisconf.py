@@ -12,6 +12,8 @@ cfg['dist'] = 'trusty'
 cfg['language'] = 'python'
 cfg['cache'] = 'pip'
 
+cfg['services'] = ['docker']
+
 cfg['git'] = {
     'submodules': False
 }

@@ -70,5 +70,8 @@
   "script": [
     "make -e $BUILD"
   ],
+  "services": [
+    "docker"
+  ],
   "sudo": true
 }
