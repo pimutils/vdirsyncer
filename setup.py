@@ -71,7 +71,7 @@ setup(
     # Optional dependencies
     extras_require={
         'google': ['requests-oauthlib'],
-        'etesync': ['etesync==0.5.2']
+        'etesync': ['etesync==0.5.2', 'django<2.0']
     },
 
     # Build dependencies
