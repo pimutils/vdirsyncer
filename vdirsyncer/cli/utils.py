@@ -212,7 +212,7 @@ def manage_sync_status(base_path, pair_name, collection_name):
         with open(path, 'rb') as f:
             if f.read(1) == b'{':
                 f.seek(0)
-                # json.load doesn't work on binary files for Python 3.4/3.5
+                # json.load doesn't work on binary files for Python 3.5
                 legacy_status = dict(json.loads(f.read().decode('utf-8')))
     except (OSError, IOError, ValueError):
         pass
