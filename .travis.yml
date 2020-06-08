@@ -26,14 +26,6 @@
         "python": "3.6"
       },
       {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel ",
-        "python": "3.5"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=xandikos REQUIREMENTS=devel ",
-        "python": "3.5"
-      },
-      {
         "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release ",
         "python": "3.5"
       },
@@ -48,14 +40,6 @@
       {
         "env": "BUILD=test DAV_SERVER=xandikos REQUIREMENTS=minimal ",
         "python": "3.5"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=devel ",
-        "python": "3.6"
-      },
-      {
-        "env": "BUILD=test DAV_SERVER=xandikos REQUIREMENTS=devel ",
-        "python": "3.6"
       },
       {
         "env": "BUILD=test DAV_SERVER=radicale REQUIREMENTS=release ",

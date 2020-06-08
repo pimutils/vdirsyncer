@@ -39,8 +39,11 @@ matrix.append({
 })
 
 
-for python, requirements in itertools.product(python_versions,
-                                              ("devel", "release", "minimal")):
+for python, requirements in itertools.product(
+    python_versions,
+    # XXX: Use `devel` here for recent python versions:
+    ("release", "minimal")
+):
     dav_servers = ("radicale", "xandikos")
 
     if python == latest_python and requirements == "release":
