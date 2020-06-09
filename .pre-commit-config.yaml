@@ -5,6 +5,7 @@ repos:
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
+        exclude: '.travis.yml'
       - id: check-toml
       - id: check-added-large-files
       - id: debug-statements

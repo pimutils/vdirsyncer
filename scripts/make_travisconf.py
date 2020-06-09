@@ -12,12 +12,14 @@ cfg['dist'] = 'trusty'
 cfg['language'] = 'python'
 cfg['cache'] = 'pip'
 
+cfg['services'] = ['docker']
+
 cfg['git'] = {
     'submodules': False
 }
 
 cfg['branches'] = {
-    'only': ['auto', 'next', 'master', '/^.*-maintenance$/']
+    'only': ['master']
 }
 
 cfg['install'] = """
@@ -43,13 +45,18 @@ for python, requirements in itertools.product(
 ):
     dav_servers = ("radicale", "xandikos")
 
+    matrix.append({
+        'python': python,
+        'env': f"BUILD=test REQUIREMENTS={requirements}",
+    })
+
     if python == latest_python and requirements == "release":
         dav_servers += ("fastmail",)
 
     for dav_server in dav_servers:
         job = {
             'python': python,
-            'env': ("BUILD=test "
+            'env': ("BUILD=test-storage "
                     "DAV_SERVER={dav_server} "
                     "REQUIREMENTS={requirements} "
                     .format(dav_server=dav_server,

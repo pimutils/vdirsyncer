@@ -46,14 +46,17 @@ export TESTSERVER_BASE := ./tests/storage/servers/
 CODECOV_PATH = /tmp/codecov.sh
 
 ifeq ($(CI), true)
+test-storage:
+	curl -s https://codecov.io/bash > $(CODECOV_PATH)
+	$(PYTEST) tests/storage/
+	bash $(CODECOV_PATH) -c -F storage
 test:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
 	$(PYTEST) tests/unit/
 	bash $(CODECOV_PATH) -c -F unit
 	$(PYTEST) tests/system/
 	bash $(CODECOV_PATH) -c -F system
-	$(PYTEST) tests/storage/
-	bash $(CODECOV_PATH) -c -F storage
+	[ "$(ETESYNC_TESTS)" = "false" ] || make test-storage
 else
 test:
 	$(PYTEST)
@@ -81,11 +84,15 @@ install-test: install-servers install-dev
 	fi
 	[ -z "$(TEST_EXTRA_PACKAGES)" ] || pip install $(TEST_EXTRA_PACKAGES)
 
+install-test-storage: install-test
+	# This is just an alias
+	true
+
 install-style: install-docs install-dev
-	pip install -U flake8 flake8-import-order flake8-bugbear
+	pip install pre-commit
 
 style:
-	flake8
+	pre-commit run --all
 	! git grep -i syncroniz */*
 	! git grep -i 'text/icalendar' */*
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
