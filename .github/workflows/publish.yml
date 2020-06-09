@@ -1,0 +1,38 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 0.*
+
+jobs:
+  github-release:
+    runs-on: ubuntu-18.04
+    name: Publish GitHub Release
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+          architecture: x64
+      - run: pip install wheel
+      - run: python setup.py sdist bdist_wheel
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  pypi:
+    runs-on: ubuntu-18.04
+    name: Publish package on PyPI
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+          architecture: x64
+      - run: pip install wheel
+      - run: python setup.py sdist bdist_wheel
+      - uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.PYPI_TOKEN }}
