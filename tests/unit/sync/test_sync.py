@@ -253,7 +253,7 @@ def test_conflict_resolution_both_etags_new(winning_storage):
     b.update(href_b, item_b, etag_b)
     with pytest.raises(SyncConflict):
         sync(a, b, status)
-    sync(a, b, status, conflict_resolution='{} wins'.format(winning_storage))
+    sync(a, b, status, conflict_resolution=f'{winning_storage} wins')
     assert items(a) == items(b) == {
         item_a.raw if winning_storage == 'a' else item_b.raw
     }
@@ -563,7 +563,7 @@ class SyncMachine(RuleBasedStateMachine):
           uid=uid_strategy,
           etag=st.text())
     def upload(self, storage, uid, etag):
-        item = Item('UID:{}'.format(uid))
+        item = Item(f'UID:{uid}')
         storage.items[uid] = (etag, item)
 
     @rule(storage=Storage, href=st.text())

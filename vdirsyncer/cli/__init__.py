@@ -65,7 +65,7 @@ def max_workers_callback(ctx, param, value):
     if value == 0 and logging.getLogger('vdirsyncer').level == logging.DEBUG:
         value = 1
 
-    cli_logger.debug('Using {} maximal workers.'.format(value))
+    cli_logger.debug(f'Using {value} maximal workers.')
     return value
 
 
@@ -75,7 +75,7 @@ def max_workers_option(default=0):
         help += 'The default is 0, which means "as many as necessary". ' \
                 'With -vdebug enabled, the default is 1.'
     else:
-        help += 'The default is {}.'.format(default)
+        help += f'The default is {default}.'
 
     return click.option(
         '--max-workers', default=default, type=click.IntRange(min=0, max=None),

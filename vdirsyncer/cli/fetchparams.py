@@ -19,7 +19,7 @@ def expand_fetch_params(config):
 
         newkey = key[:-len(SUFFIX)]
         if newkey in config:
-            raise ValueError('Can\'t set {} and {}.'.format(key, newkey))
+            raise ValueError(f'Can\'t set {key} and {newkey}.')
         config[newkey] = _fetch_value(config[key], key)
         del config[key]
 
@@ -45,7 +45,7 @@ def _fetch_value(opts, key):
     cache_key = tuple(opts)
     if cache_key in password_cache:
         rv = password_cache[cache_key]
-        logger.debug('Found cached value for {!r}.'.format(opts))
+        logger.debug(f'Found cached value for {opts!r}.')
         if isinstance(rv, BaseException):
             raise rv
         return rv
@@ -54,7 +54,7 @@ def _fetch_value(opts, key):
     try:
         strategy_fn = STRATEGIES[strategy]
     except KeyError:
-        raise exceptions.UserError('Unknown strategy: {}'.format(strategy))
+        raise exceptions.UserError(f'Unknown strategy: {strategy}')
 
     logger.debug('Fetching value for {} with {} strategy.'
                  .format(key, strategy))

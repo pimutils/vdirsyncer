@@ -18,11 +18,11 @@ def test_repair_uids(uid):
     s.items = {
         'one': (
             'asdf',
-            Item('BEGIN:VCARD\nFN:Hans\nUID:{}\nEND:VCARD'.format(uid))
+            Item(f'BEGIN:VCARD\nFN:Hans\nUID:{uid}\nEND:VCARD')
         ),
         'two': (
             'asdf',
-            Item('BEGIN:VCARD\nFN:Peppi\nUID:{}\nEND:VCARD'.format(uid))
+            Item(f'BEGIN:VCARD\nFN:Peppi\nUID:{uid}\nEND:VCARD')
         )
     }
 
@@ -40,7 +40,7 @@ def test_repair_uids(uid):
 @settings(suppress_health_check=HealthCheck.all())
 def test_repair_unsafe_uids(uid):
     s = MemoryStorage()
-    item = Item('BEGIN:VCARD\nUID:{}\nEND:VCARD'.format(uid))
+    item = Item(f'BEGIN:VCARD\nUID:{uid}\nEND:VCARD')
     href, etag = s.upload(item)
     assert s.get(href)[0].uid == uid
     assert not href_safe(uid)
@@ -58,7 +58,7 @@ def test_repair_unsafe_uids(uid):
     ('perfectly-fine', 'b@dh0mbr3')
 ])
 def test_repair_unsafe_href(uid, href):
-    item = Item('BEGIN:VCARD\nUID:{}\nEND:VCARD'.format(uid))
+    item = Item(f'BEGIN:VCARD\nUID:{uid}\nEND:VCARD')
     new_item = repair_item(href, item, set(), True)
     assert new_item.raw != item.raw
     assert new_item.uid != item.uid

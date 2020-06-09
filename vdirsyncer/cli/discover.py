@@ -211,7 +211,7 @@ def _print_collections(instance_name, get_discovered):
         logger.warning('Failed to discover collections for {}, use `-vdebug` '
                        'to see the full traceback.'.format(instance_name))
         return
-    logger.info('{}:'.format(instance_name))
+    logger.info(f'{instance_name}:')
     for args in discovered.values():
         collection = args['collection']
         if collection is None:
@@ -226,7 +226,7 @@ def _print_collections(instance_name, get_discovered):
 
         logger.info('  - {}{}'.format(
             json.dumps(collection),
-            ' ("{}")'.format(displayname)
+            f' ("{displayname}")'
             if displayname and displayname != collection
             else ''
         ))

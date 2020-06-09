@@ -144,11 +144,11 @@ def handle_cli_error(status_name=None, e=None):
         import traceback
         tb = traceback.format_tb(tb)
         if status_name:
-            msg = 'Unknown error occurred for {}'.format(status_name)
+            msg = f'Unknown error occurred for {status_name}'
         else:
             msg = 'Unknown error occurred'
 
-        msg += ': {}\nUse `-vdebug` to see the full traceback.'.format(e)
+        msg += f': {e}\nUse `-vdebug` to see the full traceback.'
 
         cli_logger.error(msg)
         cli_logger.debug(''.join(tb))
@@ -210,8 +210,7 @@ def manage_sync_status(base_path, pair_name, collection_name):
         with open(path, 'rb') as f:
             if f.read(1) == b'{':
                 f.seek(0)
-                # json.load doesn't work on binary files for Python 3.5
-                legacy_status = dict(json.loads(f.read().decode('utf-8')))
+                legacy_status = dict(json.load(f))
     except (OSError, ValueError):
         pass
 
@@ -247,7 +246,7 @@ def storage_class_from_config(config):
         cls = storage_names[storage_name]
     except KeyError:
         raise exceptions.UserError(
-            'Unknown storage type: {}'.format(storage_name))
+            f'Unknown storage type: {storage_name}')
     return cls, config
 
 
@@ -399,7 +398,7 @@ def handle_collection_not_found(config, collection, e=None):
     storage_name = config.get('instance_name', None)
 
     cli_logger.warning('{}No collection {} found for storage {}.'
-                       .format('{}\n'.format(e) if e else '',
+                       .format(f'{e}\n' if e else '',
                                json.dumps(collection), storage_name))
 
     if click.confirm('Should vdirsyncer attempt to create it?'):

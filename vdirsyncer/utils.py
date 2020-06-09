@@ -73,7 +73,7 @@ def get_etag_from_file(f):
     mtime = getattr(stat, 'st_mtime_ns', None)
     if mtime is None:
         mtime = stat.st_mtime
-    return '{:.9f};{}'.format(mtime, stat.st_ino)
+    return f'{mtime:.9f};{stat.st_ino}'
 
 
 def get_storage_init_specs(cls, stop_at=object):
@@ -125,7 +125,7 @@ def checkdir(path, create=False, mode=0o750):
 
     if not os.path.isdir(path):
         if os.path.exists(path):
-            raise OSError('{} is not a directory.'.format(path))
+            raise OSError(f'{path} is not a directory.')
         if create:
             os.makedirs(path, mode)
         else:
@@ -143,7 +143,7 @@ def checkfile(path, create=False):
     checkdir(os.path.dirname(path), create=create)
     if not os.path.isfile(path):
         if os.path.exists(path):
-            raise OSError('{} is not a file.'.format(path))
+            raise OSError(f'{path} is not a file.')
         if create:
             with open(path, 'wb'):
                 pass

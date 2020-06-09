@@ -16,12 +16,12 @@ class MetaSyncConflict(MetaSyncError):
 
 def metasync(storage_a, storage_b, status, keys, conflict_resolution=None):
     def _a_to_b():
-        logger.info('Copying {} to {}'.format(key, storage_b))
+        logger.info(f'Copying {key} to {storage_b}')
         storage_b.set_meta(key, a)
         status[key] = a
 
     def _b_to_a():
-        logger.info('Copying {} to {}'.format(key, storage_a))
+        logger.info(f'Copying {key} to {storage_a}')
         storage_a.set_meta(key, b)
         status[key] = b
 
@@ -45,10 +45,10 @@ def metasync(storage_a, storage_b, status, keys, conflict_resolution=None):
         a = storage_a.get_meta(key)
         b = storage_b.get_meta(key)
         s = normalize_meta_value(status.get(key))
-        logger.debug('Key: {}'.format(key))
-        logger.debug('A: {}'.format(a))
-        logger.debug('B: {}'.format(b))
-        logger.debug('S: {}'.format(s))
+        logger.debug(f'Key: {key}')
+        logger.debug(f'A: {a}')
+        logger.debug(f'B: {b}')
+        logger.debug(f'S: {s}')
 
         if a != s and b != s:
             _resolve_conflict()

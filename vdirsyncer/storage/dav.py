@@ -34,7 +34,7 @@ del _generate_path_reserved_chars
 def _contains_quoted_reserved_chars(x):
     for y in _path_reserved_chars:
         if y in x:
-            dav_logger.debug('Unsafe character: {!r}'.format(y))
+            dav_logger.debug(f'Unsafe character: {y!r}')
             return True
     return False
 
@@ -52,7 +52,7 @@ def _assert_multistatus_success(r):
         except (ValueError, IndexError):
             continue
         if st < 200 or st >= 400:
-            raise HTTPError('Server error: {}'.format(st))
+            raise HTTPError(f'Server error: {st}')
 
 
 def _normalize_href(base, href):
@@ -78,7 +78,7 @@ def _normalize_href(base, href):
     x = urlparse.quote(x, '/@%:')
 
     if orig_href == x:
-        dav_logger.debug('Already normalized: {!r}'.format(x))
+        dav_logger.debug(f'Already normalized: {x!r}')
     else:
         dav_logger.debug('Normalized URL from {!r} to {!r}'
                          .format(orig_href, x))
@@ -459,7 +459,7 @@ class DAVStorage(Storage):
         for href in hrefs:
             if href != self._normalize_href(href):
                 raise exceptions.NotFoundError(href)
-            href_xml.append('<D:href>{}</D:href>'.format(href))
+            href_xml.append(f'<D:href>{href}</D:href>')
         if not href_xml:
             return ()
 
@@ -591,7 +591,7 @@ class DAVStorage(Storage):
                 props = _merge_xml(props)
 
             if props.find('{DAV:}resourcetype/{DAV:}collection') is not None:
-                dav_logger.debug('Skipping {!r}, is collection.'.format(href))
+                dav_logger.debug(f'Skipping {href!r}, is collection.')
                 continue
 
             etag = getattr(props.find('{DAV:}getetag'), 'text', '')
@@ -641,7 +641,7 @@ class DAVStorage(Storage):
         except KeyError:
             raise exceptions.UnsupportedMetadataError()
 
-        xpath = '{{{}}}{}'.format(namespace, tagname)
+        xpath = f'{{{namespace}}}{tagname}'
         data = '''<?xml version="1.0" encoding="utf-8" ?>
             <D:propfind xmlns:D="DAV:">
                 <D:prop>
@@ -674,7 +674,7 @@ class DAVStorage(Storage):
         except KeyError:
             raise exceptions.UnsupportedMetadataError()
 
-        lxml_selector = '{{{}}}{}'.format(namespace, tagname)
+        lxml_selector = f'{{{namespace}}}{tagname}'
         element = etree.Element(lxml_selector)
         element.text = normalize_meta_value(value)
 

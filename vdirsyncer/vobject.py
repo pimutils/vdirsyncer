@@ -205,14 +205,14 @@ def join_collection(items, wrappers=_default_join_wrappers):
 
     if wrapper_type is not None:
         lines = chain(*(
-            ['BEGIN:{}'.format(wrapper_type)],
+            [f'BEGIN:{wrapper_type}'],
             # XXX: wrapper_props is a list of lines (with line-wrapping), so
             # filtering out duplicate lines will almost certainly break
             # multiline-values.  Since the only props we usually need to
             # support are PRODID and VERSION, I don't care.
             uniq(wrapper_props),
             lines,
-            ['END:{}'.format(wrapper_type)]
+            [f'END:{wrapper_type}']
         ))
     return ''.join(line + '\r\n' for line in lines)
 
@@ -299,14 +299,14 @@ class _Component:
             return rv[0]
 
     def dump_lines(self):
-        yield 'BEGIN:{}'.format(self.name)
+        yield f'BEGIN:{self.name}'
         yield from self.props
         for c in self.subcomponents:
             yield from c.dump_lines()
-        yield 'END:{}'.format(self.name)
+        yield f'END:{self.name}'
 
     def __delitem__(self, key):
-        prefix = ('{}:'.format(key), '{};'.format(key))
+        prefix = (f'{key}:', f'{key};')
         new_lines = []
         lineiter = iter(self.props)
         while True:
@@ -329,7 +329,7 @@ class _Component:
         assert isinstance(val, str)
         assert '\n' not in val
         del self[key]
-        line = '{}:{}'.format(key, val)
+        line = f'{key}:{val}'
         self.props.append(line)
 
     def __contains__(self, obj):
@@ -342,8 +342,8 @@ class _Component:
             raise ValueError(obj)
 
     def __getitem__(self, key):
-        prefix_without_params = '{}:'.format(key)
-        prefix_with_params = '{};'.format(key)
+        prefix_without_params = f'{key}:'
+        prefix_with_params = f'{key};'
         iterlines = iter(self.props)
         for line in iterlines:
             if line.startswith(prefix_without_params):

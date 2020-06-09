@@ -47,7 +47,7 @@ def test_key_conflict(monkeypatch, mystrategy):
 @given(s=st.text(), t=st.text(min_size=1))
 def test_fuzzing(s, t, mystrategy):
     config = expand_fetch_params({
-        '{}.fetch'.format(s): ['mystrategy', t]
+        f'{s}.fetch': ['mystrategy', t]
     })
 
     assert config[s] == t

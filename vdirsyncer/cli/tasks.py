@@ -45,7 +45,7 @@ def sync_collection(wq, collection, general, force_delete):
     status_name = get_status_name(pair.name, collection.name)
 
     try:
-        cli_logger.info('Syncing {}'.format(status_name))
+        cli_logger.info(f'Syncing {status_name}')
 
         a = storage_instance_from_config(collection.config_a)
         b = storage_instance_from_config(collection.config_b)
@@ -110,7 +110,7 @@ def repair_collection(config, collection, repair_unsafe_uid):
     config['type'] = storage_type
     storage = storage_instance_from_config(config)
 
-    cli_logger.info('Repairing {}/{}'.format(storage_name, collection))
+    cli_logger.info(f'Repairing {storage_name}/{collection}')
     cli_logger.warning('Make sure no other program is talking to the server.')
     repair_storage(storage, repair_unsafe_uid=repair_unsafe_uid)
 
@@ -121,7 +121,7 @@ def metasync_collection(wq, collection, general):
     status_name = get_status_name(pair.name, collection.name)
 
     try:
-        cli_logger.info('Metasyncing {}'.format(status_name))
+        cli_logger.info(f'Metasyncing {status_name}')
 
         status = load_status(general['status_path'], pair.name,
                              collection.name, data_type='metadata') or {}

@@ -6,7 +6,7 @@ from .. import exceptions
 
 
 def _random_string():
-    return '{:.9f}'.format(random.random())
+    return f'{random.random():.9f}'
 
 
 class MemoryStorage(Storage):

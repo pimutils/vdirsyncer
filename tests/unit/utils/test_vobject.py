@@ -221,7 +221,7 @@ def test_replace_uid(template, uid):
     item = vobject.Item(template.format(r=123, uid=123)).with_uid(uid)
     assert item.uid == uid
     if uid:
-        assert item.raw.count('\nUID:{}'.format(uid)) == 1
+        assert item.raw.count(f'\nUID:{uid}') == 1
     else:
         assert '\nUID:' not in item.raw
 
@@ -317,7 +317,7 @@ class VobjectMachine(RuleBasedStateMachine):
           params=st.lists(st.tuples(value_strategy, value_strategy)))
     def add_prop_raw(self, c, key, value, params):
         params_str = ','.join(k + '=' + v for k, v in params)
-        c.props.insert(0, '{};{}:{}'.format(key, params_str, value))
+        c.props.insert(0, f'{key};{params_str}:{value}')
         assert c[key] == value
         assert key in c
         assert c.get(key) == value

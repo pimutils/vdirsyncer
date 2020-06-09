@@ -25,7 +25,7 @@ def repair_storage(storage, repair_unsafe_uid):
                          'The PRODID property may indicate which software '
                          'created this item.'
                          .format(href))
-            logger.error('Item content: {!r}'.format(item.raw))
+            logger.error(f'Item content: {item.raw!r}')
             continue
 
         seen_uids.add(new_item.uid)

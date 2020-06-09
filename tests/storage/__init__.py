@@ -19,7 +19,7 @@ from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
 
 def get_server_mixin(server_name):
     from . import __name__ as base
-    x = __import__('{}.servers.{}'.format(base, server_name), fromlist=[''])
+    x = __import__(f'{base}.servers.{server_name}', fromlist=[''])
     return x.ServerMixin
 
 
@@ -183,7 +183,7 @@ class StorageTests:
     def test_discover(self, requires_collections, get_storage_args, get_item):
         collections = set()
         for i in range(1, 5):
-            collection = 'test{}'.format(i)
+            collection = f'test{i}'
             s = self.storage_class(**get_storage_args(collection=collection))
             assert not list(s.list())
             s.upload(get_item())

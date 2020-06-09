@@ -461,7 +461,7 @@ def test_partial_sync(tmpdir, runner, partial_sync):
     fileext = ".txt"
     path = "{base}/bar"
     '''.format(
-        partial_sync=('partial_sync = "{}"\n'.format(partial_sync)
+        partial_sync=(f'partial_sync = "{partial_sync}"\n'
                       if partial_sync else ''),
         base=str(tmpdir)
     )))

@@ -101,7 +101,7 @@ class _ConfigReader:
     def _parse_section(self, section_type, name, options):
         validate_section_name(name, section_type)
         if name in self._seen_names:
-            raise ValueError('Name "{}" already used.'.format(name))
+            raise ValueError(f'Name "{name}" already used.')
         self._seen_names.add(name)
 
         if section_type == 'general':
@@ -163,7 +163,7 @@ class Config:
             try:
                 self.pairs[name] = PairConfig(self, name, options)
             except ValueError as e:
-                raise exceptions.UserError('Pair {}: {}'.format(name, e))
+                raise exceptions.UserError(f'Pair {name}: {e}')
 
     @classmethod
     def from_fileobject(cls, f):

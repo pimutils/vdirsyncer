@@ -80,7 +80,7 @@ class GoogleSession(dav.DAVSession):
                 # access_type and approval_prompt are Google specific
                 # extra parameters.
                 access_type='offline', approval_prompt='force')
-            click.echo('Opening {} ...'.format(authorization_url))
+            click.echo(f'Opening {authorization_url} ...')
             try:
                 open_graphical_browser(authorization_url)
             except Exception as e:

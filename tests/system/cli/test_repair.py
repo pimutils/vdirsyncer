@@ -19,7 +19,7 @@ def storage(tmpdir, runner):
 def test_basic(storage, runner, collection):
     if collection is not None:
         storage = storage.mkdir(collection)
-        collection_arg = 'foo/{}'.format(collection)
+        collection_arg = f'foo/{collection}'
     else:
         collection_arg = 'foo'
 

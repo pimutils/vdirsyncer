@@ -66,7 +66,7 @@ class _Session:
         key = self._get_key()
         if not key:
             password = click.prompt('Enter key password', hide_input=True)
-            click.echo('Deriving key for {}'.format(self.email))
+            click.echo(f'Deriving key for {self.email}')
             self.etesync.derive_key(password)
             self._set_key(self.etesync.cipher_key)
         else:
@@ -134,7 +134,7 @@ class EtesyncStorage(Storage):
                     **kwargs
                 )
             else:
-                logger.debug('Skipping collection: {!r}'.format(entry))
+                logger.debug(f'Skipping collection: {entry!r}')
 
     @classmethod
     def create_collection(cls, collection, email, secrets_dir, server_url=None,
