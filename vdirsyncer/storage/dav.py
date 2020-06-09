@@ -124,7 +124,7 @@ def _merge_xml(items):
         return None
     rv = items[0]
     for item in items[1:]:
-        rv.extend(item.getiterator())
+        rv.extend(item.iter())
     return rv
 
 
