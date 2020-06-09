@@ -84,8 +84,8 @@ virtualenv_ and run this inside of it::
     #  - stylecheckers (flake8) and code formatters (autopep8)
     make install-dev
 
-    # Install git commit hook for the stylechecker
-    make install-git-hooks
+    # Install git commit hook for some extra linting and checking
+    pre-commit install
 
     # install test dependencies
     make install-test
@@ -100,9 +100,13 @@ The ``Makefile`` has a lot of options that allow you to control which tests are
 run, and which servers are tested. Take a look at its code where they are all
 initialized and documented.
 
-For example, to test xandikos, run::
+For example, to test xandikos, first run the server itself::
 
-    make DAV_SERVER=xandikos install-test
+    docker-compose build xandikos
+    docker-compose up -d xandikos
+
+Then run the tests specifying this ``DAV_SERVER``, run::
+
     make DAV_SERVER=xandikos test
 
 If you have any questions, feel free to open issues about it.
