@@ -30,11 +30,6 @@ PYTEST_ARGS =
 
 TEST_EXTRA_PACKAGES =
 
-ifeq ($(COVERAGE), true)
-	TEST_EXTRA_PACKAGES += pytest-cov
-	PYTEST_ARGS += --cov-config .coveragerc --cov vdirsyncer
-endif
-
 ifeq ($(ETESYNC_TESTS), true)
 	TEST_EXTRA_PACKAGES += git+https://github.com/etesync/journal-manager@v0.5.2
 	TEST_EXTRA_PACKAGES += django djangorestframework==3.8.2 wsgi_intercept drf-nested-routers
