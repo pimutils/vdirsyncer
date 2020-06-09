@@ -14,3 +14,12 @@ repos:
     hooks:
       - id: flake8
         additional_dependencies: [flake8-import-order, flake8-bugbear]
+  - repo: local
+    hooks:
+      - id: update-travis
+        name: Update travis job definition
+        description: Ensures that travis job definition are up to date.
+        entry: scripts/make_travisconf.py
+        files: '.*travis.*'
+        stages: [commit]
+        language: script

@@ -1,6 +1,7 @@
+#!/usr/bin/env python
+
 import itertools
 import json
-import sys
 
 python_versions = ("3.5", "3.6")
 latest_python = "3.6"
@@ -57,10 +58,8 @@ for python, requirements in itertools.product(
         job = {
             'python': python,
             'env': ("BUILD=test-storage "
-                    "DAV_SERVER={dav_server} "
-                    "REQUIREMENTS={requirements} "
-                    .format(dav_server=dav_server,
-                            requirements=requirements))
+                    f"DAV_SERVER={dav_server} "
+                    f"REQUIREMENTS={requirements} ")
         }
 
         build_prs = dav_server not in ("fastmail", "davical", "icloud")
@@ -82,4 +81,5 @@ matrix.append({
 #     'env': 'BUILD=test'
 # })
 
-json.dump(cfg, sys.stdout, sort_keys=True, indent=2)
+with open('.travis.yml', 'w') as output:
+    json.dump(cfg, output, sort_keys=True, indent=2)
