@@ -1,10 +1,9 @@
 import os
+import shutil
 import subprocess
 import time
-import shutil
 
 import pytest
-
 import requests
 
 testserver_repo = os.path.dirname(__file__)

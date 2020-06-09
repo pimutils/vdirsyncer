@@ -1,8 +1,7 @@
 import pytest
 
-from vdirsyncer.storage.memory import MemoryStorage
-
 from . import StorageTests
+from vdirsyncer.storage.memory import MemoryStorage
 
 
 class TestMemoryStorage(StorageTests):

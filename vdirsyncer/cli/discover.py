@@ -3,12 +3,14 @@ import json
 import logging
 import sys
 
-from .utils import handle_collection_not_found, handle_storage_init_error, \
-    load_status, save_status, storage_class_from_config, \
-    storage_instance_from_config
-
 from .. import exceptions
 from ..utils import cached_property
+from .utils import handle_collection_not_found
+from .utils import handle_storage_init_error
+from .utils import load_status
+from .utils import save_status
+from .utils import storage_class_from_config
+from .utils import storage_instance_from_config
 
 
 # Increase whenever upgrade potentially breaks discovery cache and collections

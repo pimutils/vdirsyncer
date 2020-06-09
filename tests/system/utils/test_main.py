@@ -1,11 +1,12 @@
-import sys
 import logging
+import sys
 
 import click_log
 import pytest
 import requests
 
-from vdirsyncer import http, utils
+from vdirsyncer import http
+from vdirsyncer import utils
 
 
 @pytest.fixture(autouse=True)

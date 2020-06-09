@@ -1,8 +1,7 @@
 import pytest
 
-from vdirsyncer.storage.dav import CardDAVStorage
-
 from . import DAVStorageTests
+from vdirsyncer.storage.dav import CardDAVStorage
 
 
 class TestCardDAVStorage(DAVStorageTests):

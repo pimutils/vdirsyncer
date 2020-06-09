@@ -4,7 +4,8 @@ import click
 
 from . import AppContext
 from .. import exceptions
-from ..utils import expand_path, synchronized
+from ..utils import expand_path
+from ..utils import synchronized
 
 SUFFIX = '.fetch'
 

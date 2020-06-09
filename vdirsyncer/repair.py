@@ -1,7 +1,8 @@
 import logging
 from os.path import basename
 
-from .utils import generate_href, href_safe
+from .utils import generate_href
+from .utils import href_safe
 
 logger = logging.getLogger(__name__)
 

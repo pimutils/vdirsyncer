@@ -15,10 +15,13 @@ import logging
 
 from ..exceptions import UserError
 from ..utils import uniq
-
-from .status import SubStatus, ItemMetadata
-from .exceptions import BothReadOnly, IdentAlreadyExists, PartialSync, \
-    StorageEmpty, SyncConflict
+from .exceptions import BothReadOnly
+from .exceptions import IdentAlreadyExists
+from .exceptions import PartialSync
+from .exceptions import StorageEmpty
+from .exceptions import SyncConflict
+from .status import ItemMetadata
+from .status import SubStatus
 
 sync_logger = logging.getLogger(__name__)
 

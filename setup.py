@@ -4,9 +4,9 @@ Vdirsyncer synchronizes calendars and contacts.
 Please refer to https://vdirsyncer.pimutils.org/en/stable/packaging.html for
 how to package vdirsyncer.
 '''
-
-
-from setuptools import Command, find_packages, setup
+from setuptools import Command
+from setuptools import find_packages
+from setuptools import setup
 
 
 requirements = [

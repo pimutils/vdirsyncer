@@ -1,7 +1,7 @@
-import pytest
-
-from hypothesis import assume, given
 import hypothesis.strategies as st
+import pytest
+from hypothesis import assume
+from hypothesis import given
 
 from vdirsyncer.sync.status import SqliteStatus
 

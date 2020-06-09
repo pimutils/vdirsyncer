@@ -1,17 +1,22 @@
 from copy import deepcopy
 
 import hypothesis.strategies as st
-from hypothesis import assume
-from hypothesis.stateful import Bundle, RuleBasedStateMachine, rule
-
 import pytest
+from hypothesis import assume
+from hypothesis.stateful import Bundle
+from hypothesis.stateful import rule
+from hypothesis.stateful import RuleBasedStateMachine
 
-from tests import blow_up, uid_strategy
-
-from vdirsyncer.storage.memory import MemoryStorage, _random_string
+from tests import blow_up
+from tests import uid_strategy
+from vdirsyncer.storage.memory import _random_string
+from vdirsyncer.storage.memory import MemoryStorage
 from vdirsyncer.sync import sync as _sync
-from vdirsyncer.sync.exceptions import BothReadOnly, IdentConflict, \
-    PartialSync, StorageEmpty, SyncConflict
+from vdirsyncer.sync.exceptions import BothReadOnly
+from vdirsyncer.sync.exceptions import IdentConflict
+from vdirsyncer.sync.exceptions import PartialSync
+from vdirsyncer.sync.exceptions import StorageEmpty
+from vdirsyncer.sync.exceptions import SyncConflict
 from vdirsyncer.sync.status import SqliteStatus
 from vdirsyncer.vobject import Item
 

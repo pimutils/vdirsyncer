@@ -1,13 +1,19 @@
 import functools
 import json
 
+from .. import exceptions
+from .. import sync
 from .config import CollectionConfig
-from .discover import collections_for_pair, storage_class_from_config, \
-    storage_instance_from_config
-from .utils import JobFailed, cli_logger, get_status_name, \
-    handle_cli_error, load_status, manage_sync_status, save_status
-
-from .. import exceptions, sync
+from .discover import collections_for_pair
+from .discover import storage_class_from_config
+from .discover import storage_instance_from_config
+from .utils import cli_logger
+from .utils import get_status_name
+from .utils import handle_cli_error
+from .utils import JobFailed
+from .utils import load_status
+from .utils import manage_sync_status
+from .utils import save_status
 
 
 def prepare_pair(wq, pair_name, collections, config, callback, **kwargs):

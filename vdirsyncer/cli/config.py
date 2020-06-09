@@ -6,10 +6,12 @@ from itertools import chain
 
 from click_threading import get_ui_worker
 
+from .. import exceptions
+from .. import PROJECT_HOME
+from ..utils import cached_property
+from ..utils import expand_path
 from .fetchparams import expand_fetch_params
 from .utils import storage_class_from_config
-from .. import PROJECT_HOME, exceptions
-from ..utils import cached_property, expand_path
 
 
 GENERAL_ALL = frozenset(['status_path'])

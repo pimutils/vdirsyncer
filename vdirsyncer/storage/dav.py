@@ -2,17 +2,21 @@ import datetime
 import logging
 import urllib.parse as urlparse
 import xml.etree.ElementTree as etree
-
 from inspect import getfullargspec
 
 import requests
 from requests.exceptions import HTTPError
 
-from .base import Storage, normalize_meta_value
-from .. import exceptions, http, utils
-from ..http import USERAGENT, prepare_auth, \
-    prepare_client_cert, prepare_verify
+from .. import exceptions
+from .. import http
+from .. import utils
+from ..http import prepare_auth
+from ..http import prepare_client_cert
+from ..http import prepare_verify
+from ..http import USERAGENT
 from ..vobject import Item
+from .base import normalize_meta_value
+from .base import Storage
 
 
 dav_logger = logging.getLogger(__name__)

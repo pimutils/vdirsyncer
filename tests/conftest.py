@@ -5,10 +5,10 @@ import logging
 import os
 
 import click_log
-
-from hypothesis import HealthCheck, Verbosity, settings
-
 import pytest
+from hypothesis import HealthCheck
+from hypothesis import settings
+from hypothesis import Verbosity
 
 
 @pytest.fixture(autouse=True)

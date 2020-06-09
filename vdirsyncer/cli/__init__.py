@@ -3,10 +3,10 @@ import logging
 import sys
 
 import click
-
 import click_log
 
-from .. import BUGTRACKER_HOME, __version__
+from .. import __version__
+from .. import BUGTRACKER_HOME
 
 
 cli_logger = logging.getLogger(__name__)

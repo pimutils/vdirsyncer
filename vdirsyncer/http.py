@@ -2,8 +2,10 @@ import logging
 
 import requests
 
+from . import __version__
+from . import DOCS_HOME
+from . import exceptions
 from .utils import expand_path
-from . import DOCS_HOME, exceptions, __version__
 
 
 logger = logging.getLogger(__name__)

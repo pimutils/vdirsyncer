@@ -3,7 +3,8 @@ from textwrap import dedent
 
 import pytest
 
-from vdirsyncer import cli, exceptions
+from vdirsyncer import cli
+from vdirsyncer import exceptions
 from vdirsyncer.cli.config import Config
 
 

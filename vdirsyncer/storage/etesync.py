@@ -1,8 +1,8 @@
+import binascii
 import contextlib
 import functools
 import logging
 import os
-import binascii
 
 import atomicwrites
 import click

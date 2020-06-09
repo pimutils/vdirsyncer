@@ -2,10 +2,9 @@ import subprocess
 
 import pytest
 
+from . import StorageTests
 from vdirsyncer.storage.filesystem import FilesystemStorage
 from vdirsyncer.vobject import Item
-
-from . import StorageTests
 
 
 class TestFilesystemStorage(StorageTests):

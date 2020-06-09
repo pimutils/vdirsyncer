@@ -3,9 +3,9 @@ import sys
 from textwrap import dedent
 
 import hypothesis.strategies as st
-from hypothesis import example, given
-
 import pytest
+from hypothesis import example
+from hypothesis import given
 
 
 def test_simple_run(tmpdir, runner):

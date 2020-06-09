@@ -1,16 +1,20 @@
 from textwrap import dedent
 
 import hypothesis.strategies as st
-from hypothesis import assume, given
-from hypothesis.stateful import Bundle, RuleBasedStateMachine, rule
-
 import pytest
-
-from tests import BARE_EVENT_TEMPLATE, EVENT_TEMPLATE, \
-    EVENT_WITH_TIMEZONE_TEMPLATE, VCARD_TEMPLATE, normalize_item, \
-    uid_strategy
+from hypothesis import assume
+from hypothesis import given
+from hypothesis.stateful import Bundle
+from hypothesis.stateful import rule
+from hypothesis.stateful import RuleBasedStateMachine
 
 import vdirsyncer.vobject as vobject
+from tests import BARE_EVENT_TEMPLATE
+from tests import EVENT_TEMPLATE
+from tests import EVENT_WITH_TIMEZONE_TEMPLATE
+from tests import normalize_item
+from tests import uid_strategy
+from tests import VCARD_TEMPLATE
 
 
 _simple_split = [

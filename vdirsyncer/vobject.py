@@ -1,7 +1,9 @@
 import hashlib
-from itertools import chain, tee
+from itertools import chain
+from itertools import tee
 
-from .utils import cached_property, uniq
+from .utils import cached_property
+from .utils import uniq
 
 
 IGNORE_PROPS = (

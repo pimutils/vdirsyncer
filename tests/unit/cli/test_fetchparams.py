@@ -1,10 +1,10 @@
 import hypothesis.strategies as st
+import pytest
 from hypothesis import given
 
-import pytest
-
 from vdirsyncer import exceptions
-from vdirsyncer.cli.fetchparams import STRATEGIES, expand_fetch_params
+from vdirsyncer.cli.fetchparams import expand_fetch_params
+from vdirsyncer.cli.fetchparams import STRATEGIES
 
 
 @pytest.fixture

@@ -1,13 +1,10 @@
 '''
 Test suite for vdirsyncer.
 '''
-
 import hypothesis.strategies as st
+import urllib3.exceptions
 
 from vdirsyncer.vobject import normalize_item
-
-import urllib3
-import urllib3.exceptions
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 

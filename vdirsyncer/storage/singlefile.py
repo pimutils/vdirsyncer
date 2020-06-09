@@ -7,10 +7,14 @@ import os
 
 from atomicwrites import atomic_write
 
-from .base import Storage
 from .. import exceptions
-from ..utils import checkfile, expand_path, get_etag_from_file
-from ..vobject import Item, join_collection, split_collection
+from ..utils import checkfile
+from ..utils import expand_path
+from ..utils import get_etag_from_file
+from ..vobject import Item
+from ..vobject import join_collection
+from ..vobject import split_collection
+from .base import Storage
 
 logger = logging.getLogger(__name__)
 

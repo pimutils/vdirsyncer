@@ -7,18 +7,21 @@ import os
 import queue
 import sys
 
+import click
+import click_threading
 from atomicwrites import atomic_write
 
-import click
-
-import click_threading
-
 from . import cli_logger
-from .. import BUGTRACKER_HOME, DOCS_HOME, exceptions
-from ..sync.exceptions import IdentConflict, PartialSync, StorageEmpty, \
-    SyncConflict
+from .. import BUGTRACKER_HOME
+from .. import DOCS_HOME
+from .. import exceptions
+from ..sync.exceptions import IdentConflict
+from ..sync.exceptions import PartialSync
+from ..sync.exceptions import StorageEmpty
+from ..sync.exceptions import SyncConflict
 from ..sync.status import SqliteStatus
-from ..utils import expand_path, get_storage_init_args
+from ..utils import expand_path
+from ..utils import get_storage_init_args
 
 
 STATUS_PERMISSIONS = 0o600
