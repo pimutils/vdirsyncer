@@ -64,8 +64,7 @@ for python, requirements in itertools.product(
         if python == '3.5':
             job['dist'] = 'trusty'
 
-        build_prs = dav_server not in ("fastmail", "davical", "icloud")
-        if not build_prs:
+        if dav_server in ("davical", "icloud"):
             job['if'] = 'NOT (type IN (pull_request))'
 
         matrix.append(job)

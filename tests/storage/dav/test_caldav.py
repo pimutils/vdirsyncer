@@ -133,6 +133,8 @@ class TestCalDAVStorage(DAVStorageTests):
 
     @pytest.mark.skipif(dav_server == 'icloud',
                         reason='iCloud only accepts VEVENT')
+    @pytest.mark.skipif(dav_server == 'fastmail',
+                        reason='Fastmail has non-standard hadling of VTODOs.')
     def test_item_types_general(self, s):
         event = s.upload(format_item(EVENT_TEMPLATE))[0]
         task = s.upload(format_item(TASK_TEMPLATE))[0]
