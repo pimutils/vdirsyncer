@@ -88,10 +88,10 @@ install-test-storage: install-test
 	true
 
 install-style: install-docs install-dev
-	pip install -U flake8 flake8-import-order flake8-bugbear
+	pip install pre-commit
 
 style:
-	flake8
+	pre-commit run --all
 	! git grep -i syncroniz */*
 	! git grep -i 'text/icalendar' */*
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
