@@ -1,14 +1,15 @@
+#!/usr/bin/env python
+
 import itertools
 import json
-import sys
 
-python_versions = ("3.5", "3.6")
+python_versions = ("3.5", "3.6", "3.7", "3.8")
 latest_python = "3.6"
 
 cfg = {}
 
 cfg['sudo'] = True
-cfg['dist'] = 'trusty'
+cfg['dist'] = 'bionic'
 cfg['language'] = 'python'
 cfg['cache'] = 'pip'
 
@@ -57,11 +58,11 @@ for python, requirements in itertools.product(
         job = {
             'python': python,
             'env': ("BUILD=test-storage "
-                    "DAV_SERVER={dav_server} "
-                    "REQUIREMENTS={requirements} "
-                    .format(dav_server=dav_server,
-                            requirements=requirements))
+                    f"DAV_SERVER={dav_server} "
+                    f"REQUIREMENTS={requirements} ")
         }
+        if python == '3.5':
+            job['dist'] = 'trusty'
 
         build_prs = dav_server not in ("fastmail", "davical", "icloud")
         if not build_prs:
@@ -82,4 +83,5 @@ matrix.append({
 #     'env': 'BUILD=test'
 # })
 
-json.dump(cfg, sys.stdout, sort_keys=True, indent=2)
+with open('.travis.yml', 'w') as output:
+    json.dump(cfg, output, sort_keys=True, indent=2)
