@@ -19,7 +19,7 @@ cfg['git'] = {
 }
 
 cfg['branches'] = {
-    'only': ['auto', 'next', 'master', '/^.*-maintenance$/']
+    'only': ['master']
 }
 
 cfg['install'] = """

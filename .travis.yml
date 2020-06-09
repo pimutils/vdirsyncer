@@ -1,10 +1,7 @@
 {
   "branches": {
     "only": [
-      "auto",
-      "next",
-      "master",
-      "/^.*-maintenance$/"
+      "master"
     ]
   },
   "cache": "pip",
