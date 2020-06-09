@@ -3,13 +3,13 @@
 import itertools
 import json
 
-python_versions = ("3.5", "3.6")
+python_versions = ("3.5", "3.6", "3.7", "3.8")
 latest_python = "3.6"
 
 cfg = {}
 
 cfg['sudo'] = True
-cfg['dist'] = 'trusty'
+cfg['dist'] = 'bionic'
 cfg['language'] = 'python'
 cfg['cache'] = 'pip'
 
@@ -61,6 +61,8 @@ for python, requirements in itertools.product(
                     f"DAV_SERVER={dav_server} "
                     f"REQUIREMENTS={requirements} ")
         }
+        if python == '3.5':
+            job['dist'] = 'trusty'
 
         build_prs = dav_server not in ("fastmail", "davical", "icloud")
         if not build_prs:
