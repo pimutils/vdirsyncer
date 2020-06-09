@@ -56,6 +56,7 @@ test:
 	bash $(CODECOV_PATH) -c -F unit
 	$(PYTEST) tests/system/
 	bash $(CODECOV_PATH) -c -F system
+	[ "$(ETESYNC_TESTS)" = "false" ] || make test-storage
 else
 test:
 	$(PYTEST)
