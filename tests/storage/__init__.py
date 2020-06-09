@@ -201,6 +201,8 @@ class StorageTests:
         if getattr(self, 'dav_server', '') in \
            ('icloud', 'fastmail', 'davical'):
             pytest.skip('Manual cleanup would be necessary.')
+        if getattr(self, 'dav_server', '') == "radicale":
+            pytest.skip("Radicale does not support collection creation")
 
         args = get_storage_args(collection=None)
         args['collection'] = 'test'
