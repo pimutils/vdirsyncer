@@ -60,8 +60,7 @@ for python, requirements in itertools.product(
                     f"REQUIREMENTS={requirements} ")
         }
 
-        build_prs = dav_server not in ("fastmail", "davical", "icloud")
-        if not build_prs:
+        if dav_server in ("davical", "icloud"):
             job['if'] = 'NOT (type IN (pull_request))'
 
         matrix.append(job)

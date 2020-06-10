@@ -35,7 +35,6 @@
       },
       {
         "env": "BUILD=test-storage DAV_SERVER=fastmail REQUIREMENTS=release ",
-        "if": "NOT (type IN (pull_request))",
         "python": "3.7"
       },
       {

@@ -15,12 +15,18 @@ Obtaining the source code
 
 The main distribution channel is `PyPI
 <https://pypi.python.org/pypi/vdirsyncer>`_, and source tarballs can be
-obtained there. Do not use the ones from GitHub: Their tarballs contain useless
-junk and are more of a distraction than anything else.
+obtained there. We mirror the same package tarball and wheel as GitHub
+releases. Please do not confuse these with the auto-generated GitHub "Source
+Code" tarball; that one contains useless junk and are more of a distraction
+than anything else.
 
-I give each release a tag in the git repo. If you want to get notified of new
+We give each release a tag in the git repo. If you want to get notified of new
 releases, `GitHub's feed
 <https://github.com/pimutils/vdirsyncer/releases.atom>`_ is a good way.
+
+Tags will be signed by the maintainer who is doing the release (starting with
+0.16.8), and generation of the tarball and wheel is done by CI. Hence, only the
+tag itself is signed.
 
 Dependency versions
 ===================
