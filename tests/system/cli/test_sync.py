@@ -123,7 +123,7 @@ def test_verbosity(tmpdir, runner):
     runner.write_with_general('')
     result = runner.invoke(['--verbosity=HAHA', 'sync'])
     assert result.exception
-    assert 'invalid value for "--verbosity"' in result.output.lower()
+    assert "invalid value for '--verbosity'" in result.output.lower()
 
 
 def test_collections_cache_invalidation(tmpdir, runner):
