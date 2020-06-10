@@ -1,16 +1,20 @@
 from textwrap import dedent
 
 import hypothesis.strategies as st
-from hypothesis import assume, given
-from hypothesis.stateful import Bundle, RuleBasedStateMachine, rule
-
 import pytest
-
-from tests import BARE_EVENT_TEMPLATE, EVENT_TEMPLATE, \
-    EVENT_WITH_TIMEZONE_TEMPLATE, VCARD_TEMPLATE, normalize_item, \
-    uid_strategy
+from hypothesis import assume
+from hypothesis import given
+from hypothesis.stateful import Bundle
+from hypothesis.stateful import rule
+from hypothesis.stateful import RuleBasedStateMachine
 
 import vdirsyncer.vobject as vobject
+from tests import BARE_EVENT_TEMPLATE
+from tests import EVENT_TEMPLATE
+from tests import EVENT_WITH_TIMEZONE_TEMPLATE
+from tests import normalize_item
+from tests import uid_strategy
+from tests import VCARD_TEMPLATE
 
 
 _simple_split = [
@@ -221,7 +225,7 @@ def test_replace_uid(template, uid):
     item = vobject.Item(template.format(r=123, uid=123)).with_uid(uid)
     assert item.uid == uid
     if uid:
-        assert item.raw.count('\nUID:{}'.format(uid)) == 1
+        assert item.raw.count(f'\nUID:{uid}') == 1
     else:
         assert '\nUID:' not in item.raw
 
@@ -317,7 +321,7 @@ class VobjectMachine(RuleBasedStateMachine):
           params=st.lists(st.tuples(value_strategy, value_strategy)))
     def add_prop_raw(self, c, key, value, params):
         params_str = ','.join(k + '=' + v for k, v in params)
-        c.props.insert(0, '{};{}:{}'.format(key, params_str, value))
+        c.props.insert(0, f'{key};{params_str}:{value}')
         assert c[key] == value
         assert key in c
         assert c.get(key) == value

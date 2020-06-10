@@ -1,6 +1,8 @@
 import pytest
 
-from vdirsyncer.storage.dav import _BAD_XML_CHARS, _merge_xml, _parse_xml
+from vdirsyncer.storage.dav import _BAD_XML_CHARS
+from vdirsyncer.storage.dav import _merge_xml
+from vdirsyncer.storage.dav import _parse_xml
 
 
 def test_xml_utilities():

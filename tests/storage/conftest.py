@@ -1,6 +1,6 @@
-import pytest
-
 import uuid
+
+import pytest
 
 
 @pytest.fixture

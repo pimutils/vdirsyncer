@@ -1,8 +1,7 @@
 from textwrap import dedent
 
-from click.testing import CliRunner
-
 import pytest
+from click.testing import CliRunner
 
 import vdirsyncer.cli as cli
 

@@ -2,17 +2,16 @@ import datetime
 from textwrap import dedent
 
 import pytest
-
-import requests
 import requests.exceptions
 
-from tests import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE
-
+from . import dav_server
+from . import DAVStorageTests
+from .. import format_item
+from tests import EVENT_TEMPLATE
+from tests import TASK_TEMPLATE
+from tests import VCARD_TEMPLATE
 from vdirsyncer import exceptions
 from vdirsyncer.storage.dav import CalDAVStorage
-
-from . import DAVStorageTests, dav_server
-from .. import format_item
 
 
 class TestCalDAVStorage(DAVStorageTests):

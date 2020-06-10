@@ -3,15 +3,16 @@ import logging
 import os
 import urllib.parse as urlparse
 
-from atomicwrites import atomic_write
-
 import click
-
+from atomicwrites import atomic_write
 from click_threading import get_ui_worker
 
-from . import base, dav
+from . import base
+from . import dav
 from .. import exceptions
-from ..utils import checkdir, expand_path, open_graphical_browser
+from ..utils import checkdir
+from ..utils import expand_path
+from ..utils import open_graphical_browser
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +81,7 @@ class GoogleSession(dav.DAVSession):
                 # access_type and approval_prompt are Google specific
                 # extra parameters.
                 access_type='offline', approval_prompt='force')
-            click.echo('Opening {} ...'.format(authorization_url))
+            click.echo(f'Opening {authorization_url} ...')
             try:
                 open_graphical_browser(authorization_url)
             except Exception as e:

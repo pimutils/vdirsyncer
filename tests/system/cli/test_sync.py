@@ -3,9 +3,9 @@ import sys
 from textwrap import dedent
 
 import hypothesis.strategies as st
-from hypothesis import example, given
-
 import pytest
+from hypothesis import example
+from hypothesis import given
 
 
 def test_simple_run(tmpdir, runner):
@@ -123,7 +123,10 @@ def test_verbosity(tmpdir, runner):
     runner.write_with_general('')
     result = runner.invoke(['--verbosity=HAHA', 'sync'])
     assert result.exception
-    assert 'invalid value for "--verbosity"' in result.output.lower()
+    assert (
+        'invalid value for "--verbosity"' in result.output.lower()
+        or "invalid value for '--verbosity'" in result.output.lower()
+    )
 
 
 def test_collections_cache_invalidation(tmpdir, runner):
@@ -461,7 +464,7 @@ def test_partial_sync(tmpdir, runner, partial_sync):
     fileext = ".txt"
     path = "{base}/bar"
     '''.format(
-        partial_sync=('partial_sync = "{}"\n'.format(partial_sync)
+        partial_sync=(f'partial_sync = "{partial_sync}"\n'
                       if partial_sync else ''),
         base=str(tmpdir)
     )))

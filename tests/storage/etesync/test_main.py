@@ -1,14 +1,13 @@
-import shutil
 import os
+import shutil
 import sys
-
 
 import pytest
 import requests
 
-from vdirsyncer.storage.etesync import EtesyncContacts, EtesyncCalendars
-
 from .. import StorageTests
+from vdirsyncer.storage.etesync import EtesyncCalendars
+from vdirsyncer.storage.etesync import EtesyncContacts
 
 
 pytestmark = pytest.mark.skipif(os.getenv('ETESYNC_TESTS', '') != 'true',

@@ -1,7 +1,7 @@
 import abc
 import contextlib
-import sys
 import sqlite3
+import sys
 
 from .exceptions import IdentAlreadyExists
 

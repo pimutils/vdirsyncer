@@ -7,18 +7,21 @@ import os
 import queue
 import sys
 
+import click
+import click_threading
 from atomicwrites import atomic_write
 
-import click
-
-import click_threading
-
 from . import cli_logger
-from .. import BUGTRACKER_HOME, DOCS_HOME, exceptions
-from ..sync.exceptions import IdentConflict, PartialSync, StorageEmpty, \
-    SyncConflict
+from .. import BUGTRACKER_HOME
+from .. import DOCS_HOME
+from .. import exceptions
+from ..sync.exceptions import IdentConflict
+from ..sync.exceptions import PartialSync
+from ..sync.exceptions import StorageEmpty
+from ..sync.exceptions import SyncConflict
 from ..sync.status import SqliteStatus
-from ..utils import expand_path, get_storage_init_args
+from ..utils import expand_path
+from ..utils import get_storage_init_args
 
 
 STATUS_PERMISSIONS = 0o600
@@ -144,11 +147,11 @@ def handle_cli_error(status_name=None, e=None):
         import traceback
         tb = traceback.format_tb(tb)
         if status_name:
-            msg = 'Unknown error occurred for {}'.format(status_name)
+            msg = f'Unknown error occurred for {status_name}'
         else:
             msg = 'Unknown error occurred'
 
-        msg += ': {}\nUse `-vdebug` to see the full traceback.'.format(e)
+        msg += f': {e}\nUse `-vdebug` to see the full traceback.'
 
         cli_logger.error(msg)
         cli_logger.debug(''.join(tb))
@@ -210,8 +213,7 @@ def manage_sync_status(base_path, pair_name, collection_name):
         with open(path, 'rb') as f:
             if f.read(1) == b'{':
                 f.seek(0)
-                # json.load doesn't work on binary files for Python 3.5
-                legacy_status = dict(json.loads(f.read().decode('utf-8')))
+                legacy_status = dict(json.load(f))
     except (OSError, ValueError):
         pass
 
@@ -247,7 +249,7 @@ def storage_class_from_config(config):
         cls = storage_names[storage_name]
     except KeyError:
         raise exceptions.UserError(
-            'Unknown storage type: {}'.format(storage_name))
+            f'Unknown storage type: {storage_name}')
     return cls, config
 
 
@@ -399,7 +401,7 @@ def handle_collection_not_found(config, collection, e=None):
     storage_name = config.get('instance_name', None)
 
     cli_logger.warning('{}No collection {} found for storage {}.'
-                       .format('{}\n'.format(e) if e else '',
+                       .format(f'{e}\n' if e else '',
                                json.dumps(collection), storage_name))
 
     if click.confirm('Should vdirsyncer attempt to create it?'):

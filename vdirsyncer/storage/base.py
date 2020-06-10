@@ -71,7 +71,7 @@ class Storage(metaclass=StorageMeta):
         self.read_only = bool(read_only)
 
         if collection and instance_name:
-            instance_name = '{}/{}'.format(instance_name, collection)
+            instance_name = f'{instance_name}/{collection}'
         self.instance_name = instance_name
         self.collection = collection
 

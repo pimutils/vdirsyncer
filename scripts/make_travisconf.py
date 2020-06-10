@@ -1,10 +1,8 @@
 #!/usr/bin/env python
-
 import itertools
 import json
 
-python_versions = ("3.5", "3.6", "3.7", "3.8")
-latest_python = "3.6"
+python_versions = ["3.7", "3.8"]
 
 cfg = {}
 
@@ -34,7 +32,7 @@ matrix = []
 cfg['matrix'] = {'include': matrix, 'fast_finish': True}
 
 matrix.append({
-    'python': latest_python,
+    'python': python_versions[0],
     'env': 'BUILD=style'
 })
 
@@ -51,7 +49,7 @@ for python, requirements in itertools.product(
         'env': f"BUILD=test REQUIREMENTS={requirements}",
     })
 
-    if python == latest_python and requirements == "release":
+    if python == python_versions[0] and requirements == "release":
         dav_servers += ("fastmail",)
 
     for dav_server in dav_servers:
@@ -61,8 +59,6 @@ for python, requirements in itertools.product(
                     f"DAV_SERVER={dav_server} "
                     f"REQUIREMENTS={requirements} ")
         }
-        if python == '3.5':
-            job['dist'] = 'trusty'
 
         if dav_server in ("davical", "icloud"):
             job['if'] = 'NOT (type IN (pull_request))'
@@ -70,7 +66,7 @@ for python, requirements in itertools.product(
         matrix.append(job)
 
 matrix.append({
-    'python': latest_python,
+    'python': python_versions[0],
     'env': ("BUILD=test "
             "ETESYNC_TESTS=true "
             "REQUIREMENTS=latest")

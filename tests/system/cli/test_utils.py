@@ -1,6 +1,7 @@
 from vdirsyncer import exceptions
-from vdirsyncer.cli.utils import handle_cli_error, \
-    storage_instance_from_config, storage_names
+from vdirsyncer.cli.utils import handle_cli_error
+from vdirsyncer.cli.utils import storage_instance_from_config
+from vdirsyncer.cli.utils import storage_names
 
 
 def test_handle_cli_error(capsys):

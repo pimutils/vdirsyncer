@@ -6,10 +6,12 @@ from itertools import chain
 
 from click_threading import get_ui_worker
 
+from .. import exceptions
+from .. import PROJECT_HOME
+from ..utils import cached_property
+from ..utils import expand_path
 from .fetchparams import expand_fetch_params
 from .utils import storage_class_from_config
-from .. import PROJECT_HOME, exceptions
-from ..utils import cached_property, expand_path
 
 
 GENERAL_ALL = frozenset(['status_path'])
@@ -101,7 +103,7 @@ class _ConfigReader:
     def _parse_section(self, section_type, name, options):
         validate_section_name(name, section_type)
         if name in self._seen_names:
-            raise ValueError('Name "{}" already used.'.format(name))
+            raise ValueError(f'Name "{name}" already used.')
         self._seen_names.add(name)
 
         if section_type == 'general':
@@ -163,7 +165,7 @@ class Config:
             try:
                 self.pairs[name] = PairConfig(self, name, options)
             except ValueError as e:
-                raise exceptions.UserError('Pair {}: {}'.format(name, e))
+                raise exceptions.UserError(f'Pair {name}: {e}')
 
     @classmethod
     def from_fileobject(cls, f):

@@ -1,12 +1,10 @@
 import pytest
-
 from requests import Response
 
 import vdirsyncer.storage.http
+from . import StorageTests
 from vdirsyncer.storage.base import Storage
 from vdirsyncer.storage.singlefile import SingleFileStorage
-
-from . import StorageTests
 
 
 class CombinedStorage(Storage):

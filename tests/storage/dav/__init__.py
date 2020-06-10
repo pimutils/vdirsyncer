@@ -1,18 +1,14 @@
+import os
 import uuid
 
-import os
-
 import pytest
-
-import requests
 import requests.exceptions
 
+from .. import get_server_mixin
+from .. import StorageTests
 from tests import assert_item_equals
-
 from vdirsyncer import exceptions
 from vdirsyncer.vobject import Item
-
-from .. import StorageTests, get_server_mixin
 
 
 dav_server = os.environ.get('DAV_SERVER', 'skip')

@@ -14,6 +14,10 @@ repos:
     hooks:
       - id: flake8
         additional_dependencies: [flake8-import-order, flake8-bugbear]
+  - repo: https://github.com/asottile/reorder_python_imports
+    rev: v2.3.0
+    hooks:
+    -   id: reorder-python-imports
   - repo: local
     hooks:
       - id: update-travis

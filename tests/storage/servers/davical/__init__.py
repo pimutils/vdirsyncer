@@ -1,6 +1,7 @@
 import os
-import pytest
 import uuid
+
+import pytest
 
 try:
     caldav_args = {

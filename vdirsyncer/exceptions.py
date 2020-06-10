@@ -10,7 +10,7 @@ class Error(Exception):
     def __init__(self, *args, **kwargs):
         for key, value in kwargs.items():
             if getattr(self, key, object()) is not None:  # pragma: no cover
-                raise TypeError('Invalid argument: {}'.format(key))
+                raise TypeError(f'Invalid argument: {key}')
             setattr(self, key, value)
 
         super().__init__(*args)
@@ -25,7 +25,7 @@ class UserError(Error, ValueError):
     def __str__(self):
         msg = Error.__str__(self)
         for problem in self.problems or ():
-            msg += '\n  - {}'.format(problem)
+            msg += f'\n  - {problem}'
 
         return msg
 

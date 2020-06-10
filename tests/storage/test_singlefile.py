@@ -1,8 +1,7 @@
 import pytest
 
-from vdirsyncer.storage.singlefile import SingleFileStorage
-
 from . import StorageTests
+from vdirsyncer.storage.singlefile import SingleFileStorage
 
 
 class TestSingleFileStorage(StorageTests):

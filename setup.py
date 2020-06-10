@@ -4,14 +4,14 @@ Vdirsyncer synchronizes calendars and contacts.
 Please refer to https://vdirsyncer.pimutils.org/en/stable/packaging.html for
 how to package vdirsyncer.
 '''
-
-
-from setuptools import Command, find_packages, setup
+from setuptools import Command
+from setuptools import find_packages
+from setuptools import setup
 
 
 requirements = [
     # https://github.com/mitsuhiko/click/issues/200
-    'click>=5.0,<6.0',
+    'click>=5.0',
     'click-log>=0.3.0, <0.4.0',
 
     # https://github.com/pimutils/vdirsyncer/issues/478
@@ -87,8 +87,6 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Operating System :: POSIX',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Topic :: Internet',

@@ -1,13 +1,19 @@
 import functools
 import json
 
+from .. import exceptions
+from .. import sync
 from .config import CollectionConfig
-from .discover import collections_for_pair, storage_class_from_config, \
-    storage_instance_from_config
-from .utils import JobFailed, cli_logger, get_status_name, \
-    handle_cli_error, load_status, manage_sync_status, save_status
-
-from .. import exceptions, sync
+from .discover import collections_for_pair
+from .discover import storage_class_from_config
+from .discover import storage_instance_from_config
+from .utils import cli_logger
+from .utils import get_status_name
+from .utils import handle_cli_error
+from .utils import JobFailed
+from .utils import load_status
+from .utils import manage_sync_status
+from .utils import save_status
 
 
 def prepare_pair(wq, pair_name, collections, config, callback, **kwargs):
@@ -45,7 +51,7 @@ def sync_collection(wq, collection, general, force_delete):
     status_name = get_status_name(pair.name, collection.name)
 
     try:
-        cli_logger.info('Syncing {}'.format(status_name))
+        cli_logger.info(f'Syncing {status_name}')
 
         a = storage_instance_from_config(collection.config_a)
         b = storage_instance_from_config(collection.config_b)
@@ -110,7 +116,7 @@ def repair_collection(config, collection, repair_unsafe_uid):
     config['type'] = storage_type
     storage = storage_instance_from_config(config)
 
-    cli_logger.info('Repairing {}/{}'.format(storage_name, collection))
+    cli_logger.info(f'Repairing {storage_name}/{collection}')
     cli_logger.warning('Make sure no other program is talking to the server.')
     repair_storage(storage, repair_unsafe_uid=repair_unsafe_uid)
 
@@ -121,7 +127,7 @@ def metasync_collection(wq, collection, general):
     status_name = get_status_name(pair.name, collection.name)
 
     try:
-        cli_logger.info('Metasyncing {}'.format(status_name))
+        cli_logger.info(f'Metasyncing {status_name}')
 
         status = load_status(general['status_path'], pair.name,
                              collection.name, data_type='metadata') or {}

@@ -1,25 +1,27 @@
 import random
-import uuid
-
 import textwrap
-from urllib.parse import quote as urlquote, unquote as urlunquote
+import uuid
+from urllib.parse import quote as urlquote
+from urllib.parse import unquote as urlunquote
 
 import hypothesis.strategies as st
+import pytest
 from hypothesis import given
 
-import pytest
-
+from .. import assert_item_equals
+from .. import EVENT_TEMPLATE
+from .. import normalize_item
+from .. import printable_characters_strategy
+from .. import TASK_TEMPLATE
+from .. import VCARD_TEMPLATE
 from vdirsyncer import exceptions
 from vdirsyncer.storage.base import normalize_meta_value
 from vdirsyncer.vobject import Item
 
-from .. import EVENT_TEMPLATE, TASK_TEMPLATE, VCARD_TEMPLATE, \
-    assert_item_equals, normalize_item, printable_characters_strategy
-
 
 def get_server_mixin(server_name):
     from . import __name__ as base
-    x = __import__('{}.servers.{}'.format(base, server_name), fromlist=[''])
+    x = __import__(f'{base}.servers.{server_name}', fromlist=[''])
     return x.ServerMixin
 
 
@@ -183,7 +185,7 @@ class StorageTests:
     def test_discover(self, requires_collections, get_storage_args, get_item):
         collections = set()
         for i in range(1, 5):
-            collection = 'test{}'.format(i)
+            collection = f'test{i}'
             s = self.storage_class(**get_storage_args(collection=collection))
             assert not list(s.list())
             s.upload(get_item())

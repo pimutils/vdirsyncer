@@ -1,17 +1,22 @@
 from copy import deepcopy
 
 import hypothesis.strategies as st
-from hypothesis import assume
-from hypothesis.stateful import Bundle, RuleBasedStateMachine, rule
-
 import pytest
+from hypothesis import assume
+from hypothesis.stateful import Bundle
+from hypothesis.stateful import rule
+from hypothesis.stateful import RuleBasedStateMachine
 
-from tests import blow_up, uid_strategy
-
-from vdirsyncer.storage.memory import MemoryStorage, _random_string
+from tests import blow_up
+from tests import uid_strategy
+from vdirsyncer.storage.memory import _random_string
+from vdirsyncer.storage.memory import MemoryStorage
 from vdirsyncer.sync import sync as _sync
-from vdirsyncer.sync.exceptions import BothReadOnly, IdentConflict, \
-    PartialSync, StorageEmpty, SyncConflict
+from vdirsyncer.sync.exceptions import BothReadOnly
+from vdirsyncer.sync.exceptions import IdentConflict
+from vdirsyncer.sync.exceptions import PartialSync
+from vdirsyncer.sync.exceptions import StorageEmpty
+from vdirsyncer.sync.exceptions import SyncConflict
 from vdirsyncer.sync.status import SqliteStatus
 from vdirsyncer.vobject import Item
 
@@ -253,7 +258,7 @@ def test_conflict_resolution_both_etags_new(winning_storage):
     b.update(href_b, item_b, etag_b)
     with pytest.raises(SyncConflict):
         sync(a, b, status)
-    sync(a, b, status, conflict_resolution='{} wins'.format(winning_storage))
+    sync(a, b, status, conflict_resolution=f'{winning_storage} wins')
     assert items(a) == items(b) == {
         item_a.raw if winning_storage == 'a' else item_b.raw
     }
@@ -563,7 +568,7 @@ class SyncMachine(RuleBasedStateMachine):
           uid=uid_strategy,
           etag=st.text())
     def upload(self, storage, uid, etag):
-        item = Item('UID:{}'.format(uid))
+        item = Item(f'UID:{uid}')
         storage.items[uid] = (etag, item)
 
     @rule(storage=Storage, href=st.text())

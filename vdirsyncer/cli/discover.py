@@ -3,12 +3,14 @@ import json
 import logging
 import sys
 
-from .utils import handle_collection_not_found, handle_storage_init_error, \
-    load_status, save_status, storage_class_from_config, \
-    storage_instance_from_config
-
 from .. import exceptions
 from ..utils import cached_property
+from .utils import handle_collection_not_found
+from .utils import handle_storage_init_error
+from .utils import load_status
+from .utils import save_status
+from .utils import storage_class_from_config
+from .utils import storage_instance_from_config
 
 
 # Increase whenever upgrade potentially breaks discovery cache and collections
@@ -211,7 +213,7 @@ def _print_collections(instance_name, get_discovered):
         logger.warning('Failed to discover collections for {}, use `-vdebug` '
                        'to see the full traceback.'.format(instance_name))
         return
-    logger.info('{}:'.format(instance_name))
+    logger.info(f'{instance_name}:')
     for args in discovered.values():
         collection = args['collection']
         if collection is None:
@@ -226,7 +228,7 @@ def _print_collections(instance_name, get_discovered):
 
         logger.info('  - {}{}'.format(
             json.dumps(collection),
-            ' ("{}")'.format(displayname)
+            f' ("{displayname}")'
             if displayname and displayname != collection
             else ''
         ))

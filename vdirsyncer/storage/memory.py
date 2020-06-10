@@ -1,12 +1,12 @@
 import random
 
-from .base import Storage, normalize_meta_value
-
 from .. import exceptions
+from .base import normalize_meta_value
+from .base import Storage
 
 
 def _random_string():
-    return '{:.9f}'.format(random.random())
+    return f'{random.random():.9f}'
 
 
 class MemoryStorage(Storage):

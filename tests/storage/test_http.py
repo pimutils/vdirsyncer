@@ -1,11 +1,10 @@
 import pytest
-
 from requests import Response
 
 from tests import normalize_item
-
 from vdirsyncer.exceptions import UserError
-from vdirsyncer.storage.http import HttpStorage, prepare_auth
+from vdirsyncer.storage.http import HttpStorage
+from vdirsyncer.storage.http import prepare_auth
 
 
 def test_list(monkeypatch):

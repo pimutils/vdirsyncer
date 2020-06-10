@@ -5,10 +5,14 @@ import subprocess
 
 from atomicwrites import atomic_write
 
-from .base import Storage, normalize_meta_value
 from .. import exceptions
-from ..utils import checkdir, expand_path, generate_href, get_etag_from_file
+from ..utils import checkdir
+from ..utils import expand_path
+from ..utils import generate_href
+from ..utils import get_etag_from_file
 from ..vobject import Item
+from .base import normalize_meta_value
+from .base import Storage
 
 logger = logging.getLogger(__name__)
 

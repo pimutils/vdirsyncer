@@ -2,12 +2,14 @@ import logging
 
 import requests
 
+from . import __version__
+from . import DOCS_HOME
+from . import exceptions
 from .utils import expand_path
-from . import DOCS_HOME, exceptions, __version__
 
 
 logger = logging.getLogger(__name__)
-USERAGENT = 'vdirsyncer/{}'.format(__version__)
+USERAGENT = f'vdirsyncer/{__version__}'
 
 
 def _detect_faulty_requests():  # pragma: no cover
@@ -133,7 +135,7 @@ def request(method, url, session=None, latin1_fallback=True,
 
     func = session.request
 
-    logger.debug('{} {}'.format(method, url))
+    logger.debug(f'{method} {url}')
     logger.debug(kwargs.get('headers', {}))
     logger.debug(kwargs.get('data', None))
     logger.debug('Sending request...')

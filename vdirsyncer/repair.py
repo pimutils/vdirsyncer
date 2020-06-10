@@ -1,7 +1,8 @@
 import logging
 from os.path import basename
 
-from .utils import generate_href, href_safe
+from .utils import generate_href
+from .utils import href_safe
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ def repair_storage(storage, repair_unsafe_uid):
                          'The PRODID property may indicate which software '
                          'created this item.'
                          .format(href))
-            logger.error('Item content: {!r}'.format(item.raw))
+            logger.error(f'Item content: {item.raw!r}')
             continue
 
         seen_uids.add(new_item.uid)
