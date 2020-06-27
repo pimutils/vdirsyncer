@@ -1,10 +1,13 @@
 import functools
 import logging
+import os
+import shutil
 import sys
 
 import click
 import click_log
 
+from ..utils import expand_path
 from .. import __version__
 from .. import BUGTRACKER_HOME
 
@@ -198,6 +201,9 @@ def discover(ctx, pairs, max_workers, list):
     config = ctx.config
     wq = WorkerQueue(max_workers)
 
+    pairs_a = set()
+    pairs_b = set()
+    pairs_b_path = {}
     with wq.join():
         for pair_name in (pairs or config.pairs):
             pair = config.get_pair(pair_name)
@@ -210,6 +216,22 @@ def discover(ctx, pairs, max_workers, list):
                 list_collections=list,
             ))
             wq.spawn_worker()
+            if pair.config_b['type'] == 'filesystem':
+                for key in _DiscoverResult(pair.config_b)._discovered.keys():
+                    pairs_b.add(key)
+                    pairs_b_path[key] = (pair.config_b["path"], pair.name)
+            pairs_a = pairs_a.union(set(_DiscoverResult(pair.config_a)._discovered.keys()))
+
+    for dele in pairs_b - pairs_a:
+        path = pairs_b_path[dele][0] + '/' + dele
+        if not os.path.islink(path):
+            shutil.rmtree(path, ignore_errors=True)
+            path = expand_path(os.path.join(config.general['status_path'], pairs_b_path[dele][1] + '/' + dele))
+            for m in ('items', 'metadata'):
+                try:
+                    os.remove(path + '.' + m)
+                except:
+                    pass
 
 
 @app.command()
@@ -243,3 +265,5 @@ def repair(ctx, collection, repair_unsafe_uid):
     click.confirm('Do you want to continue?', abort=True)
     repair_collection(ctx.config, collection,
                       repair_unsafe_uid=repair_unsafe_uid)
+
+from .discover import _DiscoverResult
