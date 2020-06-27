@@ -9,6 +9,10 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+- Add "description" and "order" as metadata.  These fetch the CalDAV:
+  calendar-description, CardDAV:addressbook-description and apple-ns:calendar-order
+  properties.
+
 Version 0.16.8
 ==============
 

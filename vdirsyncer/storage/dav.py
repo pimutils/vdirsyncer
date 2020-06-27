@@ -728,6 +728,8 @@ class CalDAVStorage(DAVStorage):
     _property_table = dict(DAVStorage._property_table)
     _property_table.update({
         'color': ('calendar-color', 'http://apple.com/ns/ical/'),
+        'description': ('calendar-description', 'urn:ietf:params:xml:ns:caldav'),
+        'order': ('calendar-order', 'http://apple.com/ns/ical/'),
     })
 
     def __init__(self, start_date=None, end_date=None,
@@ -843,3 +845,8 @@ class CardDAVStorage(DAVStorage):
             </C:addressbook-multiget>'''
 
     get_multi_data_query = '{urn:ietf:params:xml:ns:carddav}address-data'
+
+    _property_table = dict(DAVStorage._property_table)
+    _property_table.update({
+        'description': ('addressbook-description', 'urn:ietf:params:xml:ns:carddav'),
+    })
