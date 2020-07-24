@@ -77,7 +77,10 @@ def _fetch_value(opts, key):
 def _strategy_command(*command):
     import subprocess
 
-    command = (expand_path(command[0]),) + command[1:]
+    # normalize path of every path member
+    # if there is no path specified then nothing will happen
+    command = map(expand_path, command)
+
     try:
         stdout = subprocess.check_output(command, universal_newlines=True)
         return stdout.strip("\n")
