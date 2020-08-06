@@ -29,7 +29,7 @@ It's quite possible that the default "every fifteen minutes" interval isn't to
 your liking. No default will suit everybody, but this is configurable by simply
 running::
 
-    systemctl --user edit vdirsyncer
+    systemctl --user edit vdirsyncer.timer
 
 This will open a blank editor, where you can override the timer by including::
 
