@@ -3,6 +3,7 @@ import logging
 import urllib.parse as urlparse
 import xml.etree.ElementTree as etree
 from inspect import getfullargspec
+from inspect import signature
 
 import requests
 from requests.exceptions import HTTPError
@@ -427,8 +428,7 @@ class DAVStorage(Storage):
             self.session_class.init_and_remaining_args(**kwargs)
         super().__init__(**kwargs)
 
-    import inspect
-    __init__.__signature__ = inspect.signature(session_class.__init__)
+    __init__.__signature__ = signature(session_class.__init__)
 
     @classmethod
     def discover(cls, **kwargs):
