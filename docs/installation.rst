@@ -81,7 +81,7 @@ the simplest possible way would look something like::
 
     virtualenv ~/vdirsyncer_env
     ~/vdirsyncer_env/bin/pip install vdirsyncer
-    alias vdirsyncer="~/vdirsyncer_env/bin/vdirsyncer
+    alias vdirsyncer="~/vdirsyncer_env/bin/vdirsyncer"
 
 You'll have to put the last line into your ``.bashrc`` or ``.bash_profile``.
 
