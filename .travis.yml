@@ -5,7 +5,7 @@
     ]
   },
   "cache": "pip",
-  "dist": "bionic",
+  "dist": "focal",
   "git": {
     "submodules": false
   },

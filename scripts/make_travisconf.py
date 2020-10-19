@@ -7,7 +7,7 @@ python_versions = ["3.7", "3.8", "3.9"]
 cfg = {}
 
 cfg['sudo'] = True
-cfg['dist'] = 'bionic'
+cfg['dist'] = 'focal'
 cfg['language'] = 'python'
 cfg['cache'] = 'pip'
 
