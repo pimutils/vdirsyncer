@@ -74,6 +74,30 @@
         "python": "3.8"
       },
       {
+        "env": "BUILD=test REQUIREMENTS=release",
+        "python": "3.9"
+      },
+      {
+        "env": "BUILD=test-storage DAV_SERVER=radicale REQUIREMENTS=release ",
+        "python": "3.9"
+      },
+      {
+        "env": "BUILD=test-storage DAV_SERVER=xandikos REQUIREMENTS=release ",
+        "python": "3.9"
+      },
+      {
+        "env": "BUILD=test REQUIREMENTS=minimal",
+        "python": "3.9"
+      },
+      {
+        "env": "BUILD=test-storage DAV_SERVER=radicale REQUIREMENTS=minimal ",
+        "python": "3.9"
+      },
+      {
+        "env": "BUILD=test-storage DAV_SERVER=xandikos REQUIREMENTS=minimal ",
+        "python": "3.9"
+      },
+      {
         "env": "BUILD=test ETESYNC_TESTS=true REQUIREMENTS=latest",
         "python": "3.7"
       }
