@@ -2,7 +2,7 @@
 import itertools
 import json
 
-python_versions = ["3.7", "3.8"]
+python_versions = ["3.7", "3.8", "3.9"]
 
 cfg = {}
 
