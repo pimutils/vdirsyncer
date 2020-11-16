@@ -2,4 +2,3 @@ hypothesis>=5.0.0
 pytest
 pytest-cov
 pytest-localserver
-pytest-subtesthack

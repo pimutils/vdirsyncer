@@ -271,6 +271,9 @@ def test_multiple_pairs(tmpdir, runner):
     }
 
 
+hack = 0
+
+
 # XXX: https://github.com/pimutils/vdirsyncer/issues/617
 @pytest.mark.skipif(sys.platform == 'darwin',
                     reason='This test inexplicably fails')
@@ -291,40 +294,45 @@ def test_multiple_pairs(tmpdir, runner):
 @example(collections=['persönlich'])
 @example(collections={'a', 'A'})
 @example(collections={'\ufffe'})
-def test_create_collections(subtest, collections):
+def test_create_collections(collections, tmpdir, runner):
+    # Hypothesis calls this tests in a way that fixtures are not reset, to tmpdir is the
+    # same for each call.
+    # This horrible hack creates a new subdirectory on each run, effectively giving us a
+    # new tmpdir each run.
+    global hack
+    hack += 1
+    tmpdir = tmpdir / f"sub{hack}"
 
-    @subtest
-    def test_inner(tmpdir, runner):
-        runner.write_with_general(dedent('''
-        [pair foobar]
-        a = "foo"
-        b = "bar"
-        collections = {colls}
+    runner.write_with_general(dedent('''
+    [pair foobar]
+    a = "foo"
+    b = "bar"
+    collections = {colls}
 
-        [storage foo]
-        type = "filesystem"
-        path = "{base}/foo/"
-        fileext = ".txt"
+    [storage foo]
+    type = "filesystem"
+    path = "{base}/foo/"
+    fileext = ".txt"
 
-        [storage bar]
-        type = "filesystem"
-        path = "{base}/bar/"
-        fileext = ".txt"
-        '''.format(base=str(tmpdir), colls=json.dumps(list(collections)))))
+    [storage bar]
+    type = "filesystem"
+    path = "{base}/bar/"
+    fileext = ".txt"
+    '''.format(base=str(tmpdir), colls=json.dumps(list(collections)))))
 
-        result = runner.invoke(
-            ['discover'],
-            input='y\n' * 2 * (len(collections) + 1)
-        )
-        assert not result.exception, result.output
+    result = runner.invoke(
+        ['discover'],
+        input='y\n' * 2 * (len(collections) + 1)
+    )
+    assert not result.exception, result.output
 
-        result = runner.invoke(
-            ['sync'] + ['foobar/' + x for x in collections]
-        )
-        assert not result.exception, result.output
+    result = runner.invoke(
+        ['sync'] + ['foobar/' + x for x in collections]
+    )
+    assert not result.exception, result.output
 
-        assert {x.basename for x in tmpdir.join('foo').listdir()} == \
-            {x.basename for x in tmpdir.join('bar').listdir()}
+    assert {x.basename for x in tmpdir.join('foo').listdir()} == \
+        {x.basename for x in tmpdir.join('bar').listdir()}
 
 
 def test_ident_conflict(tmpdir, runner):
