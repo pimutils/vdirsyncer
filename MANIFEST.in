@@ -1,5 +1,4 @@
 # setuptools-scm includes everything tracked by git
-prune contrib
 prune scripts
 prune tests/storage/servers
 prune tests/storage/etesync
