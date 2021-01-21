@@ -367,7 +367,7 @@ class DAVSession:
 
     def __init__(self, url, username='', password='', verify=True, auth=None,
                  useragent=USERAGENT, verify_fingerprint=None,
-                 auth_cert=None):
+                 auth_cert=None, ignore_missing_href=False):
         self._settings = {
             'cert': prepare_client_cert(auth_cert),
             'auth': prepare_auth(auth, username, password)
@@ -376,6 +376,7 @@ class DAVSession:
 
         self.useragent = useragent
         self.url = url.rstrip('/') + '/'
+        self.ignore_missing_href = ignore_missing_href
 
         self._session = requests.session()
 
@@ -504,7 +505,8 @@ class DAVStorage(Storage):
             else:
                 rv.append((href, Item(raw), etag))
         for href in hrefs_left:
-            raise exceptions.NotFoundError(href)
+            if not self.session.ignore_missing_href:
+                raise exceptions.NotFoundError(href)
         return rv
 
     def _put(self, href, item, etag):
