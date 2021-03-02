@@ -23,14 +23,12 @@ def test_get_storage_init_args():
     assert not required
 
 
-def test_request_ssl(httpsserver):
-    httpsserver.serve_content('')  # we need to serve something
-
+def test_request_ssl():
     with pytest.raises(requests.exceptions.ConnectionError) as excinfo:
-        http.request('GET', httpsserver.url)
+        http.request('GET', "https://self-signed.badssl.com/")
     assert 'certificate verify failed' in str(excinfo.value)
 
-    http.request('GET', httpsserver.url, verify=False)
+    http.request('GET', "https://self-signed.badssl.com/", verify=False)
 
 
 def _fingerprints_broken():
