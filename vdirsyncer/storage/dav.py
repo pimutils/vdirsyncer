@@ -150,11 +150,11 @@ class Discover:
     _homeset_tag = None
     _well_known_uri = None
     _collection_xml = b"""
-    <d:propfind xmlns:d="DAV:">
-        <d:prop>
-            <d:resourcetype />
-        </d:prop>
-    </d:propfind>
+    <propfind xmlns="DAV:">
+        <prop>
+            <resourcetype />
+        </prop>
+    </propfind>
     """
 
     def __init__(self, session, kwargs):
@@ -180,11 +180,11 @@ class Discover:
         headers = self.session.get_default_headers()
         headers['Depth'] = '0'
         body = b"""
-        <d:propfind xmlns:d="DAV:">
-            <d:prop>
-                <d:current-user-principal />
-            </d:prop>
-        </d:propfind>
+        <propfind xmlns="DAV:">
+            <prop>
+                <current-user-principal />
+            </prop>
+        </propfind>
         """
 
         response = self.session.request('PROPFIND', url, headers=headers,
@@ -300,16 +300,16 @@ class Discover:
 
     def _create_collection_impl(self, url):
         data = '''<?xml version="1.0" encoding="utf-8" ?>
-            <D:mkcol xmlns:D="DAV:">
-                <D:set>
-                    <D:prop>
-                        <D:resourcetype>
-                            <D:collection/>
+            <mkcol xmlns="DAV:">
+                <set>
+                    <prop>
+                        <resourcetype>
+                            <collection/>
                             {}
-                        </D:resourcetype>
-                    </D:prop>
-                </D:set>
-            </D:mkcol>
+                        </resourcetype>
+                    </prop>
+                </set>
+            </mkcol>
         '''.format(
             etree.tostring(etree.Element(self._resourcetype),
                            encoding='unicode')
@@ -328,11 +328,11 @@ class CalDiscover(Discover):
     _namespace = 'urn:ietf:params:xml:ns:caldav'
     _resourcetype = '{%s}calendar' % _namespace
     _homeset_xml = b"""
-    <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
-        <d:prop>
+    <propfind xmlns="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
+        <prop>
             <c:calendar-home-set />
-        </d:prop>
-    </d:propfind>
+        </prop>
+    </propfind>
     """
     _homeset_tag = '{%s}calendar-home-set' % _namespace
     _well_known_uri = '/.well-known/caldav'
@@ -342,11 +342,11 @@ class CardDiscover(Discover):
     _namespace = 'urn:ietf:params:xml:ns:carddav'
     _resourcetype = '{%s}addressbook' % _namespace
     _homeset_xml = b"""
-    <d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:carddav">
-        <d:prop>
+    <propfind xmlns="DAV:" xmlns:c="urn:ietf:params:xml:ns:carddav">
+        <prop>
             <c:addressbook-home-set />
-        </d:prop>
-    </d:propfind>
+        </prop>
+    </propfind>
     """
     _homeset_tag = '{%s}addressbook-home-set' % _namespace
     _well_known_uri = '/.well-known/carddav'
@@ -463,7 +463,7 @@ class DAVStorage(Storage):
         for href in hrefs:
             if href != self._normalize_href(href):
                 raise exceptions.NotFoundError(href)
-            href_xml.append(f'<D:href>{href}</D:href>')
+            href_xml.append(f'<href>{href}</href>')
         if not href_xml:
             return ()
 
@@ -620,13 +620,13 @@ class DAVStorage(Storage):
         headers['Depth'] = '1'
 
         data = b'''<?xml version="1.0" encoding="utf-8" ?>
-            <D:propfind xmlns:D="DAV:">
-                <D:prop>
-                    <D:resourcetype/>
-                    <D:getcontenttype/>
-                    <D:getetag/>
-                </D:prop>
-            </D:propfind>
+            <propfind xmlns="DAV:">
+                <prop>
+                    <resourcetype/>
+                    <getcontenttype/>
+                    <getetag/>
+                </prop>
+            </propfind>
             '''
 
         # We use a PROPFIND request instead of addressbook-query due to issues
@@ -647,11 +647,11 @@ class DAVStorage(Storage):
 
         xpath = f'{{{namespace}}}{tagname}'
         data = '''<?xml version="1.0" encoding="utf-8" ?>
-            <D:propfind xmlns:D="DAV:">
-                <D:prop>
+            <propfind xmlns="DAV:">
+                <prop>
                     {}
-                </D:prop>
-            </D:propfind>
+                </prop>
+            </propfind>
         '''.format(
             etree.tostring(etree.Element(xpath), encoding='unicode')
         ).encode('utf-8')
@@ -683,13 +683,13 @@ class DAVStorage(Storage):
         element.text = normalize_meta_value(value)
 
         data = '''<?xml version="1.0" encoding="utf-8" ?>
-            <D:propertyupdate xmlns:D="DAV:">
-                <D:set>
-                    <D:prop>
+            <propertyupdate xmlns="DAV:">
+                <set>
+                    <prop>
                         {}
-                    </D:prop>
-                </D:set>
-            </D:propertyupdate>
+                    </prop>
+                </set>
+            </propertyupdate>
         '''.format(etree.tostring(element, encoding='unicode')).encode('utf-8')
 
         self.session.request(
@@ -714,12 +714,12 @@ class CalDAVStorage(DAVStorage):
     end_date = None
 
     get_multi_template = '''<?xml version="1.0" encoding="utf-8" ?>
-        <C:calendar-multiget xmlns:D="DAV:"
+        <C:calendar-multiget xmlns="DAV:"
             xmlns:C="urn:ietf:params:xml:ns:caldav">
-            <D:prop>
-                <D:getetag/>
+            <prop>
+                <getetag/>
                 <C:calendar-data/>
-            </D:prop>
+            </prop>
             {hrefs}
         </C:calendar-multiget>'''
 
@@ -796,12 +796,12 @@ class CalDAVStorage(DAVStorage):
             yield from DAVStorage.list(self)
 
         data = '''<?xml version="1.0" encoding="utf-8" ?>
-            <C:calendar-query xmlns:D="DAV:"
+            <C:calendar-query xmlns="DAV:"
                 xmlns:C="urn:ietf:params:xml:ns:caldav">
-                <D:prop>
-                    <D:getcontenttype/>
-                    <D:getetag/>
-                </D:prop>
+                <prop>
+                    <getcontenttype/>
+                    <getetag/>
+                </prop>
                 <C:filter>
                 {caldavfilter}
                 </C:filter>
@@ -833,12 +833,12 @@ class CardDAVStorage(DAVStorage):
     discovery_class = CardDiscover
 
     get_multi_template = '''<?xml version="1.0" encoding="utf-8" ?>
-            <C:addressbook-multiget xmlns:D="DAV:"
+            <C:addressbook-multiget xmlns="DAV:"
                     xmlns:C="urn:ietf:params:xml:ns:carddav">
-                <D:prop>
-                    <D:getetag/>
+                <prop>
+                    <getetag/>
                     <C:address-data/>
-                </D:prop>
+                </prop>
                 {hrefs}
             </C:addressbook-multiget>'''
 
