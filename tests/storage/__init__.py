@@ -314,12 +314,12 @@ class StorageTests:
     @pytest.mark.asyncio
     async def test_metadata(self, requires_metadata, s):
         if not getattr(self, "dav_server", ""):
-            assert not await s.get_meta("color")
-            assert not await s.get_meta("displayname")
+            assert await s.get_meta("color") is None
+            assert await s.get_meta("displayname") is None
 
         try:
             await s.set_meta("color", None)
-            assert not await s.get_meta("color")
+            assert await s.get_meta("color") is None
             await s.set_meta("color", "#ff0000")
             assert await s.get_meta("color") == "#ff0000"
         except exceptions.UnsupportedMetadataError:

@@ -183,7 +183,7 @@ class FilesystemStorage(Storage):
                 return normalize_meta_value(f.read().decode(self.encoding))
         except OSError as e:
             if e.errno == errno.ENOENT:
-                return ""
+                return None
             else:
                 raise
 
@@ -191,5 +191,11 @@ class FilesystemStorage(Storage):
         value = normalize_meta_value(value)
 
         fpath = os.path.join(self.path, key)
-        with atomic_write(fpath, mode="wb", overwrite=True) as f:
-            f.write(value.encode(self.encoding))
+        if value is None:
+            try:
+                os.remove(fpath)
+            except OSError:
+                pass
+        else:
+            with atomic_write(fpath, mode="wb", overwrite=True) as f:
+                f.write(value.encode(self.encoding))

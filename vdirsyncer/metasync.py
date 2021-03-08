@@ -14,20 +14,27 @@ class MetaSyncConflict(MetaSyncError):
     key = None
 
 
+def status_set_key(status, key, value):
+    if value is None:
+        status.pop(key, None)
+    else:
+        status[key] = value
+
+
 async def metasync(storage_a, storage_b, status, keys, conflict_resolution=None):
     async def _a_to_b():
         logger.info(f"Copying {key} to {storage_b}")
         await storage_b.set_meta(key, a)
-        status[key] = a
+        status_set_key(status, key, a)
 
     async def _b_to_a():
         logger.info(f"Copying {key} to {storage_a}")
         await storage_a.set_meta(key, b)
-        status[key] = b
+        status_set_key(status, key, b)
 
     async def _resolve_conflict():
         if a == b:
-            status[key] = a
+            status_set_key(status, key, a)
         elif conflict_resolution == "a wins":
             await _a_to_b()
         elif conflict_resolution == "b wins":

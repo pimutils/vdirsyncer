@@ -4,6 +4,7 @@ import urllib.parse as urlparse
 import xml.etree.ElementTree as etree
 from inspect import getfullargspec
 from inspect import signature
+from typing import Optional
 
 import aiohttp
 import aiostream
@@ -679,7 +680,7 @@ class DAVStorage(Storage):
         for href, etag, _prop in rv:
             yield href, etag
 
-    async def get_meta(self, key):
+    async def get_meta(self, key) -> Optional[str]:
         try:
             tagname, namespace = self._property_table[key]
         except KeyError:
@@ -714,7 +715,7 @@ class DAVStorage(Storage):
             text = normalize_meta_value(getattr(prop, "text", None))
             if text:
                 return text
-        return ""
+        return None
 
     async def set_meta(self, key, value):
         try:
@@ -724,18 +725,23 @@ class DAVStorage(Storage):
 
         lxml_selector = f"{{{namespace}}}{tagname}"
         element = etree.Element(lxml_selector)
-        element.text = normalize_meta_value(value)
+        if value is None:
+            action = "remove"
+        else:
+            element.text = normalize_meta_value(value)
+            action = "set"
 
         data = """<?xml version="1.0" encoding="utf-8" ?>
             <propertyupdate xmlns="DAV:">
-                <set>
+                <{action}>
                     <prop>
                         {}
                     </prop>
-                </set>
+                </{action}>
             </propertyupdate>
         """.format(
-            etree.tostring(element, encoding="unicode")
+            etree.tostring(element, encoding="unicode"),
+            action=action,
         ).encode(
             "utf-8"
         )
