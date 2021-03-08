@@ -231,8 +231,7 @@ def _get_item_type(components, wrappers):
 
     if not i:
         return None, None
-    else:
-        raise ValueError("Not sure how to join components.")
+    raise ValueError("Not sure how to join components.")
 
 
 class _Component:
@@ -303,10 +302,9 @@ class _Component:
 
         if multiple:
             return rv
-        elif len(rv) != 1:
+        if len(rv) != 1:
             raise ValueError(f"Found {len(rv)} components, expected one.")
-        else:
-            return rv[0]
+        return rv[0]
 
     def dump_lines(self):
         yield f"BEGIN:{self.name}"
@@ -323,8 +321,7 @@ class _Component:
             for line in lineiter:
                 if line.startswith(prefix):
                     break
-                else:
-                    new_lines.append(line)
+                new_lines.append(line)
             else:
                 break
 
@@ -347,10 +344,9 @@ class _Component:
             return obj not in self.subcomponents and not any(
                 obj in x for x in self.subcomponents
             )
-        elif isinstance(obj, str):
+        if isinstance(obj, str):
             return self.get(obj, None) is not None
-        else:
-            raise ValueError(obj)
+        raise ValueError(obj)
 
     def __getitem__(self, key):
         prefix_without_params = f"{key}:"
@@ -360,7 +356,7 @@ class _Component:
             if line.startswith(prefix_without_params):
                 rv = line[len(prefix_without_params) :]
                 break
-            elif line.startswith(prefix_with_params):
+            if line.startswith(prefix_with_params):
                 rv = line[len(prefix_with_params) :].split(":", 1)[-1]
                 break
         else:

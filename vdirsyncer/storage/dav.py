@@ -114,9 +114,7 @@ def _fuzzy_matches_mimetype(strict, weak):
         return True
 
     mediatype, subtype = strict.split("/")
-    if subtype in weak:
-        return True
-    return False
+    return subtype in weak
 
 
 class Discover:
@@ -237,7 +235,7 @@ class Discover:
             return True
 
         props = _merge_xml(response.findall("{DAV:}propstat/{DAV:}prop"))
-        if props is None or not len(props):
+        if props is None or not props:
             dav_logger.debug("Skipping, missing <prop>: %s", response)
             return False
         if props.find("{DAV:}resourcetype/" + self._resourcetype) is None:
@@ -626,7 +624,7 @@ class DAVStorage(Storage):
                 continue
 
             props = response.findall("{DAV:}propstat/{DAV:}prop")
-            if props is None or not len(props):
+            if props is None or not props:
                 dav_logger.debug(f"Skipping {href!r}, properties are missing.")
                 continue
             else:

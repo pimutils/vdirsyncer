@@ -100,9 +100,9 @@ def prepare_auth(auth, username, password):
     if username and password:
         if auth == "basic" or auth is None:
             return BasicAuthMethod(username, password)
-        elif auth == "digest":
+        if auth == "digest":
             return DigestAuthMethod(username, password)
-        elif auth == "guess":
+        if auth == "guess":
             raise exceptions.UserError(
                 "'Guess' authentication is not supported in this version of vdirsyncer. \n"
                 "Please explicitly specify either 'basic' or 'digest' auth instead. \n"
