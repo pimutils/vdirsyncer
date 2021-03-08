@@ -175,14 +175,19 @@ class FilesystemStorage(Storage):
             with open(fpath, 'rb') as f:
                 return normalize_meta_value(f.read().decode(self.encoding))
         except OSError as e:
-            if e.errno == errno.ENOENT:
-                return ''
-            else:
+            if e.errno != errno.ENOENT:
                 raise
 
     def set_meta(self, key, value):
         value = normalize_meta_value(value)
 
         fpath = os.path.join(self.path, key)
+        if value is None:
+            try:
+                os.remove(fpath)
+            except OSError:
+                pass
+            return
+
         with atomic_write(fpath, mode='wb', overwrite=True) as f:
             f.write(value.encode(self.encoding))

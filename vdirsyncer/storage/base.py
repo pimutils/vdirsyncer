@@ -223,6 +223,9 @@ class Storage(metaclass=StorageMeta):
 
         :param key: The metadata key.
         :type key: unicode
+
+        Return:
+        The metadata or None, if metadata is missing
         '''
 
         raise NotImplementedError('This storage does not support metadata.')
@@ -232,7 +235,7 @@ class Storage(metaclass=StorageMeta):
 
         :param key: The metadata key.
         :type key: unicode
-        :param value: The value.
+        :param value: The value.  Use None to delete the data.
         :type value: unicode
         '''
 
@@ -241,6 +244,6 @@ class Storage(metaclass=StorageMeta):
 
 def normalize_meta_value(value):
     # `None` is returned by iCloud for empty properties.
-    if not value or value == 'None':
-        value = ''
-    return value.strip()
+    if value is None or value == 'None':
+        return
+    return value.strip() if value else ''

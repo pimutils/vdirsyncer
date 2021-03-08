@@ -670,7 +670,6 @@ class DAVStorage(Storage):
             text = normalize_meta_value(getattr(prop, 'text', None))
             if text:
                 return text
-        return ''
 
     def set_meta(self, key, value):
         try:
@@ -680,17 +679,22 @@ class DAVStorage(Storage):
 
         lxml_selector = f'{{{namespace}}}{tagname}'
         element = etree.Element(lxml_selector)
-        element.text = normalize_meta_value(value)
+        if value is None:
+            action = 'remove'
+        else:
+            element.text = normalize_meta_value(value)
+            action = 'set'
 
         data = '''<?xml version="1.0" encoding="utf-8" ?>
             <D:propertyupdate xmlns:D="DAV:">
-                <D:set>
+                <D:{action}>
                     <D:prop>
                         {}
                     </D:prop>
-                </D:set>
+                </D:{action}>
             </D:propertyupdate>
-        '''.format(etree.tostring(element, encoding='unicode')).encode('utf-8')
+        '''.format(etree.tostring(element, encoding='unicode'),
+                   action=action).encode('utf-8')
 
         self.session.request(
             'PROPPATCH', '',

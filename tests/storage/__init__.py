@@ -282,12 +282,12 @@ class StorageTests:
 
     def test_metadata(self, requires_metadata, s):
         if not getattr(self, 'dav_server', ''):
-            assert not s.get_meta('color')
-            assert not s.get_meta('displayname')
+            assert s.get_meta('color') is None
+            assert s.get_meta('displayname') is None
 
         try:
             s.set_meta('color', None)
-            assert not s.get_meta('color')
+            assert s.get_meta('color') is None
             s.set_meta('color', '#ff0000')
             assert s.get_meta('color') == '#ff0000'
         except exceptions.UnsupportedMetadataError:

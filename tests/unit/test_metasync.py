@@ -30,6 +30,10 @@ def test_basic(monkeypatch):
     metasync(a, b, status, keys=['foo'])
     assert a.get_meta('foo') == b.get_meta('foo') == 'bar'
 
+    a.set_meta('foo', None)
+    metasync(a, b, status, keys=['foo'])
+    assert a.get_meta('foo') is None and b.get_meta('foo') is None
+
     a.set_meta('foo', 'baz')
     metasync(a, b, status, keys=['foo'])
     assert a.get_meta('foo') == b.get_meta('foo') == 'baz'
@@ -151,7 +155,7 @@ def test_fuzzing(a, b, status, keys, conflict_resolution):
              keys=keys, conflict_resolution=conflict_resolution)
 
     for key in keys:
-        s = status.get(key, '')
+        s = status.get(key)
         assert a.get_meta(key) == b.get_meta(key) == s
-        if expected_values.get(key, '') and s:
+        if expected_values.get(key) and s:
             assert s == expected_values[key]

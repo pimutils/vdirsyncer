@@ -70,4 +70,7 @@ class MemoryStorage(Storage):
         return normalize_meta_value(self.metadata.get(key))
 
     def set_meta(self, key, value):
-        self.metadata[key] = normalize_meta_value(value)
+        if value is None:
+            self.metadata.pop(key, None)
+        else:
+            self.metadata[key] = normalize_meta_value(value)
