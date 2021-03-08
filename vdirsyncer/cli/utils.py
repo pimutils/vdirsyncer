@@ -294,8 +294,7 @@ async def storage_instance_from_config(
                 create=False,
                 connector=connector,
             )
-        else:
-            raise
+        raise
     except Exception:
         return handle_storage_init_error(cls, new_config)
 
