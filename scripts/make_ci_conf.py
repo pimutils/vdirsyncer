@@ -38,7 +38,7 @@ for requirements in ("release", "minimal"):
         }
 
 
-with open(REPO_ROOT / ".builds" / "tests.template") as f:
+with open(REPO_ROOT / "scripts" / "tests.template") as f:
     template = f.read()
 
 # TODO: Delete previous ones...
