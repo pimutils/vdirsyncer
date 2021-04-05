@@ -14,7 +14,7 @@ environment:
 tasks:
   - setup: |
       cd vdirsyncer
-      . scripts/travis-install.sh
+      sudo systemctl start docker
       make -e install-test
   - test: |
       cd vdirsyncer
