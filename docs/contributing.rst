@@ -102,8 +102,8 @@ initialized and documented.
 
 For example, to test xandikos, first run the server itself::
 
-    docker-compose build xandikos
-    docker-compose up -d xandikos
+    docker build -t xandikos docker/xandikos
+    docker start -p 8000:8000 xandikos
 
 Then run the tests specifying this ``DAV_SERVER``, run::
 

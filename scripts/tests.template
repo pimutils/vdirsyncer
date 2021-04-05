@@ -3,7 +3,6 @@
 image: archlinux
 packages:
   - docker
-  - docker-compose
   - python-pip
 sources:
   - https://github.com/pimutils/vdirsyncer
