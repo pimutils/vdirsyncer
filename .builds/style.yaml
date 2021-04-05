@@ -1,5 +1,3 @@
-# vim: ft=yaml
-
 image: archlinux
 packages:
   - docker
@@ -7,17 +5,13 @@ packages:
   - python-pip
 sources:
   - https://github.com/pimutils/vdirsyncer
-environment:
-  BUILD: test
-  REQUIREMENTS: release
-  DAV_SERVER: skip
 tasks:
   - setup: |
       cd vdirsyncer
       . scripts/travis-install.sh
-      make -e install-$BUILD
+      make -e install-style
   - test: |
       cd vdirsyncer
       # Non-system python is used for packages:
       export PATH=$PATH:~/.local/bin/
-      make -e $BUILD
+      make -e style

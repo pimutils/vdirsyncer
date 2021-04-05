@@ -1,5 +1,4 @@
-# vim: ft=yaml
-
+# TODO: Maybe shift this job to ubuntu/debian.
 image: archlinux
 packages:
   - docker
@@ -10,14 +9,15 @@ sources:
 environment:
   BUILD: test
   REQUIREMENTS: minimal
-  DAV_SERVER: skip
+  DAV_SERVER: radicale xandikos
+  # TODO: ETESYNC_TESTS
 tasks:
   - setup: |
       cd vdirsyncer
       . scripts/travis-install.sh
-      make -e install-$BUILD
+      make -e install-test
   - test: |
       cd vdirsyncer
       # Non-system python is used for packages:
       export PATH=$PATH:~/.local/bin/
-      make -e $BUILD
+      make -e test

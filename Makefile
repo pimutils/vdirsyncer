@@ -41,16 +41,14 @@ export TESTSERVER_BASE := ./tests/storage/servers/
 CODECOV_PATH = /tmp/codecov.sh
 
 ifeq ($(CI), true)
-test-storage:
-	curl -s https://codecov.io/bash > $(CODECOV_PATH)
-	$(PYTEST) tests/storage/
-	bash $(CODECOV_PATH) -c -F storage
 test:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
 	$(PYTEST) tests/unit/
 	bash $(CODECOV_PATH) -c -F unit
 	$(PYTEST) tests/system/
 	bash $(CODECOV_PATH) -c -F system
+	$(PYTEST) tests/storage/
+	bash $(CODECOV_PATH) -c -F storage
 	[ "$(ETESYNC_TESTS)" = "false" ] || make test-storage
 else
 test:

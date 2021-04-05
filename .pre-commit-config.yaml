@@ -18,16 +18,3 @@ repos:
     rev: v2.3.0
     hooks:
     -   id: reorder-python-imports
-  - repo: local
-    hooks:
-      - id: update-ci
-        name: Update CI jobs definitions
-        description: Ensures that CI jobs definition are up to date.
-        entry: scripts/make_ci_conf.py
-        files: |
-            (?x)^(
-                scripts/make_ci_conf.py|
-                .builds/test.*\.yaml|
-            )$
-        stages: [commit]
-        language: script
