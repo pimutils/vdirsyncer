@@ -9,6 +9,7 @@ sources:
 environment:
   BUILD: test
   CI: true
+  CODECOV_TOKEN: b834a3c5-28fa-4808-9bdb-182210069c79
   REQUIREMENTS: minimal
   # TODO: ETESYNC_TESTS
 tasks:
