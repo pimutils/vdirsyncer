@@ -1,0 +1,41 @@
+# debian/stable has a click-log that's too old for us.
+image: debian/testing
+packages:
+  - docker.io
+  # Actual deps:
+  - python3-click
+  - python3-click-log
+  - python3-click-threading
+  - python3-requests
+  - python3-requests-toolbelt
+  - python3-atomicwrites
+  # Installation deps:
+  - python3-setuptools
+  - python3-wheel
+  - python3-pip
+  # Test deps:
+  - python3-hypothesis
+  - python3-pytest
+  - python3-pytest-cov
+sources:
+  - https://github.com/pimutils/vdirsyncer
+environment:
+  BUILD: test
+  CI: true
+  CODECOV_TOKEN: b834a3c5-28fa-4808-9bdb-182210069c79
+  REQUIREMENTS: minimal
+  # TODO: ETESYNC_TESTS
+tasks:
+  - setup: |
+      sudo ln -sf /usr/bin/py.test-3 /usr/bin/py.test
+      sudo ln -sf /usr/bin/python3 /usr/bin/python
+      sudo chmod 777 /var/run/docker.sock # Sorry, this is gross.
+      cd vdirsyncer
+      sudo systemctl start docker
+      sudo python setup.py install
+      DAV_SERVER="radicale xandikos" make -e install-servers
+  - test: |
+      cd vdirsyncer
+      make -e ci-test
+      DAV_SERVER=radicale make -e ci-test-storage
+      DAV_SERVER=xandikos make -e ci-test-storage
