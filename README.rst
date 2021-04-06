@@ -2,8 +2,8 @@
 vdirsyncer
 ==========
 
-.. image:: https://travis-ci.org/pimutils/vdirsyncer.svg?branch=master
-  :target: https://travis-ci.org/pimutils/vdirsyncer
+.. image:: https://builds.sr.ht/~whynothugo/vdirsyncer.svg
+  :target: https://builds.sr.ht/~whynothugo/vdirsyncer
   :alt: CI status
 
 .. image:: https://codecov.io/github/pimutils/vdirsyncer/coverage.svg?branch=master

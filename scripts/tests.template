@@ -1,0 +1,21 @@
+# vim: ft=yaml
+
+image: archlinux
+packages:
+  - docker
+  - python-pip
+sources:
+  - https://github.com/pimutils/vdirsyncer
+environment:
+  BUILD: {BUILD}
+  REQUIREMENTS: {REQUIREMENTS}
+  DAV_SERVER: {DAV_SERVER}
+tasks:
+  - setup: |
+      cd vdirsyncer
+      make -e install-$BUILD
+  - test: |
+      cd vdirsyncer
+      # Non-system python is used for packages:
+      export PATH=$PATH:~/.local/bin/
+      make -e $BUILD

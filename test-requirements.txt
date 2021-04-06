@@ -1,5 +1,4 @@
-hypothesis>=5.0.0
+hypothesis>=5.0.0,<6.0.0
 pytest
 pytest-cov
 pytest-localserver
-pytest-subtesthack

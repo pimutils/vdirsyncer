@@ -1,0 +1,16 @@
+image: archlinux
+packages:
+  - docker
+  - docker-compose
+  - python-pip
+sources:
+  - https://github.com/pimutils/vdirsyncer
+tasks:
+  - setup: |
+      cd vdirsyncer
+      make -e install-style
+  - test: |
+      cd vdirsyncer
+      # Non-system python is used for packages:
+      export PATH=$PATH:~/.local/bin/
+      make -e style
