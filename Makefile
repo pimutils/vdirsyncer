@@ -116,12 +116,4 @@ install-dev:
 		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
 	fi
 
-ssh-submodule-urls:
-	git submodule foreach "\
-		echo -n 'Old: '; \
-		git remote get-url origin; \
-		git remote set-url origin \$$(git remote get-url origin | sed -e 's/https:\/\/github\.com\//git@github.com:/g'); \
-		echo -n 'New URL: '; \
-		git remote get-url origin"
-
 .PHONY: docs
