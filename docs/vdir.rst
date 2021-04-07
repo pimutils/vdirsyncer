@@ -96,7 +96,7 @@ collections for faster search and lookup.
 
 The reason items' filenames don't contain any extra information is simple: The
 solutions presented induced duplication of data, where one duplicate might
-become out of date because of bad implementations. As it stands right now, a
+become out of date because of bad implementations. As it stands right now, an
 index format could be formalized separately though.
 
 vdirsyncer doesn't really have to bother about efficient item lookup, because
