@@ -1,0 +1,26 @@
+# TODO: Maybe shift this job to ubuntu/debian.
+image: archlinux
+packages:
+  - docker
+  - docker-compose
+  - python-pip
+sources:
+  - https://github.com/pimutils/vdirsyncer
+environment:
+  BUILD: test
+  CI: true
+  CODECOV_TOKEN: b834a3c5-28fa-4808-9bdb-182210069c79
+  REQUIREMENTS: minimal
+  # TODO: ETESYNC_TESTS
+tasks:
+  - setup: |
+      cd vdirsyncer
+      sudo systemctl start docker
+      DAV_SERVER="radicale xandikos" make -e install-test
+  - test: |
+      cd vdirsyncer
+      # Non-system python is used for packages:
+      export PATH=$PATH:~/.local/bin/
+      make -e ci-test
+      DAV_SERVER=radicale make -e ci-test-storage
+      DAV_SERVER=xandikos make -e ci-test-storage

@@ -1,6 +1,5 @@
 # setuptools-scm includes everything tracked by git
 prune docker
-prune docker-compose
 prune scripts
 prune tests/storage/servers
 prune tests/storage/etesync

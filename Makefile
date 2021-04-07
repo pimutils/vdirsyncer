@@ -15,7 +15,7 @@ export DETERMINISTIC_TESTS := false
 # Run the etesync testsuite.
 export ETESYNC_TESTS := false
 
-# Assume to run in Travis. Don't use this outside of a virtual machine. It will
+# Assume to run in CI. Don't use this outside of a virtual machine. It will
 # heavily "pollute" your system, such as attempting to install a new Python
 # systemwide.
 export CI := false
@@ -41,17 +41,17 @@ export TESTSERVER_BASE := ./tests/storage/servers/
 CODECOV_PATH = /tmp/codecov.sh
 
 ifeq ($(CI), true)
-test-storage:
-	curl -s https://codecov.io/bash > $(CODECOV_PATH)
-	$(PYTEST) tests/storage/
-	bash $(CODECOV_PATH) -c -F storage
-test:
+ci-test:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
 	$(PYTEST) tests/unit/
 	bash $(CODECOV_PATH) -c -F unit
 	$(PYTEST) tests/system/
 	bash $(CODECOV_PATH) -c -F system
 	[ "$(ETESYNC_TESTS)" = "false" ] || make test-storage
+ci-test-storage:
+	curl -s https://codecov.io/bash > $(CODECOV_PATH)
+	$(PYTEST) tests/storage/
+	bash $(CODECOV_PATH) -c -F storage
 else
 test:
 	$(PYTEST)
@@ -78,10 +78,6 @@ install-test: install-servers install-dev
 			git+https://github.com/pytest-dev/pytest; \
 	fi
 	[ -z "$(TEST_EXTRA_PACKAGES)" ] || pip install $(TEST_EXTRA_PACKAGES)
-
-install-test-storage: install-test
-	# This is just an alias
-	true
 
 install-style: install-docs install-dev
 	pip install pre-commit
@@ -119,13 +115,5 @@ install-dev:
 	elif [ "$(REQUIREMENTS)" = "minimal" ]; then \
 		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
 	fi
-
-ssh-submodule-urls:
-	git submodule foreach "\
-		echo -n 'Old: '; \
-		git remote get-url origin; \
-		git remote set-url origin \$$(git remote get-url origin | sed -e 's/https:\/\/github\.com\//git@github.com:/g'); \
-		echo -n 'New URL: '; \
-		git remote get-url origin"
 
 .PHONY: docs

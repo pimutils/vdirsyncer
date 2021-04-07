@@ -5,7 +5,6 @@ repos:
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
-        exclude: '.travis.yml'
       - id: check-toml
       - id: check-added-large-files
       - id: debug-statements
@@ -18,12 +17,3 @@ repos:
     rev: v2.3.0
     hooks:
     -   id: reorder-python-imports
-  - repo: local
-    hooks:
-      - id: update-travis
-        name: Update travis job definition
-        description: Ensures that travis job definition are up to date.
-        entry: scripts/make_travisconf.py
-        files: '.*travis.*'
-        stages: [commit]
-        language: script

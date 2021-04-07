@@ -266,7 +266,7 @@ in terms of data safety**. See `this blog post
 <https://evertpot.com/google-carddav-issues/>`_ for the details.  Always back
 up your data.
 
-At first run you will be asked to authorize application for google account
+At first run you will be asked to authorize application for Google account
 access.
 
 To use this storage type, you need to install some additional dependencies::
