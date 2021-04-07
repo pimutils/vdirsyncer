@@ -4,9 +4,8 @@ import uuid
 from urllib.parse import quote as urlquote
 from urllib.parse import unquote as urlunquote
 
-import hypothesis.strategies as st
 import pytest
-from hypothesis import given
+from hypothesis import settings
 
 from .. import assert_item_equals
 from .. import EVENT_TEMPLATE
@@ -299,10 +298,14 @@ class StorageTests:
             assert rv == x
             assert isinstance(rv, str)
 
-    @given(value=st.one_of(
-        st.none(),
-        printable_characters_strategy
-    ))
+    @pytest.mark.parametrize(
+        "value",
+        [None]
+        + [
+            printable_characters_strategy.example()
+            for _ in range(settings.get_profile(settings._current_profile).max_examples)
+        ],
+    )
     def test_metadata_normalization(self, requires_metadata, s, value):
         x = s.get_meta('displayname')
         assert x == normalize_meta_value(x)

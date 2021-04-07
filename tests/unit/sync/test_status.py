@@ -1,16 +1,8 @@
 import hypothesis.strategies as st
-import pytest
 from hypothesis import assume
 from hypothesis import given
 
 from vdirsyncer.sync.status import SqliteStatus
-
-
-@pytest.fixture(params=[
-    SqliteStatus
-])
-def new_status(request):
-    return request.param
 
 
 status_dict_strategy = st.dictionaries(
@@ -26,11 +18,11 @@ status_dict_strategy = st.dictionaries(
 
 
 @given(status_dict=status_dict_strategy)
-def test_legacy_status(new_status, status_dict):
+def test_legacy_status(status_dict):
     hrefs_a = {meta_a['href'] for meta_a, meta_b in status_dict.values()}
     hrefs_b = {meta_b['href'] for meta_a, meta_b in status_dict.values()}
     assume(len(hrefs_a) == len(status_dict) == len(hrefs_b))
-    status = new_status()
+    status = SqliteStatus()
     status.load_legacy_status(status_dict)
     assert dict(status.to_legacy_status()) == status_dict
 

@@ -1,3 +1,6 @@
+from contextlib import contextmanager
+from unittest.mock import patch
+
 import hypothesis.strategies as st
 import pytest
 from hypothesis import given
@@ -15,6 +18,17 @@ def mystrategy(monkeypatch):
     calls = []
     monkeypatch.setitem(STRATEGIES, 'mystrategy', strategy)
     return calls
+
+
+@contextmanager
+def dummy_strategy():
+    def strategy(x):
+        calls.append(x)
+        return x
+
+    calls = []
+    with patch.dict(STRATEGIES, {"mystrategy": strategy}):
+        yield calls
 
 
 @pytest.fixture
@@ -45,10 +59,9 @@ def test_key_conflict(monkeypatch, mystrategy):
 
 
 @given(s=st.text(), t=st.text(min_size=1))
-def test_fuzzing(s, t, mystrategy):
-    config = expand_fetch_params({
-        f'{s}.fetch': ['mystrategy', t]
-    })
+def test_fuzzing(s, t):
+    with dummy_strategy():
+        config = expand_fetch_params({f"{s}.fetch": ["mystrategy", t]})
 
     assert config[s] == t
 
