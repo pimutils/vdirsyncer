@@ -1,8 +1,7 @@
 import json
 from textwrap import dedent
 
-import hypothesis.strategies as st
-from hypothesis import given
+import pytest
 
 from vdirsyncer import exceptions
 from vdirsyncer.storage.base import Storage
@@ -176,7 +175,15 @@ def test_null_collection_with_named_collection(tmpdir, runner):
     assert 'HAHA' in bar.read()
 
 
-@given(a_requires=st.booleans(), b_requires=st.booleans())
+@pytest.mark.parametrize(
+    "a_requires,b_requires",
+    [
+        (True, True),
+        (True, False),
+        (False, True),
+        (False, False),
+    ]
+)
 def test_collection_required(a_requires, b_requires, tmpdir, runner,
                              monkeypatch):
 

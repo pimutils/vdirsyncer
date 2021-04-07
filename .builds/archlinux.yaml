@@ -1,0 +1,39 @@
+image: archlinux
+packages:
+  - docker
+  - docker-compose
+  # Build dependencies:
+  - python-pip
+  - python-wheel
+  # Runtime dependencies:
+  - python-atomicwrites
+  - python-click
+  - python-click-log
+  - python-click-threading
+  - python-requests
+  - python-requests-toolbelt
+  # Test dependencies:
+  - python-hypothesis
+  - python-pytest-cov
+  - python-pytest-localserver
+sources:
+  - https://github.com/pimutils/vdirsyncer
+environment:
+  BUILD: test
+  CI: true
+  CODECOV_TOKEN: b834a3c5-28fa-4808-9bdb-182210069c79
+  REQUIREMENTS: release
+  # TODO: ETESYNC_TESTS
+tasks:
+  - setup: |
+      cd vdirsyncer
+      sudo systemctl start docker
+      sudo python setup.py install
+      DAV_SERVER="radicale xandikos" make -e install-servers
+  - test: |
+      cd vdirsyncer
+      # Non-system python is used for packages:
+      export PATH=$PATH:~/.local/bin/
+      make -e ci-test
+      DAV_SERVER=radicale make -e ci-test-storage
+      DAV_SERVER=xandikos make -e ci-test-storage
