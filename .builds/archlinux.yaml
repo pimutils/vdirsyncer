@@ -27,8 +27,9 @@ environment:
 tasks:
   - setup: |
       cd vdirsyncer
+      python setup.py build
+      sudo pip install --no-index .
       sudo systemctl start docker
-      sudo python setup.py install
       DAV_SERVER="radicale xandikos" make -e install-servers
   - test: |
       cd vdirsyncer
