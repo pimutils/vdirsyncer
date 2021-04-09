@@ -16,6 +16,7 @@ tasks:
       cd vdirsyncer
       sudo systemctl start docker
       DAV_SERVER="radicale xandikos" make -e install-test
+      make -e install-style
   - test: |
       cd vdirsyncer
       # Non-system python is used for packages:
@@ -23,3 +24,6 @@ tasks:
       make -e ci-test
       DAV_SERVER=radicale make -e ci-test-storage
       DAV_SERVER=xandikos make -e ci-test-storage
+  - style: |
+      make -e install-style
+      make -e style
