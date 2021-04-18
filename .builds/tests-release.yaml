@@ -25,5 +25,7 @@ tasks:
       DAV_SERVER=radicale make -e ci-test-storage
       DAV_SERVER=xandikos make -e ci-test-storage
   - style: |
-      make -e install-style
+      cd vdirsyncer
+      # Non-system python is used for packages:
+      export PATH=$PATH:~/.local/bin/
       make -e style
