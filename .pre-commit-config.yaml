@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.4.0
+    rev: v3.4.0
     hooks:
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
@@ -9,11 +9,11 @@ repos:
       - id: check-added-large-files
       - id: debug-statements
   - repo: https://gitlab.com/pycqa/flake8
-    rev: "master" # pick a git hash / tag to point to
+    rev: "3.9.1"
     hooks:
       - id: flake8
         additional_dependencies: [flake8-import-order, flake8-bugbear]
   - repo: https://github.com/asottile/reorder_python_imports
-    rev: v2.3.0
+    rev: v2.4.0
     hooks:
     -   id: reorder-python-imports
