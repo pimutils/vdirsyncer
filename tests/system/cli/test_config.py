@@ -15,16 +15,18 @@ invalid = object()
 def read_config(tmpdir, monkeypatch):
     def inner(cfg):
         errors = []
-        monkeypatch.setattr('vdirsyncer.cli.cli_logger.error', errors.append)
+        monkeypatch.setattr("vdirsyncer.cli.cli_logger.error", errors.append)
         f = io.StringIO(dedent(cfg.format(base=str(tmpdir))))
         rv = Config.from_fileobject(f)
         monkeypatch.undo()
         return errors, rv
+
     return inner
 
 
 def test_read_config(read_config):
-    errors, c = read_config('''
+    errors, c = read_config(
+        """
         [general]
         status_path = "/tmp/status/"
 
@@ -42,25 +44,32 @@ def test_read_config(read_config):
 
         [storage bob_b]
         type = "carddav"
-        ''')
+        """
+    )
 
-    assert c.general == {'status_path': '/tmp/status/'}
+    assert c.general == {"status_path": "/tmp/status/"}
 
-    assert set(c.pairs) == {'bob'}
-    bob = c.pairs['bob']
+    assert set(c.pairs) == {"bob"}
+    bob = c.pairs["bob"]
     assert bob.collections is None
 
     assert c.storages == {
-        'bob_a': {'type': 'filesystem', 'path': '/tmp/contacts/', 'fileext':
-                  '.vcf', 'yesno': False, 'number': 42,
-                  'instance_name': 'bob_a'},
-        'bob_b': {'type': 'carddav', 'instance_name': 'bob_b'}
+        "bob_a": {
+            "type": "filesystem",
+            "path": "/tmp/contacts/",
+            "fileext": ".vcf",
+            "yesno": False,
+            "number": 42,
+            "instance_name": "bob_a",
+        },
+        "bob_b": {"type": "carddav", "instance_name": "bob_b"},
     }
 
 
 def test_missing_collections_param(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
-        read_config('''
+        read_config(
+            """
             [general]
             status_path = "/tmp/status/"
 
@@ -73,27 +82,31 @@ def test_missing_collections_param(read_config):
 
             [storage bob_b]
             type = "lmao"
-            ''')
+            """
+        )
 
-    assert 'collections parameter missing' in str(excinfo.value)
+    assert "collections parameter missing" in str(excinfo.value)
 
 
 def test_invalid_section_type(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
-        read_config('''
+        read_config(
+            """
             [general]
             status_path = "/tmp/status/"
 
             [bogus]
-        ''')
+        """
+        )
 
-    assert 'Unknown section' in str(excinfo.value)
-    assert 'bogus' in str(excinfo.value)
+    assert "Unknown section" in str(excinfo.value)
+    assert "bogus" in str(excinfo.value)
 
 
 def test_missing_general_section(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
-        read_config('''
+        read_config(
+            """
             [pair my_pair]
             a = "my_a"
             b = "my_b"
@@ -108,40 +121,46 @@ def test_missing_general_section(read_config):
             type = "filesystem"
             path = "{base}/path_b/"
             fileext = ".txt"
-            ''')
+            """
+        )
 
-    assert 'Invalid general section.' in str(excinfo.value)
+    assert "Invalid general section." in str(excinfo.value)
 
 
 def test_wrong_general_section(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
-        read_config('''
+        read_config(
+            """
             [general]
             wrong = true
-            ''')
+            """
+        )
 
-    assert 'Invalid general section.' in str(excinfo.value)
+    assert "Invalid general section." in str(excinfo.value)
     assert excinfo.value.problems == [
-        'general section doesn\'t take the parameters: wrong',
-        'general section is missing the parameters: status_path'
+        "general section doesn't take the parameters: wrong",
+        "general section is missing the parameters: status_path",
     ]
 
 
 def test_invalid_storage_name(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
-        read_config('''
+        read_config(
+            """
         [general]
         status_path = "{base}/status/"
 
         [storage foo.bar]
-        ''')
+        """
+        )
 
-    assert 'invalid characters' in str(excinfo.value).lower()
+    assert "invalid characters" in str(excinfo.value).lower()
 
 
 def test_invalid_collections_arg(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
-        read_config('''
+        read_config(
+            """
         [general]
         status_path = "/tmp/status/"
 
@@ -159,14 +178,16 @@ def test_invalid_collections_arg(read_config):
         type = "filesystem"
         path = "/tmp/bar/"
         fileext = ".txt"
-        ''')
+        """
+        )
 
-    assert 'Expected string' in str(excinfo.value)
+    assert "Expected string" in str(excinfo.value)
 
 
 def test_duplicate_sections(read_config):
     with pytest.raises(exceptions.UserError) as excinfo:
-        read_config('''
+        read_config(
+            """
         [general]
         status_path = "/tmp/status/"
 
@@ -184,7 +205,8 @@ def test_duplicate_sections(read_config):
         type = "filesystem"
         path = "/tmp/bar/"
         fileext = ".txt"
-        ''')
+        """
+        )
 
     assert 'Name "foobar" already used' in str(excinfo.value)
 

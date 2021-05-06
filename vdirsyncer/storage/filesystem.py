@@ -19,11 +19,10 @@ logger = logging.getLogger(__name__)
 
 class FilesystemStorage(Storage):
 
-    storage_name = 'filesystem'
-    _repr_attributes = ('path',)
+    storage_name = "filesystem"
+    _repr_attributes = ("path",)
 
-    def __init__(self, path, fileext, encoding='utf-8', post_hook=None,
-                 **kwargs):
+    def __init__(self, path, fileext, encoding="utf-8", post_hook=None, **kwargs):
         super().__init__(**kwargs)
         path = expand_path(path)
         checkdir(path, create=False)
@@ -34,8 +33,8 @@ class FilesystemStorage(Storage):
 
     @classmethod
     def discover(cls, path, **kwargs):
-        if kwargs.pop('collection', None) is not None:
-            raise TypeError('collection argument must not be given.')
+        if kwargs.pop("collection", None) is not None:
+            raise TypeError("collection argument must not be given.")
         path = expand_path(path)
         try:
             collections = os.listdir(path)
@@ -47,30 +46,29 @@ class FilesystemStorage(Storage):
                 collection_path = os.path.join(path, collection)
                 if not cls._validate_collection(collection_path):
                     continue
-                args = dict(collection=collection, path=collection_path,
-                            **kwargs)
+                args = dict(collection=collection, path=collection_path, **kwargs)
                 yield args
 
     @classmethod
     def _validate_collection(cls, path):
         if not os.path.isdir(path):
             return False
-        if os.path.basename(path).startswith('.'):
+        if os.path.basename(path).startswith("."):
             return False
         return True
 
     @classmethod
     def create_collection(cls, collection, **kwargs):
         kwargs = dict(kwargs)
-        path = kwargs['path']
+        path = kwargs["path"]
 
         if collection is not None:
             path = os.path.join(path, collection)
 
         checkdir(expand_path(path), create=True)
 
-        kwargs['path'] = path
-        kwargs['collection'] = collection
+        kwargs["path"] = path
+        kwargs["collection"] = collection
         return kwargs
 
     def _get_filepath(self, href):
@@ -88,9 +86,8 @@ class FilesystemStorage(Storage):
     def get(self, href):
         fpath = self._get_filepath(href)
         try:
-            with open(fpath, 'rb') as f:
-                return (Item(f.read().decode(self.encoding)),
-                        get_etag_from_file(fpath))
+            with open(fpath, "rb") as f:
+                return (Item(f.read().decode(self.encoding)), get_etag_from_file(fpath))
         except OSError as e:
             if e.errno == errno.ENOENT:
                 raise exceptions.NotFoundError(href)
@@ -99,18 +96,14 @@ class FilesystemStorage(Storage):
 
     def upload(self, item):
         if not isinstance(item.raw, str):
-            raise TypeError('item.raw must be a unicode string.')
+            raise TypeError("item.raw must be a unicode string.")
 
         try:
             href = self._get_href(item.ident)
             fpath, etag = self._upload_impl(item, href)
         except OSError as e:
-            if e.errno in (
-                errno.ENAMETOOLONG,  # Unix
-                errno.ENOENT  # Windows
-            ):
-                logger.debug('UID as filename rejected, trying with random '
-                             'one.')
+            if e.errno in (errno.ENAMETOOLONG, errno.ENOENT):  # Unix  # Windows
+                logger.debug("UID as filename rejected, trying with random " "one.")
                 # random href instead of UID-based
                 href = self._get_href(None)
                 fpath, etag = self._upload_impl(item, href)
@@ -124,7 +117,7 @@ class FilesystemStorage(Storage):
     def _upload_impl(self, item, href):
         fpath = self._get_filepath(href)
         try:
-            with atomic_write(fpath, mode='wb', overwrite=False) as f:
+            with atomic_write(fpath, mode="wb", overwrite=False) as f:
                 f.write(item.raw.encode(self.encoding))
                 return fpath, get_etag_from_file(f)
         except OSError as e:
@@ -142,9 +135,9 @@ class FilesystemStorage(Storage):
             raise exceptions.WrongEtagError(etag, actual_etag)
 
         if not isinstance(item.raw, str):
-            raise TypeError('item.raw must be a unicode string.')
+            raise TypeError("item.raw must be a unicode string.")
 
-        with atomic_write(fpath, mode='wb', overwrite=True) as f:
+        with atomic_write(fpath, mode="wb", overwrite=True) as f:
             f.write(item.raw.encode(self.encoding))
             etag = get_etag_from_file(f)
 
@@ -162,21 +155,22 @@ class FilesystemStorage(Storage):
         os.remove(fpath)
 
     def _run_post_hook(self, fpath):
-        logger.info('Calling post_hook={} with argument={}'.format(
-            self.post_hook, fpath))
+        logger.info(
+            "Calling post_hook={} with argument={}".format(self.post_hook, fpath)
+        )
         try:
             subprocess.call([self.post_hook, fpath])
         except OSError as e:
-            logger.warning('Error executing external hook: {}'.format(str(e)))
+            logger.warning("Error executing external hook: {}".format(str(e)))
 
     def get_meta(self, key):
         fpath = os.path.join(self.path, key)
         try:
-            with open(fpath, 'rb') as f:
+            with open(fpath, "rb") as f:
                 return normalize_meta_value(f.read().decode(self.encoding))
         except OSError as e:
             if e.errno == errno.ENOENT:
-                return ''
+                return ""
             else:
                 raise
 
@@ -184,5 +178,5 @@ class FilesystemStorage(Storage):
         value = normalize_meta_value(value)
 
         fpath = os.path.join(self.path, key)
-        with atomic_write(fpath, mode='wb', overwrite=True) as f:
+        with atomic_write(fpath, mode="wb", overwrite=True) as f:
             f.write(value.encode(self.encoding))

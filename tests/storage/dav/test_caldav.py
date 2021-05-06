@@ -17,7 +17,7 @@ from vdirsyncer.storage.dav import CalDAVStorage
 class TestCalDAVStorage(DAVStorageTests):
     storage_class = CalDAVStorage
 
-    @pytest.fixture(params=['VTODO', 'VEVENT'])
+    @pytest.fixture(params=["VTODO", "VEVENT"])
     def item_type(self, request):
         return request.param
 
@@ -32,15 +32,19 @@ class TestCalDAVStorage(DAVStorageTests):
 
     # The `arg` param is not named `item_types` because that would hit
     # https://bitbucket.org/pytest-dev/pytest/issue/745/
-    @pytest.mark.parametrize('arg,calls_num', [
-        (('VTODO',), 1),
-        (('VEVENT',), 1),
-        (('VTODO', 'VEVENT'), 2),
-        (('VTODO', 'VEVENT', 'VJOURNAL'), 3),
-        ((), 1)
-    ])
-    def test_item_types_performance(self, get_storage_args, arg, calls_num,
-                                    monkeypatch):
+    @pytest.mark.parametrize(
+        "arg,calls_num",
+        [
+            (("VTODO",), 1),
+            (("VEVENT",), 1),
+            (("VTODO", "VEVENT"), 2),
+            (("VTODO", "VEVENT", "VJOURNAL"), 3),
+            ((), 1),
+        ],
+    )
+    def test_item_types_performance(
+        self, get_storage_args, arg, calls_num, monkeypatch
+    ):
         s = self.storage_class(item_types=arg, **get_storage_args())
         old_parse = s._parse_prop_responses
         calls = []
@@ -49,19 +53,23 @@ class TestCalDAVStorage(DAVStorageTests):
             calls.append(None)
             return old_parse(*a, **kw)
 
-        monkeypatch.setattr(s, '_parse_prop_responses', new_parse)
+        monkeypatch.setattr(s, "_parse_prop_responses", new_parse)
         list(s.list())
         assert len(calls) == calls_num
 
-    @pytest.mark.xfail(dav_server == 'radicale',
-                       reason='Radicale doesn\'t support timeranges.')
+    @pytest.mark.xfail(
+        dav_server == "radicale", reason="Radicale doesn't support timeranges."
+    )
     def test_timerange_correctness(self, get_storage_args):
         start_date = datetime.datetime(2013, 9, 10)
         end_date = datetime.datetime(2013, 9, 13)
-        s = self.storage_class(start_date=start_date, end_date=end_date,
-                               **get_storage_args())
+        s = self.storage_class(
+            start_date=start_date, end_date=end_date, **get_storage_args()
+        )
 
-        too_old_item = format_item(dedent('''
+        too_old_item = format_item(
+            dedent(
+                """
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN
@@ -73,9 +81,13 @@ class TestCalDAVStorage(DAVStorageTests):
             UID:{r}
             END:VEVENT
             END:VCALENDAR
-            ''').strip())
+            """
+            ).strip()
+        )
 
-        too_new_item = format_item(dedent('''
+        too_new_item = format_item(
+            dedent(
+                """
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN
@@ -87,9 +99,13 @@ class TestCalDAVStorage(DAVStorageTests):
             UID:{r}
             END:VEVENT
             END:VCALENDAR
-            ''').strip())
+            """
+            ).strip()
+        )
 
-        good_item = format_item(dedent('''
+        good_item = format_item(
+            dedent(
+                """
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//hacksw/handcal//NONSGML v1.0//EN
@@ -101,13 +117,15 @@ class TestCalDAVStorage(DAVStorageTests):
             UID:{r}
             END:VEVENT
             END:VCALENDAR
-            ''').strip())
+            """
+            ).strip()
+        )
 
         s.upload(too_old_item)
         s.upload(too_new_item)
         expected_href, _ = s.upload(good_item)
 
-        (actual_href, _), = s.list()
+        ((actual_href, _),) = s.list()
         assert actual_href == expected_href
 
     def test_invalid_resource(self, monkeypatch, get_storage_args):
@@ -115,37 +133,37 @@ class TestCalDAVStorage(DAVStorageTests):
         args = get_storage_args(collection=None)
 
         def request(session, method, url, **kwargs):
-            assert url == args['url']
+            assert url == args["url"]
             calls.append(None)
 
             r = requests.Response()
             r.status_code = 200
-            r._content = b'Hello World.'
+            r._content = b"Hello World."
             return r
 
-        monkeypatch.setattr('requests.sessions.Session.request', request)
+        monkeypatch.setattr("requests.sessions.Session.request", request)
 
         with pytest.raises(ValueError):
             s = self.storage_class(**args)
             list(s.list())
         assert len(calls) == 1
 
-    @pytest.mark.skipif(dav_server == 'icloud',
-                        reason='iCloud only accepts VEVENT')
-    @pytest.mark.skipif(dav_server == 'fastmail',
-                        reason='Fastmail has non-standard hadling of VTODOs.')
+    @pytest.mark.skipif(dav_server == "icloud", reason="iCloud only accepts VEVENT")
+    @pytest.mark.skipif(
+        dav_server == "fastmail", reason="Fastmail has non-standard hadling of VTODOs."
+    )
     def test_item_types_general(self, s):
         event = s.upload(format_item(EVENT_TEMPLATE))[0]
         task = s.upload(format_item(TASK_TEMPLATE))[0]
-        s.item_types = ('VTODO', 'VEVENT')
+        s.item_types = ("VTODO", "VEVENT")
 
         def hrefs():
             return {href for href, etag in s.list()}
 
         assert hrefs() == {event, task}
-        s.item_types = ('VTODO',)
+        s.item_types = ("VTODO",)
         assert hrefs() == {task}
-        s.item_types = ('VEVENT',)
+        s.item_types = ("VEVENT",)
         assert hrefs() == {event}
         s.item_types = ()
         assert hrefs() == {event, task}
