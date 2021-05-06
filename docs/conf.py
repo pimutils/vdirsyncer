@@ -59,7 +59,8 @@ texinfo_documents = [
 
 
 def github_issue_role(name, rawtext, text, lineno, inliner,
-                      options={}, content=()):  # noqa: B006
+                      options=None, content=()):
+    options = options or {}
     try:
         issue_num = int(text)
         if issue_num <= 0:
