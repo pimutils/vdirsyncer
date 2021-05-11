@@ -22,19 +22,21 @@ logger = logging.getLogger(__name__)
 
 def _get_collections_cache_key(pair):
     m = hashlib.sha256()
-    j = json.dumps([
-        DISCOVERY_CACHE_VERSION,
-        pair.collections,
-        pair.config_a,
-        pair.config_b,
-    ], sort_keys=True)
-    m.update(j.encode('utf-8'))
+    j = json.dumps(
+        [
+            DISCOVERY_CACHE_VERSION,
+            pair.collections,
+            pair.config_a,
+            pair.config_b,
+        ],
+        sort_keys=True,
+    )
+    m.update(j.encode("utf-8"))
     return m.hexdigest()
 
 
-def collections_for_pair(status_path, pair, from_cache=True,
-                         list_collections=False):
-    '''Determine all configured collections for a given pair. Takes care of
+def collections_for_pair(status_path, pair, from_cache=True, list_collections=False):
+    """Determine all configured collections for a given pair. Takes care of
     shortcut expansion and result caching.
 
     :param status_path: The path to the status directory.
@@ -42,55 +44,62 @@ def collections_for_pair(status_path, pair, from_cache=True,
         discover and save to cache.
 
     :returns: iterable of (collection, (a_args, b_args))
-    '''
+    """
     cache_key = _get_collections_cache_key(pair)
     if from_cache:
-        rv = load_status(status_path, pair.name, data_type='collections')
-        if rv and rv.get('cache_key', None) == cache_key:
-            return list(_expand_collections_cache(
-                rv['collections'], pair.config_a, pair.config_b
-            ))
+        rv = load_status(status_path, pair.name, data_type="collections")
+        if rv and rv.get("cache_key", None) == cache_key:
+            return list(
+                _expand_collections_cache(
+                    rv["collections"], pair.config_a, pair.config_b
+                )
+            )
         elif rv:
-            raise exceptions.UserError('Detected change in config file, '
-                                       'please run `vdirsyncer discover {}`.'
-                                       .format(pair.name))
+            raise exceptions.UserError(
+                "Detected change in config file, "
+                "please run `vdirsyncer discover {}`.".format(pair.name)
+            )
         else:
-            raise exceptions.UserError('Please run `vdirsyncer discover {}` '
-                                       ' before synchronization.'
-                                       .format(pair.name))
+            raise exceptions.UserError(
+                "Please run `vdirsyncer discover {}` "
+                " before synchronization.".format(pair.name)
+            )
 
-    logger.info('Discovering collections for pair {}' .format(pair.name))
+    logger.info("Discovering collections for pair {}".format(pair.name))
 
     a_discovered = _DiscoverResult(pair.config_a)
     b_discovered = _DiscoverResult(pair.config_b)
 
     if list_collections:
-        _print_collections(pair.config_a['instance_name'],
-                           a_discovered.get_self)
-        _print_collections(pair.config_b['instance_name'],
-                           b_discovered.get_self)
+        _print_collections(pair.config_a["instance_name"], a_discovered.get_self)
+        _print_collections(pair.config_b["instance_name"], b_discovered.get_self)
 
     # We have to use a list here because the special None/null value would get
     # mangled to string (because JSON objects always have string keys).
-    rv = list(expand_collections(
-        shortcuts=pair.collections,
-        config_a=pair.config_a,
-        config_b=pair.config_b,
-        get_a_discovered=a_discovered.get_self,
-        get_b_discovered=b_discovered.get_self,
-        _handle_collection_not_found=handle_collection_not_found
-    ))
+    rv = list(
+        expand_collections(
+            shortcuts=pair.collections,
+            config_a=pair.config_a,
+            config_b=pair.config_b,
+            get_a_discovered=a_discovered.get_self,
+            get_b_discovered=b_discovered.get_self,
+            _handle_collection_not_found=handle_collection_not_found,
+        )
+    )
 
     _sanity_check_collections(rv)
 
-    save_status(status_path, pair.name, data_type='collections',
-                data={
-                    'collections': list(
-                        _compress_collections_cache(rv, pair.config_a,
-                                                    pair.config_b)
-                    ),
-                    'cache_key': cache_key
-                })
+    save_status(
+        status_path,
+        pair.name,
+        data_type="collections",
+        data={
+            "collections": list(
+                _compress_collections_cache(rv, pair.config_a, pair.config_b)
+            ),
+            "cache_key": cache_key,
+        },
+    )
     return rv
 
 
@@ -141,25 +150,31 @@ class _DiscoverResult:
         except Exception:
             return handle_storage_init_error(self._cls, self._config)
         else:
-            storage_type = self._config['type']
+            storage_type = self._config["type"]
             rv = {}
             for args in discovered:
-                args['type'] = storage_type
-                rv[args['collection']] = args
+                args["type"] = storage_type
+                rv[args["collection"]] = args
             return rv
 
 
-def expand_collections(shortcuts, config_a, config_b, get_a_discovered,
-                       get_b_discovered, _handle_collection_not_found):
+def expand_collections(
+    shortcuts,
+    config_a,
+    config_b,
+    get_a_discovered,
+    get_b_discovered,
+    _handle_collection_not_found,
+):
     handled_collections = set()
 
     if shortcuts is None:
         shortcuts = [None]
 
     for shortcut in shortcuts:
-        if shortcut == 'from a':
+        if shortcut == "from a":
             collections = get_a_discovered()
-        elif shortcut == 'from b':
+        elif shortcut == "from b":
             collections = get_b_discovered()
         else:
             collections = [shortcut]
@@ -175,22 +190,21 @@ def expand_collections(shortcuts, config_a, config_b, get_a_discovered,
             handled_collections.add(collection)
 
             a_args = _collection_from_discovered(
-                get_a_discovered, collection_a, config_a,
-                _handle_collection_not_found
+                get_a_discovered, collection_a, config_a, _handle_collection_not_found
             )
             b_args = _collection_from_discovered(
-                get_b_discovered, collection_b, config_b,
-                _handle_collection_not_found
+                get_b_discovered, collection_b, config_b, _handle_collection_not_found
             )
 
             yield collection, (a_args, b_args)
 
 
-def _collection_from_discovered(get_discovered, collection, config,
-                                _handle_collection_not_found):
+def _collection_from_discovered(
+    get_discovered, collection, config, _handle_collection_not_found
+):
     if collection is None:
         args = dict(config)
-        args['collection'] = None
+        args["collection"] = None
         return args
 
     try:
@@ -209,26 +223,31 @@ def _print_collections(instance_name, get_discovered):
         # UserError), we don't even know if the storage supports discovery
         # properly. So we can't abort.
         import traceback
-        logger.debug(''.join(traceback.format_tb(sys.exc_info()[2])))
-        logger.warning('Failed to discover collections for {}, use `-vdebug` '
-                       'to see the full traceback.'.format(instance_name))
+
+        logger.debug("".join(traceback.format_tb(sys.exc_info()[2])))
+        logger.warning(
+            "Failed to discover collections for {}, use `-vdebug` "
+            "to see the full traceback.".format(instance_name)
+        )
         return
-    logger.info(f'{instance_name}:')
+    logger.info(f"{instance_name}:")
     for args in discovered.values():
-        collection = args['collection']
+        collection = args["collection"]
         if collection is None:
             continue
 
-        args['instance_name'] = instance_name
+        args["instance_name"] = instance_name
         try:
             storage = storage_instance_from_config(args, create=False)
-            displayname = storage.get_meta('displayname')
+            displayname = storage.get_meta("displayname")
         except Exception:
-            displayname = ''
+            displayname = ""
 
-        logger.info('  - {}{}'.format(
-            json.dumps(collection),
-            f' ("{displayname}")'
-            if displayname and displayname != collection
-            else ''
-        ))
+        logger.info(
+            "  - {}{}".format(
+                json.dumps(collection),
+                f' ("{displayname}")'
+                if displayname and displayname != collection
+                else "",
+            )
+        )

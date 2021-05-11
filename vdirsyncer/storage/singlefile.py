@@ -28,21 +28,22 @@ def _writing_op(f):
         if not self._at_once:
             self._write()
         return rv
+
     return inner
 
 
 class SingleFileStorage(Storage):
-    storage_name = 'singlefile'
-    _repr_attributes = ('path',)
+    storage_name = "singlefile"
+    _repr_attributes = ("path",)
 
-    _write_mode = 'wb'
-    _append_mode = 'ab'
-    _read_mode = 'rb'
+    _write_mode = "wb"
+    _append_mode = "ab"
+    _read_mode = "rb"
 
     _items = None
     _last_etag = None
 
-    def __init__(self, path, encoding='utf-8', **kwargs):
+    def __init__(self, path, encoding="utf-8", **kwargs):
         super().__init__(**kwargs)
         path = os.path.abspath(expand_path(path))
         checkfile(path, create=False)
@@ -53,49 +54,47 @@ class SingleFileStorage(Storage):
 
     @classmethod
     def discover(cls, path, **kwargs):
-        if kwargs.pop('collection', None) is not None:
-            raise TypeError('collection argument must not be given.')
+        if kwargs.pop("collection", None) is not None:
+            raise TypeError("collection argument must not be given.")
 
         path = os.path.abspath(expand_path(path))
         try:
-            path_glob = path % '*'
+            path_glob = path % "*"
         except TypeError:
             # If not exactly one '%s' is present, we cannot discover
             # collections because we wouldn't know which name to assign.
             raise NotImplementedError()
 
-        placeholder_pos = path.index('%s')
+        placeholder_pos = path.index("%s")
 
         for subpath in glob.iglob(path_glob):
             if os.path.isfile(subpath):
                 args = dict(kwargs)
-                args['path'] = subpath
+                args["path"] = subpath
 
                 collection_end = (
-                    placeholder_pos
-                    + 2  # length of '%s'
-                    + len(subpath)
-                    - len(path)
+                    placeholder_pos + 2 + len(subpath) - len(path)  # length of '%s'
                 )
                 collection = subpath[placeholder_pos:collection_end]
-                args['collection'] = collection
+                args["collection"] = collection
 
                 yield args
 
     @classmethod
     def create_collection(cls, collection, **kwargs):
-        path = os.path.abspath(expand_path(kwargs['path']))
+        path = os.path.abspath(expand_path(kwargs["path"]))
 
         if collection is not None:
             try:
                 path = path % (collection,)
             except TypeError:
-                raise ValueError('Exactly one %s required in path '
-                                 'if collection is not null.')
+                raise ValueError(
+                    "Exactly one %s required in path " "if collection is not null."
+                )
 
         checkfile(path, create=True)
-        kwargs['path'] = path
-        kwargs['collection'] = collection
+        kwargs["path"] = path
+        kwargs["collection"] = collection
         return kwargs
 
     def list(self):
@@ -107,6 +106,7 @@ class SingleFileStorage(Storage):
                 text = f.read().decode(self.encoding)
         except OSError as e:
             import errno
+
             if e.errno != errno.ENOENT:  # file not found
                 raise OSError(e)
             text = None
@@ -163,18 +163,19 @@ class SingleFileStorage(Storage):
         del self._items[href]
 
     def _write(self):
-        if self._last_etag is not None and \
-           self._last_etag != get_etag_from_file(self.path):
-            raise exceptions.PreconditionFailed((
-                'Some other program modified the file {!r}. Re-run the '
-                'synchronization and make sure absolutely no other program is '
-                'writing into the same file.'
-            ).format(self.path))
-        text = join_collection(
-            item.raw for item, etag in self._items.values()
-        )
+        if self._last_etag is not None and self._last_etag != get_etag_from_file(
+            self.path
+        ):
+            raise exceptions.PreconditionFailed(
+                (
+                    "Some other program modified the file {!r}. Re-run the "
+                    "synchronization and make sure absolutely no other program is "
+                    "writing into the same file."
+                ).format(self.path)
+            )
+        text = join_collection(item.raw for item, etag in self._items.values())
         try:
-            with atomic_write(self.path, mode='wb', overwrite=True) as f:
+            with atomic_write(self.path, mode="wb", overwrite=True) as f:
                 f.write(text.encode(self.encoding))
         finally:
             self._items = None

@@ -14,19 +14,20 @@ from .fetchparams import expand_fetch_params
 from .utils import storage_class_from_config
 
 
-GENERAL_ALL = frozenset(['status_path'])
-GENERAL_REQUIRED = frozenset(['status_path'])
-SECTION_NAME_CHARS = frozenset(chain(string.ascii_letters, string.digits, '_'))
+GENERAL_ALL = frozenset(["status_path"])
+GENERAL_REQUIRED = frozenset(["status_path"])
+SECTION_NAME_CHARS = frozenset(chain(string.ascii_letters, string.digits, "_"))
 
 
 def validate_section_name(name, section_type):
     invalid = set(name) - SECTION_NAME_CHARS
     if invalid:
-        chars_display = ''.join(sorted(SECTION_NAME_CHARS))
+        chars_display = "".join(sorted(SECTION_NAME_CHARS))
         raise exceptions.UserError(
             'The {}-section "{}" contains invalid characters. Only '
-            'the following characters are allowed for storage and '
-            'pair names:\n{}'.format(section_type, name, chars_display))
+            "the following characters are allowed for storage and "
+            "pair names:\n{}".format(section_type, name, chars_display)
+        )
 
 
 def _validate_general_section(general_config):
@@ -35,18 +36,21 @@ def _validate_general_section(general_config):
     problems = []
 
     if invalid:
-        problems.append('general section doesn\'t take the parameters: {}'
-                        .format(', '.join(invalid)))
+        problems.append(
+            "general section doesn't take the parameters: {}".format(", ".join(invalid))
+        )
 
     if missing:
-        problems.append('general section is missing the parameters: {}'
-                        .format(', '.join(missing)))
+        problems.append(
+            "general section is missing the parameters: {}".format(", ".join(missing))
+        )
 
     if problems:
         raise exceptions.UserError(
-            'Invalid general section. Copy the example '
-            'config from the repository and edit it: {}'
-            .format(PROJECT_HOME), problems=problems)
+            "Invalid general section. Copy the example "
+            "config from the repository and edit it: {}".format(PROJECT_HOME),
+            problems=problems,
+        )
 
 
 def _validate_collections_param(collections):
@@ -54,7 +58,7 @@ def _validate_collections_param(collections):
         return
 
     if not isinstance(collections, list):
-        raise ValueError('`collections` parameter must be a list or `null`.')
+        raise ValueError("`collections` parameter must be a list or `null`.")
 
     collection_names = set()
 
@@ -64,7 +68,7 @@ def _validate_collections_param(collections):
                 collection_name = collection
             elif isinstance(collection, list):
                 e = ValueError(
-                    'Expected list of format '
+                    "Expected list of format "
                     '["config_name", "storage_a_name", "storage_b_name"]'
                 )
                 if len(collection) != 3:
@@ -79,14 +83,15 @@ def _validate_collections_param(collections):
 
                 collection_name = collection[0]
             else:
-                raise ValueError('Expected string or list of three strings.')
+                raise ValueError("Expected string or list of three strings.")
 
             if collection_name in collection_names:
-                raise ValueError('Duplicate value.')
+                raise ValueError("Duplicate value.")
             collection_names.add(collection_name)
         except ValueError as e:
-            raise ValueError('`collections` parameter, position {i}: {e}'
-                             .format(i=i, e=str(e)))
+            raise ValueError(
+                "`collections` parameter, position {i}: {e}".format(i=i, e=str(e))
+            )
 
 
 class _ConfigReader:
@@ -106,39 +111,38 @@ class _ConfigReader:
             raise ValueError(f'Name "{name}" already used.')
         self._seen_names.add(name)
 
-        if section_type == 'general':
+        if section_type == "general":
             if self._general:
-                raise ValueError('More than one general section.')
+                raise ValueError("More than one general section.")
             self._general = options
-        elif section_type == 'storage':
+        elif section_type == "storage":
             self._storages[name] = options
-        elif section_type == 'pair':
+        elif section_type == "pair":
             self._pairs[name] = options
         else:
-            raise ValueError('Unknown section type.')
+            raise ValueError("Unknown section type.")
 
     def parse(self):
         for section in self._parser.sections():
-            if ' ' in section:
-                section_type, name = section.split(' ', 1)
+            if " " in section:
+                section_type, name = section.split(" ", 1)
             else:
                 section_type = name = section
 
             try:
                 self._parse_section(
-                    section_type, name,
-                    dict(_parse_options(self._parser.items(section),
-                                        section=section))
+                    section_type,
+                    name,
+                    dict(_parse_options(self._parser.items(section), section=section)),
                 )
             except ValueError as e:
-                raise exceptions.UserError(
-                    'Section "{}": {}'.format(section, str(e)))
+                raise exceptions.UserError('Section "{}": {}'.format(section, str(e)))
 
         _validate_general_section(self._general)
-        if getattr(self._file, 'name', None):
-            self._general['status_path'] = os.path.join(
+        if getattr(self._file, "name", None):
+            self._general["status_path"] = os.path.join(
                 os.path.dirname(self._file.name),
-                expand_path(self._general['status_path'])
+                expand_path(self._general["status_path"]),
             )
 
         return self._general, self._pairs, self._storages
@@ -149,8 +153,7 @@ def _parse_options(items, section=None):
         try:
             yield key, json.loads(value)
         except ValueError as e:
-            raise ValueError('Section "{}", option "{}": {}'
-                             .format(section, key, e))
+            raise ValueError('Section "{}", option "{}": {}'.format(section, key, e))
 
 
 class Config:
@@ -158,14 +161,14 @@ class Config:
         self.general = general
         self.storages = storages
         for name, options in storages.items():
-            options['instance_name'] = name
+            options["instance_name"] = name
 
         self.pairs = {}
         for name, options in pairs.items():
             try:
                 self.pairs[name] = PairConfig(self, name, options)
             except ValueError as e:
-                raise exceptions.UserError(f'Pair {name}: {e}')
+                raise exceptions.UserError(f"Pair {name}: {e}")
 
     @classmethod
     def from_fileobject(cls, f):
@@ -175,21 +178,21 @@ class Config:
     @classmethod
     def from_filename_or_environment(cls, fname=None):
         if fname is None:
-            fname = os.environ.get('VDIRSYNCER_CONFIG', None)
+            fname = os.environ.get("VDIRSYNCER_CONFIG", None)
         if fname is None:
-            fname = expand_path('~/.vdirsyncer/config')
+            fname = expand_path("~/.vdirsyncer/config")
             if not os.path.exists(fname):
-                xdg_config_dir = os.environ.get('XDG_CONFIG_HOME',
-                                                expand_path('~/.config/'))
-                fname = os.path.join(xdg_config_dir, 'vdirsyncer/config')
+                xdg_config_dir = os.environ.get(
+                    "XDG_CONFIG_HOME", expand_path("~/.config/")
+                )
+                fname = os.path.join(xdg_config_dir, "vdirsyncer/config")
 
         try:
             with open(fname) as f:
                 return cls.from_fileobject(f)
         except Exception as e:
             raise exceptions.UserError(
-                'Error during reading config {}: {}'
-                .format(fname, e)
+                "Error during reading config {}: {}".format(fname, e)
             )
 
     def get_storage_args(self, storage_name):
@@ -197,9 +200,10 @@ class Config:
             args = self.storages[storage_name]
         except KeyError:
             raise exceptions.UserError(
-                'Storage {!r} not found. '
-                'These are the configured storages: {}'
-                .format(storage_name, list(self.storages))
+                "Storage {!r} not found. "
+                "These are the configured storages: {}".format(
+                    storage_name, list(self.storages)
+                )
             )
         else:
             return expand_fetch_params(args)
@@ -215,50 +219,53 @@ class PairConfig:
     def __init__(self, full_config, name, options):
         self._config = full_config
         self.name = name
-        self.name_a = options.pop('a')
-        self.name_b = options.pop('b')
+        self.name_a = options.pop("a")
+        self.name_b = options.pop("b")
 
-        self._partial_sync = options.pop('partial_sync', None)
-        self.metadata = options.pop('metadata', None) or ()
+        self._partial_sync = options.pop("partial_sync", None)
+        self.metadata = options.pop("metadata", None) or ()
 
-        self.conflict_resolution = \
-            self._process_conflict_resolution_param(
-                options.pop('conflict_resolution', None))
+        self.conflict_resolution = self._process_conflict_resolution_param(
+            options.pop("conflict_resolution", None)
+        )
 
         try:
-            self.collections = options.pop('collections')
+            self.collections = options.pop("collections")
         except KeyError:
             raise ValueError(
-                'collections parameter missing.\n\n'
-                'As of 0.9.0 this parameter has no default anymore. '
-                'Set `collections = null` explicitly in your pair config.'
+                "collections parameter missing.\n\n"
+                "As of 0.9.0 this parameter has no default anymore. "
+                "Set `collections = null` explicitly in your pair config."
             )
         else:
             _validate_collections_param(self.collections)
 
         if options:
-            raise ValueError('Unknown options: {}'.format(', '.join(options)))
+            raise ValueError("Unknown options: {}".format(", ".join(options)))
 
     def _process_conflict_resolution_param(self, conflict_resolution):
-        if conflict_resolution in (None, 'a wins', 'b wins'):
+        if conflict_resolution in (None, "a wins", "b wins"):
             return conflict_resolution
-        elif isinstance(conflict_resolution, list) and \
-                len(conflict_resolution) > 1 and \
-                conflict_resolution[0] == 'command':
+        elif (
+            isinstance(conflict_resolution, list)
+            and len(conflict_resolution) > 1
+            and conflict_resolution[0] == "command"
+        ):
+
             def resolve(a, b):
-                a_name = self.config_a['instance_name']
-                b_name = self.config_b['instance_name']
+                a_name = self.config_a["instance_name"]
+                b_name = self.config_b["instance_name"]
                 command = conflict_resolution[1:]
 
                 def inner():
-                    return _resolve_conflict_via_command(a, b, command, a_name,
-                                                         b_name)
+                    return _resolve_conflict_via_command(a, b, command, a_name, b_name)
+
                 ui_worker = get_ui_worker()
                 return ui_worker.put(inner)
 
             return resolve
         else:
-            raise ValueError('Invalid value for `conflict_resolution`.')
+            raise ValueError("Invalid value for `conflict_resolution`.")
 
     # The following parameters are lazily evaluated because evaluating
     # self.config_a would expand all `x.fetch` parameters. This is costly and
@@ -282,21 +289,23 @@ class PairConfig:
             cls_a, _ = storage_class_from_config(self.config_a)
             cls_b, _ = storage_class_from_config(self.config_b)
 
-            if not cls_a.read_only and \
-               not self.config_a.get('read_only', False) and \
-               not cls_b.read_only and \
-               not self.config_b.get('read_only', False):
+            if (
+                not cls_a.read_only
+                and not self.config_a.get("read_only", False)
+                and not cls_b.read_only
+                and not self.config_b.get("read_only", False)
+            ):
                 raise exceptions.UserError(
-                    '`partial_sync` is only effective if one storage is '
-                    'read-only. Use `read_only = true` in exactly one storage '
-                    'section.'
+                    "`partial_sync` is only effective if one storage is "
+                    "read-only. Use `read_only = true` in exactly one storage "
+                    "section."
                 )
 
         if partial_sync is None:
-            partial_sync = 'revert'
+            partial_sync = "revert"
 
-        if partial_sync not in ('ignore', 'revert', 'error'):
-            raise exceptions.UserError('Invalid value for `partial_sync`.')
+        if partial_sync not in ("ignore", "revert", "error"):
+            raise exceptions.UserError("Invalid value for `partial_sync`.")
 
         return partial_sync
 
@@ -314,8 +323,7 @@ class CollectionConfig:
 load_config = Config.from_filename_or_environment
 
 
-def _resolve_conflict_via_command(a, b, command, a_name, b_name,
-                                  _check_call=None):
+def _resolve_conflict_via_command(a, b, command, a_name, b_name, _check_call=None):
     import tempfile
     import shutil
 
@@ -324,14 +332,14 @@ def _resolve_conflict_via_command(a, b, command, a_name, b_name,
 
     from ..vobject import Item
 
-    dir = tempfile.mkdtemp(prefix='vdirsyncer-conflict.')
+    dir = tempfile.mkdtemp(prefix="vdirsyncer-conflict.")
     try:
         a_tmp = os.path.join(dir, a_name)
         b_tmp = os.path.join(dir, b_name)
 
-        with open(a_tmp, 'w') as f:
+        with open(a_tmp, "w") as f:
             f.write(a.raw)
-        with open(b_tmp, 'w') as f:
+        with open(b_tmp, "w") as f:
             f.write(b.raw)
 
         command[0] = expand_path(command[0])
@@ -343,8 +351,7 @@ def _resolve_conflict_via_command(a, b, command, a_name, b_name,
             new_b = f.read()
 
         if new_a != new_b:
-            raise exceptions.UserError('The two files are not completely '
-                                       'equal.')
+            raise exceptions.UserError("The two files are not completely " "equal.")
         return Item(new_a)
     finally:
         shutil.rmtree(dir)
