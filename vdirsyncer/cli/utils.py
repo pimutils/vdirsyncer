@@ -181,7 +181,7 @@ def get_status_path(base_path, pair, collection=None, data_type=None):
 def load_status(base_path, pair, collection=None, data_type=None):
     path = get_status_path(base_path, pair, collection, data_type)
     if not os.path.exists(path):
-        return None
+        return
     assert_permissions(path, STATUS_PERMISSIONS)
 
     with open(path) as f:
@@ -268,8 +268,7 @@ def storage_instance_from_config(config, create=True):
             config = handle_collection_not_found(
                 config, config.get('collection', None), e=str(e))
             return storage_instance_from_config(config, create=False)
-        else:
-            raise
+        raise
     except Exception:
         return handle_storage_init_error(cls, new_config)
 

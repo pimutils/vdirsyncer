@@ -246,12 +246,12 @@ class SqliteStatus(_StatusBase):
                               .format(side=side, table=table),
                               (ident,)).fetchone()
         if res is None:
-            return None
+            return
 
         if res['hash'] is None:  # FIXME: Implement as constraint in db
             assert res['href'] is None
             assert res['etag'] is None
-            return None
+            return
 
         res = dict(res)
         return ItemMetadata(**res)

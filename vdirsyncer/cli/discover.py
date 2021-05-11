@@ -50,14 +50,13 @@ def collections_for_pair(status_path, pair, from_cache=True,
             return list(_expand_collections_cache(
                 rv['collections'], pair.config_a, pair.config_b
             ))
-        elif rv:
+        if rv:
             raise exceptions.UserError('Detected change in config file, '
                                        'please run `vdirsyncer discover {}`.'
                                        .format(pair.name))
-        else:
-            raise exceptions.UserError('Please run `vdirsyncer discover {}` '
-                                       ' before synchronization.'
-                                       .format(pair.name))
+        raise exceptions.UserError('Please run `vdirsyncer discover {}` '
+                                   ' before synchronization.'
+                                   .format(pair.name))
 
     logger.info('Discovering collections for pair {}' .format(pair.name))
 

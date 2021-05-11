@@ -37,10 +37,10 @@ def prepare_auth(auth, username, password):
     if username and password:
         if auth == 'basic' or auth is None:
             return (username, password)
-        elif auth == 'digest':
+        if auth == 'digest':
             from requests.auth import HTTPDigestAuth
             return HTTPDigestAuth(username, password)
-        elif auth == 'guess':
+        if auth == 'guess':
             try:
                 from requests_toolbelt.auth.guess import GuessAuth
             except ImportError:
@@ -57,8 +57,6 @@ def prepare_auth(auth, username, password):
     elif auth:
         raise exceptions.UserError('You need to specify username and password '
                                    'for {} authentication.'.format(auth))
-    else:
-        return None
 
 
 def prepare_verify(verify, verify_fingerprint):

@@ -21,8 +21,7 @@ _missing = object()
 
 def expand_path(p):
     p = os.path.expanduser(p)
-    p = os.path.normpath(p)
-    return p
+    return os.path.normpath(p)
 
 
 def split_dict(d, f):
@@ -181,8 +180,7 @@ def generate_href(ident=None, safe=SAFE_UID_CHARS):
     '''
     if not ident or not href_safe(ident, safe):
         return str(uuid.uuid4())
-    else:
-        return ident
+    return ident
 
 
 def synchronized(lock=None):
