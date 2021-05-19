@@ -80,7 +80,8 @@ class FilesystemStorage(Storage):
     def list(self):
         for fname in os.listdir(self.path):
             fpath = os.path.join(self.path, fname)
-            if os.path.isfile(fpath) and fname.endswith(self.fileext):
+            if os.path.isfile(fpath) and fname.endswith(self.fileext) and (
+                    not fname.endswith('.tmp')):
                 yield fname, get_etag_from_file(fpath)
 
     def get(self, href):
