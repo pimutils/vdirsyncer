@@ -63,6 +63,17 @@ class TestFilesystemStorage(StorageTests):
         # assert False, tmpdir.listdir() # enable to see the created filename
         assert len(list(s.list())) == 1
 
+    def test_ignore_files_typical_backup(self, tmpdir):
+        """Test file-name ignorance with typical backup ending ~."""
+        ignorext = "~" # without dot
+        s = self.storage_class(str(tmpdir), '', fileignoreext="~")
+        s.upload(Item('UID:xyzxyz'))
+        item_file, = tmpdir.listdir()
+        item_file.copy(item_file.new(basename=item_file.basename+'~'))
+        assert len(tmpdir.listdir()) == 2
+        #assert False, tmpdir.listdir() # enable to see the created filename
+        assert len(list(s.list())) == 1
+
     def test_too_long_uid(self, tmpdir):
         s = self.storage_class(str(tmpdir), ".txt")
         item = Item("UID:" + "hue" * 600)

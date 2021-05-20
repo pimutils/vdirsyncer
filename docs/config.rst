@@ -408,7 +408,7 @@ Local
       fileext = "..."
       #encoding = "utf-8"
       #post_hook = null
-      #fileextignore = ".tmp"
+      #fileignoreext = ".tmp"
 
     Can be used with `khal <http://lostpackets.de/khal/>`_. See :doc:`vdir` for
     a more formal description of the format.
@@ -427,7 +427,7 @@ Local
     :param post_hook: A command to call for each item creation and
         modification. The command will be called with the path of the
         new/updated file.
-    :param fileextignore: The file extention to ignore,
+    :param fileeignoreext: The file extention to ignore,
         the default is ``.tmp``.
 
 .. storage:: singlefile
