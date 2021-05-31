@@ -14,7 +14,7 @@ requirements = [
     "click>=5.0",
     "click-log>=0.3.0, <0.4.0",
     # https://github.com/pimutils/vdirsyncer/issues/478
-    "click-threading>=0.2",
+    "click-threading>=0.5",
     "requests >=2.20.0",
     # https://github.com/sigmavirus24/requests-toolbelt/pull/28
     # And https://github.com/sigmavirus24/requests-toolbelt/issues/54
