@@ -422,7 +422,7 @@ Local
     :param fileext: The file extension to use (e.g. ``.txt``). Contained in the
         href, so if you change the file extension after a sync, this will
         trigger a re-download of everything (but *should* not cause data-loss
-        of any kind). To be compatible with the ``vset to the empty string`` format you have
+        of any kind). To be compatible with the ``vset`` format you have
         to either use ``.vcf`` or ``.ics``. Note that metasync won't work
         if you use an empty string here.
     :param encoding: File encoding for items, both content and filename.
