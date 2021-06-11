@@ -22,13 +22,22 @@ class FilesystemStorage(Storage):
     storage_name = "filesystem"
     _repr_attributes = ("path",)
 
-    def __init__(self, path, fileext, encoding="utf-8", post_hook=None, **kwargs):
+    def __init__(
+        self,
+        path,
+        fileext,
+        encoding="utf-8",
+        post_hook=None,
+        fileignoreext=".tmp",
+        **kwargs
+    ):
         super().__init__(**kwargs)
         path = expand_path(path)
         checkdir(path, create=False)
         self.path = path
         self.encoding = encoding
         self.fileext = fileext
+        self.fileignoreext = fileignoreext
         self.post_hook = post_hook
 
     @classmethod
@@ -80,7 +89,11 @@ class FilesystemStorage(Storage):
     def list(self):
         for fname in os.listdir(self.path):
             fpath = os.path.join(self.path, fname)
-            if os.path.isfile(fpath) and fname.endswith(self.fileext):
+            if (
+                os.path.isfile(fpath)
+                and fname.endswith(self.fileext)
+                and (not fname.endswith(self.fileignoreext))
+            ):
                 yield fname, get_etag_from_file(fpath)
 
     def get(self, href):
