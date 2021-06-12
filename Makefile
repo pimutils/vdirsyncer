@@ -38,6 +38,9 @@ endif
 PYTEST = py.test $(PYTEST_ARGS)
 CODECOV_PATH = /tmp/codecov.sh
 
+all:
+	$(error Take a look at https://vdirsyncer.pimutils.org/en/stable/tutorial.html#installation)
+
 ci-test:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
 	$(PYTEST) tests/unit/
@@ -56,9 +59,6 @@ ci-test-storage:
 
 test:
 	$(PYTEST)
-
-all:
-	$(error Take a look at https://vdirsyncer.pimutils.org/en/stable/tutorial.html#installation)
 
 install-test: install-dev
 	pip install -Ur test-requirements.txt
