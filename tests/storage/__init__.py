@@ -5,12 +5,10 @@ from urllib.parse import quote as urlquote
 from urllib.parse import unquote as urlunquote
 
 import pytest
-from hypothesis import settings
 
 from .. import assert_item_equals
 from .. import EVENT_TEMPLATE
 from .. import normalize_item
-from .. import printable_characters_strategy
 from .. import TASK_TEMPLATE
 from .. import VCARD_TEMPLATE
 from vdirsyncer import exceptions
@@ -297,10 +295,15 @@ class StorageTests:
 
     @pytest.mark.parametrize(
         "value",
-        [None]
-        + [
-            printable_characters_strategy.example()
-            for _ in range(settings.get_profile(settings._current_profile).max_examples)
+        [
+            None,
+            "",
+            "Hello there!",
+            "Österreich",
+            "中国",
+            "한글",
+            "42a4ec99-b1c2-4859-b142-759112f2ca50",
+            "فلسطين",
         ],
     )
     def test_metadata_normalization(self, requires_metadata, s, value):
