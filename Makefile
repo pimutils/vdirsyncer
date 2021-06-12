@@ -63,9 +63,6 @@ all:
 install-servers:
 	set -ex; \
 	for server in $(DAV_SERVER); do \
-		if [ ! "$$(ls $(TESTSERVER_BASE)$$server/)" ]; then \
-			git submodule update --init -- "$(TESTSERVER_BASE)$$server"; \
-		fi; \
 		(cd $(TESTSERVER_BASE)$$server && sh install.sh); \
 	done
 
