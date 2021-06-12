@@ -3,7 +3,13 @@ import pytest
 
 class ServerMixin:
     @pytest.fixture
-    def get_storage_args(self, request, tmpdir, slow_create_collection):
+    def get_storage_args(
+        self,
+        request,
+        tmpdir,
+        slow_create_collection,
+        radicale_server,
+    ):
         def inner(collection="test"):
             url = "http://127.0.0.1:8001/"
             args = {

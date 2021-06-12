@@ -62,15 +62,7 @@ test:
 all:
 	$(error Take a look at https://vdirsyncer.pimutils.org/en/stable/tutorial.html#installation)
 
-install-servers:
-	set -ex; \
-	for server in $(DAV_SERVER); do \
-		if [ -f $(TESTSERVER_BASE)$$server/install.sh ]; then \
-			(cd $(TESTSERVER_BASE)$$server && sh install.sh); \
-		fi \
-	done
-
-install-test: install-servers install-dev
+install-test: install-dev
 	pip install -Ur test-requirements.txt
 	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
 		pip install -U --force-reinstall \

@@ -33,7 +33,6 @@ tasks:
       python setup.py build
       sudo pip install --no-index .
       sudo systemctl start docker
-      make -e install-servers
   - test: |
       cd vdirsyncer
       # Non-system python is used for packages:
