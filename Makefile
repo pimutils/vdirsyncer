@@ -50,7 +50,10 @@ ci-test:
 
 ci-test-storage:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
-	$(PYTEST) tests/storage/
+	set -ex; \
+	for server in $(DAV_SERVER); do \
+		DAV_SERVER=$$server $(PYTEST) --cov-append tests/storage; \
+	done
 	bash $(CODECOV_PATH) -c -F storage
 
 test:

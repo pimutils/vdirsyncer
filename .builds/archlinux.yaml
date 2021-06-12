@@ -24,6 +24,7 @@ environment:
   BUILD: test
   CI: true
   CODECOV_TOKEN: b834a3c5-28fa-4808-9bdb-182210069c79
+  DAV_SERVER: radicale xandikos
   REQUIREMENTS: release
   # TODO: ETESYNC_TESTS
 tasks:
@@ -32,11 +33,10 @@ tasks:
       python setup.py build
       sudo pip install --no-index .
       sudo systemctl start docker
-      DAV_SERVER="radicale xandikos" make -e install-servers
+      make -e install-servers
   - test: |
       cd vdirsyncer
       # Non-system python is used for packages:
       export PATH=$PATH:~/.local/bin/
       make -e ci-test
-      DAV_SERVER=radicale make -e ci-test-storage
-      DAV_SERVER=xandikos make -e ci-test-storage
+      make -e ci-test-storage
