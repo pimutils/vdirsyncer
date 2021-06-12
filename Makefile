@@ -63,7 +63,9 @@ all:
 install-servers:
 	set -ex; \
 	for server in $(DAV_SERVER); do \
-		(cd $(TESTSERVER_BASE)$$server && sh install.sh); \
+		if [ -f $(TESTSERVER_BASE)$$server/install.sh ]; then \
+			(cd $(TESTSERVER_BASE)$$server && sh install.sh); \
+		fi \
 	done
 
 install-test: install-servers install-dev
