@@ -142,6 +142,7 @@ def request(
 
     func = session.request
 
+    logger.debug("=" * 20)
     logger.debug(f"{method} {url}")
     logger.debug(kwargs.get("headers", {}))
     logger.debug(kwargs.get("data", None))
