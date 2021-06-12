@@ -46,38 +46,40 @@ class TestFilesystemStorage(StorageTests):
 
     def test_ignore_tmp_files(self, tmpdir):
         """Test that files with .tmp suffix beside .ics files are ignored."""
-        s = self.storage_class(str(tmpdir), '.ics')
-        s.upload(Item('UID:xyzxyz'))
-        item_file, = tmpdir.listdir()
-        item_file.copy(item_file.new(ext='tmp'))
+        s = self.storage_class(str(tmpdir), ".ics")
+        s.upload(Item("UID:xyzxyz"))
+        (item_file,) = tmpdir.listdir()
+        item_file.copy(item_file.new(ext="tmp"))
         assert len(tmpdir.listdir()) == 2
         assert len(list(s.list())) == 1
 
     def test_ignore_tmp_files_empty_fileext(self, tmpdir):
         """Test that files with .tmp suffix are ignored with empty fileext."""
-        s = self.storage_class(str(tmpdir), '')
-        s.upload(Item('UID:xyzxyz'))
-        item_file, = tmpdir.listdir()
-        item_file.copy(item_file.new(ext='tmp'))
+        s = self.storage_class(str(tmpdir), "")
+        s.upload(Item("UID:xyzxyz"))
+        (item_file,) = tmpdir.listdir()
+        item_file.copy(item_file.new(ext="tmp"))
         assert len(tmpdir.listdir()) == 2
         # assert False, tmpdir.listdir() # enable to see the created filename
         assert len(list(s.list())) == 1
 
     def test_ignore_files_typical_backup(self, tmpdir):
         """Test file-name ignorance with typical backup ending ~."""
-        ignorext = "~" # without dot
-        s = self.storage_class(str(tmpdir), '', fileignoreext="~")
-        s.upload(Item('UID:xyzxyz'))
-        item_file, = tmpdir.listdir()
-        item_file.copy(item_file.new(basename=item_file.basename+'~'))
+        ignorext = "~"  # without dot
+
+        storage = self.storage_class(str(tmpdir), "", fileignoreext=ignorext)
+        storage.upload(Item("UID:xyzxyz"))
+        (item_file,) = tmpdir.listdir()
+        item_file.copy(item_file.new(basename=item_file.basename + ignorext))
+
         assert len(tmpdir.listdir()) == 2
-        #assert False, tmpdir.listdir() # enable to see the created filename
-        assert len(list(s.list())) == 1
+        assert len(list(storage.list())) == 1
 
     def test_too_long_uid(self, tmpdir):
-        s = self.storage_class(str(tmpdir), ".txt")
+        storage = self.storage_class(str(tmpdir), ".txt")
         item = Item("UID:" + "hue" * 600)
-        href, etag = s.upload(item)
+
+        href, etag = storage.upload(item)
         assert item.uid not in href
 
     def test_post_hook_inactive(self, tmpdir, monkeypatch):
