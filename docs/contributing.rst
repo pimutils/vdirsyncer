@@ -87,8 +87,8 @@ virtualenv_ and run this inside of it::
     # Install git commit hook for some extra linting and checking
     pre-commit install
 
-    # install test dependencies
-    make install-test
+    # Install development dependencies
+    make install-dev
 
 Then you can run::
 
