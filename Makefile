@@ -74,8 +74,6 @@ install-docs:
 
 docs:
 	cd docs && make html
-
-linkcheck:
 	sphinx-build -W -b linkcheck ./docs/ ./docs/_build/linkcheck/
 
 release-deb:
