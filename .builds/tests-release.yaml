@@ -16,10 +16,9 @@ environment:
   # TODO: ETESYNC_TESTS
 tasks:
   - setup: |
-      cd vdirsyncer
       sudo systemctl start docker
-      make -e install-test
-      make -e install-style
+      cd vdirsyncer
+      make -e install-test -e install-style
   - test: |
       cd vdirsyncer
       # Non-system python is used for packages:

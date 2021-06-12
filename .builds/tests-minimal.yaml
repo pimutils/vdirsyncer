@@ -19,8 +19,8 @@ environment:
   # TODO: ETESYNC_TESTS
 tasks:
   - setup: |
-      cd vdirsyncer
       sudo systemctl start docker
+      cd vdirsyncer
       make -e install-test
   - test: |
       cd vdirsyncer

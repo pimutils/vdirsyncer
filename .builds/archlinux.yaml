@@ -29,13 +29,11 @@ environment:
   # TODO: ETESYNC_TESTS
 tasks:
   - setup: |
+      sudo systemctl start docker
       cd vdirsyncer
       python setup.py build
       sudo pip install --no-index .
-      sudo systemctl start docker
   - test: |
       cd vdirsyncer
-      # Non-system python is used for packages:
-      export PATH=$PATH:~/.local/bin/
       make -e ci-test
       make -e ci-test-storage
