@@ -62,12 +62,6 @@ test:
 
 install-test: install-dev
 	pip install -Ur test-requirements.txt
-	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
-		pip install -U --force-reinstall \
-			git+https://github.com/DRMacIver/hypothesis \
-			git+https://github.com/kennethreitz/requests \
-			git+https://github.com/pytest-dev/pytest; \
-	fi
 	[ -z "$(TEST_EXTRA_PACKAGES)" ] || pip install $(TEST_EXTRA_PACKAGES)
 
 install-style: install-docs install-dev
@@ -99,11 +93,7 @@ install-dev:
 	pip install -U pip setuptools wheel
 	pip install -e .
 	[ "$(ETESYNC_TESTS)" = "false" ] || pip install -Ue .[etesync]
-	set -xe && if [ "$(REQUIREMENTS)" = "devel" ]; then \
-	    pip install -U --force-reinstall \
-			git+https://github.com/mitsuhiko/click \
-			git+https://github.com/kennethreitz/requests; \
-	elif [ "$(REQUIREMENTS)" = "minimal" ]; then \
+	set -xe && if [ "$(REQUIREMENTS)" = "minimal" ]; then \
 		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
 	fi
 
