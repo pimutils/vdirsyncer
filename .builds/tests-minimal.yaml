@@ -1,4 +1,8 @@
-# TODO: Maybe shift this job to ubuntu/debian.
+# Run tests using oldest available dependency versions.
+#
+# TODO: It might make more sense to test with an older Ubuntu or Fedora version
+# here, and consider that our "oldest suppported environment".
+
 image: archlinux
 packages:
   - docker

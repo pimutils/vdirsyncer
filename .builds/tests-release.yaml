@@ -1,3 +1,5 @@
+# Run tests using latest dependencies from PyPI
+
 image: archlinux
 packages:
   - docker

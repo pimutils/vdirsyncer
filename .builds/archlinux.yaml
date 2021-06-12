@@ -1,3 +1,5 @@
+# Run tests using the packaged dependencies on ArchLinux.
+
 image: archlinux
 packages:
   - docker
