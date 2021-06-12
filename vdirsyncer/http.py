@@ -138,7 +138,7 @@ def request(
     if verify_fingerprint is not None:
         _install_fingerprint_adapter(session, verify_fingerprint)
 
-    session.hooks = dict(response=_fix_redirects)
+    session.hooks = {"response": _fix_redirects}
 
     func = session.request
 
