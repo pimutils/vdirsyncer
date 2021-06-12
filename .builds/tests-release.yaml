@@ -6,33 +6,26 @@ packages:
   - docker-compose
   - python-pip
   - twine
+  - python-tox
+  - python-pre-commit
 sources:
   - https://github.com/pimutils/vdirsyncer
 secrets:
   - a36c8ba3-fba0-4338-b402-6aea0fbe771e
 environment:
-  BUILD: test
   CI: true
   CODECOV_TOKEN: b834a3c5-28fa-4808-9bdb-182210069c79
   DAV_SERVER: baikal radicale xandikos
-  REQUIREMENTS: release
   # TODO: ETESYNC_TESTS
 tasks:
   - setup: |
       sudo systemctl start docker
-      cd vdirsyncer
-      make -e install-dev -e install-docs
   - test: |
       cd vdirsyncer
-      # Non-system python is used for packages:
-      export PATH=$PATH:~/.local/bin/
-      make -e ci-test
-      make -e ci-test-storage
-  - style: |
+      tox
+  - lint: |
       cd vdirsyncer
-      # Non-system python is used for packages:
-      export PATH=$PATH:~/.local/bin/
-      make -e style
+      pre-commit run --all
       git describe --exact-match --tags || complete-build
   - publish: |
       cd vdirsyncer

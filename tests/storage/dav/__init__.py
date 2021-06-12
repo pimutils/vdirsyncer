@@ -13,6 +13,7 @@ from vdirsyncer.vobject import Item
 
 
 dav_server = os.environ.get("DAV_SERVER", "skip")
+
 ServerMixin = get_server_mixin(dav_server)
 
 
