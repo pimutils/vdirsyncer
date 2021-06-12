@@ -118,11 +118,14 @@ Pair Section
 
       metadata = ["color", "displayname", "description", "order"]
 
-  This synchronizes the ``http://apple.com/ns/ical/:calendar-color``,
-  ``DAV:displayname``, ``CalDAV:calendar-description``,
-  ``CardDAV:addressbook-description`` and
-  ``http://apple.com/ns/ical/:calendar-order`` properties. The
-  ``conflict_resolution`` parameter applies here as well.
+  This synchronizes the following properties:
+
+  - color: ``http://apple.com/ns/ical/:calendar-color``
+  - displayname: ``DAV:displayname``
+  - description: ``CalDAV:calendar-description`` and ``CardDAV:addressbook-description``
+  - order: ``http://apple.com/ns/ical/:calendar-order``
+
+  The ``conflict_resolution`` parameter applies for these properties too.
 
 .. _storage_config:
 
