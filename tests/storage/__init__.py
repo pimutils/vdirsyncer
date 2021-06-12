@@ -210,7 +210,7 @@ class StorageTests:
         s = self.storage_class(**self.storage_class.create_collection(**args))
 
         href = s.upload(get_item())[0]
-        assert href in {href for href, etag in s.list()}
+        assert href in (href for href, etag in s.list())
 
     def test_discover_collection_arg(self, requires_collections, get_storage_args):
         args = get_storage_args(collection="test2")
@@ -239,7 +239,7 @@ class StorageTests:
         uid = str(uuid.uuid4())
         s.upload(get_item(uid=uid.upper()))
         s.upload(get_item(uid=uid.lower()))
-        items = list(href for href, etag in s.list())
+        items = [href for href, etag in s.list()]
         assert len(items) == 2
         assert len(set(items)) == 2
 

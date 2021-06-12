@@ -40,7 +40,6 @@ PYTEST = py.test $(PYTEST_ARGS)
 export TESTSERVER_BASE := ./tests/storage/servers/
 CODECOV_PATH = /tmp/codecov.sh
 
-ifeq ($(CI), true)
 ci-test:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
 	$(PYTEST) tests/unit/
@@ -48,14 +47,14 @@ ci-test:
 	$(PYTEST) tests/system/
 	bash $(CODECOV_PATH) -c -F system
 	[ "$(ETESYNC_TESTS)" = "false" ] || make test-storage
+
 ci-test-storage:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
 	$(PYTEST) tests/storage/
 	bash $(CODECOV_PATH) -c -F storage
-else
+
 test:
 	$(PYTEST)
-endif
 
 all:
 	$(error Take a look at https://vdirsyncer.pimutils.org/en/stable/tutorial.html#installation)
@@ -63,7 +62,9 @@ all:
 install-servers:
 	set -ex; \
 	for server in $(DAV_SERVER); do \
-		(cd $(TESTSERVER_BASE)$$server && sh install.sh); \
+		if [ -f $(TESTSERVER_BASE)$$server/install.sh ]; then \
+			(cd $(TESTSERVER_BASE)$$server && sh install.sh); \
+		fi \
 	done
 
 install-test: install-servers install-dev

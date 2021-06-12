@@ -18,7 +18,7 @@ Note: Version 0.17 has some alpha releases but ultimately was never finalised.
 - Support for Python 3.5 and 3.6 has been dropped. This release mostly focuses
   on keeping vdirsyncer compatible with newer environments.
 - click 8 and click-threading 0.5.0 are now required.
-- For those using ``pipx``, we now recommend using ``pipx``, it's successor.
+- For those using ``pipsi``, we now recommend using ``pipx``, it's successor.
 - Python 3.9 is now supported.
 - Our Debian/Ubuntu build scripts have been updated. New versions should be
   pushed to those repositories soon.

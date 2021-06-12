@@ -42,8 +42,7 @@ class GoogleSession(dav.DAVSession):
 
         token_file = expand_path(token_file)
         ui_worker = get_ui_worker()
-        f = lambda: self._init_token(token_file, client_id, client_secret)
-        ui_worker.put(f)
+        ui_worker.put(lambda: self._init_token(token_file, client_id, client_secret))
 
     def _init_token(self, token_file, client_id, client_secret):
         token = None

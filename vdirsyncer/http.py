@@ -138,10 +138,11 @@ def request(
     if verify_fingerprint is not None:
         _install_fingerprint_adapter(session, verify_fingerprint)
 
-    session.hooks = dict(response=_fix_redirects)
+    session.hooks = {"response": _fix_redirects}
 
     func = session.request
 
+    logger.debug("=" * 20)
     logger.debug(f"{method} {url}")
     logger.debug(kwargs.get("headers", {}))
     logger.debug(kwargs.get("data", None))
