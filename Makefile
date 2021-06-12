@@ -60,9 +60,6 @@ ci-test-storage:
 test:
 	$(PYTEST)
 
-install-style: install-docs install-dev
-	pip install pre-commit
-
 style:
 	pre-commit run --all
 	! git grep -i syncroniz */*
@@ -87,6 +84,7 @@ install-dev:
 	pip install -U pip setuptools wheel
 	pip install -e .
 	pip install -Ur test-requirements.txt $(TEST_EXTRA_PACKAGES)
+	pip install pre-commit
 	[ "$(ETESYNC_TESTS)" = "false" ] || pip install -Ue .[etesync]
 	set -xe && if [ "$(REQUIREMENTS)" = "minimal" ]; then \
 		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
