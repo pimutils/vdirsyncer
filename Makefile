@@ -36,8 +36,6 @@ ifeq ($(ETESYNC_TESTS), true)
 endif
 
 PYTEST = py.test $(PYTEST_ARGS)
-
-export TESTSERVER_BASE := ./tests/storage/servers/
 CODECOV_PATH = /tmp/codecov.sh
 
 ci-test:
