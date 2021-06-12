@@ -100,13 +100,12 @@ The ``Makefile`` has a lot of options that allow you to control which tests are
 run, and which servers are tested. Take a look at its code where they are all
 initialized and documented.
 
-For example, to test xandikos, first run the server itself::
-
-    docker run -p 8000:8000 whynothugo/vdirsyncer-devkit-xandikos
-
-Then run the tests specifying this ``DAV_SERVER``, run::
+To tests against a specific DAV server, use ``DAV_SERVER``::
 
     make DAV_SERVER=xandikos test
+
+The server will be initialised in a docker container and terminated at the end
+of the test suite.
 
 If you have any questions, feel free to open issues about it.
 
