@@ -46,6 +46,7 @@ def dockerised_server(name, container_port, exposed_port):
             [
                 "docker",
                 "run",
+                "--rm",
                 "--detach",
                 "--publish",
                 f"{exposed_port}:{container_port}",
