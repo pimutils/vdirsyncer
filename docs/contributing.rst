@@ -75,8 +75,8 @@ Submitting patches, pull requests
 Running tests, how to set up your development environment
 ---------------------------------------------------------
 
-For many patches, it might suffice to just let Travis run the tests. However,
-Travis is slow, so you might want to run them locally too. For this, set up a
+For many patches, it might suffice to just let CI run the tests. However,
+CI is slow, so you might want to run them locally too. For this, set up a
 virtualenv_ and run this inside of it::
 
     # install:
@@ -87,8 +87,8 @@ virtualenv_ and run this inside of it::
     # Install git commit hook for some extra linting and checking
     pre-commit install
 
-    # install test dependencies
-    make install-test
+    # Install development dependencies
+    make install-dev
 
 Then you can run::
 
@@ -100,14 +100,12 @@ The ``Makefile`` has a lot of options that allow you to control which tests are
 run, and which servers are tested. Take a look at its code where they are all
 initialized and documented.
 
-For example, to test xandikos, first run the server itself::
-
-    docker-compose build xandikos
-    docker-compose up -d xandikos
-
-Then run the tests specifying this ``DAV_SERVER``, run::
+To tests against a specific DAV server, use ``DAV_SERVER``::
 
     make DAV_SERVER=xandikos test
+
+The server will be initialised in a docker container and terminated at the end
+of the test suite.
 
 If you have any questions, feel free to open issues about it.
 

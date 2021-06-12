@@ -20,40 +20,35 @@ from tests import VCARD_TEMPLATE
 _simple_split = [
     VCARD_TEMPLATE.format(r=123, uid=123),
     VCARD_TEMPLATE.format(r=345, uid=345),
-    VCARD_TEMPLATE.format(r=678, uid=678)
+    VCARD_TEMPLATE.format(r=678, uid=678),
 ]
 
-_simple_joined = '\r\n'.join(
-    ['BEGIN:VADDRESSBOOK']
-    + _simple_split
-    + ['END:VADDRESSBOOK\r\n']
+_simple_joined = "\r\n".join(
+    ["BEGIN:VADDRESSBOOK"] + _simple_split + ["END:VADDRESSBOOK\r\n"]
 )
 
 
 def test_split_collection_simple(benchmark):
     given = benchmark(lambda: list(vobject.split_collection(_simple_joined)))
 
-    assert [normalize_item(item) for item in given] == \
-        [normalize_item(item) for item in _simple_split]
+    assert [normalize_item(item) for item in given] == [
+        normalize_item(item) for item in _simple_split
+    ]
 
-    assert [x.splitlines() for x in given] == \
-        [x.splitlines() for x in _simple_split]
+    assert [x.splitlines() for x in given] == [x.splitlines() for x in _simple_split]
 
 
 def test_split_collection_multiple_wrappers(benchmark):
-    joined = '\r\n'.join(
-        'BEGIN:VADDRESSBOOK\r\n'
-        + x
-        + '\r\nEND:VADDRESSBOOK\r\n'
-        for x in _simple_split
+    joined = "\r\n".join(
+        "BEGIN:VADDRESSBOOK\r\n" + x + "\r\nEND:VADDRESSBOOK\r\n" for x in _simple_split
     )
     given = benchmark(lambda: list(vobject.split_collection(joined)))
 
-    assert [normalize_item(item) for item in given] == \
-        [normalize_item(item) for item in _simple_split]
+    assert [normalize_item(item) for item in given] == [
+        normalize_item(item) for item in _simple_split
+    ]
 
-    assert [x.splitlines() for x in given] == \
-        [x.splitlines() for x in _simple_split]
+    assert [x.splitlines() for x in given] == [x.splitlines() for x in _simple_split]
 
 
 def test_join_collection_simple(benchmark):
@@ -63,8 +58,11 @@ def test_join_collection_simple(benchmark):
 
 
 def test_join_collection_vevents(benchmark):
-    actual = benchmark(lambda: vobject.join_collection([
-        dedent("""
+    actual = benchmark(
+        lambda: vobject.join_collection(
+            [
+                dedent(
+                    """
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:HUEHUE
@@ -75,10 +73,15 @@ def test_join_collection_vevents(benchmark):
             VALUE:Event {}
             END:VEVENT
             END:VCALENDAR
-         """).format(i) for i in range(3)
-    ]))
+         """
+                ).format(i)
+                for i in range(3)
+            ]
+        )
+    )
 
-    expected = dedent("""
+    expected = dedent(
+        """
         BEGIN:VCALENDAR
         VERSION:2.0
         PRODID:HUEHUE
@@ -95,7 +98,8 @@ def test_join_collection_vevents(benchmark):
         VALUE:Event 2
         END:VEVENT
         END:VCALENDAR
-    """).lstrip()
+    """
+    ).lstrip()
 
     assert actual.splitlines() == expected.splitlines()
 
@@ -103,34 +107,29 @@ def test_join_collection_vevents(benchmark):
 def test_split_collection_timezones():
     items = [
         BARE_EVENT_TEMPLATE.format(r=123, uid=123),
-        BARE_EVENT_TEMPLATE.format(r=345, uid=345)
+        BARE_EVENT_TEMPLATE.format(r=345, uid=345),
     ]
 
     timezone = (
-        'BEGIN:VTIMEZONE\r\n'
-        'TZID:/mozilla.org/20070129_1/Asia/Tokyo\r\n'
-        'X-LIC-LOCATION:Asia/Tokyo\r\n'
-        'BEGIN:STANDARD\r\n'
-        'TZOFFSETFROM:+0900\r\n'
-        'TZOFFSETTO:+0900\r\n'
-        'TZNAME:JST\r\n'
-        'DTSTART:19700101T000000\r\n'
-        'END:STANDARD\r\n'
-        'END:VTIMEZONE'
+        "BEGIN:VTIMEZONE\r\n"
+        "TZID:/mozilla.org/20070129_1/Asia/Tokyo\r\n"
+        "X-LIC-LOCATION:Asia/Tokyo\r\n"
+        "BEGIN:STANDARD\r\n"
+        "TZOFFSETFROM:+0900\r\n"
+        "TZOFFSETTO:+0900\r\n"
+        "TZNAME:JST\r\n"
+        "DTSTART:19700101T000000\r\n"
+        "END:STANDARD\r\n"
+        "END:VTIMEZONE"
     )
 
-    full = '\r\n'.join(
-        ['BEGIN:VCALENDAR']
-        + items
-        + [timezone, 'END:VCALENDAR']
-    )
+    full = "\r\n".join(["BEGIN:VCALENDAR"] + items + [timezone, "END:VCALENDAR"])
 
-    given = {normalize_item(item)
-             for item in vobject.split_collection(full)}
+    given = {normalize_item(item) for item in vobject.split_collection(full)}
     expected = {
-        normalize_item('\r\n'.join((
-            'BEGIN:VCALENDAR', item, timezone, 'END:VCALENDAR'
-        )))
+        normalize_item(
+            "\r\n".join(("BEGIN:VCALENDAR", item, timezone, "END:VCALENDAR"))
+        )
         for item in items
     }
 
@@ -138,32 +137,28 @@ def test_split_collection_timezones():
 
 
 def test_split_contacts():
-    bare = '\r\n'.join([VCARD_TEMPLATE.format(r=x, uid=x) for x in range(4)])
-    with_wrapper = 'BEGIN:VADDRESSBOOK\r\n' + bare + '\nEND:VADDRESSBOOK\r\n'
+    bare = "\r\n".join([VCARD_TEMPLATE.format(r=x, uid=x) for x in range(4)])
+    with_wrapper = "BEGIN:VADDRESSBOOK\r\n" + bare + "\nEND:VADDRESSBOOK\r\n"
 
     for _ in (bare, with_wrapper):
         split = list(vobject.split_collection(bare))
         assert len(split) == 4
-        assert vobject.join_collection(split).splitlines() == \
-            with_wrapper.splitlines()
+        assert vobject.join_collection(split).splitlines() == with_wrapper.splitlines()
 
 
 def test_hash_item():
     a = EVENT_TEMPLATE.format(r=1, uid=1)
-    b = '\n'.join(line for line in a.splitlines()
-                  if 'PRODID' not in line)
+    b = "\n".join(line for line in a.splitlines() if "PRODID" not in line)
     assert vobject.hash_item(a) == vobject.hash_item(b)
 
 
 def test_multiline_uid(benchmark):
-    a = ('BEGIN:FOO\r\n'
-         'UID:123456789abcd\r\n'
-         ' efgh\r\n'
-         'END:FOO\r\n')
-    assert benchmark(lambda: vobject.Item(a).uid) == '123456789abcdefgh'
+    a = "BEGIN:FOO\r\n" "UID:123456789abcd\r\n" " efgh\r\n" "END:FOO\r\n"
+    assert benchmark(lambda: vobject.Item(a).uid) == "123456789abcdefgh"
 
 
-complex_uid_item = dedent('''
+complex_uid_item = dedent(
+    """
     BEGIN:VCALENDAR
     BEGIN:VTIMEZONE
     TZID:Europe/Rome
@@ -199,99 +194,102 @@ complex_uid_item = dedent('''
     TRANSP:OPAQUE
     END:VEVENT
     END:VCALENDAR
-    ''').strip()
+    """
+).strip()
 
 
 def test_multiline_uid_complex(benchmark):
     assert benchmark(lambda: vobject.Item(complex_uid_item).uid) == (
-        '040000008200E00074C5B7101A82E008000000005'
-        '0AAABEEF50DCF001000000062548482FA830A46B9'
-        'EA62114AC9F0EF'
+        "040000008200E00074C5B7101A82E008000000005"
+        "0AAABEEF50DCF001000000062548482FA830A46B9"
+        "EA62114AC9F0EF"
     )
 
 
 def test_replace_multiline_uid(benchmark):
     def inner():
-        return vobject.Item(complex_uid_item).with_uid('a').uid
+        return vobject.Item(complex_uid_item).with_uid("a").uid
 
-    assert benchmark(inner) == 'a'
+    assert benchmark(inner) == "a"
 
 
-@pytest.mark.parametrize('template', [EVENT_TEMPLATE,
-                                      EVENT_WITH_TIMEZONE_TEMPLATE,
-                                      VCARD_TEMPLATE])
+@pytest.mark.parametrize(
+    "template", [EVENT_TEMPLATE, EVENT_WITH_TIMEZONE_TEMPLATE, VCARD_TEMPLATE]
+)
 @given(uid=st.one_of(st.none(), uid_strategy))
 def test_replace_uid(template, uid):
     item = vobject.Item(template.format(r=123, uid=123)).with_uid(uid)
     assert item.uid == uid
     if uid:
-        assert item.raw.count(f'\nUID:{uid}') == 1
+        assert item.raw.count(f"\nUID:{uid}") == 1
     else:
-        assert '\nUID:' not in item.raw
+        assert "\nUID:" not in item.raw
 
 
 def test_broken_item():
     with pytest.raises(ValueError) as excinfo:
-        vobject._Component.parse('END:FOO')
+        vobject._Component.parse("END:FOO")
 
-    assert 'Parsing error at line 1' in str(excinfo.value)
+    assert "Parsing error at line 1" in str(excinfo.value)
 
-    item = vobject.Item('END:FOO')
+    item = vobject.Item("END:FOO")
     assert item.parsed is None
 
 
 def test_multiple_items():
     with pytest.raises(ValueError) as excinfo:
-        vobject._Component.parse([
-            'BEGIN:FOO',
-            'END:FOO',
-            'BEGIN:FOO',
-            'END:FOO',
-        ])
+        vobject._Component.parse(
+            [
+                "BEGIN:FOO",
+                "END:FOO",
+                "BEGIN:FOO",
+                "END:FOO",
+            ]
+        )
 
-    assert 'Found 2 components, expected one' in str(excinfo.value)
+    assert "Found 2 components, expected one" in str(excinfo.value)
 
-    c1, c2 = vobject._Component.parse([
-        'BEGIN:FOO',
-        'END:FOO',
-        'BEGIN:FOO',
-        'END:FOO',
-    ], multiple=True)
-    assert c1.name == c2.name == 'FOO'
+    c1, c2 = vobject._Component.parse(
+        [
+            "BEGIN:FOO",
+            "END:FOO",
+            "BEGIN:FOO",
+            "END:FOO",
+        ],
+        multiple=True,
+    )
+    assert c1.name == c2.name == "FOO"
 
 
 def test_input_types():
-    lines = ['BEGIN:FOO', 'FOO:BAR', 'END:FOO']
+    lines = ["BEGIN:FOO", "FOO:BAR", "END:FOO"]
 
-    for x in (lines, '\r\n'.join(lines), '\r\n'.join(lines).encode('ascii')):
+    for x in (lines, "\r\n".join(lines), "\r\n".join(lines).encode("ascii")):
         c = vobject._Component.parse(x)
-        assert c.name == 'FOO'
-        assert c.props == ['FOO:BAR']
+        assert c.name == "FOO"
+        assert c.props == ["FOO:BAR"]
         assert not c.subcomponents
 
 
 value_strategy = st.text(
-    st.characters(blacklist_categories=(
-        'Zs', 'Zl', 'Zp',
-        'Cc', 'Cs'
-    ), blacklist_characters=':='),
-    min_size=1
+    st.characters(
+        blacklist_categories=("Zs", "Zl", "Zp", "Cc", "Cs"), blacklist_characters=":="
+    ),
+    min_size=1,
 ).filter(lambda x: x.strip() == x)
 
 
 class VobjectMachine(RuleBasedStateMachine):
-    Unparsed = Bundle('unparsed')
-    Parsed = Bundle('parsed')
+    Unparsed = Bundle("unparsed")
+    Parsed = Bundle("parsed")
 
-    @rule(target=Unparsed,
-          joined=st.booleans(),
-          encoded=st.booleans())
+    @rule(target=Unparsed, joined=st.booleans(), encoded=st.booleans())
     def get_unparsed_lines(self, joined, encoded):
-        rv = ['BEGIN:FOO', 'FOO:YES', 'END:FOO']
+        rv = ["BEGIN:FOO", "FOO:YES", "END:FOO"]
         if joined:
-            rv = '\r\n'.join(rv)
+            rv = "\r\n".join(rv)
             if encoded:
-                rv = rv.encode('utf-8')
+                rv = rv.encode("utf-8")
         elif encoded:
             assume(False)
         return rv
@@ -304,24 +302,24 @@ class VobjectMachine(RuleBasedStateMachine):
     def serialize(self, parsed):
         return list(parsed.dump_lines())
 
-    @rule(c=Parsed,
-          key=uid_strategy,
-          value=uid_strategy)
+    @rule(c=Parsed, key=uid_strategy, value=uid_strategy)
     def add_prop(self, c, key, value):
         c[key] = value
         assert c[key] == value
         assert key in c
         assert c.get(key) == value
-        dump = '\r\n'.join(c.dump_lines())
+        dump = "\r\n".join(c.dump_lines())
         assert key in dump and value in dump
 
-    @rule(c=Parsed,
-          key=uid_strategy,
-          value=uid_strategy,
-          params=st.lists(st.tuples(value_strategy, value_strategy)))
+    @rule(
+        c=Parsed,
+        key=uid_strategy,
+        value=uid_strategy,
+        params=st.lists(st.tuples(value_strategy, value_strategy)),
+    )
     def add_prop_raw(self, c, key, value, params):
-        params_str = ','.join(k + '=' + v for k, v in params)
-        c.props.insert(0, f'{key};{params_str}:{value}')
+        params_str = ",".join(k + "=" + v for k, v in params)
+        c.props.insert(0, f"{key};{params_str}:{value}")
         assert c[key] == value
         assert key in c
         assert c.get(key) == value
@@ -330,7 +328,7 @@ class VobjectMachine(RuleBasedStateMachine):
     def add_component(self, c, sub_c):
         assume(sub_c is not c and sub_c not in c)
         c.subcomponents.append(sub_c)
-        assert '\r\n'.join(sub_c.dump_lines()) in '\r\n'.join(c.dump_lines())
+        assert "\r\n".join(sub_c.dump_lines()) in "\r\n".join(c.dump_lines())
 
     @rule(c=Parsed)
     def sanity_check(self, c):
@@ -342,14 +340,10 @@ TestVobjectMachine = VobjectMachine.TestCase
 
 
 def test_component_contains():
-    item = vobject._Component.parse([
-        'BEGIN:FOO',
-        'FOO:YES',
-        'END:FOO'
-    ])
+    item = vobject._Component.parse(["BEGIN:FOO", "FOO:YES", "END:FOO"])
 
-    assert 'FOO' in item
-    assert 'BAZ' not in item
+    assert "FOO" in item
+    assert "BAZ" not in item
 
     with pytest.raises(ValueError):
-        42 in item
+        42 in item  # noqa: B015

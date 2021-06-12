@@ -5,10 +5,9 @@ Packaging guidelines
 Thank you very much for packaging vdirsyncer! The following guidelines should
 help you to avoid some common pitfalls.
 
-While they are called guidelines and therefore theoretically not mandatory, if
-you consider going a different direction, please first open an issue or contact
-me otherwise instead of just going ahead. These guidelines exist for my own
-convenience too.
+If you find yourself needing to patch anything, or going in a different direction,
+please open an issue so we can also address in a way that works for everyone. Otherwise
+we get bug reports for code or scenarios that don't exist in upstream vdirsycner.
 
 Obtaining the source code
 =========================
@@ -17,8 +16,7 @@ The main distribution channel is `PyPI
 <https://pypi.python.org/pypi/vdirsyncer>`_, and source tarballs can be
 obtained there. We mirror the same package tarball and wheel as GitHub
 releases. Please do not confuse these with the auto-generated GitHub "Source
-Code" tarball; that one contains useless junk and are more of a distraction
-than anything else.
+Code" tarball. Those are missing some important metadata and your build will fail.
 
 We give each release a tag in the git repo. If you want to get notified of new
 releases, `GitHub's feed
@@ -39,13 +37,13 @@ Testing
 =======
 
 Everything testing-related goes through the ``Makefile`` in the root of the
-repository or PyPI package. Trying to e.g. run ``py.test`` directly will
+repository or PyPI package. Trying to e.g. run ``pytest`` directly will
 require a lot of environment variables to be set (for configuration) and you
 probably don't want to deal with that.
 
-You can install the testing dependencies with::
+You can install the all development dependencies with::
 
-    make install-test
+    make install-dev
 
 You probably don't want this since it will use pip to download the
 dependencies. Alternatively you can find the testing dependencies in

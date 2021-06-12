@@ -1,29 +1,23 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.4.0
+    rev: v4.0.1
     hooks:
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
-        exclude: '.travis.yml'
       - id: check-toml
       - id: check-added-large-files
       - id: debug-statements
   - repo: https://gitlab.com/pycqa/flake8
-    rev: "master" # pick a git hash / tag to point to
+    rev: "3.9.2"
     hooks:
       - id: flake8
         additional_dependencies: [flake8-import-order, flake8-bugbear]
+  - repo: https://github.com/psf/black
+    rev: "21.6b0"
+    hooks:
+      - id: black
   - repo: https://github.com/asottile/reorder_python_imports
-    rev: v2.3.0
+    rev: v2.5.0
     hooks:
     -   id: reorder-python-imports
-  - repo: local
-    hooks:
-      - id: update-travis
-        name: Update travis job definition
-        description: Ensures that travis job definition are up to date.
-        entry: scripts/make_travisconf.py
-        files: '.*travis.*'
-        stages: [commit]
-        language: script

@@ -1,0 +1,30 @@
+# Run tests using oldest available dependency versions.
+#
+# TODO: It might make more sense to test with an older Ubuntu or Fedora version
+# here, and consider that our "oldest suppported environment".
+
+image: archlinux
+packages:
+  - docker
+  - docker-compose
+  - python-pip
+sources:
+  - https://github.com/pimutils/vdirsyncer
+environment:
+  BUILD: test
+  CI: true
+  CODECOV_TOKEN: b834a3c5-28fa-4808-9bdb-182210069c79
+  DAV_SERVER: radicale xandikos
+  REQUIREMENTS: minimal
+  # TODO: ETESYNC_TESTS
+tasks:
+  - setup: |
+      sudo systemctl start docker
+      cd vdirsyncer
+      make -e install-dev
+  - test: |
+      cd vdirsyncer
+      # Non-system python is used for packages:
+      export PATH=$PATH:~/.local/bin/
+      make -e ci-test
+      make -e ci-test-storage

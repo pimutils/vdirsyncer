@@ -8,13 +8,14 @@ from vdirsyncer.storage.singlefile import SingleFileStorage
 
 
 class CombinedStorage(Storage):
-    '''A subclass of HttpStorage to make testing easier. It supports writes via
-    SingleFileStorage.'''
-    _repr_attributes = ('url', 'path')
-    storage_name = 'http_and_singlefile'
+    """A subclass of HttpStorage to make testing easier. It supports writes via
+    SingleFileStorage."""
+
+    _repr_attributes = ("url", "path")
+    storage_name = "http_and_singlefile"
 
     def __init__(self, url, path, **kwargs):
-        if kwargs.get('collection', None) is not None:
+        if kwargs.get("collection", None) is not None:
             raise ValueError()
 
         super().__init__(**kwargs)
@@ -48,30 +49,30 @@ class TestHttpStorage(StorageTests):
 
     @pytest.fixture(autouse=True)
     def setup_tmpdir(self, tmpdir, monkeypatch):
-        self.tmpfile = str(tmpdir.ensure('collection.txt'))
+        self.tmpfile = str(tmpdir.ensure("collection.txt"))
 
         def _request(method, url, *args, **kwargs):
-            assert method == 'GET'
-            assert url == 'http://localhost:123/collection.txt'
-            assert 'vdirsyncer' in kwargs['headers']['User-Agent']
+            assert method == "GET"
+            assert url == "http://localhost:123/collection.txt"
+            assert "vdirsyncer" in kwargs["headers"]["User-Agent"]
             r = Response()
             r.status_code = 200
             try:
-                with open(self.tmpfile, 'rb') as f:
+                with open(self.tmpfile, "rb") as f:
                     r._content = f.read()
             except OSError:
-                r._content = b''
+                r._content = b""
 
-            r.headers['Content-Type'] = 'text/calendar'
-            r.encoding = 'utf-8'
+            r.headers["Content-Type"] = "text/calendar"
+            r.encoding = "utf-8"
             return r
 
-        monkeypatch.setattr(vdirsyncer.storage.http, 'request', _request)
+        monkeypatch.setattr(vdirsyncer.storage.http, "request", _request)
 
     @pytest.fixture
     def get_storage_args(self):
         def inner(collection=None):
             assert collection is None
-            return {'url': 'http://localhost:123/collection.txt',
-                    'path': self.tmpfile}
+            return {"url": "http://localhost:123/collection.txt", "path": self.tmpfile}
+
         return inner

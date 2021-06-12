@@ -6,21 +6,20 @@ from .base import Storage
 
 
 def _random_string():
-    return f'{random.random():.9f}'
+    return f"{random.random():.9f}"
 
 
 class MemoryStorage(Storage):
 
-    storage_name = 'memory'
+    storage_name = "memory"
 
-    '''
+    """
     Saves data in RAM, only useful for testing.
-    '''
+    """
 
-    def __init__(self, fileext='', **kwargs):
-        if kwargs.get('collection') is not None:
-            raise exceptions.UserError('MemoryStorage does not support '
-                                       'collections.')
+    def __init__(self, fileext="", **kwargs):
+        if kwargs.get("collection") is not None:
+            raise exceptions.UserError("MemoryStorage does not support " "collections.")
         self.items = {}  # href => (etag, item)
         self.metadata = {}
         self.fileext = fileext

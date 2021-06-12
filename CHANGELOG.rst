@@ -9,6 +9,19 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.18.0
+==============
+
+Note: Version 0.17 has some alpha releases but ultimately was never finalised.
+0.18 actually continues where 0.16 left off.
+
+- Support for Python 3.5 and 3.6 has been dropped. This release mostly focuses
+  on keeping vdirsyncer compatible with newer environments.
+- click 8 and click-threading 0.5.0 are now required.
+- For those using ``pipsi``, we now recommend using ``pipx``, it's successor.
+- Python 3.9 is now supported.
+- Our Debian/Ubuntu build scripts have been updated. New versions should be
+  pushed to those repositories soon.
 - Add "description" and "order" as metadata.  These fetch the CalDAV:
   calendar-description, CardDAV:addressbook-description and apple-ns:calendar-order
   properties.

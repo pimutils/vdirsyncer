@@ -269,7 +269,7 @@ in terms of data safety**. See `this blog post
 <https://evertpot.com/google-carddav-issues/>`_ for the details.  Always back
 up your data.
 
-At first run you will be asked to authorize application for google account
+At first run you will be asked to authorize application for Google account
 access.
 
 To use this storage type, you need to install some additional dependencies::
@@ -411,6 +411,7 @@ Local
       fileext = "..."
       #encoding = "utf-8"
       #post_hook = null
+      #fileignoreext = ".tmp"
 
     Can be used with `khal <http://lostpackets.de/khal/>`_. See :doc:`vdir` for
     a more formal description of the format.
@@ -424,11 +425,15 @@ Local
     :param fileext: The file extension to use (e.g. ``.txt``). Contained in the
         href, so if you change the file extension after a sync, this will
         trigger a re-download of everything (but *should* not cause data-loss
-        of any kind).
+        of any kind). To be compatible with the ``vset`` format you have
+        to either use ``.vcf`` or ``.ics``. Note that metasync won't work
+        if you use an empty string here.
     :param encoding: File encoding for items, both content and filename.
     :param post_hook: A command to call for each item creation and
         modification. The command will be called with the path of the
         new/updated file.
+    :param fileeignoreext: The file extention to ignore. It is only useful
+        if fileext is set to the empty string. The default is ``.tmp``.
 
 .. storage:: singlefile
 

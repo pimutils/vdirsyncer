@@ -10,14 +10,14 @@ from .exceptions import IdentAlreadyExists
 def _exclusive_transaction(conn):
     c = None
     try:
-        c = conn.execute('BEGIN EXCLUSIVE TRANSACTION')
+        c = conn.execute("BEGIN EXCLUSIVE TRANSACTION")
         yield c
-        c.execute('COMMIT')
+        c.execute("COMMIT")
     except BaseException:
         if c is None:
             raise
         _, e, tb = sys.exc_info()
-        c.execute('ROLLBACK')
+        c.execute("ROLLBACK")
         raise e.with_traceback(tb)
 
 
@@ -27,14 +27,12 @@ class _StatusBase(metaclass=abc.ABCMeta):
             for ident, metadata in status.items():
                 if len(metadata) == 4:
                     href_a, etag_a, href_b, etag_b = metadata
-                    props_a = ItemMetadata(href=href_a, hash='UNDEFINED',
-                                           etag=etag_a)
-                    props_b = ItemMetadata(href=href_b, hash='UNDEFINED',
-                                           etag=etag_b)
+                    props_a = ItemMetadata(href=href_a, hash="UNDEFINED", etag=etag_a)
+                    props_b = ItemMetadata(href=href_b, hash="UNDEFINED", etag=etag_b)
                 else:
                     a, b = metadata
-                    a.setdefault('hash', 'UNDEFINED')
-                    b.setdefault('hash', 'UNDEFINED')
+                    a.setdefault("hash", "UNDEFINED")
+                    b.setdefault("hash", "UNDEFINED")
                     props_a = ItemMetadata(**a)
                     props_b = ItemMetadata(**b)
 
@@ -111,7 +109,7 @@ class _StatusBase(metaclass=abc.ABCMeta):
 class SqliteStatus(_StatusBase):
     SCHEMA_VERSION = 1
 
-    def __init__(self, path=':memory:'):
+    def __init__(self, path=":memory:"):
         self._path = path
         self._c = sqlite3.connect(path)
         self._c.isolation_level = None  # turn off idiocy of DB-API
@@ -126,12 +124,12 @@ class SqliteStatus(_StatusBase):
         # data.
         with _exclusive_transaction(self._c) as c:
             c.execute('CREATE TABLE meta ( "version" INTEGER PRIMARY KEY )')
-            c.execute('INSERT INTO meta (version) VALUES (?)',
-                      (self.SCHEMA_VERSION,))
+            c.execute("INSERT INTO meta (version) VALUES (?)", (self.SCHEMA_VERSION,))
 
             # I know that this is a bad schema, but right there is just too
             # little gain in deduplicating the .._a and .._b columns.
-            c.execute('''CREATE TABLE status (
+            c.execute(
+                """CREATE TABLE status (
                 "ident" TEXT PRIMARY KEY NOT NULL,
                 "href_a" TEXT,
                 "href_b" TEXT,
@@ -139,9 +137,10 @@ class SqliteStatus(_StatusBase):
                 "hash_b" TEXT NOT NULL,
                 "etag_a" TEXT,
                 "etag_b" TEXT
-            ); ''')
-            c.execute('CREATE UNIQUE INDEX by_href_a ON status(href_a)')
-            c.execute('CREATE UNIQUE INDEX by_href_b ON status(href_b)')
+            ); """
+            )
+            c.execute("CREATE UNIQUE INDEX by_href_a ON status(href_a)")
+            c.execute("CREATE UNIQUE INDEX by_href_b ON status(href_b)")
 
             # We cannot add NOT NULL here because data is first fetched for the
             # storage a, then storage b. Inbetween the `_b`-columns are filled
@@ -156,7 +155,8 @@ class SqliteStatus(_StatusBase):
             # transaction and reenable on end), it's a separate table now that
             # just gets copied over before we commit.  That's a lot of copying,
             # sadly.
-            c.execute('''CREATE TABLE new_status (
+            c.execute(
+                """CREATE TABLE new_status (
                 "ident" TEXT PRIMARY KEY NOT NULL,
                 "href_a" TEXT,
                 "href_b" TEXT,
@@ -164,14 +164,16 @@ class SqliteStatus(_StatusBase):
                 "hash_b" TEXT,
                 "etag_a" TEXT,
                 "etag_b" TEXT
-            ); ''')
+            ); """
+            )
 
     def _is_latest_version(self):
         try:
-            return bool(self._c.execute(
-                'SELECT version FROM meta WHERE version = ?',
-                (self.SCHEMA_VERSION,)
-            ).fetchone())
+            return bool(
+                self._c.execute(
+                    "SELECT version FROM meta WHERE version = ?", (self.SCHEMA_VERSION,)
+                ).fetchone()
+            )
         except sqlite3.OperationalError:
             return False
 
@@ -182,10 +184,9 @@ class SqliteStatus(_StatusBase):
             with _exclusive_transaction(self._c) as new_c:
                 self._c = new_c
                 yield
-                self._c.execute('DELETE FROM status')
-                self._c.execute('INSERT INTO status '
-                                'SELECT * FROM new_status')
-                self._c.execute('DELETE FROM new_status')
+                self._c.execute("DELETE FROM status")
+                self._c.execute("INSERT INTO status " "SELECT * FROM new_status")
+                self._c.execute("DELETE FROM new_status")
         finally:
             self._c = old_c
 
@@ -193,88 +194,99 @@ class SqliteStatus(_StatusBase):
         # FIXME: Super inefficient
         old_props = self.get_new_a(ident)
         if old_props is not None:
-            raise IdentAlreadyExists(old_href=old_props.href,
-                                     new_href=a_props.href)
+            raise IdentAlreadyExists(old_href=old_props.href, new_href=a_props.href)
         b_props = self.get_new_b(ident) or ItemMetadata()
         self._c.execute(
-            'INSERT OR REPLACE INTO new_status '
-            'VALUES(?, ?, ?, ?, ?, ?, ?)',
-            (ident, a_props.href, b_props.href, a_props.hash, b_props.hash,
-             a_props.etag, b_props.etag)
+            "INSERT OR REPLACE INTO new_status " "VALUES(?, ?, ?, ?, ?, ?, ?)",
+            (
+                ident,
+                a_props.href,
+                b_props.href,
+                a_props.hash,
+                b_props.hash,
+                a_props.etag,
+                b_props.etag,
+            ),
         )
 
     def insert_ident_b(self, ident, b_props):
         # FIXME: Super inefficient
         old_props = self.get_new_b(ident)
         if old_props is not None:
-            raise IdentAlreadyExists(old_href=old_props.href,
-                                     new_href=b_props.href)
+            raise IdentAlreadyExists(old_href=old_props.href, new_href=b_props.href)
         a_props = self.get_new_a(ident) or ItemMetadata()
         self._c.execute(
-            'INSERT OR REPLACE INTO new_status '
-            'VALUES(?, ?, ?, ?, ?, ?, ?)',
-            (ident, a_props.href, b_props.href, a_props.hash, b_props.hash,
-             a_props.etag, b_props.etag)
+            "INSERT OR REPLACE INTO new_status " "VALUES(?, ?, ?, ?, ?, ?, ?)",
+            (
+                ident,
+                a_props.href,
+                b_props.href,
+                a_props.hash,
+                b_props.hash,
+                a_props.etag,
+                b_props.etag,
+            ),
         )
 
     def update_ident_a(self, ident, props):
         self._c.execute(
-            'UPDATE new_status'
-            ' SET href_a=?, hash_a=?, etag_a=?'
-            ' WHERE ident=?',
-            (props.href, props.hash, props.etag, ident)
+            "UPDATE new_status" " SET href_a=?, hash_a=?, etag_a=?" " WHERE ident=?",
+            (props.href, props.hash, props.etag, ident),
         )
         assert self._c.rowcount > 0
 
     def update_ident_b(self, ident, props):
         self._c.execute(
-            'UPDATE new_status'
-            ' SET href_b=?, hash_b=?, etag_b=?'
-            ' WHERE ident=?',
-            (props.href, props.hash, props.etag, ident)
+            "UPDATE new_status" " SET href_b=?, hash_b=?, etag_b=?" " WHERE ident=?",
+            (props.href, props.hash, props.etag, ident),
         )
         assert self._c.rowcount > 0
 
     def remove_ident(self, ident):
-        self._c.execute('DELETE FROM new_status WHERE ident=?', (ident,))
+        self._c.execute("DELETE FROM new_status WHERE ident=?", (ident,))
 
     def _get_impl(self, ident, side, table):
-        res = self._c.execute('SELECT href_{side} AS href,'
-                              '       hash_{side} AS hash,'
-                              '       etag_{side} AS etag '
-                              'FROM {table} WHERE ident=?'
-                              .format(side=side, table=table),
-                              (ident,)).fetchone()
+        res = self._c.execute(
+            "SELECT href_{side} AS href,"
+            "       hash_{side} AS hash,"
+            "       etag_{side} AS etag "
+            "FROM {table} WHERE ident=?".format(side=side, table=table),
+            (ident,),
+        ).fetchone()
         if res is None:
             return None
 
-        if res['hash'] is None:  # FIXME: Implement as constraint in db
-            assert res['href'] is None
-            assert res['etag'] is None
+        if res["hash"] is None:  # FIXME: Implement as constraint in db
+            assert res["href"] is None
+            assert res["etag"] is None
             return None
 
         res = dict(res)
         return ItemMetadata(**res)
 
     def get_a(self, ident):
-        return self._get_impl(ident, side='a', table='status')
+        return self._get_impl(ident, side="a", table="status")
 
     def get_b(self, ident):
-        return self._get_impl(ident, side='b', table='status')
+        return self._get_impl(ident, side="b", table="status")
 
     def get_new_a(self, ident):
-        return self._get_impl(ident, side='a', table='new_status')
+        return self._get_impl(ident, side="a", table="new_status")
 
     def get_new_b(self, ident):
-        return self._get_impl(ident, side='b', table='new_status')
+        return self._get_impl(ident, side="b", table="new_status")
 
     def iter_old(self):
-        return iter(res['ident'] for res in
-                    self._c.execute('SELECT ident FROM status').fetchall())
+        return iter(
+            res["ident"]
+            for res in self._c.execute("SELECT ident FROM status").fetchall()
+        )
 
     def iter_new(self):
-        return iter(res['ident'] for res in
-                    self._c.execute('SELECT ident FROM new_status').fetchall())
+        return iter(
+            res["ident"]
+            for res in self._c.execute("SELECT ident FROM new_status").fetchall()
+        )
 
     def rollback(self, ident):
         a = self.get_a(ident)
@@ -286,41 +298,41 @@ class SqliteStatus(_StatusBase):
             return
 
         self._c.execute(
-            'INSERT OR REPLACE INTO new_status'
-            ' VALUES (?, ?, ?, ?, ?, ?, ?)',
-            (ident, a.href, b.href, a.hash, b.hash, a.etag, b.etag)
+            "INSERT OR REPLACE INTO new_status" " VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (ident, a.href, b.href, a.hash, b.hash, a.etag, b.etag),
         )
 
     def _get_by_href_impl(self, href, default=(None, None), side=None):
         res = self._c.execute(
-            'SELECT ident, hash_{side} AS hash, etag_{side} AS etag '
-            'FROM status WHERE href_{side}=?'.format(side=side),
-            (href,)).fetchone()
+            "SELECT ident, hash_{side} AS hash, etag_{side} AS etag "
+            "FROM status WHERE href_{side}=?".format(side=side),
+            (href,),
+        ).fetchone()
         if not res:
             return default
-        return res['ident'], ItemMetadata(
+        return res["ident"], ItemMetadata(
             href=href,
-            hash=res['hash'],
-            etag=res['etag'],
+            hash=res["hash"],
+            etag=res["etag"],
         )
 
     def get_by_href_a(self, *a, **kw):
-        kw['side'] = 'a'
+        kw["side"] = "a"
         return self._get_by_href_impl(*a, **kw)
 
     def get_by_href_b(self, *a, **kw):
-        kw['side'] = 'b'
+        kw["side"] = "b"
         return self._get_by_href_impl(*a, **kw)
 
 
 class SubStatus:
     def __init__(self, parent, side):
         self.parent = parent
-        assert side in 'ab'
+        assert side in "ab"
 
         self.remove_ident = parent.remove_ident
 
-        if side == 'a':
+        if side == "a":
             self.insert_ident = parent.insert_ident_a
             self.update_ident = parent.update_ident_a
             self.get = parent.get_a
@@ -345,8 +357,4 @@ class ItemMetadata:
             setattr(self, k, v)
 
     def to_status(self):
-        return {
-            'href': self.href,
-            'etag': self.etag,
-            'hash': self.hash
-        }
+        return {"href": self.href, "etag": self.etag, "hash": self.hash}

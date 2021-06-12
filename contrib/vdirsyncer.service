@@ -4,4 +4,5 @@ Documentation=https://vdirsyncer.readthedocs.org/
 
 [Service]
 ExecStart=/usr/bin/vdirsyncer sync
-Type=oneshot
+RuntimeMaxSec=3m
+Restart=on-failure

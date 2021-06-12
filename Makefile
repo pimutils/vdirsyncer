@@ -15,7 +15,7 @@ export DETERMINISTIC_TESTS := false
 # Run the etesync testsuite.
 export ETESYNC_TESTS := false
 
-# Assume to run in Travis. Don't use this outside of a virtual machine. It will
+# Assume to run in CI. Don't use this outside of a virtual machine. It will
 # heavily "pollute" your system, such as attempting to install a new Python
 # systemwide.
 export CI := false
@@ -36,55 +36,29 @@ ifeq ($(ETESYNC_TESTS), true)
 endif
 
 PYTEST = py.test $(PYTEST_ARGS)
-
-export TESTSERVER_BASE := ./tests/storage/servers/
 CODECOV_PATH = /tmp/codecov.sh
 
-ifeq ($(CI), true)
-test-storage:
-	curl -s https://codecov.io/bash > $(CODECOV_PATH)
-	$(PYTEST) tests/storage/
-	bash $(CODECOV_PATH) -c -F storage
-test:
+all:
+	$(error Take a look at https://vdirsyncer.pimutils.org/en/stable/tutorial.html#installation)
+
+ci-test:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
 	$(PYTEST) tests/unit/
 	bash $(CODECOV_PATH) -c -F unit
 	$(PYTEST) tests/system/
 	bash $(CODECOV_PATH) -c -F system
 	[ "$(ETESYNC_TESTS)" = "false" ] || make test-storage
-else
-test:
-	$(PYTEST)
-endif
 
-all:
-	$(error Take a look at https://vdirsyncer.pimutils.org/en/stable/tutorial.html#installation)
-
-install-servers:
+ci-test-storage:
+	curl -s https://codecov.io/bash > $(CODECOV_PATH)
 	set -ex; \
 	for server in $(DAV_SERVER); do \
-		if [ ! "$$(ls $(TESTSERVER_BASE)$$server/)" ]; then \
-			git submodule update --init -- "$(TESTSERVER_BASE)$$server"; \
-		fi; \
-		(cd $(TESTSERVER_BASE)$$server && sh install.sh); \
+		DAV_SERVER=$$server $(PYTEST) --cov-append tests/storage; \
 	done
+	bash $(CODECOV_PATH) -c -F storage
 
-install-test: install-servers install-dev
-	pip install -Ur test-requirements.txt
-	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
-		pip install -U --force-reinstall \
-			git+https://github.com/DRMacIver/hypothesis \
-			git+https://github.com/kennethreitz/requests \
-			git+https://github.com/pytest-dev/pytest; \
-	fi
-	[ -z "$(TEST_EXTRA_PACKAGES)" ] || pip install $(TEST_EXTRA_PACKAGES)
-
-install-test-storage: install-test
-	# This is just an alias
-	true
-
-install-style: install-docs install-dev
-	pip install pre-commit
+test:
+	$(PYTEST)
 
 style:
 	pre-commit run --all
@@ -97,8 +71,6 @@ install-docs:
 
 docs:
 	cd docs && make html
-
-linkcheck:
 	sphinx-build -W -b linkcheck ./docs/ ./docs/_build/linkcheck/
 
 release-deb:
@@ -111,21 +83,11 @@ release-deb:
 install-dev:
 	pip install -U pip setuptools wheel
 	pip install -e .
+	pip install -Ur test-requirements.txt $(TEST_EXTRA_PACKAGES)
+	pip install pre-commit
 	[ "$(ETESYNC_TESTS)" = "false" ] || pip install -Ue .[etesync]
-	set -xe && if [ "$(REQUIREMENTS)" = "devel" ]; then \
-	    pip install -U --force-reinstall \
-			git+https://github.com/mitsuhiko/click \
-			git+https://github.com/kennethreitz/requests; \
-	elif [ "$(REQUIREMENTS)" = "minimal" ]; then \
+	set -xe && if [ "$(REQUIREMENTS)" = "minimal" ]; then \
 		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
 	fi
-
-ssh-submodule-urls:
-	git submodule foreach "\
-		echo -n 'Old: '; \
-		git remote get-url origin; \
-		git remote set-url origin \$$(git remote get-url origin | sed -e 's/https:\/\/github\.com\//git@github.com:/g'); \
-		echo -n 'New URL: '; \
-		git remote get-url origin"
 
 .PHONY: docs

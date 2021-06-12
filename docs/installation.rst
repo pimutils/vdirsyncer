@@ -81,7 +81,7 @@ the simplest possible way would look something like::
 
     virtualenv ~/vdirsyncer_env
     ~/vdirsyncer_env/bin/pip install vdirsyncer
-    alias vdirsyncer="~/vdirsyncer_env/bin/vdirsyncer
+    alias vdirsyncer="~/vdirsyncer_env/bin/vdirsyncer"
 
 You'll have to put the last line into your ``.bashrc`` or ``.bash_profile``.
 
@@ -95,22 +95,22 @@ This method has two advantages:
 The clean, easy way
 ~~~~~~~~~~~~~~~~~~~
 
-pipsi_ is a new package manager for Python-based software that automatically
+pipx_ is a new package manager for Python-based software that automatically
 sets up a virtualenv for each program you install. Assuming you have it
 installed on your operating system, you can do::
 
-    pipsi install --python python3 vdirsyncer
+    pipx install vdirsyncer
 
-and ``.local/bin/vdirsyncer`` will be your new vdirsyncer installation. To
+and ``~/.local/pipx/venvs/vdirsyncer`` will be your new vdirsyncer installation. To
 update vdirsyncer to the latest version::
 
-    pipsi upgrade vdirsyncer
+    pipx upgrade vdirsyncer
 
 If you're done with vdirsyncer, you can do::
 
-    pipsi uninstall vdirsyncer
+    pipx uninstall vdirsyncer
 
 and vdirsyncer will be uninstalled, including its dependencies.
 
 .. _virtualenv: https://virtualenv.readthedocs.io/
-.. _pipsi: https://github.com/mitsuhiko/pipsi
+.. _pipx: https://github.com/pipxproject/pipx

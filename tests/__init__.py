@@ -1,6 +1,6 @@
-'''
+"""
 Test suite for vdirsyncer.
-'''
+"""
 import hypothesis.strategies as st
 import urllib3.exceptions
 
@@ -10,14 +10,14 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def blow_up(*a, **kw):
-    raise AssertionError('Did not expect to be called.')
+    raise AssertionError("Did not expect to be called.")
 
 
 def assert_item_equals(a, b):
     assert normalize_item(a) == normalize_item(b)
 
 
-VCARD_TEMPLATE = '''BEGIN:VCARD
+VCARD_TEMPLATE = """BEGIN:VCARD
 VERSION:3.0
 FN:Cyrus Daboo
 N:Daboo;Cyrus;;;
@@ -31,9 +31,9 @@ TEL;TYPE=FAX:412 605 0705
 URL;VALUE=URI:http://www.example.com
 X-SOMETHING:{r}
 UID:{uid}
-END:VCARD'''
+END:VCARD"""
 
-TASK_TEMPLATE = '''BEGIN:VCALENDAR
+TASK_TEMPLATE = """BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//dmfs.org//mimedir.icalendar//EN
 BEGIN:VTODO
@@ -45,25 +45,30 @@ SUMMARY:Book: Kowlani - Tödlicher Staub
 X-SOMETHING:{r}
 UID:{uid}
 END:VTODO
-END:VCALENDAR'''
+END:VCALENDAR"""
 
 
-BARE_EVENT_TEMPLATE = '''BEGIN:VEVENT
+BARE_EVENT_TEMPLATE = """BEGIN:VEVENT
 DTSTART:19970714T170000Z
 DTEND:19970715T035959Z
 SUMMARY:Bastille Day Party
 X-SOMETHING:{r}
 UID:{uid}
-END:VEVENT'''
+END:VEVENT"""
 
 
-EVENT_TEMPLATE = '''BEGIN:VCALENDAR
+EVENT_TEMPLATE = (
+    """BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//hacksw/handcal//NONSGML v1.0//EN
-''' + BARE_EVENT_TEMPLATE + '''
-END:VCALENDAR'''
+"""
+    + BARE_EVENT_TEMPLATE
+    + """
+END:VCALENDAR"""
+)
 
-EVENT_WITH_TIMEZONE_TEMPLATE = '''BEGIN:VCALENDAR
+EVENT_WITH_TIMEZONE_TEMPLATE = (
+    """BEGIN:VCALENDAR
 BEGIN:VTIMEZONE
 TZID:Europe/Rome
 X-LIC-LOCATION:Europe/Rome
@@ -82,26 +87,23 @@ DTSTART:19701025T030000
 RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10
 END:STANDARD
 END:VTIMEZONE
-''' + BARE_EVENT_TEMPLATE + '''
-END:VCALENDAR'''
+"""
+    + BARE_EVENT_TEMPLATE
+    + """
+END:VCALENDAR"""
+)
 
 
-SIMPLE_TEMPLATE = '''BEGIN:FOO
+SIMPLE_TEMPLATE = """BEGIN:FOO
 UID:{uid}
 X-SOMETHING:{r}
 HAHA:YES
-END:FOO'''
+END:FOO"""
 
 printable_characters_strategy = st.text(
-    st.characters(blacklist_categories=(
-        'Cc', 'Cs'
-    ))
+    st.characters(blacklist_categories=("Cc", "Cs"))
 )
 
 uid_strategy = st.text(
-    st.characters(blacklist_categories=(
-        'Zs', 'Zl', 'Zp',
-        'Cc', 'Cs'
-    )),
-    min_size=1
+    st.characters(blacklist_categories=("Zs", "Zl", "Zp", "Cc", "Cs")), min_size=1
 ).filter(lambda x: x.strip() == x)
