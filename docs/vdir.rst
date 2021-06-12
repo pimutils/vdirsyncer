@@ -56,11 +56,11 @@ have any file extensions.
   known from CSS, for example) are allowed. The prefixing ``#`` must be
   present.
 
-- A file called ``order`` inside the vdir includes the relative order
-  of the calendar, a property that is only relevant in UI design.
-
 - Files called ``displayname`` and ``description`` contain a UTF-8 encoded label/
   description, that may be used to represent the vdir in UIs.
+
+- A file called ``order`` inside the vdir includes the relative order
+  of the calendar, a property that is only relevant in UI design.
 
 Writing to vdirs
 ================
