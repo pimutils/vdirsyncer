@@ -36,9 +36,10 @@ ifeq ($(ETESYNC_TESTS), true)
 endif
 
 PYTEST = py.test $(PYTEST_ARGS)
-
-export TESTSERVER_BASE := ./tests/storage/servers/
 CODECOV_PATH = /tmp/codecov.sh
+
+all:
+	$(error Take a look at https://vdirsyncer.pimutils.org/en/stable/tutorial.html#installation)
 
 ci-test:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
@@ -50,35 +51,14 @@ ci-test:
 
 ci-test-storage:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
-	$(PYTEST) tests/storage/
+	set -ex; \
+	for server in $(DAV_SERVER); do \
+		DAV_SERVER=$$server $(PYTEST) --cov-append tests/storage; \
+	done
 	bash $(CODECOV_PATH) -c -F storage
 
 test:
 	$(PYTEST)
-
-all:
-	$(error Take a look at https://vdirsyncer.pimutils.org/en/stable/tutorial.html#installation)
-
-install-servers:
-	set -ex; \
-	for server in $(DAV_SERVER); do \
-		if [ -f $(TESTSERVER_BASE)$$server/install.sh ]; then \
-			(cd $(TESTSERVER_BASE)$$server && sh install.sh); \
-		fi \
-	done
-
-install-test: install-servers install-dev
-	pip install -Ur test-requirements.txt
-	set -xe && if [ "$$REQUIREMENTS" = "devel" ]; then \
-		pip install -U --force-reinstall \
-			git+https://github.com/DRMacIver/hypothesis \
-			git+https://github.com/kennethreitz/requests \
-			git+https://github.com/pytest-dev/pytest; \
-	fi
-	[ -z "$(TEST_EXTRA_PACKAGES)" ] || pip install $(TEST_EXTRA_PACKAGES)
-
-install-style: install-docs install-dev
-	pip install pre-commit
 
 style:
 	pre-commit run --all
@@ -91,8 +71,6 @@ install-docs:
 
 docs:
 	cd docs && make html
-
-linkcheck:
 	sphinx-build -W -b linkcheck ./docs/ ./docs/_build/linkcheck/
 
 release-deb:
@@ -105,12 +83,10 @@ release-deb:
 install-dev:
 	pip install -U pip setuptools wheel
 	pip install -e .
+	pip install -Ur test-requirements.txt $(TEST_EXTRA_PACKAGES)
+	pip install pre-commit
 	[ "$(ETESYNC_TESTS)" = "false" ] || pip install -Ue .[etesync]
-	set -xe && if [ "$(REQUIREMENTS)" = "devel" ]; then \
-	    pip install -U --force-reinstall \
-			git+https://github.com/mitsuhiko/click \
-			git+https://github.com/kennethreitz/requests; \
-	elif [ "$(REQUIREMENTS)" = "minimal" ]; then \
+	set -xe && if [ "$(REQUIREMENTS)" = "minimal" ]; then \
 		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
 	fi
 
