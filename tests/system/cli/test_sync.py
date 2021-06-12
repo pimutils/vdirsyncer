@@ -2,9 +2,7 @@ import json
 import sys
 from textwrap import dedent
 
-import hypothesis.strategies as st
 import pytest
-from hypothesis import settings
 
 
 def test_simple_run(tmpdir, runner):
@@ -299,42 +297,22 @@ def test_multiple_pairs(tmpdir, runner):
     }
 
 
-collections_strategy = st.sets(
-    st.text(
-        st.characters(
-            blacklist_characters=set("./\x00"),  # Invalid chars on POSIX filesystems
-            # Surrogates can't be encoded to utf-8 in Python
-            blacklist_categories={"Cs"},
-        ),
-        min_size=1,
-        max_size=50,
-    ),
-    min_size=1,
-)
-
-
 # XXX: https://github.com/pimutils/vdirsyncer/issues/617
 @pytest.mark.skipif(sys.platform == "darwin", reason="This test inexplicably fails")
 @pytest.mark.parametrize(
     "collections",
     [
-        ("persönlich",),
-        (
-            "a",
-            "A",
-        ),
+        ("a", "A"),
         ("\ufffe",),
-    ]
-    + [
-        collections_strategy.example()
-        for _ in range(settings.get_profile(settings._current_profile).max_examples)
+        ("Hello there!",),
+        ("Österreich",),
+        ("中国", "x1"),
+        ("한글",),
+        ("42a4ec99-b1c2-4859-b142-759112f2ca50",),
+        ("فلسطين",),
     ],
 )
 def test_create_collections(collections, tmpdir, runner):
-    # Hypothesis calls this tests in a way that fixtures are not reset, to tmpdir is the
-    # same for each call.
-    # This horrible hack creates a new subdirectory on each run, effectively giving us a
-    # new tmpdir each run.
 
     runner.write_with_general(
         dedent(
