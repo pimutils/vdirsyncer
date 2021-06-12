@@ -50,7 +50,7 @@ program chosen:
 
 * Such a setup doesn't work at all with smartphones. Vdirsyncer, on the other
   hand, synchronizes with CardDAV/CalDAV servers, which can be accessed with
-  e.g. DAVDroid_ or the apps by dmfs_.
+  e.g. DAVx⁵_ or the apps by dmfs_.
 
-.. _DAVDroid: http://davdroid.bitfire.at/
+.. _DAVx⁵: https://www.davx5.com/
 .. _dmfs: https://dmfs.org/
