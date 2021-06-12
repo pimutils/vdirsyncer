@@ -21,6 +21,7 @@ class TestCalDAVStorage(DAVStorageTests):
     def item_type(self, request):
         return request.param
 
+    @pytest.mark.xfail(dav_server == "baikal", reason="Baikal returns 500.")
     def test_doesnt_accept_vcard(self, item_type, get_storage_args):
         s = self.storage_class(item_types=(item_type,), **get_storage_args())
 
@@ -42,6 +43,7 @@ class TestCalDAVStorage(DAVStorageTests):
             ((), 1),
         ],
     )
+    @pytest.mark.xfail(dav_server == "baikal", reason="Baikal returns 500.")
     def test_item_types_performance(
         self, get_storage_args, arg, calls_num, monkeypatch
     ):
@@ -152,6 +154,7 @@ class TestCalDAVStorage(DAVStorageTests):
     @pytest.mark.skipif(
         dav_server == "fastmail", reason="Fastmail has non-standard hadling of VTODOs."
     )
+    @pytest.mark.xfail(dav_server == "baikal", reason="Baikal returns 500.")
     def test_item_types_general(self, s):
         event = s.upload(format_item(EVENT_TEMPLATE))[0]
         task = s.upload(format_item(TASK_TEMPLATE))[0]
