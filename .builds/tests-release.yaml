@@ -5,8 +5,11 @@ packages:
   - docker
   - docker-compose
   - python-pip
+  - twine
 sources:
   - https://github.com/pimutils/vdirsyncer
+secrets:
+  - a36c8ba3-fba0-4338-b402-6aea0fbe771e
 environment:
   BUILD: test
   CI: true
@@ -30,3 +33,8 @@ tasks:
       # Non-system python is used for packages:
       export PATH=$PATH:~/.local/bin/
       make -e style
+      git describe --exact-match --tags || complete-build
+  - publish: |
+      cd vdirsyncer
+      python setup.py sdist bdist_wheel
+      twine upload dist/*
