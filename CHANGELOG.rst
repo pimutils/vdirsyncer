@@ -22,6 +22,9 @@ Note: Version 0.17 has some alpha releases but ultimately was never finalised.
 - Python 3.9 is now supported.
 - Our Debian/Ubuntu build scripts have been updated. New versions should be
   pushed to those repositories soon.
+- Add "description" and "order" as metadata.  These fetch the CalDAV:
+  calendar-description, CardDAV:addressbook-description and apple-ns:calendar-order
+  properties.
 
 Version 0.16.8
 ==============

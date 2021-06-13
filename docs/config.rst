@@ -116,10 +116,16 @@ Pair Section
 - ``metadata``: Metadata keys that should be synchronized when ``vdirsyncer
   metasync`` is executed. Example::
 
-      metadata = ["color", "displayname"]
+      metadata = ["color", "displayname", "description", "order"]
 
-  This synchronizes the ``color`` and the ``displayname`` properties. The
-  ``conflict_resolution`` parameter applies here as well.
+  This synchronizes the following properties:
+
+  - color: ``http://apple.com/ns/ical/:calendar-color``
+  - displayname: ``DAV:displayname``
+  - description: ``CalDAV:calendar-description`` and ``CardDAV:addressbook-description``
+  - order: ``http://apple.com/ns/ical/:calendar-order``
+
+  The ``conflict_resolution`` parameter applies for these properties too.
 
 .. _storage_config:
 
