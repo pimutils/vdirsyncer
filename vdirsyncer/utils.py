@@ -19,7 +19,8 @@ SAFE_UID_CHARS = (
 _missing = object()
 
 
-def expand_path(p):
+def expand_path(p: str) -> str:
+    """Expand $HOME in a path and normalise slashes."""
     p = os.path.expanduser(p)
     p = os.path.normpath(p)
     return p

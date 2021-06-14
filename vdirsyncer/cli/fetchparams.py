@@ -74,20 +74,21 @@ def _fetch_value(opts, key):
         return rv
 
 
-def _strategy_command(*command):
+def _strategy_command(*command: str):
+    """Execute a user-specified command and return its output."""
     import subprocess
 
-    # normalize path of every path member
-    # if there is no path specified then nothing will happen
-    command = map(expand_path, command)
+    # Normalize path of every path member.
+    # If there is no path specified then nothing will happen.
+    # Makes this a list to avoid it being exhausted on the first iteration.
+    expanded_command = list(map(expand_path, command))
 
     try:
-        stdout = subprocess.check_output(command, universal_newlines=True)
+        stdout = subprocess.check_output(expanded_command, universal_newlines=True)
         return stdout.strip("\n")
     except OSError as e:
-        raise exceptions.UserError(
-            "Failed to execute command: {}\n{}".format(" ".join(command), str(e))
-        )
+        cmd = " ".join(expanded_command)
+        raise exceptions.UserError(f"Failed to execute command: {cmd}\n{str(e)}")
 
 
 def _strategy_prompt(text):
