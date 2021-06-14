@@ -18,6 +18,9 @@ Version 0.19.0
 - Add a new "showconfig" status. This prints *some* configuration values as
   JSON. This is intended to be used by external tools and helpers that interact
   with ``vdirsyncer``.
+- Update TLS-related tests that were failing due to weak MDs.
+- ``pytest-httpserver`` and ``trustme`` are now required for tests.
+- ``pytest-localserver`` is no longer required for tests.
 
 Version 0.18.0
 ==============

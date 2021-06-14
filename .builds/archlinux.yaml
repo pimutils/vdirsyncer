@@ -17,7 +17,8 @@ packages:
   # Test dependencies:
   - python-hypothesis
   - python-pytest-cov
-  - python-pytest-localserver
+  - python-pytest-httpserver
+  - python-trustme
 sources:
   - https://github.com/pimutils/vdirsyncer
 environment:

@@ -4,6 +4,8 @@ import sys
 import click_log
 import pytest
 import requests
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes
 
 from vdirsyncer import http
 from vdirsyncer import utils
@@ -38,27 +40,55 @@ def _fingerprints_broken():
     return broken_urllib3
 
 
+def fingerprint_of_cert(cert, hash=hashes.SHA256):
+    return x509.load_pem_x509_certificate(cert.bytes()).fingerprint(hash()).hex()
+
+
 @pytest.mark.skipif(
     _fingerprints_broken(), reason="https://github.com/shazow/urllib3/issues/529"
 )
-@pytest.mark.parametrize(
-    "fingerprint",
-    [
-        "94:FD:7A:CB:50:75:A4:69:82:0A:F8:23:DF:07:FC:69:3E:CD:90:CA",
-        "19:90:F7:23:94:F2:EF:AB:2B:64:2D:57:3D:25:95:2D",
-    ],
-)
-def test_request_ssl_fingerprints(httpsserver, fingerprint):
-    httpsserver.serve_content("")  # we need to serve something
+@pytest.mark.parametrize("hash_algorithm", [hashes.MD5, hashes.SHA256])
+def test_request_ssl_leaf_fingerprint(httpserver, localhost_cert, hash_algorithm):
+    fingerprint = fingerprint_of_cert(localhost_cert.cert_chain_pems[0], hash_algorithm)
 
-    http.request("GET", httpsserver.url, verify=False, verify_fingerprint=fingerprint)
+    # We have to serve something:
+    httpserver.expect_request("/").respond_with_data("OK")
+    url = f"https://{httpserver.host}:{httpserver.port}/"
+
+    http.request("GET", url, verify=False, verify_fingerprint=fingerprint)
     with pytest.raises(requests.exceptions.ConnectionError) as excinfo:
-        http.request("GET", httpsserver.url, verify_fingerprint=fingerprint)
+        http.request("GET", url, verify_fingerprint=fingerprint)
 
     with pytest.raises(requests.exceptions.ConnectionError) as excinfo:
         http.request(
             "GET",
-            httpsserver.url,
+            url,
+            verify=False,
+            verify_fingerprint="".join(reversed(fingerprint)),
+        )
+    assert "Fingerprints did not match" in str(excinfo.value)
+
+
+@pytest.mark.skipif(
+    _fingerprints_broken(), reason="https://github.com/shazow/urllib3/issues/529"
+)
+@pytest.mark.xfail(reason="Not implemented")
+@pytest.mark.parametrize("hash_algorithm", [hashes.MD5, hashes.SHA256])
+def test_request_ssl_ca_fingerprint(httpserver, ca, hash_algorithm):
+    fingerprint = fingerprint_of_cert(ca.cert_pem)
+
+    # We have to serve something:
+    httpserver.expect_request("/").respond_with_data("OK")
+    url = f"https://{httpserver.host}:{httpserver.port}/"
+
+    http.request("GET", url, verify=False, verify_fingerprint=fingerprint)
+    with pytest.raises(requests.exceptions.ConnectionError) as excinfo:
+        http.request("GET", url, verify_fingerprint=fingerprint)
+
+    with pytest.raises(requests.exceptions.ConnectionError) as excinfo:
+        http.request(
+            "GET",
+            url,
             verify=False,
             verify_fingerprint="".join(reversed(fingerprint)),
         )
