@@ -239,3 +239,45 @@ def test_collection_required(a_requires, b_requires, tmpdir, runner, monkeypatch
         assert (
             "One or more storages don't support `collections = null`." in result.output
         )
+
+
+def test_showconfig(tmpdir, runner):
+    runner.write_with_general(
+        dedent(
+            """
+    [storage foo]
+    type = "filesystem"
+    path = "{0}/foo/"
+    fileext = ".txt"
+
+    [storage bar]
+    type = "filesystem"
+    path = "{0}/bar/"
+    fileext = ".txt"
+
+    [pair foobar]
+    a = "foo"
+    b = "bar"
+    collections = ["from a"]
+    """
+        ).format(str(tmpdir))
+    )
+
+    result = runner.invoke(["showconfig"])
+    assert not result.exception
+    assert json.loads(result.output) == {
+        "storages": [
+            {
+                "type": "filesystem",
+                "path": f"{tmpdir}/foo/",
+                "fileext": ".txt",
+                "instance_name": "foo",
+            },
+            {
+                "type": "filesystem",
+                "path": f"{tmpdir}/bar/",
+                "fileext": ".txt",
+                "instance_name": "bar",
+            },
+        ]
+    }
