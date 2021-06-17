@@ -15,7 +15,7 @@ from .utils import manage_sync_status
 from .utils import save_status
 
 
-def prepare_pair(pair_name, collections, config, callback, **kwargs):
+def prepare_pair(pair_name, collections, config):
     pair = config.get_pair(pair_name)
 
     all_collections = dict(
@@ -34,7 +34,7 @@ def prepare_pair(pair_name, collections, config, callback, **kwargs):
             )
 
         collection = CollectionConfig(pair, collection_name, config_a, config_b)
-        callback(collection=collection, general=config.general, **kwargs)
+        yield collection, config.general
 
 
 def sync_collection(collection, general, force_delete):

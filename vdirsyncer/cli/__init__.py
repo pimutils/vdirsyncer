@@ -125,13 +125,16 @@ def sync(ctx, collections, force_delete):
     from .tasks import prepare_pair, sync_collection
 
     for pair_name, collections in collections:
-        prepare_pair(
+        for collection, config in prepare_pair(
             pair_name=pair_name,
             collections=collections,
             config=ctx.config,
-            force_delete=force_delete,
-            callback=sync_collection,
-        )
+        ):
+            sync_collection(
+                collection=collection,
+                general=config,
+                force_delete=force_delete,
+            )
 
 
 @app.command()
@@ -147,12 +150,12 @@ def metasync(ctx, collections):
     from .tasks import prepare_pair, metasync_collection
 
     for pair_name, collections in collections:
-        prepare_pair(
+        for collection, config in prepare_pair(
             pair_name=pair_name,
             collections=collections,
             config=ctx.config,
-            callback=metasync_collection,
-        )
+        ):
+            metasync_collection(collection=collection, general=config)
 
 
 @app.command()
