@@ -15,6 +15,9 @@ Version 0.19.0
 - Add "description" and "order" as metadata.  These fetch the CalDAV:
   calendar-description, CardDAV:addressbook-description and apple-ns:calendar-order
   properties.
+- Add a new "showconfig" status. This prints *some* configuration values as
+  JSON. This is intended to be used by external tools and helpers that interact
+  with ``vdirsyncer``.
 
 Version 0.18.0
 ==============
