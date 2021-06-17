@@ -1,8 +1,10 @@
+import asyncio
 import functools
 import json
 import logging
 import sys
 
+import aiohttp
 import click
 import click_log
 
@@ -124,17 +126,26 @@ def sync(ctx, collections, force_delete):
     """
     from .tasks import prepare_pair, sync_collection
 
-    for pair_name, collections in collections:
-        for collection, config in prepare_pair(
-            pair_name=pair_name,
-            collections=collections,
-            config=ctx.config,
-        ):
-            sync_collection(
-                collection=collection,
-                general=config,
-                force_delete=force_delete,
-            )
+    async def main(collections):
+        conn = aiohttp.TCPConnector(limit_per_host=16)
+
+        for pair_name, collections in collections:
+            async for collection, config in prepare_pair(
+                pair_name=pair_name,
+                collections=collections,
+                config=ctx.config,
+                connector=conn,
+            ):
+                await sync_collection(
+                    collection=collection,
+                    general=config,
+                    force_delete=force_delete,
+                    connector=conn,
+                )
+
+        await conn.close()
+
+    asyncio.run(main(collections))
 
 
 @app.command()
@@ -149,13 +160,31 @@ def metasync(ctx, collections):
     """
     from .tasks import prepare_pair, metasync_collection
 
-    for pair_name, collections in collections:
-        for collection, config in prepare_pair(
-            pair_name=pair_name,
-            collections=collections,
-            config=ctx.config,
-        ):
-            metasync_collection(collection=collection, general=config)
+    async def main(collections):
+        conn = aiohttp.TCPConnector(limit_per_host=16)
+
+        for pair_name, collections in collections:
+            collections = prepare_pair(
+                pair_name=pair_name,
+                collections=collections,
+                config=ctx.config,
+                connector=conn,
+            )
+
+            await asyncio.gather(
+                *[
+                    metasync_collection(
+                        collection=collection,
+                        general=config,
+                        connector=conn,
+                    )
+                    async for collection, config in collections
+                ]
+            )
+
+        await conn.close()
+
+    asyncio.run(main(collections))
 
 
 @app.command()
@@ -178,15 +207,23 @@ def discover(ctx, pairs, list):
 
     config = ctx.config
 
-    for pair_name in pairs or config.pairs:
-        pair = config.get_pair(pair_name)
+    async def main():
+        conn = aiohttp.TCPConnector(limit_per_host=16)
 
-        discover_collections(
-            status_path=config.general["status_path"],
-            pair=pair,
-            from_cache=False,
-            list_collections=list,
-        )
+        for pair_name in pairs or config.pairs:
+            pair = config.get_pair(pair_name)
+
+            await discover_collections(
+                status_path=config.general["status_path"],
+                pair=pair,
+                from_cache=False,
+                list_collections=list,
+                connector=conn,
+            )
+
+        await conn.close()
+
+    asyncio.run(main())
 
 
 @app.command()
@@ -225,7 +262,18 @@ def repair(ctx, collection, repair_unsafe_uid):
         "turn off other client's synchronization features."
     )
     click.confirm("Do you want to continue?", abort=True)
-    repair_collection(ctx.config, collection, repair_unsafe_uid=repair_unsafe_uid)
+
+    async def main():
+        conn = aiohttp.TCPConnector(limit_per_host=16)
+        await repair_collection(
+            ctx.config,
+            collection,
+            repair_unsafe_uid=repair_unsafe_uid,
+            connector=conn,
+        )
+        await conn.close()
+
+    asyncio.run(main())
 
 
 @app.command()

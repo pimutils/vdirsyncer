@@ -26,22 +26,15 @@ def expand_path(p: str) -> str:
     return p
 
 
-def split_dict(d, f):
+def split_dict(d: dict, f: callable):
     """Puts key into first dict if f(key), otherwise in second dict"""
-    a, b = split_sequence(d.items(), lambda item: f(item[0]))
-    return dict(a), dict(b)
-
-
-def split_sequence(s, f):
-    """Puts item into first list if f(item), else in second list"""
-    a = []
-    b = []
-    for item in s:
-        if f(item):
-            a.append(item)
+    a = {}
+    b = {}
+    for k, v in d.items():
+        if f(k):
+            a[k] = v
         else:
-            b.append(item)
-
+            b[k] = v
     return a, b
 
 

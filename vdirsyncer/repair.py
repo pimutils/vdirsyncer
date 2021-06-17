@@ -1,6 +1,8 @@
 import logging
 from os.path import basename
 
+import aiostream
+
 from .utils import generate_href
 from .utils import href_safe
 
@@ -11,11 +13,11 @@ class IrreparableItem(Exception):
     pass
 
 
-def repair_storage(storage, repair_unsafe_uid):
+async def repair_storage(storage, repair_unsafe_uid):
     seen_uids = set()
-    all_hrefs = list(storage.list())
+    all_hrefs = await aiostream.stream.list(storage.list())
     for i, (href, _) in enumerate(all_hrefs):
-        item, etag = storage.get(href)
+        item, etag = await storage.get(href)
         logger.info("[{}/{}] Processing {}".format(i, len(all_hrefs), href))
 
         try:
@@ -32,10 +34,10 @@ def repair_storage(storage, repair_unsafe_uid):
         seen_uids.add(new_item.uid)
         if new_item.raw != item.raw:
             if new_item.uid != item.uid:
-                storage.upload(new_item)
-                storage.delete(href, etag)
+                await storage.upload(new_item)
+                await storage.delete(href, etag)
             else:
-                storage.update(href, new_item, etag)
+                await storage.update(href, new_item, etag)
 
 
 def repair_item(href, item, seen_uids, repair_unsafe_uid):

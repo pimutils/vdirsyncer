@@ -4,6 +4,7 @@ General-purpose fixtures for vdirsyncer's testsuite.
 import logging
 import os
 
+import aiohttp
 import click_log
 import pytest
 from hypothesis import HealthCheck
@@ -52,3 +53,18 @@ elif os.environ.get("CI", "false").lower() == "true":
     settings.load_profile("ci")
 else:
     settings.load_profile("dev")
+
+
+@pytest.fixture
+async def aio_session(event_loop):
+    async with aiohttp.ClientSession() as session:
+        yield session
+
+
+@pytest.fixture
+async def aio_connector(event_loop):
+    conn = aiohttp.TCPConnector(limit_per_host=16)
+    try:
+        yield conn
+    finally:
+        await conn.close()

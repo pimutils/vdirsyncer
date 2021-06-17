@@ -1,6 +1,6 @@
 import logging
 
-import requests
+import aiohttp
 
 from . import __version__
 from . import DOCS_HOME
@@ -99,23 +99,8 @@ def prepare_client_cert(cert):
     return cert
 
 
-def _install_fingerprint_adapter(session, fingerprint):
-    prefix = "https://"
-    try:
-        from requests_toolbelt.adapters.fingerprint import FingerprintAdapter
-    except ImportError:
-        raise RuntimeError(
-            "`verify_fingerprint` can only be used with "
-            "requests-toolbelt versions >= 0.4.0"
-        )
-
-    if not isinstance(session.adapters[prefix], FingerprintAdapter):
-        fingerprint_adapter = FingerprintAdapter(fingerprint)
-        session.mount(prefix, fingerprint_adapter)
-
-
-def request(
-    method, url, session=None, latin1_fallback=True, verify_fingerprint=None, **kwargs
+async def request(
+    method, url, session, latin1_fallback=True, verify_fingerprint=None, **kwargs
 ):
     """
     Wrapper method for requests, to ease logging and mocking. Parameters should
@@ -132,16 +117,20 @@ def request(
         https://github.com/kennethreitz/requests/issues/2042
     """
 
-    if session is None:
-        session = requests.Session()
-
     if verify_fingerprint is not None:
-        _install_fingerprint_adapter(session, verify_fingerprint)
+        ssl = aiohttp.Fingerprint(bytes.fromhex(verify_fingerprint.replace(":", "")))
+        kwargs.pop("verify", None)
+    elif kwargs.pop("verify", None) is False:
+        ssl = False
+    else:
+        ssl = None  # TODO XXX: Check all possible values for this
 
     session.hooks = {"response": _fix_redirects}
 
     func = session.request
 
+    # TODO: rewrite using
+    # https://docs.aiohttp.org/en/stable/client_advanced.html#client-tracing
     logger.debug("=" * 20)
     logger.debug(f"{method} {url}")
     logger.debug(kwargs.get("headers", {}))
@@ -150,7 +139,14 @@ def request(
 
     assert isinstance(kwargs.get("data", b""), bytes)
 
-    r = func(method, url, **kwargs)
+    kwargs.pop("cert", None)  # TODO XXX FIXME!
+
+    # Hacks to translate API
+    if auth := kwargs.pop("auth", None):
+        kwargs["auth"] = aiohttp.BasicAuth(*auth)
+
+    r = func(method, url, ssl=ssl, **kwargs)
+    r = await r
 
     # See https://github.com/kennethreitz/requests/issues/2042
     content_type = r.headers.get("Content-Type", "")
@@ -162,13 +158,13 @@ def request(
         logger.debug("Removing latin1 fallback")
         r.encoding = None
 
-    logger.debug(r.status_code)
+    logger.debug(r.status)
     logger.debug(r.headers)
     logger.debug(r.content)
 
-    if r.status_code == 412:
+    if r.status == 412:
         raise exceptions.PreconditionFailed(r.reason)
-    if r.status_code in (404, 410):
+    if r.status in (404, 410):
         raise exceptions.NotFoundError(r.reason)
 
     r.raise_for_status()

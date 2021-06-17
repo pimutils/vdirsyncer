@@ -3,6 +3,7 @@ import logging
 import os
 import urllib.parse as urlparse
 
+import aiohttp
 import click
 from atomicwrites import atomic_write
 
@@ -28,13 +29,21 @@ except ImportError:
 
 
 class GoogleSession(dav.DAVSession):
-    def __init__(self, token_file, client_id, client_secret, url=None):
+    def __init__(
+        self,
+        token_file,
+        client_id,
+        client_secret,
+        url=None,
+        connector: aiohttp.BaseConnector = None,
+    ):
         # Required for discovering collections
         if url is not None:
             self.url = url
 
         self.useragent = client_id
         self._settings = {}
+        self.connector = connector
 
         if not have_oauth2:
             raise exceptions.UserError("requests-oauthlib not installed")

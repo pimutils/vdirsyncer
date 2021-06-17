@@ -58,7 +58,7 @@ class EtesyncTests(StorageTests):
         )
         assert r.status_code == 200
 
-        def inner(collection="test"):
+        async def inner(collection="test"):
             rv = {
                 "email": "test@localhost",
                 "db_path": str(tmpdir.join("etesync.db")),

@@ -3,3 +3,5 @@ pytest
 pytest-cov
 pytest-httpserver
 trustme
+pytest-asyncio
+aioresponses

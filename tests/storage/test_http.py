@@ -1,5 +1,6 @@
 import pytest
-from requests import Response
+from aioresponses import aioresponses
+from aioresponses import CallbackResult
 
 from tests import normalize_item
 from vdirsyncer.exceptions import UserError
@@ -7,7 +8,8 @@ from vdirsyncer.storage.http import HttpStorage
 from vdirsyncer.storage.http import prepare_auth
 
 
-def test_list(monkeypatch):
+@pytest.mark.asyncio
+async def test_list(aio_connector):
     collection_url = "http://127.0.0.1/calendar/collection.ics"
 
     items = [
@@ -34,50 +36,53 @@ def test_list(monkeypatch):
 
     responses = ["\n".join(["BEGIN:VCALENDAR"] + items + ["END:VCALENDAR"])] * 2
 
-    def get(self, method, url, *a, **kw):
-        assert method == "GET"
-        assert url == collection_url
-        r = Response()
-        r.status_code = 200
+    def callback(url, headers, **kwargs):
+        assert headers["User-Agent"].startswith("vdirsyncer/")
         assert responses
-        r._content = responses.pop().encode("utf-8")
-        r.headers["Content-Type"] = "text/calendar"
-        r.encoding = "ISO-8859-1"
-        return r
 
-    monkeypatch.setattr("requests.sessions.Session.request", get)
+        return CallbackResult(
+            status=200,
+            body=responses.pop().encode("utf-8"),
+            headers={"Content-Type": "text/calendar; charset=iso-8859-1"},
+        )
 
-    s = HttpStorage(url=collection_url)
+    with aioresponses() as m:
+        m.get(collection_url, callback=callback, repeat=True)
 
-    found_items = {}
+        s = HttpStorage(url=collection_url, connector=aio_connector)
 
-    for href, etag in s.list():
-        item, etag2 = s.get(href)
-        assert item.uid is not None
-        assert etag2 == etag
-        found_items[normalize_item(item)] = href
+        found_items = {}
 
-    expected = {
-        normalize_item("BEGIN:VCALENDAR\n" + x + "\nEND:VCALENDAR") for x in items
-    }
+        async for href, etag in s.list():
+            item, etag2 = await s.get(href)
+            assert item.uid is not None
+            assert etag2 == etag
+            found_items[normalize_item(item)] = href
 
-    assert set(found_items) == expected
+        expected = {
+            normalize_item("BEGIN:VCALENDAR\n" + x + "\nEND:VCALENDAR") for x in items
+        }
 
-    for href, etag in s.list():
-        item, etag2 = s.get(href)
-        assert item.uid is not None
-        assert etag2 == etag
-        assert found_items[normalize_item(item)] == href
+        assert set(found_items) == expected
+
+        async for href, etag in s.list():
+            item, etag2 = await s.get(href)
+            assert item.uid is not None
+            assert etag2 == etag
+            assert found_items[normalize_item(item)] == href
 
 
-def test_readonly_param():
+def test_readonly_param(aio_connector):
+    """The ``readonly`` param cannot be ``False``."""
+
     url = "http://example.com/"
     with pytest.raises(ValueError):
-        HttpStorage(url=url, read_only=False)
+        HttpStorage(url=url, read_only=False, connector=aio_connector)
 
-    a = HttpStorage(url=url, read_only=True).read_only
-    b = HttpStorage(url=url, read_only=None).read_only
-    assert a is b is True
+    a = HttpStorage(url=url, read_only=True, connector=aio_connector)
+    b = HttpStorage(url=url, read_only=None, connector=aio_connector)
+
+    assert a.read_only is b.read_only is True
 
 
 def test_prepare_auth():
@@ -115,9 +120,9 @@ def test_prepare_auth_guess(monkeypatch):
     assert "requests_toolbelt is too old" in str(excinfo.value).lower()
 
 
-def test_verify_false_disallowed():
+def test_verify_false_disallowed(aio_connector):
     with pytest.raises(ValueError) as excinfo:
-        HttpStorage(url="http://example.com", verify=False)
+        HttpStorage(url="http://example.com", verify=False, connector=aio_connector)
 
     assert "forbidden" in str(excinfo.value).lower()
     assert "consider setting verify_fingerprint" in str(excinfo.value).lower()

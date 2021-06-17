@@ -11,7 +11,7 @@ class ServerMixin:
             # See https://github.com/pimutils/vdirsyncer/issues/824
             pytest.skip("Fastmail has non-standard VTODO support.")
 
-        def inner(collection="test"):
+        async def inner(collection="test"):
             args = {
                 "username": os.environ["FASTMAIL_USERNAME"],
                 "password": os.environ["FASTMAIL_PASSWORD"],

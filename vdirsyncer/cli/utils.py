@@ -5,6 +5,7 @@ import json
 import os
 import sys
 
+import aiohttp
 import click
 from atomicwrites import atomic_write
 
@@ -252,22 +253,37 @@ def storage_class_from_config(config):
     return cls, config
 
 
-def storage_instance_from_config(config, create=True):
+async def storage_instance_from_config(
+    config,
+    create=True,
+    *,
+    connector: aiohttp.TCPConnector,
+):
     """
     :param config: A configuration dictionary to pass as kwargs to the class
         corresponding to config['type']
     """
+    from vdirsyncer.storage.dav import DAVStorage
+    from vdirsyncer.storage.http import HttpStorage
 
     cls, new_config = storage_class_from_config(config)
+
+    if issubclass(cls, DAVStorage) or issubclass(cls, HttpStorage):
+        assert connector is not None  # FIXME: hack?
+        new_config["connector"] = connector
 
     try:
         return cls(**new_config)
     except exceptions.CollectionNotFound as e:
         if create:
-            config = handle_collection_not_found(
+            config = await handle_collection_not_found(
                 config, config.get("collection", None), e=str(e)
             )
-            return storage_instance_from_config(config, create=False)
+            return await storage_instance_from_config(
+                config,
+                create=False,
+                connector=connector,
+            )
         else:
             raise
     except Exception:
@@ -319,7 +335,7 @@ def assert_permissions(path, wanted):
         os.chmod(path, wanted)
 
 
-def handle_collection_not_found(config, collection, e=None):
+async def handle_collection_not_found(config, collection, e=None):
     storage_name = config.get("instance_name", None)
 
     cli_logger.warning(
@@ -333,7 +349,7 @@ def handle_collection_not_found(config, collection, e=None):
         cls, config = storage_class_from_config(config)
         config["collection"] = collection
         try:
-            args = cls.create_collection(**config)
+            args = await cls.create_collection(**config)
             args["type"] = storage_type
             return args
         except NotImplementedError as e:

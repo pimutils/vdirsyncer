@@ -7,10 +7,10 @@ from ..utils import uniq
 
 def mutating_storage_method(f):
     @functools.wraps(f)
-    def inner(self, *args, **kwargs):
+    async def inner(self, *args, **kwargs):
         if self.read_only:
             raise exceptions.ReadOnlyError("This storage is read-only.")
-        return f(self, *args, **kwargs)
+        return await f(self, *args, **kwargs)
 
     return inner
 
@@ -77,7 +77,7 @@ class Storage(metaclass=StorageMeta):
         self.collection = collection
 
     @classmethod
-    def discover(cls, **kwargs):
+    async def discover(cls, **kwargs):
         """Discover collections given a basepath or -URL to many collections.
 
         :param **kwargs: Keyword arguments to additionally pass to the storage
@@ -92,10 +92,12 @@ class Storage(metaclass=StorageMeta):
             from the last segment of a URL or filesystem path.
 
         """
+        if False:
+            yield  # Needs to be an async generator
         raise NotImplementedError()
 
     @classmethod
-    def create_collection(cls, collection, **kwargs):
+    async def create_collection(cls, collection, **kwargs):
         """
         Create the specified collection and return the new arguments.
 
@@ -118,13 +120,13 @@ class Storage(metaclass=StorageMeta):
             {x: getattr(self, x) for x in self._repr_attributes},
         )
 
-    def list(self):
+    async def list(self):
         """
         :returns: list of (href, etag)
         """
         raise NotImplementedError()
 
-    def get(self, href):
+    async def get(self, href):
         """Fetch a single item.
 
         :param href: href to fetch
@@ -134,7 +136,7 @@ class Storage(metaclass=StorageMeta):
         """
         raise NotImplementedError()
 
-    def get_multi(self, hrefs):
+    async def get_multi(self, hrefs):
         """Fetch multiple items. Duplicate hrefs must be ignored.
 
         Functionally similar to :py:meth:`get`, but might bring performance
@@ -146,22 +148,22 @@ class Storage(metaclass=StorageMeta):
         :returns: iterable of (href, item, etag)
         """
         for href in uniq(hrefs):
-            item, etag = self.get(href)
+            item, etag = await self.get(href)
             yield href, item, etag
 
-    def has(self, href):
+    async def has(self, href):
         """Check if an item exists by its href.
 
         :returns: True or False
         """
         try:
-            self.get(href)
+            await self.get(href)
         except exceptions.PreconditionFailed:
             return False
         else:
             return True
 
-    def upload(self, item):
+    async def upload(self, item):
         """Upload a new item.
 
         In cases where the new etag cannot be atomically determined (i.e. in
@@ -176,7 +178,7 @@ class Storage(metaclass=StorageMeta):
         """
         raise NotImplementedError()
 
-    def update(self, href, item, etag):
+    async def update(self, href, item, etag):
         """Update an item.
 
         The etag may be none in some cases, see `upload`.
@@ -189,7 +191,7 @@ class Storage(metaclass=StorageMeta):
         """
         raise NotImplementedError()
 
-    def delete(self, href, etag):
+    async def delete(self, href, etag):
         """Delete an item by href.
 
         :raises: :exc:`vdirsyncer.exceptions.PreconditionFailed` when item has
@@ -197,8 +199,8 @@ class Storage(metaclass=StorageMeta):
         """
         raise NotImplementedError()
 
-    @contextlib.contextmanager
-    def at_once(self):
+    @contextlib.asynccontextmanager
+    async def at_once(self):
         """A contextmanager that buffers all writes.
 
         Essentially, this::
@@ -217,7 +219,7 @@ class Storage(metaclass=StorageMeta):
         """
         yield
 
-    def get_meta(self, key):
+    async def get_meta(self, key):
         """Get metadata value for collection/storage.
 
         See the vdir specification for the keys that *have* to be accepted.
@@ -228,7 +230,7 @@ class Storage(metaclass=StorageMeta):
 
         raise NotImplementedError("This storage does not support metadata.")
 
-    def set_meta(self, key, value):
+    async def set_meta(self, key, value):
         """Get metadata value for collection/storage.
 
         :param key: The metadata key.

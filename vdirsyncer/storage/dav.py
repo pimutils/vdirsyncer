@@ -5,8 +5,8 @@ import xml.etree.ElementTree as etree
 from inspect import getfullargspec
 from inspect import signature
 
-import requests
-from requests.exceptions import HTTPError
+import aiohttp
+import aiostream
 
 from .. import exceptions
 from .. import http
@@ -18,6 +18,7 @@ from ..http import USERAGENT
 from ..vobject import Item
 from .base import normalize_meta_value
 from .base import Storage
+from vdirsyncer.exceptions import Error
 
 
 dav_logger = logging.getLogger(__name__)
@@ -44,10 +45,10 @@ def _contains_quoted_reserved_chars(x):
     return False
 
 
-def _assert_multistatus_success(r):
+async def _assert_multistatus_success(r):
     # Xandikos returns a multistatus on PUT.
     try:
-        root = _parse_xml(r.content)
+        root = _parse_xml(await r.content.read())
     except InvalidXMLResponse:
         return
     for status in root.findall(".//{DAV:}status"):
@@ -57,7 +58,7 @@ def _assert_multistatus_success(r):
         except (ValueError, IndexError):
             continue
         if st < 200 or st >= 400:
-            raise HTTPError(f"Server error: {st}")
+            raise Error(f"Server error: {st}")
 
 
 def _normalize_href(base, href):
@@ -169,14 +170,14 @@ class Discover:
         _, collection = url.rstrip("/").rsplit("/", 1)
         return urlparse.unquote(collection)
 
-    def find_principal(self):
+    async def find_principal(self):
         try:
-            return self._find_principal_impl("")
-        except (HTTPError, exceptions.Error):
+            return await self._find_principal_impl("")
+        except (aiohttp.ClientResponseError, exceptions.Error):
             dav_logger.debug("Trying out well-known URI")
-            return self._find_principal_impl(self._well_known_uri)
+            return await self._find_principal_impl(self._well_known_uri)
 
-    def _find_principal_impl(self, url):
+    async def _find_principal_impl(self, url):
         headers = self.session.get_default_headers()
         headers["Depth"] = "0"
         body = b"""
@@ -187,9 +188,14 @@ class Discover:
         </propfind>
         """
 
-        response = self.session.request("PROPFIND", url, headers=headers, data=body)
+        response = await self.session.request(
+            "PROPFIND",
+            url,
+            headers=headers,
+            data=body,
+        )
 
-        root = _parse_xml(response.content)
+        root = _parse_xml(await response.content.read())
         rv = root.find(".//{DAV:}current-user-principal/{DAV:}href")
         if rv is None:
             # This is for servers that don't support current-user-principal
@@ -201,34 +207,37 @@ class Discover:
                 )
             )
             return response.url
-        return urlparse.urljoin(response.url, rv.text).rstrip("/") + "/"
+        return urlparse.urljoin(str(response.url), rv.text).rstrip("/") + "/"
 
-    def find_home(self):
-        url = self.find_principal()
+    async def find_home(self):
+        url = await self.find_principal()
         headers = self.session.get_default_headers()
         headers["Depth"] = "0"
-        response = self.session.request(
+        response = await self.session.request(
             "PROPFIND", url, headers=headers, data=self._homeset_xml
         )
 
-        root = etree.fromstring(response.content)
+        root = etree.fromstring(await response.content.read())
         # Better don't do string formatting here, because of XML namespaces
         rv = root.find(".//" + self._homeset_tag + "/{DAV:}href")
         if rv is None:
             raise InvalidXMLResponse("Couldn't find home-set.")
-        return urlparse.urljoin(response.url, rv.text).rstrip("/") + "/"
+        return urlparse.urljoin(str(response.url), rv.text).rstrip("/") + "/"
 
-    def find_collections(self):
+    async def find_collections(self):
         rv = None
         try:
-            rv = list(self._find_collections_impl(""))
-        except (HTTPError, exceptions.Error):
+            rv = await aiostream.stream.list(self._find_collections_impl(""))
+        except (aiohttp.ClientResponseError, exceptions.Error):
             pass
 
         if rv:
             return rv
+
         dav_logger.debug("Given URL is not a homeset URL")
-        return self._find_collections_impl(self.find_home())
+        return await aiostream.stream.list(
+            self._find_collections_impl(await self.find_home())
+        )
 
     def _check_collection_resource_type(self, response):
         if self._resourcetype is None:
@@ -245,13 +254,13 @@ class Discover:
             return False
         return True
 
-    def _find_collections_impl(self, url):
+    async def _find_collections_impl(self, url):
         headers = self.session.get_default_headers()
         headers["Depth"] = "1"
-        r = self.session.request(
+        r = await self.session.request(
             "PROPFIND", url, headers=headers, data=self._collection_xml
         )
-        root = _parse_xml(r.content)
+        root = _parse_xml(await r.content.read())
         done = set()
         for response in root.findall("{DAV:}response"):
             if not self._check_collection_resource_type(response):
@@ -260,33 +269,33 @@ class Discover:
             href = response.find("{DAV:}href")
             if href is None:
                 raise InvalidXMLResponse("Missing href tag for collection " "props.")
-            href = urlparse.urljoin(r.url, href.text)
+            href = urlparse.urljoin(str(r.url), href.text)
             if href not in done:
                 done.add(href)
                 yield {"href": href}
 
-    def discover(self):
-        for c in self.find_collections():
+    async def discover(self):
+        for c in await self.find_collections():
             url = c["href"]
             collection = self._get_collection_from_url(url)
             storage_args = dict(self.kwargs)
             storage_args.update({"url": url, "collection": collection})
             yield storage_args
 
-    def create(self, collection):
+    async def create(self, collection):
         if collection is None:
             collection = self._get_collection_from_url(self.kwargs["url"])
 
-        for c in self.discover():
+        async for c in self.discover():
             if c["collection"] == collection:
                 return c
 
-        home = self.find_home()
+        home = await self.find_home()
         url = urlparse.urljoin(home, urlparse.quote(collection, "/@"))
 
         try:
-            url = self._create_collection_impl(url)
-        except HTTPError as e:
+            url = await self._create_collection_impl(url)
+        except (aiohttp.ClientResponseError, Error) as e:
             raise NotImplementedError(e)
         else:
             rv = dict(self.kwargs)
@@ -294,7 +303,7 @@ class Discover:
             rv["url"] = url
             return rv
 
-    def _create_collection_impl(self, url):
+    async def _create_collection_impl(self, url):
         data = """<?xml version="1.0" encoding="utf-8" ?>
             <mkcol xmlns="DAV:">
                 <set>
@@ -312,13 +321,13 @@ class Discover:
             "utf-8"
         )
 
-        response = self.session.request(
+        response = await self.session.request(
             "MKCOL",
             url,
             data=data,
             headers=self.session.get_default_headers(),
         )
-        return response.url
+        return str(response.url)
 
 
 class CalDiscover(Discover):
@@ -350,14 +359,18 @@ class CardDiscover(Discover):
 
 
 class DAVSession:
-    """
-    A helper class to connect to DAV servers.
-    """
+    """A helper class to connect to DAV servers."""
+
+    connector: aiohttp.BaseConnector
 
     @classmethod
     def init_and_remaining_args(cls, **kwargs):
+        def is_arg(k):
+            """Return true if ``k`` is an argument of ``cls.__init__``."""
+            return k in argspec.args or k in argspec.kwonlyargs
+
         argspec = getfullargspec(cls.__init__)
-        self_args, remainder = utils.split_dict(kwargs, argspec.args.__contains__)
+        self_args, remainder = utils.split_dict(kwargs, is_arg)
 
         return cls(**self_args), remainder
 
@@ -371,6 +384,8 @@ class DAVSession:
         useragent=USERAGENT,
         verify_fingerprint=None,
         auth_cert=None,
+        *,
+        connector: aiohttp.BaseConnector,
     ):
         self._settings = {
             "cert": prepare_client_cert(auth_cert),
@@ -380,21 +395,28 @@ class DAVSession:
 
         self.useragent = useragent
         self.url = url.rstrip("/") + "/"
-
-        self._session = requests.session()
+        self.connector = connector
 
     @utils.cached_property
     def parsed_url(self):
         return urlparse.urlparse(self.url)
 
-    def request(self, method, path, **kwargs):
+    async def request(self, method, path, **kwargs):
         url = self.url
         if path:
-            url = urlparse.urljoin(self.url, path)
+            url = urlparse.urljoin(str(self.url), path)
 
         more = dict(self._settings)
         more.update(kwargs)
-        return http.request(method, url, session=self._session, **more)
+
+        # XXX: This is a temporary hack to pin-point bad refactoring.
+        assert self.connector is not None
+        async with aiohttp.ClientSession(
+            connector=self.connector,
+            connector_owner=False,
+            # TODO use `raise_for_status=true`, though this needs traces first,
+        ) as session:
+            return await http.request(method, url, session=session, **more)
 
     def get_default_headers(self):
         return {
@@ -417,33 +439,41 @@ class DAVStorage(Storage):
     # The DAVSession class to use
     session_class = DAVSession
 
+    connector: aiohttp.TCPConnector
+
     _repr_attributes = ("username", "url")
 
     _property_table = {
         "displayname": ("displayname", "DAV:"),
     }
 
-    def __init__(self, **kwargs):
+    def __init__(self, *, connector, **kwargs):
         # defined for _repr_attributes
         self.username = kwargs.get("username")
         self.url = kwargs.get("url")
+        self.connector = connector
 
-        self.session, kwargs = self.session_class.init_and_remaining_args(**kwargs)
+        self.session, kwargs = self.session_class.init_and_remaining_args(
+            connector=connector,
+            **kwargs,
+        )
         super().__init__(**kwargs)
 
     __init__.__signature__ = signature(session_class.__init__)
 
     @classmethod
-    def discover(cls, **kwargs):
+    async def discover(cls, **kwargs):
         session, _ = cls.session_class.init_and_remaining_args(**kwargs)
         d = cls.discovery_class(session, kwargs)
-        return d.discover()
+
+        async for collection in d.discover():
+            yield collection
 
     @classmethod
-    def create_collection(cls, collection, **kwargs):
+    async def create_collection(cls, collection, **kwargs):
         session, _ = cls.session_class.init_and_remaining_args(**kwargs)
         d = cls.discovery_class(session, kwargs)
-        return d.create(collection)
+        return await d.create(collection)
 
     def _normalize_href(self, *args, **kwargs):
         return _normalize_href(self.session.url, *args, **kwargs)
@@ -455,57 +485,65 @@ class DAVStorage(Storage):
     def _is_item_mimetype(self, mimetype):
         return _fuzzy_matches_mimetype(self.item_mimetype, mimetype)
 
-    def get(self, href):
-        ((actual_href, item, etag),) = self.get_multi([href])
+    async def get(self, href):
+        ((actual_href, item, etag),) = await aiostream.stream.list(
+            self.get_multi([href])
+        )
         assert href == actual_href
         return item, etag
 
-    def get_multi(self, hrefs):
+    async def get_multi(self, hrefs):
         hrefs = set(hrefs)
         href_xml = []
         for href in hrefs:
             if href != self._normalize_href(href):
                 raise exceptions.NotFoundError(href)
             href_xml.append(f"<href>{href}</href>")
-        if not href_xml:
-            return ()
+        if href_xml:
+            data = self.get_multi_template.format(hrefs="\n".join(href_xml)).encode(
+                "utf-8"
+            )
+            response = await self.session.request(
+                "REPORT", "", data=data, headers=self.session.get_default_headers()
+            )
+            root = _parse_xml(
+                await response.content.read()
+            )  # etree only can handle bytes
+            rv = []
+            hrefs_left = set(hrefs)
+            for href, etag, prop in self._parse_prop_responses(root):
+                raw = prop.find(self.get_multi_data_query)
+                if raw is None:
+                    dav_logger.warning(
+                        "Skipping {}, the item content is missing.".format(href)
+                    )
+                    continue
 
-        data = self.get_multi_template.format(hrefs="\n".join(href_xml)).encode("utf-8")
-        response = self.session.request(
-            "REPORT", "", data=data, headers=self.session.get_default_headers()
-        )
-        root = _parse_xml(response.content)  # etree only can handle bytes
-        rv = []
-        hrefs_left = set(hrefs)
-        for href, etag, prop in self._parse_prop_responses(root):
-            raw = prop.find(self.get_multi_data_query)
-            if raw is None:
-                dav_logger.warning(
-                    "Skipping {}, the item content is missing.".format(href)
-                )
-                continue
+                raw = raw.text or ""
 
-            raw = raw.text or ""
+                if isinstance(raw, bytes):
+                    raw = raw.decode(response.encoding)
+                if isinstance(etag, bytes):
+                    etag = etag.decode(response.encoding)
 
-            if isinstance(raw, bytes):
-                raw = raw.decode(response.encoding)
-            if isinstance(etag, bytes):
-                etag = etag.decode(response.encoding)
-
-            try:
-                hrefs_left.remove(href)
-            except KeyError:
-                if href in hrefs:
-                    dav_logger.warning("Server sent item twice: {}".format(href))
+                try:
+                    hrefs_left.remove(href)
+                except KeyError:
+                    if href in hrefs:
+                        dav_logger.warning("Server sent item twice: {}".format(href))
+                    else:
+                        dav_logger.warning(
+                            "Server sent unsolicited item: {}".format(href)
+                        )
                 else:
-                    dav_logger.warning("Server sent unsolicited item: {}".format(href))
-            else:
-                rv.append((href, Item(raw), etag))
-        for href in hrefs_left:
-            raise exceptions.NotFoundError(href)
-        return rv
+                    rv.append((href, Item(raw), etag))
+            for href in hrefs_left:
+                raise exceptions.NotFoundError(href)
 
-    def _put(self, href, item, etag):
+            for href, item, etag in rv:
+                yield href, item, etag
+
+    async def _put(self, href, item, etag):
         headers = self.session.get_default_headers()
         headers["Content-Type"] = self.item_mimetype
         if etag is None:
@@ -513,11 +551,11 @@ class DAVStorage(Storage):
         else:
             headers["If-Match"] = etag
 
-        response = self.session.request(
+        response = await self.session.request(
             "PUT", href, data=item.raw.encode("utf-8"), headers=headers
         )
 
-        _assert_multistatus_success(response)
+        await _assert_multistatus_success(response)
 
         # The server may not return an etag under certain conditions:
         #
@@ -534,25 +572,28 @@ class DAVStorage(Storage):
         # In such cases we return a constant etag. The next synchronization
         # will then detect an etag change and will download the new item.
         etag = response.headers.get("etag", None)
-        href = self._normalize_href(response.url)
+        href = self._normalize_href(str(response.url))
         return href, etag
 
-    def update(self, href, item, etag):
+    async def update(self, href, item, etag):
         if etag is None:
             raise ValueError("etag must be given and must not be None.")
-        href, etag = self._put(self._normalize_href(href), item, etag)
+        href, etag = await self._put(self._normalize_href(href), item, etag)
         return etag
 
-    def upload(self, item):
+    async def upload(self, item):
         href = self._get_href(item)
-        return self._put(href, item, None)
+        rv = await self._put(href, item, None)
+        return rv
 
-    def delete(self, href, etag):
+    async def delete(self, href, etag):
         href = self._normalize_href(href)
         headers = self.session.get_default_headers()
-        headers.update({"If-Match": etag})
+        if etag:  # baikal doesn't give us an etag.
+            dav_logger.warning("Deleting an item with no etag.")
+            headers.update({"If-Match": etag})
 
-        self.session.request("DELETE", href, headers=headers)
+        await self.session.request("DELETE", href, headers=headers)
 
     def _parse_prop_responses(self, root, handled_hrefs=None):
         if handled_hrefs is None:
@@ -604,7 +645,7 @@ class DAVStorage(Storage):
             handled_hrefs.add(href)
             yield href, etag, props
 
-    def list(self):
+    async def list(self):
         headers = self.session.get_default_headers()
         headers["Depth"] = "1"
 
@@ -620,14 +661,19 @@ class DAVStorage(Storage):
 
         # We use a PROPFIND request instead of addressbook-query due to issues
         # with Zimbra. See https://github.com/pimutils/vdirsyncer/issues/83
-        response = self.session.request("PROPFIND", "", data=data, headers=headers)
-        root = _parse_xml(response.content)
+        response = await self.session.request(
+            "PROPFIND",
+            "",
+            data=data,
+            headers=headers,
+        )
+        root = _parse_xml(await response.content.read())
 
         rv = self._parse_prop_responses(root)
         for href, etag, _prop in rv:
             yield href, etag
 
-    def get_meta(self, key):
+    async def get_meta(self, key):
         try:
             tagname, namespace = self._property_table[key]
         except KeyError:
@@ -649,9 +695,14 @@ class DAVStorage(Storage):
         headers = self.session.get_default_headers()
         headers["Depth"] = "0"
 
-        response = self.session.request("PROPFIND", "", data=data, headers=headers)
+        response = await self.session.request(
+            "PROPFIND",
+            "",
+            data=data,
+            headers=headers,
+        )
 
-        root = _parse_xml(response.content)
+        root = _parse_xml(await response.content.read())
 
         for prop in root.findall(".//" + xpath):
             text = normalize_meta_value(getattr(prop, "text", None))
@@ -659,7 +710,7 @@ class DAVStorage(Storage):
                 return text
         return ""
 
-    def set_meta(self, key, value):
+    async def set_meta(self, key, value):
         try:
             tagname, namespace = self._property_table[key]
         except KeyError:
@@ -683,8 +734,11 @@ class DAVStorage(Storage):
             "utf-8"
         )
 
-        self.session.request(
-            "PROPPATCH", "", data=data, headers=self.session.get_default_headers()
+        await self.session.request(
+            "PROPPATCH",
+            "",
+            data=data,
+            headers=self.session.get_default_headers(),
         )
 
         # XXX: Response content is currently ignored. Though exceptions are
@@ -776,7 +830,7 @@ class CalDAVStorage(DAVStorage):
                     ("VTODO", "VEVENT"), start, end
                 )
 
-    def list(self):
+    async def list(self):
         caldavfilters = list(
             self._get_list_filters(self.item_types, self.start_date, self.end_date)
         )
@@ -788,7 +842,8 @@ class CalDAVStorage(DAVStorage):
             # instead?
             #
             # See https://github.com/dmfs/tasks/issues/118 for backstory.
-            yield from DAVStorage.list(self)
+            async for href, etag in DAVStorage.list(self):
+                yield href, etag
 
         data = """<?xml version="1.0" encoding="utf-8" ?>
             <C:calendar-query xmlns="DAV:"
@@ -813,8 +868,13 @@ class CalDAVStorage(DAVStorage):
 
         for caldavfilter in caldavfilters:
             xml = data.format(caldavfilter=caldavfilter).encode("utf-8")
-            response = self.session.request("REPORT", "", data=xml, headers=headers)
-            root = _parse_xml(response.content)
+            response = await self.session.request(
+                "REPORT",
+                "",
+                data=xml,
+                headers=headers,
+            )
+            root = _parse_xml(await response.content.read())
             rv = self._parse_prop_responses(root, handled_hrefs)
             for href, etag, _prop in rv:
                 yield href, etag
