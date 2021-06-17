@@ -409,8 +409,8 @@ def test_no_configured_pairs(tmpdir, runner, cmd):
     runner.write_with_general("")
 
     result = runner.invoke([cmd])
-    assert result.output == "critical: Nothing to do.\n"
-    assert result.exception.code == 5
+    assert result.output == ""
+    assert not result.exception
 
 
 @pytest.mark.parametrize(
