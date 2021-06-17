@@ -5,7 +5,6 @@ import urllib.parse as urlparse
 
 import click
 from atomicwrites import atomic_write
-from click_threading import get_ui_worker
 
 from . import base
 from . import dav
@@ -41,8 +40,7 @@ class GoogleSession(dav.DAVSession):
             raise exceptions.UserError("requests-oauthlib not installed")
 
         token_file = expand_path(token_file)
-        ui_worker = get_ui_worker()
-        ui_worker.put(lambda: self._init_token(token_file, client_id, client_secret))
+        return self._init_token(token_file, client_id, client_secret)
 
     def _init_token(self, token_file, client_id, client_secret):
         token = None

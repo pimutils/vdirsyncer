@@ -1,4 +1,3 @@
-import functools
 import json
 
 from .. import exceptions
@@ -16,15 +15,13 @@ from .utils import manage_sync_status
 from .utils import save_status
 
 
-def prepare_pair(wq, pair_name, collections, config, callback, **kwargs):
+def prepare_pair(pair_name, collections, config, callback, **kwargs):
     pair = config.get_pair(pair_name)
 
     all_collections = dict(
         collections_for_pair(status_path=config.general["status_path"], pair=pair)
     )
 
-    # spawn one worker less because we can reuse the current one
-    new_workers = -1
     for collection_name in collections or all_collections:
         try:
             config_a, config_b = all_collections[collection_name]
@@ -35,20 +32,12 @@ def prepare_pair(wq, pair_name, collections, config, callback, **kwargs):
                     pair_name, json.dumps(collection_name), list(all_collections)
                 )
             )
-        new_workers += 1
 
         collection = CollectionConfig(pair, collection_name, config_a, config_b)
-        wq.put(
-            functools.partial(
-                callback, collection=collection, general=config.general, **kwargs
-            )
-        )
-
-    for _ in range(new_workers):
-        wq.spawn_worker()
+        callback(collection=collection, general=config.general, **kwargs)
 
 
-def sync_collection(wq, collection, general, force_delete):
+def sync_collection(collection, general, force_delete):
     pair = collection.pair
     status_name = get_status_name(pair.name, collection.name)
 
@@ -87,7 +76,7 @@ def sync_collection(wq, collection, general, force_delete):
         raise JobFailed()
 
 
-def discover_collections(wq, pair, **kwargs):
+def discover_collections(pair, **kwargs):
     rv = collections_for_pair(pair=pair, **kwargs)
     collections = list(c for c, (a, b) in rv)
     if collections == [None]:
@@ -128,7 +117,7 @@ def repair_collection(config, collection, repair_unsafe_uid):
     repair_storage(storage, repair_unsafe_uid=repair_unsafe_uid)
 
 
-def metasync_collection(wq, collection, general):
+def metasync_collection(collection, general):
     from ..metasync import metasync
 
     pair = collection.pair

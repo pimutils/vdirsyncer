@@ -50,41 +50,6 @@ def test_sync_inexistant_pair(tmpdir, runner):
     assert "pair foo does not exist." in result.output.lower()
 
 
-def test_debug_connections(tmpdir, runner):
-    runner.write_with_general(
-        dedent(
-            """
-    [pair my_pair]
-    a = "my_a"
-    b = "my_b"
-    collections = null
-
-    [storage my_a]
-    type = "filesystem"
-    path = "{0}/path_a/"
-    fileext = ".txt"
-
-    [storage my_b]
-    type = "filesystem"
-    path = "{0}/path_b/"
-    fileext = ".txt"
-    """
-        ).format(str(tmpdir))
-    )
-
-    tmpdir.mkdir("path_a")
-    tmpdir.mkdir("path_b")
-
-    result = runner.invoke(["discover"])
-    assert not result.exception
-
-    result = runner.invoke(["-vdebug", "sync", "--max-workers=3"])
-    assert "using 3 maximal workers" in result.output.lower()
-
-    result = runner.invoke(["-vdebug", "sync"])
-    assert "using 1 maximal workers" in result.output.lower()
-
-
 def test_empty_storage(tmpdir, runner):
     runner.write_with_general(
         dedent(

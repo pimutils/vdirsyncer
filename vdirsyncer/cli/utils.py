@@ -1,14 +1,11 @@
 import contextlib
 import errno
 import importlib
-import itertools
 import json
 import os
-import queue
 import sys
 
 import click
-import click_threading
 from atomicwrites import atomic_write
 
 from . import cli_logger
@@ -309,92 +306,6 @@ def handle_storage_init_error(cls, config):
     raise exceptions.UserError(
         "Failed to initialize {}".format(config["instance_name"]), problems=problems
     )
-
-
-class WorkerQueue:
-    """
-    A simple worker-queue setup.
-
-    Note that workers quit if queue is empty. That means you have to first put
-    things into the queue before spawning the worker!
-    """
-
-    def __init__(self, max_workers):
-        self._queue = queue.Queue()
-        self._workers = []
-        self._max_workers = max_workers
-        self._shutdown_handlers = []
-
-        # According to http://stackoverflow.com/a/27062830, those are
-        # threadsafe compared to increasing a simple integer variable.
-        self.num_done_tasks = itertools.count()
-        self.num_failed_tasks = itertools.count()
-
-    def shutdown(self):
-        while self._shutdown_handlers:
-            try:
-                self._shutdown_handlers.pop()()
-            except Exception:
-                pass
-
-    def _worker(self):
-        while True:
-            try:
-                func = self._queue.get(False)
-            except queue.Empty:
-                break
-
-            try:
-                func(wq=self)
-            except Exception:
-                handle_cli_error()
-                next(self.num_failed_tasks)
-            finally:
-                self._queue.task_done()
-                next(self.num_done_tasks)
-                if not self._queue.unfinished_tasks:
-                    self.shutdown()
-
-    def spawn_worker(self):
-        if self._max_workers and len(self._workers) >= self._max_workers:
-            return
-
-        t = click_threading.Thread(target=self._worker)
-        t.start()
-        self._workers.append(t)
-
-    @contextlib.contextmanager
-    def join(self):
-        assert self._workers or not self._queue.unfinished_tasks
-        ui_worker = click_threading.UiWorker()
-        self._shutdown_handlers.append(ui_worker.shutdown)
-        _echo = click.echo
-
-        with ui_worker.patch_click():
-            yield
-
-            if not self._workers:
-                # Ugly hack, needed because ui_worker is not running.
-                click.echo = _echo
-                cli_logger.critical("Nothing to do.")
-                sys.exit(5)
-
-            ui_worker.run()
-            self._queue.join()
-            for worker in self._workers:
-                worker.join()
-
-        tasks_failed = next(self.num_failed_tasks)
-        tasks_done = next(self.num_done_tasks)
-
-        if tasks_failed > 0:
-            cli_logger.error(
-                "{} out of {} tasks failed.".format(tasks_failed, tasks_done)
-            )
-            sys.exit(1)
-
-    def put(self, f):
-        return self._queue.put(f)
 
 
 def assert_permissions(path, wanted):

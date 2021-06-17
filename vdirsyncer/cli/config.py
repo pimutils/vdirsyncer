@@ -4,8 +4,6 @@ import string
 from configparser import RawConfigParser
 from itertools import chain
 
-from click_threading import get_ui_worker
-
 from .. import exceptions
 from .. import PROJECT_HOME
 from ..utils import cached_property
@@ -257,11 +255,7 @@ class PairConfig:
                 b_name = self.config_b["instance_name"]
                 command = conflict_resolution[1:]
 
-                def inner():
-                    return _resolve_conflict_via_command(a, b, command, a_name, b_name)
-
-                ui_worker = get_ui_worker()
-                return ui_worker.put(inner)
+                return _resolve_conflict_via_command(a, b, command, a_name, b_name)
 
             return resolve
         else:
