@@ -81,7 +81,7 @@ release-deb:
 	sh scripts/release-deb.sh ubuntu zesty
 
 install-dev:
-	pip install -U pip setuptools wheel
+	pip install --upgrade --upgrade-strategy eager pip setuptools wheel
 	pip install -e .
 	pip install -Ur test-requirements.txt $(TEST_EXTRA_PACKAGES)
 	pip install pre-commit
