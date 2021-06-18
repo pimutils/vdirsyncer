@@ -70,7 +70,7 @@ release-deb:
 	sh scripts/release-deb.sh ubuntu zesty
 
 install-dev:
-	python -m pip install --only-binary :all: pip==21.1.2 -U
+	pip install --upgrade --only-binary :all: pip
 	pip install --upgrade --upgrade-strategy eager pip setuptools wheel
 	pip install -e .
 	pip install -Ur test-requirements.txt $(TEST_EXTRA_PACKAGES)
