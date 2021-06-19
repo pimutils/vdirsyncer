@@ -1,4 +1,5 @@
 import functools
+import json
 import logging
 import sys
 
@@ -275,3 +276,16 @@ def repair(ctx, collection, repair_unsafe_uid):
     )
     click.confirm("Do you want to continue?", abort=True)
     repair_collection(ctx.config, collection, repair_unsafe_uid=repair_unsafe_uid)
+
+
+@app.command()
+@pass_context
+@catch_errors
+def showconfig(ctx: AppContext):
+    """Show the current configuration.
+
+    This is mostly intended to be used by scripts or other integrations.
+    If you need additional information in this dump, please reach out.
+    """
+    config = {"storages": list(ctx.config.storages.values())}
+    click.echo(json.dumps(config, indent=2))
