@@ -2,13 +2,13 @@ import json
 import os
 import string
 from configparser import RawConfigParser
+from functools import cached_property
 from itertools import chain
 
 from click_threading import get_ui_worker
 
 from .. import exceptions
 from .. import PROJECT_HOME
-from ..utils import cached_property
 from ..utils import expand_path
 from .fetchparams import expand_fetch_params
 from .utils import storage_class_from_config

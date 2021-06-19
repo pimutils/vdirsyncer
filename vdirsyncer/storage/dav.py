@@ -2,6 +2,7 @@ import datetime
 import logging
 import urllib.parse as urlparse
 import xml.etree.ElementTree as etree
+from functools import cached_property
 from inspect import getfullargspec
 from inspect import signature
 
@@ -383,7 +384,7 @@ class DAVSession:
 
         self._session = requests.session()
 
-    @utils.cached_property
+    @cached_property
     def parsed_url(self):
         return urlparse.urlparse(self.url)
 

@@ -2,9 +2,9 @@ import hashlib
 import json
 import logging
 import sys
+from functools import cached_property
 
 from .. import exceptions
-from ..utils import cached_property
 from .utils import handle_collection_not_found
 from .utils import handle_storage_init_error
 from .utils import load_status
