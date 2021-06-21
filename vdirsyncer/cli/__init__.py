@@ -211,11 +211,9 @@ def discover(ctx, pairs, list):
         conn = aiohttp.TCPConnector(limit_per_host=16)
 
         for pair_name in pairs or config.pairs:
-            pair = config.get_pair(pair_name)
-
             await discover_collections(
                 status_path=config.general["status_path"],
-                pair=pair,
+                pair=config.get_pair(pair_name),
                 from_cache=False,
                 list_collections=list,
                 connector=conn,

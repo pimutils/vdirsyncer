@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import os
 import string
@@ -206,7 +208,7 @@ class Config:
         else:
             return expand_fetch_params(args)
 
-    def get_pair(self, pair_name):
+    def get_pair(self, pair_name: str) -> PairConfig:
         try:
             return self.pairs[pair_name]
         except KeyError as e:

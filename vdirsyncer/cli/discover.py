@@ -81,6 +81,7 @@ async def collections_for_pair(
     b_discovered = _DiscoverResult(pair.config_b, connector=connector)
 
     if list_collections:
+        # TODO: We should gather data and THEN print, so it can be async.
         await _print_collections(
             pair.config_a["instance_name"],
             a_discovered.get_self,
@@ -275,27 +276,32 @@ async def _print_collections(
         )
         return
     logger.info(f"{instance_name}:")
+    tasks = []
     for args in discovered.values():
-        collection = args["collection"]
-        if collection is None:
-            continue
+        tasks.append(_print_single_collection(args, instance_name, connector))
 
-        args["instance_name"] = instance_name
-        try:
-            storage = await storage_instance_from_config(
-                args,
-                create=False,
-                connector=connector,
-            )
-            displayname = await storage.get_meta("displayname")
-        except Exception:
-            displayname = ""
+    await asyncio.gather(*tasks)
 
-        logger.info(
-            "  - {}{}".format(
-                json.dumps(collection),
-                f' ("{displayname}")'
-                if displayname and displayname != collection
-                else "",
-            )
+
+async def _print_single_collection(args, instance_name, connector):
+    collection = args["collection"]
+    if collection is None:
+        return
+
+    args["instance_name"] = instance_name
+    try:
+        storage = await storage_instance_from_config(
+            args,
+            create=False,
+            connector=connector,
         )
+        displayname = await storage.get_meta("displayname")
+    except Exception:
+        displayname = ""
+
+    logger.info(
+        "  - {}{}".format(
+            json.dumps(collection),
+            f' ("{displayname}")' if displayname and displayname != collection else "",
+        )
+    )
