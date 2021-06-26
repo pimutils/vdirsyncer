@@ -411,12 +411,18 @@ class DAVSession:
 
         # XXX: This is a temporary hack to pin-point bad refactoring.
         assert self.connector is not None
-        async with aiohttp.ClientSession(
+        async with self._session as session:
+            return await http.request(method, url, session=session, **more)
+
+    @property
+    def _session(self):
+        """Return a new session for requests."""
+
+        return aiohttp.ClientSession(
             connector=self.connector,
             connector_owner=False,
             # TODO use `raise_for_status=true`, though this needs traces first,
-        ) as session:
-            return await http.request(method, url, session=session, **more)
+        )
 
     def get_default_headers(self):
         return {
