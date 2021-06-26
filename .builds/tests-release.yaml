@@ -10,6 +10,7 @@ sources:
   - https://github.com/pimutils/vdirsyncer
 secrets:
   - a36c8ba3-fba0-4338-b402-6aea0fbe771e
+  - 4d9a6dfe-5c8d-48bd-b864-a2f5d772c536
 environment:
   BUILD: test
   CI: true
@@ -33,6 +34,19 @@ tasks:
       # Non-system python is used for packages:
       export PATH=$PATH:~/.local/bin/
       make -e style
+  - check-secrets: |
+      # Stop here if this is a PR. PRs can't run with the below secrets.
+      [ -f ~/fastmail-secrets ] || complete-build
+  - extra-storages: |
+      set +x
+      source ~/fastmail-secrets
+      set -x
+
+      cd vdirsyncer
+      export PATH=$PATH:~/.local/bin/
+      DAV_SERVER=fastmail pytest tests/storage
+  - check-tag: |
+      # Stop here unless this is a tag.
       git describe --exact-match --tags || complete-build
   - publish: |
       cd vdirsyncer
