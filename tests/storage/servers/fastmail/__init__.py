@@ -5,7 +5,7 @@ import pytest
 
 class ServerMixin:
     @pytest.fixture
-    def get_storage_args(self, item_type, slow_create_collection):
+    def get_storage_args(self, item_type, slow_create_collection, aio_connector):
         if item_type == "VTODO":
             # Fastmail has non-standard support for TODOs
             # See https://github.com/pimutils/vdirsyncer/issues/824
@@ -15,6 +15,7 @@ class ServerMixin:
             args = {
                 "username": os.environ["FASTMAIL_USERNAME"],
                 "password": os.environ["FASTMAIL_PASSWORD"],
+                "connector": aio_connector,
             }
 
             if self.storage_class.fileext == ".ics":
@@ -25,7 +26,12 @@ class ServerMixin:
                 raise RuntimeError()
 
             if collection is not None:
-                args = slow_create_collection(self.storage_class, args, collection)
+                args = await slow_create_collection(
+                    self.storage_class,
+                    args,
+                    collection,
+                )
+
             return args
 
         return inner
