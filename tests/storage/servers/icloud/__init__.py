@@ -11,7 +11,7 @@ class ServerMixin:
             # See https://github.com/pimutils/vdirsyncer/pull/593#issuecomment-285941615  # noqa
             pytest.skip("iCloud doesn't support anything else than VEVENT")
 
-        def inner(collection="test"):
+        async def inner(collection="test"):
             args = {
                 "username": os.environ["ICLOUD_USERNAME"],
                 "password": os.environ["ICLOUD_PASSWORD"],

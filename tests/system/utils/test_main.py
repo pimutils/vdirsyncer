@@ -1,9 +1,9 @@
 import logging
 import sys
 
+import aiohttp
 import click_log
 import pytest
-import requests
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 
@@ -25,74 +25,77 @@ def test_get_storage_init_args():
     assert not required
 
 
-def test_request_ssl():
-    with pytest.raises(requests.exceptions.ConnectionError) as excinfo:
-        http.request("GET", "https://self-signed.badssl.com/")
-    assert "certificate verify failed" in str(excinfo.value)
+@pytest.mark.asyncio
+async def test_request_ssl():
+    async with aiohttp.ClientSession() as session:
+        with pytest.raises(aiohttp.ClientConnectorCertificateError) as excinfo:
+            await http.request(
+                "GET",
+                "https://self-signed.badssl.com/",
+                session=session,
+            )
+        assert "certificate verify failed" in str(excinfo.value)
 
-    http.request("GET", "https://self-signed.badssl.com/", verify=False)
+        await http.request(
+            "GET",
+            "https://self-signed.badssl.com/",
+            verify=False,
+            session=session,
+        )
 
 
-def _fingerprints_broken():
-    from pkg_resources import parse_version as ver
-
-    broken_urllib3 = ver(requests.__version__) <= ver("2.5.1")
-    return broken_urllib3
-
-
-def fingerprint_of_cert(cert, hash=hashes.SHA256):
+def fingerprint_of_cert(cert, hash=hashes.SHA256) -> str:
     return x509.load_pem_x509_certificate(cert.bytes()).fingerprint(hash()).hex()
 
 
-@pytest.mark.skipif(
-    _fingerprints_broken(), reason="https://github.com/shazow/urllib3/issues/529"
-)
-@pytest.mark.parametrize("hash_algorithm", [hashes.MD5, hashes.SHA256])
-def test_request_ssl_leaf_fingerprint(httpserver, localhost_cert, hash_algorithm):
+@pytest.mark.parametrize("hash_algorithm", [hashes.SHA256])
+@pytest.mark.asyncio
+async def test_request_ssl_leaf_fingerprint(
+    httpserver,
+    localhost_cert,
+    hash_algorithm,
+    aio_session,
+):
     fingerprint = fingerprint_of_cert(localhost_cert.cert_chain_pems[0], hash_algorithm)
+    bogus = "".join(reversed(fingerprint))
 
     # We have to serve something:
     httpserver.expect_request("/").respond_with_data("OK")
-    url = f"https://{httpserver.host}:{httpserver.port}/"
+    url = f"https://127.0.0.1:{httpserver.port}/"
 
-    http.request("GET", url, verify=False, verify_fingerprint=fingerprint)
-    with pytest.raises(requests.exceptions.ConnectionError) as excinfo:
-        http.request("GET", url, verify_fingerprint=fingerprint)
+    await http.request("GET", url, verify_fingerprint=fingerprint, session=aio_session)
 
-    with pytest.raises(requests.exceptions.ConnectionError) as excinfo:
-        http.request(
-            "GET",
-            url,
-            verify=False,
-            verify_fingerprint="".join(reversed(fingerprint)),
-        )
-    assert "Fingerprints did not match" in str(excinfo.value)
+    with pytest.raises(aiohttp.ServerFingerprintMismatch):
+        await http.request("GET", url, verify_fingerprint=bogus, session=aio_session)
 
 
-@pytest.mark.skipif(
-    _fingerprints_broken(), reason="https://github.com/shazow/urllib3/issues/529"
-)
 @pytest.mark.xfail(reason="Not implemented")
-@pytest.mark.parametrize("hash_algorithm", [hashes.MD5, hashes.SHA256])
-def test_request_ssl_ca_fingerprint(httpserver, ca, hash_algorithm):
+@pytest.mark.parametrize("hash_algorithm", [hashes.SHA256])
+@pytest.mark.asyncio
+async def test_request_ssl_ca_fingerprints(httpserver, ca, hash_algorithm, aio_session):
     fingerprint = fingerprint_of_cert(ca.cert_pem)
+    bogus = "".join(reversed(fingerprint))
 
     # We have to serve something:
     httpserver.expect_request("/").respond_with_data("OK")
-    url = f"https://{httpserver.host}:{httpserver.port}/"
+    url = f"https://127.0.0.1:{httpserver.port}/"
 
-    http.request("GET", url, verify=False, verify_fingerprint=fingerprint)
-    with pytest.raises(requests.exceptions.ConnectionError) as excinfo:
-        http.request("GET", url, verify_fingerprint=fingerprint)
+    await http.request(
+        "GET",
+        url,
+        verify=False,
+        verify_fingerprint=fingerprint,
+        session=aio_session,
+    )
 
-    with pytest.raises(requests.exceptions.ConnectionError) as excinfo:
+    with pytest.raises(aiohttp.ServerFingerprintMismatch):
         http.request(
             "GET",
             url,
             verify=False,
-            verify_fingerprint="".join(reversed(fingerprint)),
+            verify_fingerprint=bogus,
+            session=aio_session,
         )
-    assert "Fingerprints did not match" in str(excinfo.value)
 
 
 def test_open_graphical_browser(monkeypatch):

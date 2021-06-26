@@ -27,7 +27,7 @@ class ServerMixin:
 
     @pytest.fixture
     def get_storage_args(self, davical_args, request):
-        def inner(collection="test"):
+        async def inner(collection="test"):
             if collection is None:
                 return davical_args
 

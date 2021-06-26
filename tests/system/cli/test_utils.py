@@ -1,3 +1,5 @@
+import pytest
+
 from vdirsyncer import exceptions
 from vdirsyncer.cli.utils import handle_cli_error
 from vdirsyncer.cli.utils import storage_instance_from_config
@@ -15,11 +17,13 @@ def test_handle_cli_error(capsys):
     assert "ayy lmao" in err
 
 
-def test_storage_instance_from_config(monkeypatch):
-    def lol(**kw):
-        assert kw == {"foo": "bar", "baz": 1}
-        return "OK"
+@pytest.mark.asyncio
+async def test_storage_instance_from_config(monkeypatch, aio_connector):
+    class Dummy:
+        def __init__(self, **kw):
+            assert kw == {"foo": "bar", "baz": 1}
 
-    monkeypatch.setitem(storage_names._storages, "lol", lol)
+    monkeypatch.setitem(storage_names._storages, "lol", Dummy)
     config = {"type": "lol", "foo": "bar", "baz": 1}
-    assert storage_instance_from_config(config) == "OK"
+    storage = await storage_instance_from_config(config, connector=aio_connector)
+    assert isinstance(storage, Dummy)

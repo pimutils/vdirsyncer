@@ -11,4 +11,7 @@ class TestMemoryStorage(StorageTests):
 
     @pytest.fixture
     def get_storage_args(self):
-        return lambda **kw: kw
+        async def inner(**args):
+            return args
+
+        return inner

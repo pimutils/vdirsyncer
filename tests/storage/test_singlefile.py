@@ -11,10 +11,10 @@ class TestSingleFileStorage(StorageTests):
 
     @pytest.fixture
     def get_storage_args(self, tmpdir):
-        def inner(collection="test"):
+        async def inner(collection="test"):
             rv = {"path": str(tmpdir.join("%s.txt")), "collection": collection}
             if collection is not None:
-                rv = self.storage_class.create_collection(**rv)
+                rv = await self.storage_class.create_collection(**rv)
             return rv
 
         return inner

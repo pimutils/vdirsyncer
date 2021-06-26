@@ -30,13 +30,13 @@ logger = logging.getLogger(__name__)
 
 def _writing_op(f):
     @functools.wraps(f)
-    def inner(self, *args, **kwargs):
+    async def inner(self, *args, **kwargs):
         if not self._at_once:
             self._sync_journal()
         rv = f(self, *args, **kwargs)
         if not self._at_once:
             self._sync_journal()
-        return rv
+        return await rv
 
     return inner
 
@@ -120,7 +120,14 @@ class EtesyncStorage(Storage):
         self._session.etesync.sync_journal(self.collection)
 
     @classmethod
-    def discover(cls, email, secrets_dir, server_url=None, db_path=None, **kwargs):
+    async def discover(
+        cls,
+        email,
+        secrets_dir,
+        server_url=None,
+        db_path=None,
+        **kwargs,
+    ):
         if kwargs.get("collection", None) is not None:
             raise TypeError("collection argument must not be given.")
         session = _Session(email, secrets_dir, server_url, db_path)
@@ -139,7 +146,7 @@ class EtesyncStorage(Storage):
                 logger.debug(f"Skipping collection: {entry!r}")
 
     @classmethod
-    def create_collection(
+    async def create_collection(
         cls, collection, email, secrets_dir, server_url=None, db_path=None, **kwargs
     ):
         session = _Session(email, secrets_dir, server_url, db_path)
@@ -158,13 +165,13 @@ class EtesyncStorage(Storage):
             **kwargs,
         )
 
-    def list(self):
+    async def list(self):
         self._sync_journal()
         for entry in self._journal.collection.list():
             item = Item(entry.content)
             yield str(entry.uid), item.hash
 
-    def get(self, href):
+    async def get(self, href):
         try:
             item = Item(self._journal.collection.get(href).content)
         except etesync.exceptions.DoesNotExist as e:
@@ -172,7 +179,7 @@ class EtesyncStorage(Storage):
         return item, item.hash
 
     @_writing_op
-    def upload(self, item):
+    async def upload(self, item):
         try:
             entry = self._item_type.create(self._journal.collection, item.raw)
             entry.save()
@@ -183,7 +190,7 @@ class EtesyncStorage(Storage):
         return item.uid, item.hash
 
     @_writing_op
-    def update(self, href, item, etag):
+    async def update(self, href, item, etag):
         try:
             entry = self._journal.collection.get(href)
         except etesync.exceptions.DoesNotExist as e:
@@ -196,7 +203,7 @@ class EtesyncStorage(Storage):
         return item.hash
 
     @_writing_op
-    def delete(self, href, etag):
+    async def delete(self, href, etag):
         try:
             entry = self._journal.collection.get(href)
             old_item = Item(entry.content)
@@ -206,8 +213,8 @@ class EtesyncStorage(Storage):
         except etesync.exceptions.DoesNotExist as e:
             raise exceptions.NotFoundError(e)
 
-    @contextlib.contextmanager
-    def at_once(self):
+    @contextlib.asynccontextmanager
+    async def at_once(self):
         self._sync_journal()
         self._at_once = True
         try:

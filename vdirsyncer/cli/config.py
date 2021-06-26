@@ -1,10 +1,10 @@
+from __future__ import annotations
+
 import json
 import os
 import string
 from configparser import RawConfigParser
 from itertools import chain
-
-from click_threading import get_ui_worker
 
 from .. import exceptions
 from .. import PROJECT_HOME
@@ -208,7 +208,7 @@ class Config:
         else:
             return expand_fetch_params(args)
 
-    def get_pair(self, pair_name):
+    def get_pair(self, pair_name: str) -> PairConfig:
         try:
             return self.pairs[pair_name]
         except KeyError as e:
@@ -257,11 +257,7 @@ class PairConfig:
                 b_name = self.config_b["instance_name"]
                 command = conflict_resolution[1:]
 
-                def inner():
-                    return _resolve_conflict_via_command(a, b, command, a_name, b_name)
-
-                ui_worker = get_ui_worker()
-                return ui_worker.put(inner)
+                return _resolve_conflict_via_command(a, b, command, a_name, b_name)
 
             return resolve
         else:

@@ -1,10 +1,13 @@
+import asyncio
 import hashlib
 import json
 import logging
 import sys
 
+import aiohttp
+import aiostream
+
 from .. import exceptions
-from ..utils import cached_property
 from .utils import handle_collection_not_found
 from .utils import handle_storage_init_error
 from .utils import load_status
@@ -35,7 +38,14 @@ def _get_collections_cache_key(pair):
     return m.hexdigest()
 
 
-def collections_for_pair(status_path, pair, from_cache=True, list_collections=False):
+async def collections_for_pair(
+    status_path,
+    pair,
+    from_cache=True,
+    list_collections=False,
+    *,
+    connector: aiohttp.TCPConnector,
+):
     """Determine all configured collections for a given pair. Takes care of
     shortcut expansion and result caching.
 
@@ -67,16 +77,25 @@ def collections_for_pair(status_path, pair, from_cache=True, list_collections=Fa
 
     logger.info("Discovering collections for pair {}".format(pair.name))
 
-    a_discovered = _DiscoverResult(pair.config_a)
-    b_discovered = _DiscoverResult(pair.config_b)
+    a_discovered = _DiscoverResult(pair.config_a, connector=connector)
+    b_discovered = _DiscoverResult(pair.config_b, connector=connector)
 
     if list_collections:
-        _print_collections(pair.config_a["instance_name"], a_discovered.get_self)
-        _print_collections(pair.config_b["instance_name"], b_discovered.get_self)
+        # TODO: We should gather data and THEN print, so it can be async.
+        await _print_collections(
+            pair.config_a["instance_name"],
+            a_discovered.get_self,
+            connector=connector,
+        )
+        await _print_collections(
+            pair.config_b["instance_name"],
+            b_discovered.get_self,
+            connector=connector,
+        )
 
     # We have to use a list here because the special None/null value would get
     # mangled to string (because JSON objects always have string keys).
-    rv = list(
+    rv = await aiostream.stream.list(
         expand_collections(
             shortcuts=pair.collections,
             config_a=pair.config_a,
@@ -87,7 +106,7 @@ def collections_for_pair(status_path, pair, from_cache=True, list_collections=Fa
         )
     )
 
-    _sanity_check_collections(rv)
+    await _sanity_check_collections(rv, connector=connector)
 
     save_status(
         status_path,
@@ -103,10 +122,14 @@ def collections_for_pair(status_path, pair, from_cache=True, list_collections=Fa
     return rv
 
 
-def _sanity_check_collections(collections):
+async def _sanity_check_collections(collections, *, connector):
+    tasks = []
+
     for _, (a_args, b_args) in collections:
-        storage_instance_from_config(a_args)
-        storage_instance_from_config(b_args)
+        tasks.append(storage_instance_from_config(a_args, connector=connector))
+        tasks.append(storage_instance_from_config(b_args, connector=connector))
+
+    await asyncio.gather(*tasks)
 
 
 def _compress_collections_cache(collections, config_a, config_b):
@@ -134,17 +157,28 @@ def _expand_collections_cache(collections, config_a, config_b):
 
 
 class _DiscoverResult:
-    def __init__(self, config):
+    def __init__(self, config, *, connector):
         self._cls, _ = storage_class_from_config(config)
-        self._config = config
 
-    def get_self(self):
+        if self._cls.__name__ in [
+            "CardDAVStorage",
+            "CalDAVStorage",
+            "GoogleCalendarStorage",
+        ]:
+            assert connector is not None
+            config["connector"] = connector
+
+        self._config = config
+        self._discovered = None
+
+    async def get_self(self):
+        if self._discovered is None:
+            self._discovered = await self._discover()
         return self._discovered
 
-    @cached_property
-    def _discovered(self):
+    async def _discover(self):
         try:
-            discovered = list(self._cls.discover(**self._config))
+            discovered = await aiostream.stream.list(self._cls.discover(**self._config))
         except NotImplementedError:
             return {}
         except Exception:
@@ -158,7 +192,7 @@ class _DiscoverResult:
             return rv
 
 
-def expand_collections(
+async def expand_collections(
     shortcuts,
     config_a,
     config_b,
@@ -173,9 +207,9 @@ def expand_collections(
 
     for shortcut in shortcuts:
         if shortcut == "from a":
-            collections = get_a_discovered()
+            collections = await get_a_discovered()
         elif shortcut == "from b":
-            collections = get_b_discovered()
+            collections = await get_b_discovered()
         else:
             collections = [shortcut]
 
@@ -189,17 +223,23 @@ def expand_collections(
                 continue
             handled_collections.add(collection)
 
-            a_args = _collection_from_discovered(
-                get_a_discovered, collection_a, config_a, _handle_collection_not_found
+            a_args = await _collection_from_discovered(
+                get_a_discovered,
+                collection_a,
+                config_a,
+                _handle_collection_not_found,
             )
-            b_args = _collection_from_discovered(
-                get_b_discovered, collection_b, config_b, _handle_collection_not_found
+            b_args = await _collection_from_discovered(
+                get_b_discovered,
+                collection_b,
+                config_b,
+                _handle_collection_not_found,
             )
 
             yield collection, (a_args, b_args)
 
 
-def _collection_from_discovered(
+async def _collection_from_discovered(
     get_discovered, collection, config, _handle_collection_not_found
 ):
     if collection is None:
@@ -208,14 +248,19 @@ def _collection_from_discovered(
         return args
 
     try:
-        return get_discovered()[collection]
+        return (await get_discovered())[collection]
     except KeyError:
-        return _handle_collection_not_found(config, collection)
+        return await _handle_collection_not_found(config, collection)
 
 
-def _print_collections(instance_name, get_discovered):
+async def _print_collections(
+    instance_name: str,
+    get_discovered,
+    *,
+    connector: aiohttp.TCPConnector,
+):
     try:
-        discovered = get_discovered()
+        discovered = await get_discovered()
     except exceptions.UserError:
         raise
     except Exception:
@@ -231,23 +276,32 @@ def _print_collections(instance_name, get_discovered):
         )
         return
     logger.info(f"{instance_name}:")
+    tasks = []
     for args in discovered.values():
-        collection = args["collection"]
-        if collection is None:
-            continue
+        tasks.append(_print_single_collection(args, instance_name, connector))
 
-        args["instance_name"] = instance_name
-        try:
-            storage = storage_instance_from_config(args, create=False)
-            displayname = storage.get_meta("displayname")
-        except Exception:
-            displayname = ""
+    await asyncio.gather(*tasks)
 
-        logger.info(
-            "  - {}{}".format(
-                json.dumps(collection),
-                f' ("{displayname}")'
-                if displayname and displayname != collection
-                else "",
-            )
+
+async def _print_single_collection(args, instance_name, connector):
+    collection = args["collection"]
+    if collection is None:
+        return
+
+    args["instance_name"] = instance_name
+    try:
+        storage = await storage_instance_from_config(
+            args,
+            create=False,
+            connector=connector,
         )
+        displayname = await storage.get_meta("displayname")
+    except Exception:
+        displayname = ""
+
+    logger.info(
+        "  - {}{}".format(
+            json.dumps(collection),
+            f' ("{displayname}")' if displayname and displayname != collection else "",
+        )
+    )

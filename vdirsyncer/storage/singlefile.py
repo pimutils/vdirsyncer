@@ -21,10 +21,12 @@ logger = logging.getLogger(__name__)
 
 def _writing_op(f):
     @functools.wraps(f)
-    def inner(self, *args, **kwargs):
+    async def inner(self, *args, **kwargs):
         if self._items is None or not self._at_once:
-            self.list()
-        rv = f(self, *args, **kwargs)
+            async for _ in self.list():
+                pass
+        assert self._items is not None
+        rv = await f(self, *args, **kwargs)
         if not self._at_once:
             self._write()
         return rv
@@ -53,7 +55,7 @@ class SingleFileStorage(Storage):
         self._at_once = False
 
     @classmethod
-    def discover(cls, path, **kwargs):
+    async def discover(cls, path, **kwargs):
         if kwargs.pop("collection", None) is not None:
             raise TypeError("collection argument must not be given.")
 
@@ -81,7 +83,7 @@ class SingleFileStorage(Storage):
                 yield args
 
     @classmethod
-    def create_collection(cls, collection, **kwargs):
+    async def create_collection(cls, collection, **kwargs):
         path = os.path.abspath(expand_path(kwargs["path"]))
 
         if collection is not None:
@@ -97,7 +99,7 @@ class SingleFileStorage(Storage):
         kwargs["collection"] = collection
         return kwargs
 
-    def list(self):
+    async def list(self):
         self._items = collections.OrderedDict()
 
         try:
@@ -111,19 +113,19 @@ class SingleFileStorage(Storage):
                 raise OSError(e)
             text = None
 
-        if not text:
-            return ()
+        if text:
+            for item in split_collection(text):
+                item = Item(item)
+                etag = item.hash
+                href = item.ident
+                self._items[href] = item, etag
 
-        for item in split_collection(text):
-            item = Item(item)
-            etag = item.hash
-            self._items[item.ident] = item, etag
+                yield href, etag
 
-        return ((href, etag) for href, (item, etag) in self._items.items())
-
-    def get(self, href):
+    async def get(self, href):
         if self._items is None or not self._at_once:
-            self.list()
+            async for _ in self.list():
+                pass
 
         try:
             return self._items[href]
@@ -131,7 +133,7 @@ class SingleFileStorage(Storage):
             raise exceptions.NotFoundError(href)
 
     @_writing_op
-    def upload(self, item):
+    async def upload(self, item):
         href = item.ident
         if href in self._items:
             raise exceptions.AlreadyExistingError(existing_href=href)
@@ -140,7 +142,7 @@ class SingleFileStorage(Storage):
         return href, item.hash
 
     @_writing_op
-    def update(self, href, item, etag):
+    async def update(self, href, item, etag):
         if href not in self._items:
             raise exceptions.NotFoundError(href)
 
@@ -152,7 +154,7 @@ class SingleFileStorage(Storage):
         return item.hash
 
     @_writing_op
-    def delete(self, href, etag):
+    async def delete(self, href, etag):
         if href not in self._items:
             raise exceptions.NotFoundError(href)
 
@@ -181,8 +183,8 @@ class SingleFileStorage(Storage):
             self._items = None
             self._last_etag = None
 
-    @contextlib.contextmanager
-    def at_once(self):
+    @contextlib.asynccontextmanager
+    async def at_once(self):
         self.list()
         self._at_once = True
         try:

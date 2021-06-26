@@ -1,8 +1,10 @@
 import datetime
 from textwrap import dedent
 
+import aiohttp
+import aiostream
 import pytest
-import requests.exceptions
+from aioresponses import aioresponses
 
 from . import dav_server
 from . import DAVStorageTests
@@ -21,15 +23,17 @@ class TestCalDAVStorage(DAVStorageTests):
     def item_type(self, request):
         return request.param
 
-    @pytest.mark.xfail(dav_server == "baikal", reason="Baikal returns 500.")
-    def test_doesnt_accept_vcard(self, item_type, get_storage_args):
-        s = self.storage_class(item_types=(item_type,), **get_storage_args())
+    @pytest.mark.asyncio
+    async def test_doesnt_accept_vcard(self, item_type, get_storage_args):
+        s = self.storage_class(item_types=(item_type,), **await get_storage_args())
 
         try:
-            s.upload(format_item(VCARD_TEMPLATE))
-        except (exceptions.Error, requests.exceptions.HTTPError):
+            await s.upload(format_item(VCARD_TEMPLATE))
+        except (exceptions.Error, aiohttp.ClientResponseError):
+            # Most storages hard-fail, but xandikos doesn't.
             pass
-        assert not list(s.list())
+
+        assert not await aiostream.stream.list(s.list())
 
     # The `arg` param is not named `item_types` because that would hit
     # https://bitbucket.org/pytest-dev/pytest/issue/745/
@@ -44,10 +48,11 @@ class TestCalDAVStorage(DAVStorageTests):
         ],
     )
     @pytest.mark.xfail(dav_server == "baikal", reason="Baikal returns 500.")
-    def test_item_types_performance(
+    @pytest.mark.asyncio
+    async def test_item_types_performance(
         self, get_storage_args, arg, calls_num, monkeypatch
     ):
-        s = self.storage_class(item_types=arg, **get_storage_args())
+        s = self.storage_class(item_types=arg, **await get_storage_args())
         old_parse = s._parse_prop_responses
         calls = []
 
@@ -56,17 +61,18 @@ class TestCalDAVStorage(DAVStorageTests):
             return old_parse(*a, **kw)
 
         monkeypatch.setattr(s, "_parse_prop_responses", new_parse)
-        list(s.list())
+        await aiostream.stream.list(s.list())
         assert len(calls) == calls_num
 
     @pytest.mark.xfail(
         dav_server == "radicale", reason="Radicale doesn't support timeranges."
     )
-    def test_timerange_correctness(self, get_storage_args):
+    @pytest.mark.asyncio
+    async def test_timerange_correctness(self, get_storage_args):
         start_date = datetime.datetime(2013, 9, 10)
         end_date = datetime.datetime(2013, 9, 13)
         s = self.storage_class(
-            start_date=start_date, end_date=end_date, **get_storage_args()
+            start_date=start_date, end_date=end_date, **await get_storage_args()
         )
 
         too_old_item = format_item(
@@ -123,50 +129,44 @@ class TestCalDAVStorage(DAVStorageTests):
             ).strip()
         )
 
-        s.upload(too_old_item)
-        s.upload(too_new_item)
-        expected_href, _ = s.upload(good_item)
+        await s.upload(too_old_item)
+        await s.upload(too_new_item)
+        expected_href, _ = await s.upload(good_item)
 
-        ((actual_href, _),) = s.list()
+        ((actual_href, _),) = await aiostream.stream.list(s.list())
         assert actual_href == expected_href
 
-    def test_invalid_resource(self, monkeypatch, get_storage_args):
-        calls = []
-        args = get_storage_args(collection=None)
+    @pytest.mark.asyncio
+    async def test_invalid_resource(self, monkeypatch, get_storage_args):
+        args = await get_storage_args(collection=None)
 
-        def request(session, method, url, **kwargs):
-            assert url == args["url"]
-            calls.append(None)
+        with aioresponses() as m:
+            m.add(args["url"], method="PROPFIND", status=200, body="Hello world")
 
-            r = requests.Response()
-            r.status_code = 200
-            r._content = b"Hello World."
-            return r
+            with pytest.raises(ValueError):
+                s = self.storage_class(**args)
+                await aiostream.stream.list(s.list())
 
-        monkeypatch.setattr("requests.sessions.Session.request", request)
-
-        with pytest.raises(ValueError):
-            s = self.storage_class(**args)
-            list(s.list())
-        assert len(calls) == 1
+        assert len(m.requests) == 1
 
     @pytest.mark.skipif(dav_server == "icloud", reason="iCloud only accepts VEVENT")
     @pytest.mark.skipif(
         dav_server == "fastmail", reason="Fastmail has non-standard hadling of VTODOs."
     )
     @pytest.mark.xfail(dav_server == "baikal", reason="Baikal returns 500.")
-    def test_item_types_general(self, s):
-        event = s.upload(format_item(EVENT_TEMPLATE))[0]
-        task = s.upload(format_item(TASK_TEMPLATE))[0]
+    @pytest.mark.asyncio
+    async def test_item_types_general(self, s):
+        event = (await s.upload(format_item(EVENT_TEMPLATE)))[0]
+        task = (await s.upload(format_item(TASK_TEMPLATE)))[0]
         s.item_types = ("VTODO", "VEVENT")
 
-        def hrefs():
-            return {href for href, etag in s.list()}
+        async def hrefs():
+            return {href async for href, etag in s.list()}
 
-        assert hrefs() == {event, task}
+        assert await hrefs() == {event, task}
         s.item_types = ("VTODO",)
-        assert hrefs() == {task}
+        assert await hrefs() == {task}
         s.item_types = ("VEVENT",)
-        assert hrefs() == {event}
+        assert await hrefs() == {event}
         s.item_types = ()
-        assert hrefs() == {event, task}
+        assert await hrefs() == {event, task}

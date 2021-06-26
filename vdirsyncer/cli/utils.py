@@ -1,14 +1,12 @@
 import contextlib
 import errno
 import importlib
-import itertools
 import json
 import os
-import queue
 import sys
 
+import aiohttp
 import click
-import click_threading
 from atomicwrites import atomic_write
 
 from . import cli_logger
@@ -255,22 +253,37 @@ def storage_class_from_config(config):
     return cls, config
 
 
-def storage_instance_from_config(config, create=True):
+async def storage_instance_from_config(
+    config,
+    create=True,
+    *,
+    connector: aiohttp.TCPConnector,
+):
     """
     :param config: A configuration dictionary to pass as kwargs to the class
         corresponding to config['type']
     """
+    from vdirsyncer.storage.dav import DAVStorage
+    from vdirsyncer.storage.http import HttpStorage
 
     cls, new_config = storage_class_from_config(config)
+
+    if issubclass(cls, DAVStorage) or issubclass(cls, HttpStorage):
+        assert connector is not None  # FIXME: hack?
+        new_config["connector"] = connector
 
     try:
         return cls(**new_config)
     except exceptions.CollectionNotFound as e:
         if create:
-            config = handle_collection_not_found(
+            config = await handle_collection_not_found(
                 config, config.get("collection", None), e=str(e)
             )
-            return storage_instance_from_config(config, create=False)
+            return await storage_instance_from_config(
+                config,
+                create=False,
+                connector=connector,
+            )
         else:
             raise
     except Exception:
@@ -311,92 +324,6 @@ def handle_storage_init_error(cls, config):
     )
 
 
-class WorkerQueue:
-    """
-    A simple worker-queue setup.
-
-    Note that workers quit if queue is empty. That means you have to first put
-    things into the queue before spawning the worker!
-    """
-
-    def __init__(self, max_workers):
-        self._queue = queue.Queue()
-        self._workers = []
-        self._max_workers = max_workers
-        self._shutdown_handlers = []
-
-        # According to http://stackoverflow.com/a/27062830, those are
-        # threadsafe compared to increasing a simple integer variable.
-        self.num_done_tasks = itertools.count()
-        self.num_failed_tasks = itertools.count()
-
-    def shutdown(self):
-        while self._shutdown_handlers:
-            try:
-                self._shutdown_handlers.pop()()
-            except Exception:
-                pass
-
-    def _worker(self):
-        while True:
-            try:
-                func = self._queue.get(False)
-            except queue.Empty:
-                break
-
-            try:
-                func(wq=self)
-            except Exception:
-                handle_cli_error()
-                next(self.num_failed_tasks)
-            finally:
-                self._queue.task_done()
-                next(self.num_done_tasks)
-                if not self._queue.unfinished_tasks:
-                    self.shutdown()
-
-    def spawn_worker(self):
-        if self._max_workers and len(self._workers) >= self._max_workers:
-            return
-
-        t = click_threading.Thread(target=self._worker)
-        t.start()
-        self._workers.append(t)
-
-    @contextlib.contextmanager
-    def join(self):
-        assert self._workers or not self._queue.unfinished_tasks
-        ui_worker = click_threading.UiWorker()
-        self._shutdown_handlers.append(ui_worker.shutdown)
-        _echo = click.echo
-
-        with ui_worker.patch_click():
-            yield
-
-            if not self._workers:
-                # Ugly hack, needed because ui_worker is not running.
-                click.echo = _echo
-                cli_logger.critical("Nothing to do.")
-                sys.exit(5)
-
-            ui_worker.run()
-            self._queue.join()
-            for worker in self._workers:
-                worker.join()
-
-        tasks_failed = next(self.num_failed_tasks)
-        tasks_done = next(self.num_done_tasks)
-
-        if tasks_failed > 0:
-            cli_logger.error(
-                "{} out of {} tasks failed.".format(tasks_failed, tasks_done)
-            )
-            sys.exit(1)
-
-    def put(self, f):
-        return self._queue.put(f)
-
-
 def assert_permissions(path, wanted):
     permissions = os.stat(path).st_mode & 0o777
     if permissions > wanted:
@@ -408,7 +335,7 @@ def assert_permissions(path, wanted):
         os.chmod(path, wanted)
 
 
-def handle_collection_not_found(config, collection, e=None):
+async def handle_collection_not_found(config, collection, e=None):
     storage_name = config.get("instance_name", None)
 
     cli_logger.warning(
@@ -422,7 +349,7 @@ def handle_collection_not_found(config, collection, e=None):
         cls, config = storage_class_from_config(config)
         config["collection"] = collection
         try:
-            args = cls.create_collection(**config)
+            args = await cls.create_collection(**config)
             args["type"] = storage_type
             return args
         except NotImplementedError as e:

@@ -1,3 +1,4 @@
+import aiostream
 import pytest
 
 from vdirsyncer.cli.discover import expand_collections
@@ -132,34 +133,40 @@ missing = object()
         ),
     ],
 )
-def test_expand_collections(shortcuts, expected):
+@pytest.mark.asyncio
+async def test_expand_collections(shortcuts, expected):
     config_a = {"type": "fooboo", "storage_side": "a"}
 
     config_b = {"type": "fooboo", "storage_side": "b"}
 
-    def get_discovered_a():
+    async def get_discovered_a():
         return {
             "c1": {"type": "fooboo", "custom_arg": "a1", "collection": "c1"},
             "c2": {"type": "fooboo", "custom_arg": "a2", "collection": "c2"},
             "a3": {"type": "fooboo", "custom_arg": "a3", "collection": "a3"},
         }
 
-    def get_discovered_b():
+    async def get_discovered_b():
         return {
             "c1": {"type": "fooboo", "custom_arg": "b1", "collection": "c1"},
             "c2": {"type": "fooboo", "custom_arg": "b2", "collection": "c2"},
             "b3": {"type": "fooboo", "custom_arg": "b3", "collection": "b3"},
         }
 
+    async def handle_not_found(config, collection):
+        return missing
+
     assert (
         sorted(
-            expand_collections(
-                shortcuts,
-                config_a,
-                config_b,
-                get_discovered_a,
-                get_discovered_b,
-                lambda config, collection: missing,
+            await aiostream.stream.list(
+                expand_collections(
+                    shortcuts,
+                    config_a,
+                    config_b,
+                    get_discovered_a,
+                    get_discovered_b,
+                    handle_not_found,
+                )
             )
         )
         == sorted(expected)

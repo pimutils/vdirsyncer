@@ -41,7 +41,7 @@ class FilesystemStorage(Storage):
         self.post_hook = post_hook
 
     @classmethod
-    def discover(cls, path, **kwargs):
+    async def discover(cls, path, **kwargs):
         if kwargs.pop("collection", None) is not None:
             raise TypeError("collection argument must not be given.")
         path = expand_path(path)
@@ -67,7 +67,7 @@ class FilesystemStorage(Storage):
         return True
 
     @classmethod
-    def create_collection(cls, collection, **kwargs):
+    async def create_collection(cls, collection, **kwargs):
         kwargs = dict(kwargs)
         path = kwargs["path"]
 
@@ -86,7 +86,7 @@ class FilesystemStorage(Storage):
     def _get_href(self, ident):
         return generate_href(ident) + self.fileext
 
-    def list(self):
+    async def list(self):
         for fname in os.listdir(self.path):
             fpath = os.path.join(self.path, fname)
             if (
@@ -96,7 +96,7 @@ class FilesystemStorage(Storage):
             ):
                 yield fname, get_etag_from_file(fpath)
 
-    def get(self, href):
+    async def get(self, href):
         fpath = self._get_filepath(href)
         try:
             with open(fpath, "rb") as f:
@@ -107,7 +107,7 @@ class FilesystemStorage(Storage):
             else:
                 raise
 
-    def upload(self, item):
+    async def upload(self, item):
         if not isinstance(item.raw, str):
             raise TypeError("item.raw must be a unicode string.")
 
@@ -139,7 +139,7 @@ class FilesystemStorage(Storage):
             else:
                 raise
 
-    def update(self, href, item, etag):
+    async def update(self, href, item, etag):
         fpath = self._get_filepath(href)
         if not os.path.exists(fpath):
             raise exceptions.NotFoundError(item.uid)
@@ -158,7 +158,7 @@ class FilesystemStorage(Storage):
             self._run_post_hook(fpath)
         return etag
 
-    def delete(self, href, etag):
+    async def delete(self, href, etag):
         fpath = self._get_filepath(href)
         if not os.path.isfile(fpath):
             raise exceptions.NotFoundError(href)
@@ -176,7 +176,7 @@ class FilesystemStorage(Storage):
         except OSError as e:
             logger.warning("Error executing external hook: {}".format(str(e)))
 
-    def get_meta(self, key):
+    async def get_meta(self, key):
         fpath = os.path.join(self.path, key)
         try:
             with open(fpath, "rb") as f:
@@ -187,7 +187,7 @@ class FilesystemStorage(Storage):
             else:
                 raise
 
-    def set_meta(self, key, value):
+    async def set_meta(self, key, value):
         value = normalize_meta_value(value)
 
         fpath = os.path.join(self.path, key)

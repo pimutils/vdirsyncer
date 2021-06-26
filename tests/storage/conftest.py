@@ -3,6 +3,7 @@ import subprocess
 import time
 import uuid
 
+import aiostream
 import pytest
 import requests
 
@@ -80,31 +81,31 @@ def xandikos_server():
 
 
 @pytest.fixture
-def slow_create_collection(request):
+async def slow_create_collection(request, aio_connector):
     # We need to properly clean up because otherwise we might run into
     # storage limits.
     to_delete = []
 
-    def delete_collections():
+    async def delete_collections():
         for s in to_delete:
-            s.session.request("DELETE", "")
+            await s.session.request("DELETE", "")
 
-    request.addfinalizer(delete_collections)
-
-    def inner(cls, args, collection):
+    async def inner(cls, args, collection):
         assert collection.startswith("test")
         collection += "-vdirsyncer-ci-" + str(uuid.uuid4())
 
-        args = cls.create_collection(collection, **args)
+        args = await cls.create_collection(collection, **args)
         s = cls(**args)
-        _clear_collection(s)
-        assert not list(s.list())
+        await _clear_collection(s)
+        assert not await aiostream.stream.list(s.list())
         to_delete.append(s)
         return args
 
-    return inner
+    yield inner
+
+    await delete_collections()
 
 
-def _clear_collection(s):
-    for href, etag in s.list():
+async def _clear_collection(s):
+    async for href, etag in s.list():
         s.delete(href, etag)

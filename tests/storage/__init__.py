@@ -4,6 +4,7 @@ import uuid
 from urllib.parse import quote as urlquote
 from urllib.parse import unquote as urlunquote
 
+import aiostream
 import pytest
 
 from .. import assert_item_equals
@@ -49,8 +50,9 @@ class StorageTests:
         raise NotImplementedError()
 
     @pytest.fixture
-    def s(self, get_storage_args):
-        return self.storage_class(**get_storage_args())
+    async def s(self, get_storage_args):
+        rv = self.storage_class(**await get_storage_args())
+        return rv
 
     @pytest.fixture
     def get_item(self, item_type):
@@ -72,176 +74,211 @@ class StorageTests:
         if not self.supports_metadata:
             pytest.skip("This storage does not support metadata.")
 
-    def test_generic(self, s, get_item):
+    @pytest.mark.asyncio
+    async def test_generic(self, s, get_item):
         items = [get_item() for i in range(1, 10)]
         hrefs = []
         for item in items:
-            href, etag = s.upload(item)
+            href, etag = await s.upload(item)
             if etag is None:
-                _, etag = s.get(href)
+                _, etag = await s.get(href)
             hrefs.append((href, etag))
         hrefs.sort()
-        assert hrefs == sorted(s.list())
+        assert hrefs == sorted(await aiostream.stream.list(s.list()))
         for href, etag in hrefs:
             assert isinstance(href, (str, bytes))
             assert isinstance(etag, (str, bytes))
-            assert s.has(href)
-            item, etag2 = s.get(href)
+            assert await s.has(href)
+            item, etag2 = await s.get(href)
             assert etag == etag2
 
-    def test_empty_get_multi(self, s):
-        assert list(s.get_multi([])) == []
+    @pytest.mark.asyncio
+    async def test_empty_get_multi(self, s):
+        assert await aiostream.stream.list(s.get_multi([])) == []
 
-    def test_get_multi_duplicates(self, s, get_item):
-        href, etag = s.upload(get_item())
+    @pytest.mark.asyncio
+    async def test_get_multi_duplicates(self, s, get_item):
+        href, etag = await s.upload(get_item())
         if etag is None:
-            _, etag = s.get(href)
-        ((href2, item, etag2),) = s.get_multi([href] * 2)
+            _, etag = await s.get(href)
+        ((href2, item, etag2),) = await aiostream.stream.list(s.get_multi([href] * 2))
         assert href2 == href
         assert etag2 == etag
 
-    def test_upload_already_existing(self, s, get_item):
+    @pytest.mark.asyncio
+    async def test_upload_already_existing(self, s, get_item):
         item = get_item()
-        s.upload(item)
+        await s.upload(item)
         with pytest.raises(exceptions.PreconditionFailed):
-            s.upload(item)
+            await s.upload(item)
 
-    def test_upload(self, s, get_item):
+    @pytest.mark.asyncio
+    async def test_upload(self, s, get_item):
         item = get_item()
-        href, etag = s.upload(item)
-        assert_item_equals(s.get(href)[0], item)
+        href, etag = await s.upload(item)
+        assert_item_equals((await s.get(href))[0], item)
 
-    def test_update(self, s, get_item):
+    @pytest.mark.asyncio
+    async def test_update(self, s, get_item):
         item = get_item()
-        href, etag = s.upload(item)
+        href, etag = await s.upload(item)
         if etag is None:
-            _, etag = s.get(href)
-        assert_item_equals(s.get(href)[0], item)
+            _, etag = await s.get(href)
+        assert_item_equals((await s.get(href))[0], item)
 
         new_item = get_item(uid=item.uid)
-        new_etag = s.update(href, new_item, etag)
+        new_etag = await s.update(href, new_item, etag)
         if new_etag is None:
-            _, new_etag = s.get(href)
+            _, new_etag = await s.get(href)
         # See https://github.com/pimutils/vdirsyncer/issues/48
         assert isinstance(new_etag, (bytes, str))
-        assert_item_equals(s.get(href)[0], new_item)
+        assert_item_equals((await s.get(href))[0], new_item)
 
-    def test_update_nonexisting(self, s, get_item):
+    @pytest.mark.asyncio
+    async def test_update_nonexisting(self, s, get_item):
         item = get_item()
         with pytest.raises(exceptions.PreconditionFailed):
-            s.update("huehue", item, '"123"')
+            await s.update("huehue", item, '"123"')
 
-    def test_wrong_etag(self, s, get_item):
+    @pytest.mark.asyncio
+    async def test_wrong_etag(self, s, get_item):
         item = get_item()
-        href, etag = s.upload(item)
+        href, etag = await s.upload(item)
         with pytest.raises(exceptions.PreconditionFailed):
-            s.update(href, item, '"lolnope"')
+            await s.update(href, item, '"lolnope"')
         with pytest.raises(exceptions.PreconditionFailed):
-            s.delete(href, '"lolnope"')
+            await s.delete(href, '"lolnope"')
 
-    def test_delete(self, s, get_item):
-        href, etag = s.upload(get_item())
-        s.delete(href, etag)
-        assert not list(s.list())
+    @pytest.mark.asyncio
+    async def test_delete(self, s, get_item):
+        href, etag = await s.upload(get_item())
+        await s.delete(href, etag)
+        assert not await aiostream.stream.list(s.list())
 
-    def test_delete_nonexisting(self, s, get_item):
+    @pytest.mark.asyncio
+    async def test_delete_nonexisting(self, s, get_item):
         with pytest.raises(exceptions.PreconditionFailed):
-            s.delete("1", '"123"')
+            await s.delete("1", '"123"')
 
-    def test_list(self, s, get_item):
-        assert not list(s.list())
-        href, etag = s.upload(get_item())
+    @pytest.mark.asyncio
+    async def test_list(self, s, get_item):
+        assert not await aiostream.stream.list(s.list())
+        href, etag = await s.upload(get_item())
         if etag is None:
-            _, etag = s.get(href)
-        assert list(s.list()) == [(href, etag)]
+            _, etag = await s.get(href)
+        assert await aiostream.stream.list(s.list()) == [(href, etag)]
 
-    def test_has(self, s, get_item):
-        assert not s.has("asd")
-        href, etag = s.upload(get_item())
-        assert s.has(href)
-        assert not s.has("asd")
-        s.delete(href, etag)
-        assert not s.has(href)
+    @pytest.mark.asyncio
+    async def test_has(self, s, get_item):
+        assert not await s.has("asd")
+        href, etag = await s.upload(get_item())
+        assert await s.has(href)
+        assert not await s.has("asd")
+        await s.delete(href, etag)
+        assert not await s.has(href)
 
-    def test_update_others_stay_the_same(self, s, get_item):
+    @pytest.mark.asyncio
+    async def test_update_others_stay_the_same(self, s, get_item):
         info = {}
         for _ in range(4):
-            href, etag = s.upload(get_item())
+            href, etag = await s.upload(get_item())
             if etag is None:
-                _, etag = s.get(href)
+                _, etag = await s.get(href)
             info[href] = etag
 
-        assert {
-            href: etag
-            for href, item, etag in s.get_multi(href for href, etag in info.items())
-        } == info
+        items = await aiostream.stream.list(
+            s.get_multi(href for href, etag in info.items())
+        )
+        assert {href: etag for href, item, etag in items} == info
 
-    def test_repr(self, s, get_storage_args):
+    @pytest.mark.asyncio
+    def test_repr(self, s, get_storage_args):  # XXX: unused param
         assert self.storage_class.__name__ in repr(s)
         assert s.instance_name is None
 
-    def test_discover(self, requires_collections, get_storage_args, get_item):
+    @pytest.mark.asyncio
+    async def test_discover(
+        self,
+        requires_collections,
+        get_storage_args,
+        get_item,
+        aio_connector,
+    ):
         collections = set()
         for i in range(1, 5):
             collection = f"test{i}"
-            s = self.storage_class(**get_storage_args(collection=collection))
-            assert not list(s.list())
-            s.upload(get_item())
+            s = self.storage_class(**await get_storage_args(collection=collection))
+            assert not await aiostream.stream.list(s.list())
+            await s.upload(get_item())
             collections.add(s.collection)
 
-        actual = {
-            c["collection"]
-            for c in self.storage_class.discover(**get_storage_args(collection=None))
-        }
+        discovered = await aiostream.stream.list(
+            self.storage_class.discover(**await get_storage_args(collection=None))
+        )
+        actual = {c["collection"] for c in discovered}
 
         assert actual >= collections
 
-    def test_create_collection(self, requires_collections, get_storage_args, get_item):
+    @pytest.mark.asyncio
+    async def test_create_collection(
+        self,
+        requires_collections,
+        get_storage_args,
+        get_item,
+    ):
         if getattr(self, "dav_server", "") in ("icloud", "fastmail", "davical"):
             pytest.skip("Manual cleanup would be necessary.")
         if getattr(self, "dav_server", "") == "radicale":
             pytest.skip("Radicale does not support collection creation")
 
-        args = get_storage_args(collection=None)
+        args = await get_storage_args(collection=None)
         args["collection"] = "test"
 
-        s = self.storage_class(**self.storage_class.create_collection(**args))
+        s = self.storage_class(**await self.storage_class.create_collection(**args))
 
-        href = s.upload(get_item())[0]
-        assert href in (href for href, etag in s.list())
+        href = (await s.upload(get_item()))[0]
+        assert href in await aiostream.stream.list(
+            (href async for href, etag in s.list())
+        )
 
-    def test_discover_collection_arg(self, requires_collections, get_storage_args):
-        args = get_storage_args(collection="test2")
+    @pytest.mark.asyncio
+    async def test_discover_collection_arg(
+        self, requires_collections, get_storage_args
+    ):
+        args = await get_storage_args(collection="test2")
         with pytest.raises(TypeError) as excinfo:
-            list(self.storage_class.discover(**args))
+            await aiostream.stream.list(self.storage_class.discover(**args))
 
         assert "collection argument must not be given" in str(excinfo.value)
 
-    def test_collection_arg(self, get_storage_args):
+    @pytest.mark.asyncio
+    async def test_collection_arg(self, get_storage_args):
         if self.storage_class.storage_name.startswith("etesync"):
             pytest.skip("etesync uses UUIDs.")
 
         if self.supports_collections:
-            s = self.storage_class(**get_storage_args(collection="test2"))
+            s = self.storage_class(**await get_storage_args(collection="test2"))
             # Can't do stronger assertion because of radicale, which needs a
             # fileextension to guess the collection type.
             assert "test2" in s.collection
         else:
             with pytest.raises(ValueError):
-                self.storage_class(collection="ayy", **get_storage_args())
+                self.storage_class(collection="ayy", **await get_storage_args())
 
-    def test_case_sensitive_uids(self, s, get_item):
+    @pytest.mark.asyncio
+    async def test_case_sensitive_uids(self, s, get_item):
         if s.storage_name == "filesystem":
             pytest.skip("Behavior depends on the filesystem.")
 
         uid = str(uuid.uuid4())
-        s.upload(get_item(uid=uid.upper()))
-        s.upload(get_item(uid=uid.lower()))
-        items = [href for href, etag in s.list()]
+        await s.upload(get_item(uid=uid.upper()))
+        await s.upload(get_item(uid=uid.lower()))
+        items = [href async for href, etag in s.list()]
         assert len(items) == 2
         assert len(set(items)) == 2
 
-    def test_specialchars(
+    @pytest.mark.asyncio
+    async def test_specialchars(
         self, monkeypatch, requires_collections, get_storage_args, get_item
     ):
         if getattr(self, "dav_server", "") == "radicale":
@@ -254,16 +291,16 @@ class StorageTests:
         uid = "test @ foo ät bar град сатану"
         collection = "test @ foo ät bar"
 
-        s = self.storage_class(**get_storage_args(collection=collection))
+        s = self.storage_class(**await get_storage_args(collection=collection))
         item = get_item(uid=uid)
 
-        href, etag = s.upload(item)
-        item2, etag2 = s.get(href)
+        href, etag = await s.upload(item)
+        item2, etag2 = await s.get(href)
         if etag is not None:
             assert etag2 == etag
             assert_item_equals(item2, item)
 
-        ((_, etag3),) = s.list()
+        ((_, etag3),) = await aiostream.stream.list(s.list())
         assert etag2 == etag3
 
         # etesync uses UUIDs for collection names
@@ -274,22 +311,23 @@ class StorageTests:
         if self.storage_class.storage_name.endswith("dav"):
             assert urlquote(uid, "/@:") in href
 
-    def test_metadata(self, requires_metadata, s):
+    @pytest.mark.asyncio
+    async def test_metadata(self, requires_metadata, s):
         if not getattr(self, "dav_server", ""):
-            assert not s.get_meta("color")
-            assert not s.get_meta("displayname")
+            assert not await s.get_meta("color")
+            assert not await s.get_meta("displayname")
 
         try:
-            s.set_meta("color", None)
-            assert not s.get_meta("color")
-            s.set_meta("color", "#ff0000")
-            assert s.get_meta("color") == "#ff0000"
+            await s.set_meta("color", None)
+            assert not await s.get_meta("color")
+            await s.set_meta("color", "#ff0000")
+            assert await s.get_meta("color") == "#ff0000"
         except exceptions.UnsupportedMetadataError:
             pass
 
         for x in ("hello world", "hello wörld"):
-            s.set_meta("displayname", x)
-            rv = s.get_meta("displayname")
+            await s.set_meta("displayname", x)
+            rv = await s.get_meta("displayname")
             assert rv == x
             assert isinstance(rv, str)
 
@@ -306,16 +344,18 @@ class StorageTests:
             "فلسطين",
         ],
     )
-    def test_metadata_normalization(self, requires_metadata, s, value):
-        x = s.get_meta("displayname")
+    @pytest.mark.asyncio
+    async def test_metadata_normalization(self, requires_metadata, s, value):
+        x = await s.get_meta("displayname")
         assert x == normalize_meta_value(x)
 
         if not getattr(self, "dav_server", None):
             # ownCloud replaces "" with "unnamed"
-            s.set_meta("displayname", value)
-            assert s.get_meta("displayname") == normalize_meta_value(value)
+            await s.set_meta("displayname", value)
+            assert await s.get_meta("displayname") == normalize_meta_value(value)
 
-    def test_recurring_events(self, s, item_type):
+    @pytest.mark.asyncio
+    async def test_recurring_events(self, s, item_type):
         if item_type != "VEVENT":
             pytest.skip("This storage instance doesn't support iCalendar.")
 
@@ -362,7 +402,7 @@ class StorageTests:
             ).strip()
         )
 
-        href, etag = s.upload(item)
+        href, etag = await s.upload(item)
 
-        item2, etag2 = s.get(href)
+        item2, etag2 = await s.get(href)
         assert normalize_item(item) == normalize_item(item2)

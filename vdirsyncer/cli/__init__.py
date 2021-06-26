@@ -1,8 +1,10 @@
+import asyncio
 import functools
 import json
 import logging
 import sys
 
+import aiohttp
 import click
 import click_log
 
@@ -65,33 +67,6 @@ def app(ctx, config):
 main = app
 
 
-def max_workers_callback(ctx, param, value):
-    if value == 0 and logging.getLogger("vdirsyncer").level == logging.DEBUG:
-        value = 1
-
-    cli_logger.debug(f"Using {value} maximal workers.")
-    return value
-
-
-def max_workers_option(default=0):
-    help = "Use at most this many connections. "
-    if default == 0:
-        help += (
-            'The default is 0, which means "as many as necessary". '
-            "With -vdebug enabled, the default is 1."
-        )
-    else:
-        help += f"The default is {default}."
-
-    return click.option(
-        "--max-workers",
-        default=default,
-        type=click.IntRange(min=0, max=None),
-        callback=max_workers_callback,
-        help=help,
-    )
-
-
 def collections_arg_callback(ctx, param, value):
     """
     Expand the various CLI shortforms ("pair, pair/collection") to an iterable
@@ -126,10 +101,9 @@ collections_arg = click.argument(
         "to be deleted from both sides."
     ),
 )
-@max_workers_option()
 @pass_context
 @catch_errors
-def sync(ctx, collections, force_delete, max_workers):
+def sync(ctx, collections, force_delete):
     """
     Synchronize the given collections or pairs. If no arguments are given, all
     will be synchronized.
@@ -151,53 +125,66 @@ def sync(ctx, collections, force_delete, max_workers):
     vdirsyncer sync bob/first_collection
     """
     from .tasks import prepare_pair, sync_collection
-    from .utils import WorkerQueue
 
-    wq = WorkerQueue(max_workers)
+    async def main(collections):
+        conn = aiohttp.TCPConnector(limit_per_host=16)
 
-    with wq.join():
         for pair_name, collections in collections:
-            wq.put(
-                functools.partial(
-                    prepare_pair,
-                    pair_name=pair_name,
-                    collections=collections,
-                    config=ctx.config,
+            async for collection, config in prepare_pair(
+                pair_name=pair_name,
+                collections=collections,
+                config=ctx.config,
+                connector=conn,
+            ):
+                await sync_collection(
+                    collection=collection,
+                    general=config,
                     force_delete=force_delete,
-                    callback=sync_collection,
+                    connector=conn,
                 )
-            )
-            wq.spawn_worker()
+
+        await conn.close()
+
+    asyncio.run(main(collections))
 
 
 @app.command()
 @collections_arg
-@max_workers_option()
 @pass_context
 @catch_errors
-def metasync(ctx, collections, max_workers):
+def metasync(ctx, collections):
     """
     Synchronize metadata of the given collections or pairs.
 
     See the `sync` command for usage.
     """
     from .tasks import prepare_pair, metasync_collection
-    from .utils import WorkerQueue
 
-    wq = WorkerQueue(max_workers)
+    async def main(collections):
+        conn = aiohttp.TCPConnector(limit_per_host=16)
 
-    with wq.join():
         for pair_name, collections in collections:
-            wq.put(
-                functools.partial(
-                    prepare_pair,
-                    pair_name=pair_name,
-                    collections=collections,
-                    config=ctx.config,
-                    callback=metasync_collection,
-                )
+            collections = prepare_pair(
+                pair_name=pair_name,
+                collections=collections,
+                config=ctx.config,
+                connector=conn,
             )
-            wq.spawn_worker()
+
+            await asyncio.gather(
+                *[
+                    metasync_collection(
+                        collection=collection,
+                        general=config,
+                        connector=conn,
+                    )
+                    async for collection, config in collections
+                ]
+            )
+
+        await conn.close()
+
+    asyncio.run(main(collections))
 
 
 @app.command()
@@ -210,33 +197,31 @@ def metasync(ctx, collections, max_workers):
         "for debugging. This is slow and may crash for broken servers."
     ),
 )
-@max_workers_option(default=1)
 @pass_context
 @catch_errors
-def discover(ctx, pairs, max_workers, list):
+def discover(ctx, pairs, list):
     """
     Refresh collection cache for the given pairs.
     """
     from .tasks import discover_collections
-    from .utils import WorkerQueue
 
     config = ctx.config
-    wq = WorkerQueue(max_workers)
 
-    with wq.join():
+    async def main():
+        conn = aiohttp.TCPConnector(limit_per_host=16)
+
         for pair_name in pairs or config.pairs:
-            pair = config.get_pair(pair_name)
-
-            wq.put(
-                functools.partial(
-                    discover_collections,
-                    status_path=config.general["status_path"],
-                    pair=pair,
-                    from_cache=False,
-                    list_collections=list,
-                )
+            await discover_collections(
+                status_path=config.general["status_path"],
+                pair=config.get_pair(pair_name),
+                from_cache=False,
+                list_collections=list,
+                connector=conn,
             )
-            wq.spawn_worker()
+
+        await conn.close()
+
+    asyncio.run(main())
 
 
 @app.command()
@@ -275,7 +260,18 @@ def repair(ctx, collection, repair_unsafe_uid):
         "turn off other client's synchronization features."
     )
     click.confirm("Do you want to continue?", abort=True)
-    repair_collection(ctx.config, collection, repair_unsafe_uid=repair_unsafe_uid)
+
+    async def main():
+        conn = aiohttp.TCPConnector(limit_per_host=16)
+        await repair_collection(
+            ctx.config,
+            collection,
+            repair_unsafe_uid=repair_unsafe_uid,
+            connector=conn,
+        )
+        await conn.close()
+
+    asyncio.run(main())
 
 
 @app.command()

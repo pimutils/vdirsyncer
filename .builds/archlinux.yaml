@@ -14,11 +14,16 @@ packages:
   - python-click-threading
   - python-requests
   - python-requests-toolbelt
+  - python-aiohttp-oauthlib
   # Test dependencies:
   - python-hypothesis
   - python-pytest-cov
   - python-pytest-httpserver
   - python-trustme
+  - python-pytest-asyncio
+  - python-aiohttp
+  - python-aiostream
+  - python-aioresponses
 sources:
   - https://github.com/pimutils/vdirsyncer
 environment:
