@@ -1,7 +1,9 @@
+import asyncio
 import contextlib
 import subprocess
 import time
 import uuid
+from typing import Type
 
 import aiostream
 import pytest
@@ -46,6 +48,7 @@ def dockerised_server(name, container_port, exposed_port):
             [
                 "docker",
                 "run",
+                "--rm",
                 "--detach",
                 "--publish",
                 f"{exposed_port}:{container_port}",
@@ -86,26 +89,26 @@ async def slow_create_collection(request, aio_connector):
     # storage limits.
     to_delete = []
 
-    async def delete_collections():
-        for s in to_delete:
-            await s.session.request("DELETE", "")
+    async def inner(cls: Type, args: dict, collection_name: str) -> dict:
+        """Create a collection
 
-    async def inner(cls, args, collection):
-        assert collection.startswith("test")
-        collection += "-vdirsyncer-ci-" + str(uuid.uuid4())
+        Returns args necessary to create a Storage instance pointing to it.
+        """
+        assert collection_name.startswith("test")
 
-        args = await cls.create_collection(collection, **args)
-        s = cls(**args)
-        await _clear_collection(s)
-        assert not await aiostream.stream.list(s.list())
-        to_delete.append(s)
+        # Make each name unique
+        collection_name = f"{collection_name}-vdirsyncer-ci-{uuid.uuid4()}"
+
+        # Create the collection:
+        args = await cls.create_collection(collection_name, **args)
+        collection = cls(**args)
+
+        # Keep collection in a list to be deleted once tests end:
+        to_delete.append(collection)
+
+        assert not await aiostream.stream.list(collection.list())
         return args
 
     yield inner
 
-    await delete_collections()
-
-
-async def _clear_collection(s):
-    async for href, etag in s.list():
-        s.delete(href, etag)
+    await asyncio.gather(*(c.session.request("DELETE", "") for c in to_delete))
