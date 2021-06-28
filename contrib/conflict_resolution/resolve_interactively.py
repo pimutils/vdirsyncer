@@ -12,7 +12,7 @@ Usage:
   conflict_resolution = ["command", "/home/bern/vdirsyncer/resolve_interactively.py"]
 
 This file is Free Software under the following license:
-SPDX-License-Identifier: Apache-2.0
+SPDX-License-Identifier: BSD-3-Clause
 SPDX-FileCopyrightText: 2021 Intevation GmbH <https://intevation.de>
 Author: <bernhard.reiter@intevation.de>
 """
