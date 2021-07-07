@@ -129,6 +129,7 @@ def sync(ctx, collections, force_delete):
     async def main(collections):
         conn = aiohttp.TCPConnector(limit_per_host=16)
 
+        tasks = []
         for pair_name, collections in collections:
             async for collection, config in prepare_pair(
                 pair_name=pair_name,
@@ -136,13 +137,16 @@ def sync(ctx, collections, force_delete):
                 config=ctx.config,
                 connector=conn,
             ):
-                await sync_collection(
-                    collection=collection,
-                    general=config,
-                    force_delete=force_delete,
-                    connector=conn,
+                tasks.append(
+                    sync_collection(
+                        collection=collection,
+                        general=config,
+                        force_delete=force_delete,
+                        connector=conn,
+                    )
                 )
 
+        await asyncio.gather(*tasks)
         await conn.close()
 
     asyncio.run(main(collections))
