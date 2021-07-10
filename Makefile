@@ -43,7 +43,7 @@ all:
 
 ci-test:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
-	$(PYTEST) --cov-append tests/unit/ tests/system/
+	$(PYTEST) --cov vdirsyncer --cov-append tests/unit/ tests/system/
 	bash $(CODECOV_PATH) -c
 	[ "$(ETESYNC_TESTS)" = "false" ] || make test-storage
 
@@ -51,7 +51,7 @@ ci-test-storage:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
 	set -ex; \
 	for server in $(DAV_SERVER); do \
-		DAV_SERVER=$$server $(PYTEST) --cov-append tests/storage; \
+		DAV_SERVER=$$server $(PYTEST) --cov vdirsyncer --cov-append tests/storage; \
 	done
 	bash $(CODECOV_PATH) -c
 
