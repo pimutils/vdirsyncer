@@ -312,10 +312,17 @@ class StorageTests:
             assert urlquote(uid, "/@:") in href
 
     @pytest.mark.asyncio
+    async def test_empty_metadata(self, requires_metadata, s):
+        if getattr(self, "dav_server", ""):
+            pytest.skip()
+
+        assert await s.get_meta("color") is None
+        assert await s.get_meta("displayname") is None
+
+    @pytest.mark.asyncio
     async def test_metadata(self, requires_metadata, s):
-        if not getattr(self, "dav_server", ""):
-            assert await s.get_meta("color") is None
-            assert await s.get_meta("displayname") is None
+        if getattr(self, "dav_server", "") == "xandikos":
+            pytest.skip("xandikos does not support removing metadata.")
 
         try:
             await s.set_meta("color", None)
@@ -325,6 +332,8 @@ class StorageTests:
         except exceptions.UnsupportedMetadataError:
             pass
 
+    @pytest.mark.asyncio
+    async def test_encoding_metadata(self, requires_metadata, s):
         for x in ("hello world", "hello wörld"):
             await s.set_meta("displayname", x)
             rv = await s.get_meta("displayname")
