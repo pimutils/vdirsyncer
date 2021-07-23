@@ -282,8 +282,6 @@ class StorageTests:
     async def test_specialchars(
         self, monkeypatch, requires_collections, get_storage_args, get_item
     ):
-        if getattr(self, "dav_server", "") == "radicale":
-            pytest.skip("Radicale is fundamentally broken.")
         if getattr(self, "dav_server", "") in ("icloud", "fastmail"):
             pytest.skip("iCloud and FastMail reject this name.")
 
