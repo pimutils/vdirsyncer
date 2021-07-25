@@ -2,14 +2,17 @@ import datetime
 import logging
 import urllib.parse as urlparse
 import xml.etree.ElementTree as etree
+from abc import abstractmethod
 from inspect import getfullargspec
 from inspect import signature
 from typing import Optional
+from typing import Type
 
 import aiohttp
 import aiostream
 
 from vdirsyncer.exceptions import Error
+from vdirsyncer.vobject import Item
 
 from .. import exceptions
 from .. import http
@@ -18,7 +21,6 @@ from ..http import USERAGENT
 from ..http import prepare_auth
 from ..http import prepare_client_cert
 from ..http import prepare_verify
-from ..vobject import Item
 from .base import Storage
 from .base import normalize_meta_value
 
@@ -146,11 +148,31 @@ def _fuzzy_matches_mimetype(strict, weak):
 
 
 class Discover:
-    _namespace = None
-    _resourcetype = None
-    _homeset_xml = None
-    _homeset_tag = None
-    _well_known_uri = None
+    @property
+    @abstractmethod
+    def _namespace(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def _resourcetype(self) -> Optional[str]:
+        pass
+
+    @property
+    @abstractmethod
+    def _homeset_xml(self) -> bytes:
+        pass
+
+    @property
+    @abstractmethod
+    def _homeset_tag(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def _well_known_uri(self) -> str:
+        pass
+
     _collection_xml = b"""
     <propfind xmlns="DAV:">
         <prop>
@@ -347,7 +369,7 @@ class CalDiscover(Discover):
 
 class CardDiscover(Discover):
     _namespace = "urn:ietf:params:xml:ns:carddav"
-    _resourcetype = "{%s}addressbook" % _namespace
+    _resourcetype: Optional[str] = "{%s}addressbook" % _namespace
     _homeset_xml = b"""
     <propfind xmlns="DAV:" xmlns:c="urn:ietf:params:xml:ns:carddav">
         <prop>
@@ -434,21 +456,31 @@ class DAVSession:
 
 class DAVStorage(Storage):
     # the file extension of items. Useful for testing against radicale.
-    fileext = None
+    fileext: str
     # mimetype of items
-    item_mimetype = None
-    # XML to use when fetching multiple hrefs.
-    get_multi_template = None
-    # The LXML query for extracting results in get_multi
-    get_multi_data_query = None
-    # The Discover subclass to use
-    discovery_class = None
+    item_mimetype: str
+
+    @property
+    @abstractmethod
+    def get_multi_template(self) -> str:
+        """XML to use when fetching multiple hrefs."""
+
+    @property
+    @abstractmethod
+    def get_multi_data_query(self) -> str:
+        """LXML query for extracting results in get_multi."""
+
+    @property
+    @abstractmethod
+    def discovery_class(self) -> Type[Discover]:
+        """Discover subclass to use."""
+
     # The DAVSession class to use
     session_class = DAVSession
 
     connector: aiohttp.TCPConnector
 
-    _repr_attributes = ("username", "url")
+    _repr_attributes = ["username", "url"]
 
     _property_table = {
         "displayname": ("displayname", "DAV:"),
@@ -466,7 +498,8 @@ class DAVStorage(Storage):
         )
         super().__init__(**kwargs)
 
-    __init__.__signature__ = signature(session_class.__init__)
+    __init__.__signature__ = signature(session_class.__init__)  # type: ignore
+    # See  https://github.com/python/mypy/issues/5958
 
     @classmethod
     async def discover(cls, **kwargs):
@@ -492,7 +525,7 @@ class DAVStorage(Storage):
     def _is_item_mimetype(self, mimetype):
         return _fuzzy_matches_mimetype(self.item_mimetype, mimetype)
 
-    async def get(self, href):
+    async def get(self, href: str):
         ((actual_href, item, etag),) = await aiostream.stream.list(
             self.get_multi([href])
         )
@@ -588,7 +621,7 @@ class DAVStorage(Storage):
         href, etag = await self._put(self._normalize_href(href), item, etag)
         return etag
 
-    async def upload(self, item):
+    async def upload(self, item: Item):
         href = self._get_href(item)
         rv = await self._put(href, item, None)
         return rv
@@ -687,17 +720,14 @@ class DAVStorage(Storage):
             raise exceptions.UnsupportedMetadataError()
 
         xpath = f"{{{namespace}}}{tagname}"
-        data = """<?xml version="1.0" encoding="utf-8" ?>
+        body = f"""<?xml version="1.0" encoding="utf-8" ?>
             <propfind xmlns="DAV:">
                 <prop>
-                    {}
+                    {etree.tostring(etree.Element(xpath), encoding="unicode")}
                 </prop>
             </propfind>
-        """.format(
-            etree.tostring(etree.Element(xpath), encoding="unicode")
-        ).encode(
-            "utf-8"
-        )
+        """
+        data = body.encode("utf-8")
 
         headers = self.session.get_default_headers()
         headers["Depth"] = "0"

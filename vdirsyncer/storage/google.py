@@ -36,7 +36,8 @@ class GoogleSession(dav.DAVSession):
         client_id,
         client_secret,
         url=None,
-        connector: aiohttp.BaseConnector = None,
+        *,
+        connector: aiohttp.BaseConnector,
     ):
         if not have_oauth2:
             raise exceptions.UserError("aiohttp-oauthlib not installed")
@@ -172,7 +173,7 @@ class GoogleCalendarStorage(dav.CalDAVStorage):
     # This is ugly: We define/override the entire signature computed for the
     # docs here because the current way we autogenerate those docs are too
     # simple for our advanced argspec juggling in `vdirsyncer.storage.dav`.
-    __init__._traverse_superclass = base.Storage
+    __init__._traverse_superclass = base.Storage  # type: ignore
 
 
 class GoogleContactsStorage(dav.CardDAVStorage):
@@ -187,7 +188,7 @@ class GoogleContactsStorage(dav.CardDAVStorage):
         url = "https://www.googleapis.com/.well-known/carddav"
         scope = ["https://www.googleapis.com/auth/carddav"]
 
-    class discovery_class(dav.CardDAVStorage.discovery_class):
+    class discovery_class(dav.CardDiscover):
         # Google CardDAV doesn't return any resourcetype prop.
         _resourcetype = None
 
@@ -207,4 +208,4 @@ class GoogleContactsStorage(dav.CardDAVStorage):
     # This is ugly: We define/override the entire signature computed for the
     # docs here because the current way we autogenerate those docs are too
     # simple for our advanced argspec juggling in `vdirsyncer.storage.dav`.
-    __init__._traverse_superclass = base.Storage
+    __init__._traverse_superclass = base.Storage  # type: ignore

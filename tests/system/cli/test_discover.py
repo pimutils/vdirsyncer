@@ -1,5 +1,6 @@
 import json
 from textwrap import dedent
+from typing import List
 
 import pytest
 
@@ -207,6 +208,12 @@ def test_collection_required(a_requires, b_requires, tmpdir, runner, monkeypatch
             if require_collection:
                 assert not kw.get("collection")
                 raise exceptions.CollectionRequired()
+
+        async def get(self, href: str):
+            raise NotImplementedError()
+
+        async def list(self) -> List[tuple]:
+            raise NotImplementedError()
 
     from vdirsyncer.cli.utils import storage_names
 

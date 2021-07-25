@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class FilesystemStorage(Storage):
 
     storage_name = "filesystem"
-    _repr_attributes = ("path",)
+    _repr_attributes = ["path"]
 
     def __init__(
         self,

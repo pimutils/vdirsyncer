@@ -25,7 +25,7 @@ requirements = [
 
 class PrintRequirements(Command):
     description = "Prints minimal requirements"
-    user_options = []
+    user_options: list = []
 
     def initialize_options(self):
         pass
