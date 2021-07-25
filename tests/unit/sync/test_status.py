@@ -4,7 +4,6 @@ from hypothesis import given
 
 from vdirsyncer.sync.status import SqliteStatus
 
-
 status_dict_strategy = st.dictionaries(
     st.text(),
     st.tuples(

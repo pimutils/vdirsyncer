@@ -1,8 +1,8 @@
 import random
 
 from .. import exceptions
-from .base import normalize_meta_value
 from .base import Storage
+from .base import normalize_meta_value
 
 
 def _random_string():

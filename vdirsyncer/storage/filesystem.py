@@ -11,8 +11,8 @@ from ..utils import expand_path
 from ..utils import generate_href
 from ..utils import get_etag_from_file
 from ..vobject import Item
-from .base import normalize_meta_value
 from .base import Storage
+from .base import normalize_meta_value
 
 logger = logging.getLogger(__name__)
 

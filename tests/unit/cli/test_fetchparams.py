@@ -6,8 +6,8 @@ import pytest
 from hypothesis import given
 
 from vdirsyncer import exceptions
-from vdirsyncer.cli.fetchparams import expand_fetch_params
 from vdirsyncer.cli.fetchparams import STRATEGIES
+from vdirsyncer.cli.fetchparams import expand_fetch_params
 
 
 @pytest.fixture

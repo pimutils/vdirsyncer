@@ -7,7 +7,6 @@ from vdirsyncer import cli
 from vdirsyncer import exceptions
 from vdirsyncer.cli.config import Config
 
-
 invalid = object()
 
 

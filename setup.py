@@ -8,7 +8,6 @@ from setuptools import Command
 from setuptools import find_packages
 from setuptools import setup
 
-
 requirements = [
     # https://github.com/mitsuhiko/click/issues/200
     "click>=5.0,<9.0",

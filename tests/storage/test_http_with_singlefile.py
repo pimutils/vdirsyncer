@@ -1,12 +1,13 @@
 import aiostream
 import pytest
-from aioresponses import aioresponses
 from aioresponses import CallbackResult
+from aioresponses import aioresponses
 
 import vdirsyncer.storage.http
-from . import StorageTests
 from vdirsyncer.storage.base import Storage
 from vdirsyncer.storage.singlefile import SingleFileStorage
+
+from . import StorageTests
 
 
 class CombinedStorage(Storage):

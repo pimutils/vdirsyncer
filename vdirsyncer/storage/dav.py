@@ -8,18 +8,18 @@ from inspect import signature
 import aiohttp
 import aiostream
 
+from vdirsyncer.exceptions import Error
+
 from .. import exceptions
 from .. import http
 from .. import utils
+from ..http import USERAGENT
 from ..http import prepare_auth
 from ..http import prepare_client_cert
 from ..http import prepare_verify
-from ..http import USERAGENT
 from ..vobject import Item
-from .base import normalize_meta_value
 from .base import Storage
-from vdirsyncer.exceptions import Error
-
+from .base import normalize_meta_value
 
 dav_logger = logging.getLogger(__name__)
 

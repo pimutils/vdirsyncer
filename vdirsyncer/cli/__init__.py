@@ -8,9 +8,8 @@ import aiohttp
 import click
 import click_log
 
-from .. import __version__
 from .. import BUGTRACKER_HOME
-
+from .. import __version__
 
 cli_logger = logging.getLogger(__name__)
 click_log.basic_config("vdirsyncer")
@@ -124,7 +123,8 @@ def sync(ctx, collections, force_delete):
     # Sync only "first_collection" from the pair "bob"
     vdirsyncer sync bob/first_collection
     """
-    from .tasks import prepare_pair, sync_collection
+    from .tasks import prepare_pair
+    from .tasks import sync_collection
 
     async def main(collections):
         conn = aiohttp.TCPConnector(limit_per_host=16)
@@ -162,7 +162,8 @@ def metasync(ctx, collections):
 
     See the `sync` command for usage.
     """
-    from .tasks import prepare_pair, metasync_collection
+    from .tasks import metasync_collection
+    from .tasks import prepare_pair
 
     async def main(collections):
         conn = aiohttp.TCPConnector(limit_per_host=16)

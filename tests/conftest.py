@@ -8,8 +8,8 @@ import aiohttp
 import click_log
 import pytest
 from hypothesis import HealthCheck
-from hypothesis import settings
 from hypothesis import Verbosity
+from hypothesis import settings
 
 
 @pytest.fixture(autouse=True)

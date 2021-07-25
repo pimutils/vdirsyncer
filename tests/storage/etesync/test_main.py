@@ -5,10 +5,10 @@ import sys
 import pytest
 import requests
 
-from .. import StorageTests
 from vdirsyncer.storage.etesync import EtesyncCalendars
 from vdirsyncer.storage.etesync import EtesyncContacts
 
+from .. import StorageTests
 
 pytestmark = pytest.mark.skipif(
     os.getenv("ETESYNC_TESTS", "") != "true", reason="etesync tests disabled"

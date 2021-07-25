@@ -1,6 +1,6 @@
 import pytest
-from aioresponses import aioresponses
 from aioresponses import CallbackResult
+from aioresponses import aioresponses
 
 from tests import normalize_item
 from vdirsyncer.exceptions import UserError

@@ -1,7 +1,7 @@
 import aiostream
 import pytest
-from hypothesis import given
 from hypothesis import HealthCheck
+from hypothesis import given
 from hypothesis import settings
 
 from tests import uid_strategy

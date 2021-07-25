@@ -3,7 +3,6 @@ import pytest
 
 from vdirsyncer.cli.discover import expand_collections
 
-
 missing = object()
 
 

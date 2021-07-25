@@ -5,12 +5,12 @@ import aiohttp
 import aiostream
 import pytest
 
-from .. import get_server_mixin
-from .. import StorageTests
 from tests import assert_item_equals
 from vdirsyncer import exceptions
 from vdirsyncer.vobject import Item
 
+from .. import StorageTests
+from .. import get_server_mixin
 
 dav_server = os.environ.get("DAV_SERVER", "skip")
 ServerMixin = get_server_mixin(dav_server)

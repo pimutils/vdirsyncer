@@ -8,12 +8,12 @@ import aiohttp
 import click
 from atomicwrites import atomic_write
 
-from . import base
-from . import dav
 from .. import exceptions
 from ..utils import checkdir
 from ..utils import expand_path
 from ..utils import open_graphical_browser
+from . import base
+from . import dav
 
 logger = logging.getLogger(__name__)
 

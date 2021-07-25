@@ -6,14 +6,15 @@ import aiostream
 import pytest
 from aioresponses import aioresponses
 
-from . import dav_server
-from . import DAVStorageTests
-from .. import format_item
 from tests import EVENT_TEMPLATE
 from tests import TASK_TEMPLATE
 from tests import VCARD_TEMPLATE
 from vdirsyncer import exceptions
 from vdirsyncer.storage.dav import CalDAVStorage
+
+from .. import format_item
+from . import DAVStorageTests
+from . import dav_server
 
 
 class TestCalDAVStorage(DAVStorageTests):

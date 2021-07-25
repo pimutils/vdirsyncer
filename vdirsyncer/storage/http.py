@@ -3,11 +3,11 @@ import urllib.parse as urlparse
 import aiohttp
 
 from .. import exceptions
+from ..http import USERAGENT
 from ..http import prepare_auth
 from ..http import prepare_client_cert
 from ..http import prepare_verify
 from ..http import request
-from ..http import USERAGENT
 from ..vobject import Item
 from ..vobject import split_collection
 from .base import Storage

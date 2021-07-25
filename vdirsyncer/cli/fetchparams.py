@@ -2,10 +2,10 @@ import logging
 
 import click
 
-from . import AppContext
 from .. import exceptions
 from ..utils import expand_path
 from ..utils import synchronized
+from . import AppContext
 
 SUFFIX = ".fetch"
 

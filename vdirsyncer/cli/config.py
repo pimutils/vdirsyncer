@@ -6,13 +6,12 @@ import string
 from configparser import RawConfigParser
 from itertools import chain
 
-from .. import exceptions
 from .. import PROJECT_HOME
+from .. import exceptions
 from ..utils import cached_property
 from ..utils import expand_path
 from .fetchparams import expand_fetch_params
 from .utils import storage_class_from_config
-
 
 GENERAL_ALL = frozenset(["status_path"])
 GENERAL_REQUIRED = frozenset(["status_path"])
@@ -320,8 +319,8 @@ load_config = Config.from_filename_or_environment
 
 
 def _resolve_conflict_via_command(a, b, command, a_name, b_name, _check_call=None):
-    import tempfile
     import shutil
+    import tempfile
 
     if _check_call is None:
         from subprocess import check_call as _check_call

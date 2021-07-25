@@ -5,9 +5,9 @@ from hypothesis import given
 
 from tests import blow_up
 from vdirsyncer.exceptions import UserError
+from vdirsyncer.metasync import MetaSyncConflict
 from vdirsyncer.metasync import logger
 from vdirsyncer.metasync import metasync
-from vdirsyncer.metasync import MetaSyncConflict
 from vdirsyncer.storage.base import normalize_meta_value
 from vdirsyncer.storage.memory import MemoryStorage
 

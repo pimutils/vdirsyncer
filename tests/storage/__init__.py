@@ -7,14 +7,15 @@ from urllib.parse import unquote as urlunquote
 import aiostream
 import pytest
 
-from .. import assert_item_equals
-from .. import EVENT_TEMPLATE
-from .. import normalize_item
-from .. import TASK_TEMPLATE
-from .. import VCARD_TEMPLATE
 from vdirsyncer import exceptions
 from vdirsyncer.storage.base import normalize_meta_value
 from vdirsyncer.vobject import Item
+
+from .. import EVENT_TEMPLATE
+from .. import TASK_TEMPLATE
+from .. import VCARD_TEMPLATE
+from .. import assert_item_equals
+from .. import normalize_item
 
 
 def get_server_mixin(server_name):

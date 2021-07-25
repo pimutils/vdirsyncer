@@ -6,13 +6,13 @@ import hypothesis.strategies as st
 import pytest
 from hypothesis import assume
 from hypothesis.stateful import Bundle
-from hypothesis.stateful import rule
 from hypothesis.stateful import RuleBasedStateMachine
+from hypothesis.stateful import rule
 
 from tests import blow_up
 from tests import uid_strategy
-from vdirsyncer.storage.memory import _random_string
 from vdirsyncer.storage.memory import MemoryStorage
+from vdirsyncer.storage.memory import _random_string
 from vdirsyncer.sync import sync as _sync
 from vdirsyncer.sync.exceptions import BothReadOnly
 from vdirsyncer.sync.exceptions import IdentConflict

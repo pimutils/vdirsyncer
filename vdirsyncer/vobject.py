@@ -5,7 +5,6 @@ from itertools import tee
 from .utils import cached_property
 from .utils import uniq
 
-
 IGNORE_PROPS = (
     # PRODID is changed by radicale for some reason after upload
     "PRODID",

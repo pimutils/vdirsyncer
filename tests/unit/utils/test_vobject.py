@@ -5,17 +5,16 @@ import pytest
 from hypothesis import assume
 from hypothesis import given
 from hypothesis.stateful import Bundle
-from hypothesis.stateful import rule
 from hypothesis.stateful import RuleBasedStateMachine
+from hypothesis.stateful import rule
 
 import vdirsyncer.vobject as vobject
 from tests import BARE_EVENT_TEMPLATE
 from tests import EVENT_TEMPLATE
 from tests import EVENT_WITH_TIMEZONE_TEMPLATE
+from tests import VCARD_TEMPLATE
 from tests import normalize_item
 from tests import uid_strategy
-from tests import VCARD_TEMPLATE
-
 
 _simple_split = [
     VCARD_TEMPLATE.format(r=123, uid=123),

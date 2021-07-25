@@ -9,7 +9,6 @@ import aiohttp
 import click
 from atomicwrites import atomic_write
 
-from . import cli_logger
 from .. import BUGTRACKER_HOME
 from .. import DOCS_HOME
 from .. import exceptions
@@ -20,7 +19,7 @@ from ..sync.exceptions import SyncConflict
 from ..sync.status import SqliteStatus
 from ..utils import expand_path
 from ..utils import get_storage_init_args
-
+from . import cli_logger
 
 STATUS_PERMISSIONS = 0o600
 STATUS_DIR_PERMISSIONS = 0o700

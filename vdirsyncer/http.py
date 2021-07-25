@@ -2,11 +2,10 @@ import logging
 
 import aiohttp
 
-from . import __version__
 from . import DOCS_HOME
+from . import __version__
 from . import exceptions
 from .utils import expand_path
-
 
 logger = logging.getLogger(__name__)
 USERAGENT = f"vdirsyncer/{__version__}"

@@ -15,7 +15,6 @@ from .utils import save_status
 from .utils import storage_class_from_config
 from .utils import storage_instance_from_config
 
-
 # Increase whenever upgrade potentially breaks discovery cache and collections
 # should be re-discovered
 DISCOVERY_CACHE_VERSION = 1

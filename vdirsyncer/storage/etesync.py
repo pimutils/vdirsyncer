@@ -10,7 +10,10 @@ import click
 try:
     import etesync
     import etesync.exceptions
-    from etesync import AddressBook, Contact, Calendar, Event
+    from etesync import AddressBook
+    from etesync import Calendar
+    from etesync import Contact
+    from etesync import Event
 
     has_etesync = True
 except ImportError:
@@ -21,9 +24,7 @@ from .. import exceptions
 from ..cli.utils import assert_permissions
 from ..utils import checkdir
 from ..vobject import Item
-
 from .base import Storage
-
 
 logger = logging.getLogger(__name__)
 
