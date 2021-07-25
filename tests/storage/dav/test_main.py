@@ -2,6 +2,7 @@ import pytest
 
 from vdirsyncer.storage.dav import _BAD_XML_CHARS
 from vdirsyncer.storage.dav import _merge_xml
+from vdirsyncer.storage.dav import _normalize_href
 from vdirsyncer.storage.dav import _parse_xml
 
 
@@ -44,3 +45,13 @@ def test_xml_specialchars(char):
 
     if char in _BAD_XML_CHARS:
         assert x.text == "yes\nhello"
+
+
+@pytest.mark.parametrize(
+    "href",
+    [
+        "/dav/calendars/user/testuser/123/UID%253A20210609T084907Z-@synaps-web-54fddfdf7-7kcfm%250A.ics",  # noqa: E501
+    ],
+)
+def test_normalize_href(href):
+    assert href == _normalize_href("https://example.com", href)

@@ -65,8 +65,7 @@ async def _assert_multistatus_success(r):
 
 
 def _normalize_href(base, href):
-    """Normalize the href to be a path only relative to hostname and
-    schema."""
+    """Normalize the href to be a path only relative to hostname and schema."""
     orig_href = href
     if not href:
         raise ValueError(href)
@@ -74,17 +73,10 @@ def _normalize_href(base, href):
     x = urlparse.urljoin(base, href)
     x = urlparse.urlsplit(x).path
 
-    # Encoding issues:
-    # - https://github.com/owncloud/contacts/issues/581
-    # - https://github.com/Kozea/Radicale/issues/298
-    old_x = None
-    while old_x is None or x != old_x:
-        if _contains_quoted_reserved_chars(x):
-            break
-        old_x = x
-        x = urlparse.unquote(x)
-
-    x = urlparse.quote(x, "/@%:")
+    # We unquote and quote again, but want to make sure we
+    # keep around the "@" character.
+    x = urlparse.unquote(x)
+    x = urlparse.quote(x, "/@")
 
     if orig_href == x:
         dav_logger.debug(f"Already normalized: {x!r}")
