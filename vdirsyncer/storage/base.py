@@ -1,5 +1,6 @@
 import contextlib
 import functools
+from typing import Optional
 
 from .. import exceptions
 from ..utils import uniq
@@ -219,31 +220,29 @@ class Storage(metaclass=StorageMeta):
         """
         yield
 
-    async def get_meta(self, key):
+    async def get_meta(self, key: str) -> Optional[str]:
         """Get metadata value for collection/storage.
 
         See the vdir specification for the keys that *have* to be accepted.
 
         :param key: The metadata key.
-        :type key: unicode
+        :return: The metadata or None, if metadata is missing.
         """
 
         raise NotImplementedError("This storage does not support metadata.")
 
-    async def set_meta(self, key, value):
+    async def set_meta(self, key: str, value: Optional[str]):
         """Get metadata value for collection/storage.
 
         :param key: The metadata key.
-        :type key: unicode
-        :param value: The value.
-        :type value: unicode
+        :param value: The value. Use None to delete the data.
         """
 
         raise NotImplementedError("This storage does not support metadata.")
 
 
-def normalize_meta_value(value):
+def normalize_meta_value(value) -> Optional[str]:
     # `None` is returned by iCloud for empty properties.
-    if not value or value == "None":
-        value = ""
-    return value.strip()
+    if value is None or value == "None":
+        return
+    return value.strip() if value else ""
