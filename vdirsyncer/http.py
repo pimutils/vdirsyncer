@@ -53,7 +53,7 @@ def prepare_auth(auth, username, password):
             else:
                 return GuessAuth(username, password)
         else:
-            raise exceptions.UserError("Unknown authentication method: {}".format(auth))
+            raise exceptions.UserError(f"Unknown authentication method: {auth}")
     elif auth:
         raise exceptions.UserError(
             "You need to specify username and password "

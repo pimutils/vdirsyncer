@@ -74,7 +74,7 @@ async def collections_for_pair(
                 " before synchronization.".format(pair.name)
             )
 
-    logger.info("Discovering collections for pair {}".format(pair.name))
+    logger.info(f"Discovering collections for pair {pair.name}")
 
     a_discovered = _DiscoverResult(pair.config_a, connector=connector)
     b_discovered = _DiscoverResult(pair.config_b, connector=connector)

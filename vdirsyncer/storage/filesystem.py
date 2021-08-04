@@ -29,7 +29,7 @@ class FilesystemStorage(Storage):
         encoding="utf-8",
         post_hook=None,
         fileignoreext=".tmp",
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
         path = expand_path(path)
@@ -168,13 +168,11 @@ class FilesystemStorage(Storage):
         os.remove(fpath)
 
     def _run_post_hook(self, fpath):
-        logger.info(
-            "Calling post_hook={} with argument={}".format(self.post_hook, fpath)
-        )
+        logger.info(f"Calling post_hook={self.post_hook} with argument={fpath}")
         try:
             subprocess.call([self.post_hook, fpath])
         except OSError as e:
-            logger.warning("Error executing external hook: {}".format(str(e)))
+            logger.warning(f"Error executing external hook: {str(e)}")
 
     async def get_meta(self, key):
         fpath = os.path.join(self.path, key)

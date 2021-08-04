@@ -11,7 +11,7 @@ try:
         "url": "https://brutus.lostpackets.de/davical-test/caldav.php/",
     }
 except KeyError as e:
-    pytestmark = pytest.mark.skip("Missing envkey: {}".format(str(e)))
+    pytestmark = pytest.mark.skip(f"Missing envkey: {str(e)}")
 
 
 @pytest.mark.flaky(reruns=5)

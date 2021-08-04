@@ -93,9 +93,7 @@ async def discover_collections(pair, **kwargs):
     collections = [c for c, (a, b) in rv]
     if collections == [None]:
         collections = None
-    cli_logger.info(
-        "Saved for {}: collections = {}".format(pair.name, json.dumps(collections))
-    )
+    cli_logger.info(f"Saved for {pair.name}: collections = {json.dumps(collections)}")
 
 
 async def repair_collection(

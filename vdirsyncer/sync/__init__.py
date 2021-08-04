@@ -227,7 +227,7 @@ class Update(Action):
             meta = ItemMetadata(hash=self.item.hash)
         else:
             sync_logger.info(
-                "Copying (updating) item {} to {}".format(self.ident, self.dest.storage)
+                f"Copying (updating) item {self.ident} to {self.dest.storage}"
             )
             meta = self.dest.status.get_new(self.ident)
             meta.etag = await self.dest.storage.update(meta.href, self.item, meta.etag)
@@ -243,9 +243,7 @@ class Delete(Action):
     async def _run_impl(self, a, b):
         meta = self.dest.status.get_new(self.ident)
         if not self.dest.storage.read_only:
-            sync_logger.info(
-                "Deleting item {} from {}".format(self.ident, self.dest.storage)
-            )
+            sync_logger.info(f"Deleting item {self.ident} from {self.dest.storage}")
             await self.dest.storage.delete(meta.href, meta.etag)
 
         self.dest.status.remove_ident(self.ident)
@@ -257,9 +255,7 @@ class ResolveConflict(Action):
 
     async def run(self, a, b, conflict_resolution, partial_sync):
         with self.auto_rollback(a, b):
-            sync_logger.info(
-                "Doing conflict resolution for item {}...".format(self.ident)
-            )
+            sync_logger.info(f"Doing conflict resolution for item {self.ident}...")
 
             meta_a = a.status.get_new(self.ident)
             meta_b = b.status.get_new(self.ident)
@@ -290,7 +286,7 @@ class ResolveConflict(Action):
                     )
             else:
                 raise UserError(
-                    "Invalid conflict resolution mode: {!r}".format(conflict_resolution)
+                    f"Invalid conflict resolution mode: {conflict_resolution!r}"
                 )
 
 

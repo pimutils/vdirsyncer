@@ -30,9 +30,7 @@ def expand_fetch_params(config):
 @synchronized()
 def _fetch_value(opts, key):
     if not isinstance(opts, list):
-        raise ValueError(
-            "Invalid value for {}: Expected a list, found {!r}.".format(key, opts)
-        )
+        raise ValueError(f"Invalid value for {key}: Expected a list, found {opts!r}.")
     if not opts:
         raise ValueError("Expected list of length > 0.")
 
@@ -58,7 +56,7 @@ def _fetch_value(opts, key):
     except KeyError:
         raise exceptions.UserError(f"Unknown strategy: {strategy}")
 
-    logger.debug("Fetching value for {} with {} strategy.".format(key, strategy))
+    logger.debug(f"Fetching value for {key} with {strategy} strategy.")
     try:
         rv = strategy_fn(*opts[1:])
     except (click.Abort, KeyboardInterrupt) as e:

@@ -18,7 +18,7 @@ async def repair_storage(storage, repair_unsafe_uid):
     all_hrefs = await aiostream.stream.list(storage.list())
     for i, (href, _) in enumerate(all_hrefs):
         item, etag = await storage.get(href)
-        logger.info("[{}/{}] Processing {}".format(i, len(all_hrefs), href))
+        logger.info(f"[{i}/{len(all_hrefs)}] Processing {href}")
 
         try:
             new_item = repair_item(href, item, seen_uids, repair_unsafe_uid)
