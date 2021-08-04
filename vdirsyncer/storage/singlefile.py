@@ -36,7 +36,7 @@ def _writing_op(f):
 
 class SingleFileStorage(Storage):
     storage_name = "singlefile"
-    _repr_attributes = ("path",)
+    _repr_attributes = ["path"]
 
     _write_mode = "wb"
     _append_mode = "ab"

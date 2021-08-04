@@ -3,6 +3,7 @@ import os
 import sys
 import uuid
 from inspect import getfullargspec
+from typing import Callable
 
 from . import exceptions
 
@@ -25,7 +26,7 @@ def expand_path(p: str) -> str:
     return p
 
 
-def split_dict(d: dict, f: callable):
+def split_dict(d: dict, f: Callable):
     """Puts key into first dict if f(key), otherwise in second dict"""
     a = {}
     b = {}
