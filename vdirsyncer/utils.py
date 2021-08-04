@@ -123,9 +123,7 @@ def checkdir(path, create=False, mode=0o750):
         if create:
             os.makedirs(path, mode)
         else:
-            raise exceptions.CollectionNotFound(
-                "Directory {} does not exist.".format(path)
-            )
+            raise exceptions.CollectionNotFound(f"Directory {path} does not exist.")
 
 
 def checkfile(path, create=False):
@@ -143,7 +141,7 @@ def checkfile(path, create=False):
             with open(path, "wb"):
                 pass
         else:
-            raise exceptions.CollectionNotFound("File {} does not exist.".format(path))
+            raise exceptions.CollectionNotFound(f"File {path} does not exist.")
 
 
 class cached_property:

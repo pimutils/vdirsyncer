@@ -168,7 +168,7 @@ def _split_collection_impl(item, main, inline, items, ungrouped_items):
         for subitem in item.subcomponents:
             _split_collection_impl(subitem, item, inline, items, ungrouped_items)
     else:
-        raise ValueError("Unknown component: {}".format(item.name))
+        raise ValueError(f"Unknown component: {item.name}")
 
 
 _default_join_wrappers = {
@@ -287,12 +287,12 @@ class _Component:
                     if line.strip():
                         stack[-1].props.append(line)
         except IndexError:
-            raise ValueError("Parsing error at line {}".format(_i + 1))
+            raise ValueError(f"Parsing error at line {_i + 1}")
 
         if multiple:
             return rv
         elif len(rv) != 1:
-            raise ValueError("Found {} components, expected one.".format(len(rv)))
+            raise ValueError(f"Found {len(rv)} components, expected one.")
         else:
             return rv[0]
 

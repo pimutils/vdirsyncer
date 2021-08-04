@@ -89,7 +89,7 @@ def _normalize_href(base, href):
     if orig_href == x:
         dav_logger.debug(f"Already normalized: {x!r}")
     else:
-        dav_logger.debug("Normalized URL from {!r} to {!r}".format(orig_href, x))
+        dav_logger.debug(f"Normalized URL from {orig_href!r} to {x!r}")
 
     return x
 
@@ -554,9 +554,7 @@ class DAVStorage(Storage):
             for href, etag, prop in self._parse_prop_responses(root):
                 raw = prop.find(self.get_multi_data_query)
                 if raw is None:
-                    dav_logger.warning(
-                        "Skipping {}, the item content is missing.".format(href)
-                    )
+                    dav_logger.warning(f"Skipping {href}, the item content is missing.")
                     continue
 
                 raw = raw.text or ""
@@ -570,11 +568,9 @@ class DAVStorage(Storage):
                     hrefs_left.remove(href)
                 except KeyError:
                     if href in hrefs:
-                        dav_logger.warning("Server sent item twice: {}".format(href))
+                        dav_logger.warning(f"Server sent item twice: {href}")
                     else:
-                        dav_logger.warning(
-                            "Server sent unsolicited item: {}".format(href)
-                        )
+                        dav_logger.warning(f"Server sent unsolicited item: {href}")
                 else:
                     rv.append((href, Item(raw), etag))
             for href in hrefs_left:
@@ -652,12 +648,12 @@ class DAVStorage(Storage):
                 #   https://github.com/pimutils/vdirsyncer/issues/88
                 # - Davmail
                 #   https://github.com/pimutils/vdirsyncer/issues/144
-                dav_logger.warning("Skipping identical href: {!r}".format(href))
+                dav_logger.warning(f"Skipping identical href: {href!r}")
                 continue
 
             props = response.findall("{DAV:}propstat/{DAV:}prop")
             if props is None or not len(props):
-                dav_logger.debug("Skipping {!r}, properties are missing.".format(href))
+                dav_logger.debug(f"Skipping {href!r}, properties are missing.")
                 continue
             else:
                 props = _merge_xml(props)
@@ -668,9 +664,7 @@ class DAVStorage(Storage):
 
             etag = getattr(props.find("{DAV:}getetag"), "text", "")
             if not etag:
-                dav_logger.debug(
-                    "Skipping {!r}, etag property is missing.".format(href)
-                )
+                dav_logger.debug(f"Skipping {href!r}, etag property is missing.")
                 continue
 
             contenttype = getattr(props.find("{DAV:}getcontenttype"), "text", None)

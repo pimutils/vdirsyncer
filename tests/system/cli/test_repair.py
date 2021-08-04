@@ -39,7 +39,7 @@ def test_basic(storage, runner, collection):
     assert not result.exception
     assert "No UID" in result.output
     assert "'toobroken.txt' is malformed beyond repair" in result.output
-    (new_fname,) = [x for x in storage.listdir() if "toobroken" not in str(x)]
+    (new_fname,) = (x for x in storage.listdir() if "toobroken" not in str(x))
     assert "UID:" in new_fname.read()
 
 

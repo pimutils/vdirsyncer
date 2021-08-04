@@ -561,7 +561,7 @@ class SyncMachine(RuleBasedStateMachine):
             _old_update = s.update
 
             async def upload(item):
-                return ((await _old_upload(item)))[0], "NULL"
+                return (await _old_upload(item))[0], "NULL"
 
             async def update(href, item, etag):
                 return await _old_update(href, item, etag) and "NULL"

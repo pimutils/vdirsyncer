@@ -56,7 +56,7 @@ class _Session:
         auth_token = self._get_auth_token()
         if not auth_token:
             password = click.prompt(
-                "Enter service password for {}".format(self.email), hide_input=True
+                f"Enter service password for {self.email}", hide_input=True
             )
             auth_token = etesync.Authenticator(server_url).get_auth_token(
                 self.email, password

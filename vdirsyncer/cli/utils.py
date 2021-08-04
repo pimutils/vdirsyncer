@@ -169,9 +169,7 @@ def get_status_path(base_path, pair, collection=None, data_type=None):
     if os.path.isfile(path) and data_type == "items":
         new_path = path + ".items"
         # XXX: Legacy migration
-        cli_logger.warning(
-            "Migrating statuses: Renaming {} to {}".format(path, new_path)
-        )
+        cli_logger.warning(f"Migrating statuses: Renaming {path} to {new_path}")
         os.rename(path, new_path)
 
     path += "." + data_type

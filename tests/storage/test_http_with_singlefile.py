@@ -65,7 +65,7 @@ class TestHttpStorage(StorageTests):
             """
             assert headers["User-Agent"].startswith("vdirsyncer/")
 
-            with open(self.tmpfile, "r") as f:
+            with open(self.tmpfile) as f:
                 body = f.read()
 
             return CallbackResult(

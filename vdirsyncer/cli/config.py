@@ -88,9 +88,7 @@ def _validate_collections_param(collections):
                 raise ValueError("Duplicate value.")
             collection_names.add(collection_name)
         except ValueError as e:
-            raise ValueError(
-                "`collections` parameter, position {i}: {e}".format(i=i, e=str(e))
-            )
+            raise ValueError(f"`collections` parameter, position {i}: {str(e)}")
 
 
 class _ConfigReader:
@@ -135,7 +133,7 @@ class _ConfigReader:
                     dict(_parse_options(self._parser.items(section), section=section)),
                 )
             except ValueError as e:
-                raise exceptions.UserError('Section "{}": {}'.format(section, str(e)))
+                raise exceptions.UserError(f'Section "{section}": {str(e)}')
 
         _validate_general_section(self._general)
         if getattr(self._file, "name", None):
@@ -152,7 +150,7 @@ def _parse_options(items, section=None):
         try:
             yield key, json.loads(value)
         except ValueError as e:
-            raise ValueError('Section "{}", option "{}": {}'.format(section, key, e))
+            raise ValueError(f'Section "{section}", option "{key}": {e}')
 
 
 class Config:
@@ -190,9 +188,7 @@ class Config:
             with open(fname) as f:
                 return cls.from_fileobject(f)
         except Exception as e:
-            raise exceptions.UserError(
-                "Error during reading config {}: {}".format(fname, e)
-            )
+            raise exceptions.UserError(f"Error during reading config {fname}: {e}")
 
     def get_storage_args(self, storage_name):
         try:
