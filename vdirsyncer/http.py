@@ -140,8 +140,8 @@ async def request(
 
     kwargs.pop("cert", None)  # TODO XXX FIXME!
 
-    # Hacks to translate API
-    if auth := kwargs.pop("auth", None):
+    auth = kwargs.pop("auth", None)
+    if auth:
         kwargs["auth"] = aiohttp.BasicAuth(*auth)
 
     r = func(method, url, ssl=ssl, **kwargs)
