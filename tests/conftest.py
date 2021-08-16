@@ -63,8 +63,5 @@ async def aio_session(event_loop):
 
 @pytest.fixture
 async def aio_connector(event_loop):
-    conn = aiohttp.TCPConnector(limit_per_host=16)
-    try:
+    async with aiohttp.TCPConnector(limit_per_host=16) as conn:
         yield conn
-    finally:
-        await conn.close()
