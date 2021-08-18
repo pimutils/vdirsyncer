@@ -316,7 +316,7 @@ class StorageTests:
     ):
         monkeypatch.setattr("vdirsyncer.utils.generate_href", lambda x: x)
 
-        uid = "20210609T084907Z-@synaps-web-54fddfdf7-7kcfm%0A.ics"
+        uid = "UID:20210609T084907Z-@synaps-web-54fddfdf7-7kcfm%0A.ics"
 
         s = self.storage_class(**await get_storage_args())
         item = get_item(uid=uid)
