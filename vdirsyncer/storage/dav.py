@@ -29,25 +29,6 @@ dav_logger = logging.getLogger(__name__)
 CALDAV_DT_FORMAT = "%Y%m%dT%H%M%SZ"
 
 
-def _generate_path_reserved_chars():
-    for x in "/?#[]!$&'()*+,;":
-        x = urlparse.quote(x, "")
-        yield x.upper()
-        yield x.lower()
-
-
-_path_reserved_chars = frozenset(_generate_path_reserved_chars())
-del _generate_path_reserved_chars
-
-
-def _contains_quoted_reserved_chars(x):
-    for y in _path_reserved_chars:
-        if y in x:
-            dav_logger.debug(f"Unsafe character: {y!r}")
-            return True
-    return False
-
-
 async def _assert_multistatus_success(r):
     # Xandikos returns a multistatus on PUT.
     try:
