@@ -282,8 +282,6 @@ class StorageTests:
     async def test_specialchars(
         self, monkeypatch, requires_collections, get_storage_args, get_item
     ):
-        if getattr(self, "dav_server", "") == "radicale":
-            pytest.skip("Radicale is fundamentally broken.")
         if getattr(self, "dav_server", "") in ("icloud", "fastmail"):
             pytest.skip("iCloud and FastMail reject this name.")
 
@@ -311,6 +309,26 @@ class StorageTests:
         assert collection in urlunquote(s.collection)
         if self.storage_class.storage_name.endswith("dav"):
             assert urlquote(uid, "/@:") in href
+
+    @pytest.mark.asyncio
+    async def test_newline_in_uid(
+        self, monkeypatch, requires_collections, get_storage_args, get_item
+    ):
+        monkeypatch.setattr("vdirsyncer.utils.generate_href", lambda x: x)
+
+        uid = "UID:20210609T084907Z-@synaps-web-54fddfdf7-7kcfm%0A.ics"
+
+        s = self.storage_class(**await get_storage_args())
+        item = get_item(uid=uid)
+
+        href, etag = await s.upload(item)
+        item2, etag2 = await s.get(href)
+        if etag is not None:
+            assert etag2 == etag
+            assert_item_equals(item2, item)
+
+        ((_, etag3),) = await aiostream.stream.list(s.list())
+        assert etag2 == etag3
 
     @pytest.mark.asyncio
     async def test_empty_metadata(self, requires_metadata, s):
