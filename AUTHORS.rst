@@ -4,6 +4,7 @@ Contributors
 In alphabetical order:
 
 - Ben Boeckel
+- Bleala
 - Christian Geier
 - Clément Mondon
 - Hugo Osvaldo Barrera

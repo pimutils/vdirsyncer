@@ -43,6 +43,7 @@ Note: Version 0.17 has some alpha releases but ultimately was never finalised.
 - Python 3.9 is now supported.
 - Our Debian/Ubuntu build scripts have been updated. New versions should be
   pushed to those repositories soon.
+- A Docker environment for Vdirsyncer has been added `Docker Hub <https://hub.docker.com/r/bleala/vdirsyncer>`_.
 
 Version 0.16.8
 ==============
