@@ -29,11 +29,6 @@ tasks:
       export PATH=$PATH:~/.local/bin/
       make -e ci-test
       make -e ci-test-storage
-  - style: |
-      cd vdirsyncer
-      # Non-system python is used for packages:
-      export PATH=$PATH:~/.local/bin/
-      make -e style
   - check-secrets: |
       # Stop here if this is a PR. PRs can't run with the below secrets.
       [ -f ~/fastmail-secrets ] || complete-build
