@@ -103,10 +103,7 @@ def test_open_graphical_browser(monkeypatch):
 
     # Just assert that this internal attribute still exists and behaves the way
     # expected
-    if sys.version_info < (3, 7):
-        iter(webbrowser._tryorder)
-    else:
-        assert webbrowser._tryorder is None
+    assert webbrowser._tryorder is None
 
     monkeypatch.setattr("webbrowser._tryorder", [])
 
