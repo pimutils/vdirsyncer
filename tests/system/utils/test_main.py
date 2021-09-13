@@ -1,5 +1,4 @@
 import logging
-import sys
 
 import aiohttp
 import click_log
