@@ -851,7 +851,7 @@ class CalDAVStorage(DAVStorage):
             # instead?
             #
             # See https://github.com/dmfs/tasks/issues/118 for backstory.
-            async for href, etag in DAVStorage.list(self):
+            async for href, etag in super().list():
                 yield href, etag
 
         data = """<?xml version="1.0" encoding="utf-8" ?>
