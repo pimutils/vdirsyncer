@@ -20,7 +20,7 @@ def test_get_storage_init_args():
     from vdirsyncer.storage.memory import MemoryStorage
 
     all, required = utils.get_storage_init_args(MemoryStorage)
-    assert all == {"fileext", "collection", "read_only", "instance_name"}
+    assert all == {"fileext", "collection", "read_only", "instance_name", "implicit"}
     assert not required
 
 

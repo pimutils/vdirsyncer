@@ -60,8 +60,13 @@ def test_read_config(read_config):
             "yesno": False,
             "number": 42,
             "instance_name": "bob_a",
+            "implicit": [],
         },
-        "bob_b": {"type": "carddav", "instance_name": "bob_b"},
+        "bob_b": {
+            "type": "carddav",
+            "instance_name": "bob_b",
+            "implicit": [],
+        },
     }
 
 

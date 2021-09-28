@@ -29,6 +29,10 @@ Version 0.19.0
   you're validating certificate fingerprints, use `sha256` instead.
 - The ``google`` storage types no longer require ``requests-oauthlib``, but
   require ``python-aiohttp-oauthlib`` instead.
+- Add ``implicit`` option to storage section.  It creates/deletes implicitly
+  collections in the destinations, when new collections are created/deleted
+  in the source.  The deletion is implemented only for the "filesystem" storage.
+  See :ref:`storage_config`.
 
 Version 0.18.0
 ==============

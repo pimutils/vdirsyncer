@@ -113,6 +113,14 @@ class _ConfigReader:
                 raise ValueError("More than one general section.")
             self._general = options
         elif section_type == "storage":
+            if "implicit" not in options:
+                options["implicit"] = []
+            elif isinstance(options["implicit"], str):
+                options["implicit"] = [options["implicit"]]
+            elif not isinstance(options["implicit"], list):
+                raise ValueError(
+                    "`implicit` parameter must be a list, string or absent."
+                )
             self._storages[name] = options
         elif section_type == "pair":
             self._pairs[name] = options
