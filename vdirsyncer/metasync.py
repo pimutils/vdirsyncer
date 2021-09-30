@@ -14,48 +14,53 @@ class MetaSyncConflict(MetaSyncError):
     key = None
 
 
-def metasync(storage_a, storage_b, status, keys, conflict_resolution=None):
-    def _a_to_b():
-        logger.info(f'Copying {key} to {storage_b}')
-        storage_b.set_meta(key, a)
-        status[key] = a
+def status_set_key(status, key, value):
+    if value is None:
+        status.pop(key, None)
+    else:
+        status[key] = value
 
-    def _b_to_a():
-        logger.info(f'Copying {key} to {storage_a}')
-        storage_a.set_meta(key, b)
-        status[key] = b
 
-    def _resolve_conflict():
+async def metasync(storage_a, storage_b, status, keys, conflict_resolution=None):
+    async def _a_to_b():
+        logger.info(f"Copying {key} to {storage_b}")
+        await storage_b.set_meta(key, a)
+        status_set_key(status, key, a)
+
+    async def _b_to_a():
+        logger.info(f"Copying {key} to {storage_a}")
+        await storage_a.set_meta(key, b)
+        status_set_key(status, key, b)
+
+    async def _resolve_conflict():
         if a == b:
-            status[key] = a
-        elif conflict_resolution == 'a wins':
-            _a_to_b()
-        elif conflict_resolution == 'b wins':
-            _b_to_a()
+            status_set_key(status, key, a)
+        elif conflict_resolution == "a wins":
+            await _a_to_b()
+        elif conflict_resolution == "b wins":
+            await _b_to_a()
         else:
             if callable(conflict_resolution):
-                logger.warning('Custom commands don\'t work on metasync.')
+                logger.warning("Custom commands don't work on metasync.")
             elif conflict_resolution is not None:
-                raise exceptions.UserError(
-                    'Invalid conflict resolution setting.'
-                )
+                raise exceptions.UserError("Invalid conflict resolution setting.")
             raise MetaSyncConflict(key)
 
     for key in keys:
-        a = storage_a.get_meta(key)
-        b = storage_b.get_meta(key)
+        a = await storage_a.get_meta(key)
+        b = await storage_b.get_meta(key)
         s = normalize_meta_value(status.get(key))
-        logger.debug(f'Key: {key}')
-        logger.debug(f'A: {a}')
-        logger.debug(f'B: {b}')
-        logger.debug(f'S: {s}')
+        logger.debug(f"Key: {key}")
+        logger.debug(f"A: {a}")
+        logger.debug(f"B: {b}")
+        logger.debug(f"S: {s}")
 
         if a != s and b != s:
-            _resolve_conflict()
+            await _resolve_conflict()
         elif a != s and b == s:
-            _a_to_b()
+            await _a_to_b()
         elif a == s and b != s:
-            _b_to_a()
+            await _b_to_a()
         else:
             assert a == b
 

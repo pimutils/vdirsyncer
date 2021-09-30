@@ -1,29 +1,39 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.4.0
+    rev: v4.0.1
     hooks:
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
-        exclude: '.travis.yml'
       - id: check-toml
       - id: check-added-large-files
       - id: debug-statements
-  - repo: https://gitlab.com/pycqa/flake8
-    rev: "master" # pick a git hash / tag to point to
+  - repo: https://github.com/PyCQA/flake8
+    rev: "3.9.2"
     hooks:
       - id: flake8
         additional_dependencies: [flake8-import-order, flake8-bugbear]
-  - repo: https://github.com/asottile/reorder_python_imports
-    rev: v2.3.0
+  - repo: https://github.com/psf/black
+    rev: "21.9b0"
     hooks:
-    -   id: reorder-python-imports
-  - repo: local
+      - id: black
+  - repo: https://github.com/pycqa/isort
+    rev: 5.9.3
     hooks:
-      - id: update-travis
-        name: Update travis job definition
-        description: Ensures that travis job definition are up to date.
-        entry: scripts/make_travisconf.py
-        files: '.*travis.*'
-        stages: [commit]
-        language: script
+      - id: isort
+        name: isort (python)
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.28.0
+    hooks:
+    -   id: pyupgrade
+        args: [--py37-plus]
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: "v0.910"
+    hooks:
+      - id: mypy
+        files: vdirsyncer/.*
+        additional_dependencies:
+          - types-setuptools
+          - types-docutils
+          - types-requests
+          - types-atomicwrites

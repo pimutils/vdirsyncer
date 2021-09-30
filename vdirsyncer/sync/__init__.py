@@ -1,4 +1,4 @@
-'''
+"""
 The `sync` function in `vdirsyncer.sync` can be called on two instances of
 `Storage` to synchronize them. Apart from the defined errors, this is the only
 public API of this module.
@@ -8,7 +8,7 @@ Yang: http://blog.ezyang.com/2012/08/how-offlineimap-works/
 
 Some modifications to it are explained in
 https://unterwaditzer.net/2016/sync-algorithm.html
-'''
+"""
 import contextlib
 import itertools
 import logging
@@ -27,14 +27,15 @@ sync_logger = logging.getLogger(__name__)
 
 
 class _StorageInfo:
-    '''A wrapper class that holds prefetched items, the status and other
-    things.'''
+    """A wrapper class that holds prefetched items, the status and other
+    things."""
+
     def __init__(self, storage, status):
         self.storage = storage
         self.status = status
         self._item_cache = {}
 
-    def prepare_new_status(self):
+    async def prepare_new_status(self):
         storage_nonempty = False
         prefetch = []
 
@@ -44,7 +45,7 @@ class _StorageInfo:
             except IdentAlreadyExists as e:
                 raise e.to_ident_conflict(self.storage)
 
-        for href, etag in self.storage.list():
+        async for href, etag in self.storage.list():
             storage_nonempty = True
             ident, meta = self.status.get_by_href(href)
 
@@ -57,14 +58,13 @@ class _StorageInfo:
                 _store_props(ident, meta)
 
         # Prefetch items
-        for href, item, etag in (self.storage.get_multi(prefetch)
-                                 if prefetch else ()):
-            _store_props(item.ident, ItemMetadata(
-                href=href,
-                hash=item.hash,
-                etag=etag
-            ))
-            self.set_item_cache(item.ident, item)
+        if prefetch:
+            async for href, item, etag in self.storage.get_multi(prefetch):
+                _store_props(
+                    item.ident,
+                    ItemMetadata(href=href, hash=item.hash, etag=etag),
+                )
+                self.set_item_cache(item.ident, item)
 
         return storage_nonempty
 
@@ -90,9 +90,16 @@ class _StorageInfo:
         return self._item_cache[ident]
 
 
-def sync(storage_a, storage_b, status, conflict_resolution=None,
-         force_delete=False, error_callback=None, partial_sync='revert'):
-    '''Synchronizes two storages.
+async def sync(
+    storage_a,
+    storage_b,
+    status,
+    conflict_resolution=None,
+    force_delete=False,
+    error_callback=None,
+    partial_sync="revert",
+):
+    """Synchronizes two storages.
 
     :param storage_a: The first storage
     :type storage_a: :class:`vdirsyncer.storage.base.Storage`
@@ -119,23 +126,23 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
         - ``error``: Raise an error.
         - ``ignore``: Those actions are simply skipped.
         - ``revert`` (default): Revert changes on other side.
-    '''
+    """
     if storage_a.read_only and storage_b.read_only:
         raise BothReadOnly()
 
-    if conflict_resolution == 'a wins':
-        conflict_resolution = lambda a, b: a
-    elif conflict_resolution == 'b wins':
-        conflict_resolution = lambda a, b: b
+    if conflict_resolution == "a wins":
+        conflict_resolution = lambda a, b: a  # noqa: E731
+    elif conflict_resolution == "b wins":
+        conflict_resolution = lambda a, b: b  # noqa: E731
 
     status_nonempty = bool(next(status.iter_old(), None))
 
     with status.transaction():
-        a_info = _StorageInfo(storage_a, SubStatus(status, 'a'))
-        b_info = _StorageInfo(storage_b, SubStatus(status, 'b'))
+        a_info = _StorageInfo(storage_a, SubStatus(status, "a"))
+        b_info = _StorageInfo(storage_b, SubStatus(status, "b"))
 
-        a_nonempty = a_info.prepare_new_status()
-        b_nonempty = b_info.prepare_new_status()
+        a_nonempty = await a_info.prepare_new_status()
+        b_nonempty = await b_info.prepare_new_status()
 
         if status_nonempty and not force_delete:
             if a_nonempty and not b_nonempty:
@@ -145,15 +152,10 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
 
         actions = list(_get_actions(a_info, b_info))
 
-        with storage_a.at_once(), storage_b.at_once():
+        async with storage_a.at_once(), storage_b.at_once():
             for action in actions:
                 try:
-                    action.run(
-                        a_info,
-                        b_info,
-                        conflict_resolution,
-                        partial_sync
-                    )
+                    await action.run(a_info, b_info, conflict_resolution, partial_sync)
                 except Exception as e:
                     if error_callback:
                         error_callback(e)
@@ -162,21 +164,21 @@ def sync(storage_a, storage_b, status, conflict_resolution=None,
 
 
 class Action:
-    def _run_impl(self, a, b):  # pragma: no cover
+    async def _run_impl(self, a, b):  # pragma: no cover
         raise NotImplementedError()
 
-    def run(self, a, b, conflict_resolution, partial_sync):
+    async def run(self, a, b, conflict_resolution, partial_sync):
         with self.auto_rollback(a, b):
             if self.dest.storage.read_only:
-                if partial_sync == 'error':
+                if partial_sync == "error":
                     raise PartialSync(self.dest.storage)
-                elif partial_sync == 'ignore':
+                elif partial_sync == "ignore":
                     self.rollback(a, b)
                     return
                 else:
-                    assert partial_sync == 'revert'
+                    assert partial_sync == "revert"
 
-            self._run_impl(a, b)
+            await self._run_impl(a, b)
 
     @contextlib.contextmanager
     def auto_rollback(self, a, b):
@@ -196,21 +198,22 @@ class Upload(Action):
         self.ident = item.ident
         self.dest = dest
 
-    def _run_impl(self, a, b):
+    async def _run_impl(self, a, b):
 
         if self.dest.storage.read_only:
             href = etag = None
         else:
-            sync_logger.info('Copying (uploading) item {} to {}'
-                             .format(self.ident, self.dest.storage))
-            href, etag = self.dest.storage.upload(self.item)
+            sync_logger.info(
+                "Copying (uploading) item {} to {}".format(
+                    self.ident, self.dest.storage
+                )
+            )
+            href, etag = await self.dest.storage.upload(self.item)
             assert href is not None
 
-        self.dest.status.insert_ident(self.ident, ItemMetadata(
-            href=href,
-            hash=self.item.hash,
-            etag=etag
-        ))
+        self.dest.status.insert_ident(
+            self.ident, ItemMetadata(href=href, hash=self.item.hash, etag=etag)
+        )
 
 
 class Update(Action):
@@ -219,15 +222,15 @@ class Update(Action):
         self.ident = item.ident
         self.dest = dest
 
-    def _run_impl(self, a, b):
+    async def _run_impl(self, a, b):
         if self.dest.storage.read_only:
             meta = ItemMetadata(hash=self.item.hash)
         else:
-            sync_logger.info('Copying (updating) item {} to {}'
-                             .format(self.ident, self.dest.storage))
+            sync_logger.info(
+                f"Copying (updating) item {self.ident} to {self.dest.storage}"
+            )
             meta = self.dest.status.get_new(self.ident)
-            meta.etag = \
-                self.dest.storage.update(meta.href, self.item, meta.etag)
+            meta.etag = await self.dest.storage.update(meta.href, self.item, meta.etag)
 
         self.dest.status.update_ident(self.ident, meta)
 
@@ -237,12 +240,11 @@ class Delete(Action):
         self.ident = ident
         self.dest = dest
 
-    def _run_impl(self, a, b):
+    async def _run_impl(self, a, b):
         meta = self.dest.status.get_new(self.ident)
         if not self.dest.storage.read_only:
-            sync_logger.info('Deleting item {} from {}'
-                             .format(self.ident, self.dest.storage))
-            self.dest.storage.delete(meta.href, meta.etag)
+            sync_logger.info(f"Deleting item {self.ident} from {self.dest.storage}")
+            await self.dest.storage.delete(meta.href, meta.etag)
 
         self.dest.status.remove_ident(self.ident)
 
@@ -251,37 +253,49 @@ class ResolveConflict(Action):
     def __init__(self, ident):
         self.ident = ident
 
-    def run(self, a, b, conflict_resolution, partial_sync):
+    async def run(self, a, b, conflict_resolution, partial_sync):
         with self.auto_rollback(a, b):
-            sync_logger.info('Doing conflict resolution for item {}...'
-                             .format(self.ident))
+            sync_logger.info(f"Doing conflict resolution for item {self.ident}...")
 
             meta_a = a.status.get_new(self.ident)
             meta_b = b.status.get_new(self.ident)
 
             if meta_a.hash == meta_b.hash:
-                sync_logger.info('...same content on both sides.')
+                sync_logger.info("...same content on both sides.")
             elif conflict_resolution is None:
-                raise SyncConflict(ident=self.ident, href_a=meta_a.href,
-                                   href_b=meta_b.href)
+                raise SyncConflict(
+                    ident=self.ident, href_a=meta_a.href, href_b=meta_b.href
+                )
             elif callable(conflict_resolution):
                 item_a = a.get_item_cache(self.ident)
                 item_b = b.get_item_cache(self.ident)
                 new_item = conflict_resolution(item_a, item_b)
                 if new_item.hash != meta_a.hash:
-                    Update(new_item, a).run(a, b, conflict_resolution,
-                                            partial_sync)
+                    await Update(new_item, a).run(
+                        a,
+                        b,
+                        conflict_resolution,
+                        partial_sync,
+                    )
                 if new_item.hash != meta_b.hash:
-                    Update(new_item, b).run(a, b, conflict_resolution,
-                                            partial_sync)
+                    await Update(new_item, b).run(
+                        a,
+                        b,
+                        conflict_resolution,
+                        partial_sync,
+                    )
             else:
-                raise UserError('Invalid conflict resolution mode: {!r}'
-                                .format(conflict_resolution))
+                raise UserError(
+                    f"Invalid conflict resolution mode: {conflict_resolution!r}"
+                )
 
 
 def _get_actions(a_info, b_info):
-    for ident in uniq(itertools.chain(a_info.status.parent.iter_new(),
-                                      a_info.status.parent.iter_old())):
+    for ident in uniq(
+        itertools.chain(
+            a_info.status.parent.iter_new(), a_info.status.parent.iter_old()
+        )
+    ):
         a = a_info.status.get_new(ident)
         b = b_info.status.get_new(ident)
 

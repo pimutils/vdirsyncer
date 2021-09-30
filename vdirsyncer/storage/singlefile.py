@@ -21,28 +21,31 @@ logger = logging.getLogger(__name__)
 
 def _writing_op(f):
     @functools.wraps(f)
-    def inner(self, *args, **kwargs):
+    async def inner(self, *args, **kwargs):
         if self._items is None or not self._at_once:
-            self.list()
-        rv = f(self, *args, **kwargs)
+            async for _ in self.list():
+                pass
+        assert self._items is not None
+        rv = await f(self, *args, **kwargs)
         if not self._at_once:
             self._write()
         return rv
+
     return inner
 
 
 class SingleFileStorage(Storage):
-    storage_name = 'singlefile'
-    _repr_attributes = ('path',)
+    storage_name = "singlefile"
+    _repr_attributes = ["path"]
 
-    _write_mode = 'wb'
-    _append_mode = 'ab'
-    _read_mode = 'rb'
+    _write_mode = "wb"
+    _append_mode = "ab"
+    _read_mode = "rb"
 
     _items = None
     _last_etag = None
 
-    def __init__(self, path, encoding='utf-8', **kwargs):
+    def __init__(self, path, encoding="utf-8", **kwargs):
         super().__init__(**kwargs)
         path = os.path.abspath(expand_path(path))
         checkfile(path, create=False)
@@ -52,53 +55,51 @@ class SingleFileStorage(Storage):
         self._at_once = False
 
     @classmethod
-    def discover(cls, path, **kwargs):
-        if kwargs.pop('collection', None) is not None:
-            raise TypeError('collection argument must not be given.')
+    async def discover(cls, path, **kwargs):
+        if kwargs.pop("collection", None) is not None:
+            raise TypeError("collection argument must not be given.")
 
         path = os.path.abspath(expand_path(path))
         try:
-            path_glob = path % '*'
+            path_glob = path % "*"
         except TypeError:
             # If not exactly one '%s' is present, we cannot discover
             # collections because we wouldn't know which name to assign.
             raise NotImplementedError()
 
-        placeholder_pos = path.index('%s')
+        placeholder_pos = path.index("%s")
 
         for subpath in glob.iglob(path_glob):
             if os.path.isfile(subpath):
                 args = dict(kwargs)
-                args['path'] = subpath
+                args["path"] = subpath
 
                 collection_end = (
-                    placeholder_pos
-                    + 2  # length of '%s'
-                    + len(subpath)
-                    - len(path)
+                    placeholder_pos + 2 + len(subpath) - len(path)  # length of '%s'
                 )
                 collection = subpath[placeholder_pos:collection_end]
-                args['collection'] = collection
+                args["collection"] = collection
 
                 yield args
 
     @classmethod
-    def create_collection(cls, collection, **kwargs):
-        path = os.path.abspath(expand_path(kwargs['path']))
+    async def create_collection(cls, collection, **kwargs):
+        path = os.path.abspath(expand_path(kwargs["path"]))
 
         if collection is not None:
             try:
                 path = path % (collection,)
             except TypeError:
-                raise ValueError('Exactly one %s required in path '
-                                 'if collection is not null.')
+                raise ValueError(
+                    "Exactly one %s required in path " "if collection is not null."
+                )
 
         checkfile(path, create=True)
-        kwargs['path'] = path
-        kwargs['collection'] = collection
+        kwargs["path"] = path
+        kwargs["collection"] = collection
         return kwargs
 
-    def list(self):
+    async def list(self):
         self._items = collections.OrderedDict()
 
         try:
@@ -107,23 +108,24 @@ class SingleFileStorage(Storage):
                 text = f.read().decode(self.encoding)
         except OSError as e:
             import errno
+
             if e.errno != errno.ENOENT:  # file not found
                 raise OSError(e)
             text = None
 
-        if not text:
-            return ()
+        if text:
+            for item in split_collection(text):
+                item = Item(item)
+                etag = item.hash
+                href = item.ident
+                self._items[href] = item, etag
 
-        for item in split_collection(text):
-            item = Item(item)
-            etag = item.hash
-            self._items[item.ident] = item, etag
+                yield href, etag
 
-        return ((href, etag) for href, (item, etag) in self._items.items())
-
-    def get(self, href):
+    async def get(self, href):
         if self._items is None or not self._at_once:
-            self.list()
+            async for _ in self.list():
+                pass
 
         try:
             return self._items[href]
@@ -131,7 +133,7 @@ class SingleFileStorage(Storage):
             raise exceptions.NotFoundError(href)
 
     @_writing_op
-    def upload(self, item):
+    async def upload(self, item):
         href = item.ident
         if href in self._items:
             raise exceptions.AlreadyExistingError(existing_href=href)
@@ -140,7 +142,7 @@ class SingleFileStorage(Storage):
         return href, item.hash
 
     @_writing_op
-    def update(self, href, item, etag):
+    async def update(self, href, item, etag):
         if href not in self._items:
             raise exceptions.NotFoundError(href)
 
@@ -152,7 +154,7 @@ class SingleFileStorage(Storage):
         return item.hash
 
     @_writing_op
-    def delete(self, href, etag):
+    async def delete(self, href, etag):
         if href not in self._items:
             raise exceptions.NotFoundError(href)
 
@@ -163,25 +165,26 @@ class SingleFileStorage(Storage):
         del self._items[href]
 
     def _write(self):
-        if self._last_etag is not None and \
-           self._last_etag != get_etag_from_file(self.path):
-            raise exceptions.PreconditionFailed((
-                'Some other program modified the file {!r}. Re-run the '
-                'synchronization and make sure absolutely no other program is '
-                'writing into the same file.'
-            ).format(self.path))
-        text = join_collection(
-            item.raw for item, etag in self._items.values()
-        )
+        if self._last_etag is not None and self._last_etag != get_etag_from_file(
+            self.path
+        ):
+            raise exceptions.PreconditionFailed(
+                (
+                    "Some other program modified the file {!r}. Re-run the "
+                    "synchronization and make sure absolutely no other program is "
+                    "writing into the same file."
+                ).format(self.path)
+            )
+        text = join_collection(item.raw for item, etag in self._items.values())
         try:
-            with atomic_write(self.path, mode='wb', overwrite=True) as f:
+            with atomic_write(self.path, mode="wb", overwrite=True) as f:
                 f.write(text.encode(self.encoding))
         finally:
             self._items = None
             self._last_etag = None
 
-    @contextlib.contextmanager
-    def at_once(self):
+    @contextlib.asynccontextmanager
+    async def at_once(self):
         self.list()
         self._at_once = True
         try:

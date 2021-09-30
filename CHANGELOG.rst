@@ -9,6 +9,41 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.19.0
+==============
+
+- Add "description" and "order" as metadata.  These fetch the CalDAV:
+  calendar-description, CardDAV:addressbook-description and apple-ns:calendar-order
+  properties.
+- Add a new ``showconfig`` status. This prints *some* configuration values as
+  JSON. This is intended to be used by external tools and helpers that interact
+  with ``vdirsyncer``.
+- Update TLS-related tests that were failing due to weak MDs. :gh:`903`
+- ``pytest-httpserver`` and ``trustme`` are now required for tests.
+- ``pytest-localserver`` is no longer required for tests.
+- Multithreaded support has been dropped. The ``"--max-workers`` has been removed.
+- A new ``asyncio`` backend is now used. So far, this shows substantial speed
+  improvements in ``discovery`` and ``metasync``, but little change in `sync`.
+  This will likely continue improving over time. :gh:`906`
+- Support for `md5` and `sha1` certificate fingerprints has been dropped. If
+  you're validating certificate fingerprints, use `sha256` instead.
+- The ``google`` storage types no longer require ``requests-oauthlib``, but
+  require ``python-aiohttp-oauthlib`` instead.
+
+Version 0.18.0
+==============
+
+Note: Version 0.17 has some alpha releases but ultimately was never finalised.
+0.18 actually continues where 0.16 left off.
+
+- Support for Python 3.5 and 3.6 has been dropped. This release mostly focuses
+  on keeping vdirsyncer compatible with newer environments.
+- click 8 and click-threading 0.5.0 are now required.
+- For those using ``pipsi``, we now recommend using ``pipx``, it's successor.
+- Python 3.9 is now supported.
+- Our Debian/Ubuntu build scripts have been updated. New versions should be
+  pushed to those repositories soon.
+
 Version 0.16.8
 ==============
 

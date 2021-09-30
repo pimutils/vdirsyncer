@@ -1,6 +1,0 @@
-[submodule "tests/storage/servers/owncloud"]
-	path = tests/storage/servers/owncloud
-	url = https://github.com/vdirsyncer/owncloud-testserver
-[submodule "tests/storage/servers/nextcloud"]
-	path = tests/storage/servers/nextcloud
-	url = https://github.com/vdirsyncer/nextcloud-testserver

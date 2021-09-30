@@ -2,41 +2,56 @@ import pytest
 
 from vdirsyncer.storage.dav import _BAD_XML_CHARS
 from vdirsyncer.storage.dav import _merge_xml
+from vdirsyncer.storage.dav import _normalize_href
 from vdirsyncer.storage.dav import _parse_xml
 
 
 def test_xml_utilities():
-    x = _parse_xml(b'''<?xml version="1.0" encoding="UTF-8" ?>
-        <D:multistatus xmlns:D="DAV:">
-            <D:response>
-                <D:propstat>
-                    <D:status>HTTP/1.1 404 Not Found</D:status>
-                    <D:prop>
-                        <D:getcontenttype/>
-                    </D:prop>
-                </D:propstat>
-                <D:propstat>
-                    <D:prop>
-                        <D:resourcetype>
-                            <D:collection/>
-                        </D:resourcetype>
-                    </D:prop>
-                </D:propstat>
-            </D:response>
-        </D:multistatus>
-    ''')
+    x = _parse_xml(
+        b"""<?xml version="1.0" encoding="UTF-8" ?>
+        <multistatus xmlns="DAV:">
+            <response>
+                <propstat>
+                    <status>HTTP/1.1 404 Not Found</status>
+                    <prop>
+                        <getcontenttype/>
+                    </prop>
+                </propstat>
+                <propstat>
+                    <prop>
+                        <resourcetype>
+                            <collection/>
+                        </resourcetype>
+                    </prop>
+                </propstat>
+            </response>
+        </multistatus>
+    """
+    )
 
-    response = x.find('{DAV:}response')
-    props = _merge_xml(response.findall('{DAV:}propstat/{DAV:}prop'))
-    assert props.find('{DAV:}resourcetype/{DAV:}collection') is not None
-    assert props.find('{DAV:}getcontenttype') is not None
+    response = x.find("{DAV:}response")
+    props = _merge_xml(response.findall("{DAV:}propstat/{DAV:}prop"))
+    assert props.find("{DAV:}resourcetype/{DAV:}collection") is not None
+    assert props.find("{DAV:}getcontenttype") is not None
 
 
-@pytest.mark.parametrize('char', range(32))
+@pytest.mark.parametrize("char", range(32))
 def test_xml_specialchars(char):
-    x = _parse_xml('<?xml version="1.0" encoding="UTF-8" ?>'
-                   '<foo>ye{}s\r\n'
-                   'hello</foo>'.format(chr(char)).encode('ascii'))
+    x = _parse_xml(
+        '<?xml version="1.0" encoding="UTF-8" ?>'
+        "<foo>ye{}s\r\n"
+        "hello</foo>".format(chr(char)).encode("ascii")
+    )
 
     if char in _BAD_XML_CHARS:
-        assert x.text == 'yes\nhello'
+        assert x.text == "yes\nhello"
+
+
+@pytest.mark.parametrize(
+    "href",
+    [
+        "/dav/calendars/user/testuser/123/UID%253A20210609T084907Z-@synaps-web-54fddfdf7-7kcfm%250A.ics",  # noqa: E501
+    ],
+)
+def test_normalize_href(href):
+    assert href == _normalize_href("https://example.com", href)

@@ -1,0 +1,49 @@
+# Run tests using latest dependencies from PyPI
+
+image: archlinux
+packages:
+  - docker
+  - docker-compose
+  - python-pip
+  - twine
+sources:
+  - https://github.com/pimutils/vdirsyncer
+secrets:
+  - a36c8ba3-fba0-4338-b402-6aea0fbe771e
+  - 4d9a6dfe-5c8d-48bd-b864-a2f5d772c536
+environment:
+  BUILD: test
+  CI: true
+  CODECOV_TOKEN: b834a3c5-28fa-4808-9bdb-182210069c79
+  DAV_SERVER: baikal radicale xandikos
+  REQUIREMENTS: release
+  # TODO: ETESYNC_TESTS
+tasks:
+  - setup: |
+      sudo systemctl start docker
+      cd vdirsyncer
+      make -e install-dev -e install-docs
+  - test: |
+      cd vdirsyncer
+      # Non-system python is used for packages:
+      export PATH=$PATH:~/.local/bin/
+      make -e ci-test
+      make -e ci-test-storage
+  - check-secrets: |
+      # Stop here if this is a PR. PRs can't run with the below secrets.
+      [ -f ~/fastmail-secrets ] || complete-build
+  - extra-storages: |
+      set +x
+      source ~/fastmail-secrets
+      set -x
+
+      cd vdirsyncer
+      export PATH=$PATH:~/.local/bin/
+      DAV_SERVER=fastmail pytest tests/storage
+  - check-tag: |
+      # Stop here unless this is a tag.
+      git describe --exact-match --tags || complete-build
+  - publish: |
+      cd vdirsyncer
+      python setup.py sdist bdist_wheel
+      twine upload dist/*

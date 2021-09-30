@@ -56,8 +56,11 @@ have any file extensions.
   known from CSS, for example) are allowed. The prefixing ``#`` must be
   present.
 
-- A file called ``displayname`` contains a UTF-8 encoded label that may be used
-  to represent the vdir in UIs.
+- Files called ``displayname`` and ``description`` contain a UTF-8 encoded label/
+  description, that may be used to represent the vdir in UIs.
+
+- A file called ``order`` inside the vdir includes the relative order
+  of the calendar, a property that is only relevant in UI design.
 
 Writing to vdirs
 ================
@@ -96,7 +99,7 @@ collections for faster search and lookup.
 
 The reason items' filenames don't contain any extra information is simple: The
 solutions presented induced duplication of data, where one duplicate might
-become out of date because of bad implementations. As it stands right now, a
+become out of date because of bad implementations. As it stands right now, an
 index format could be formalized separately though.
 
 vdirsyncer doesn't really have to bother about efficient item lookup, because

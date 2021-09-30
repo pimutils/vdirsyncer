@@ -2,10 +2,3 @@ comment: false
 coverage:
   status:
     patch: false
-    project:
-      unit:
-        flags: unit
-      system:
-        flags: system
-      storage:
-        flags: storage

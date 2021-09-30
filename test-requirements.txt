@@ -1,5 +1,7 @@
-hypothesis>=5.0.0
+hypothesis>=5.0.0,<7.0.0
 pytest
 pytest-cov
-pytest-localserver
-pytest-subtesthack
+pytest-httpserver
+trustme
+pytest-asyncio
+aioresponses

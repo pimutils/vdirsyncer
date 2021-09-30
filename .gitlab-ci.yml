@@ -1,0 +1,6 @@
+python37:
+  image: python:3.7
+  before_script:
+    - make -e install-dev
+  script:
+    - make -e ci-test

@@ -1,7 +1,8 @@
 import pytest
 
-from . import StorageTests
 from vdirsyncer.storage.memory import MemoryStorage
+
+from . import StorageTests
 
 
 class TestMemoryStorage(StorageTests):
@@ -11,4 +12,7 @@ class TestMemoryStorage(StorageTests):
 
     @pytest.fixture
     def get_storage_args(self):
-        return lambda **kw: kw
+        async def inner(**args):
+            return args
+
+        return inner

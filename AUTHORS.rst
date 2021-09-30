@@ -13,6 +13,7 @@ In alphabetical order:
 - Markus Unterwaditzer
 - Michael Adler
 - Thomas Weißschuh
+- Witcher01
 
 Special thanks goes to:
 

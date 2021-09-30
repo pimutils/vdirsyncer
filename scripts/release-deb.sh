@@ -1,19 +1,26 @@
 #!/bin/sh
+
 set -xe
-distro=$1
-distrover=$2
-name=vdirsyncer-$distro-$distrover:latest
-context="$(mktemp -d)"
 
-python setup.py sdist -d "$context"
-cp scripts/dpkg.Dockerfile "$context/Dockerfile"
+DISTRO=$1
+DISTROVER=$2
 
+NAME="vdirsyncer-${DISTRO}-${DISTROVER}:latest"
+CONTEXT="$(mktemp -d)"
+
+python setup.py sdist -d "$CONTEXT"
+
+# Build the package in a container with the right distro version.
 docker build \
-    --build-arg distro=$distro \
-    --build-arg distrover=$distrover \
-    -t $name \
-    "$context"
+    --build-arg distro=$DISTRO \
+    --build-arg distrover=$DISTROVER \
+    -t $NAME \
+    -f scripts/dpkg.Dockerfile \
+    "$CONTEXT"
 
-docker run $name tar -c -C /vdirsyncer pkgs | tar x -C "$context"
-package_cloud push pimutils/vdirsyncer/$distro/$distrover $context/pkgs/*.deb
-rm -rf "$context"
+# Push the package to packagecloud.
+# TODO: Use ~/.packagecloud for CI.
+docker run -e PACKAGECLOUD_TOKEN=$PACKAGECLOUD_TOKEN $NAME \
+  bash -xec "package_cloud push pimutils/vdirsyncer/$DISTRO/$DISTROVER *.deb"
+
+rm -rf "$CONTEXT"

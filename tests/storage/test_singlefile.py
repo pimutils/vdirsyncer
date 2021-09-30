@@ -1,7 +1,8 @@
 import pytest
 
-from . import StorageTests
 from vdirsyncer.storage.singlefile import SingleFileStorage
+
+from . import StorageTests
 
 
 class TestSingleFileStorage(StorageTests):
@@ -11,10 +12,10 @@ class TestSingleFileStorage(StorageTests):
 
     @pytest.fixture
     def get_storage_args(self, tmpdir):
-        def inner(collection='test'):
-            rv = {'path': str(tmpdir.join('%s.txt')),
-                  'collection': collection}
+        async def inner(collection="test"):
+            rv = {"path": str(tmpdir.join("%s.txt")), "collection": collection}
             if collection is not None:
-                rv = self.storage_class.create_collection(**rv)
+                rv = await self.storage_class.create_collection(**rv)
             return rv
+
         return inner

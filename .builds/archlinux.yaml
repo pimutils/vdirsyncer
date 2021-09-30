@@ -1,0 +1,45 @@
+# Run tests using the packaged dependencies on ArchLinux.
+
+image: archlinux
+packages:
+  - docker
+  - docker-compose
+  # Build dependencies:
+  - python-pip
+  - python-wheel
+  # Runtime dependencies:
+  - python-atomicwrites
+  - python-click
+  - python-click-log
+  - python-click-threading
+  - python-requests
+  - python-requests-toolbelt
+  - python-aiohttp-oauthlib
+  # Test dependencies:
+  - python-hypothesis
+  - python-pytest-cov
+  - python-pytest-httpserver
+  - python-trustme
+  - python-pytest-asyncio
+  - python-aiohttp
+  - python-aiostream
+  - python-aioresponses
+sources:
+  - https://github.com/pimutils/vdirsyncer
+environment:
+  BUILD: test
+  CI: true
+  CODECOV_TOKEN: b834a3c5-28fa-4808-9bdb-182210069c79
+  DAV_SERVER: radicale xandikos
+  REQUIREMENTS: release
+  # TODO: ETESYNC_TESTS
+tasks:
+  - setup: |
+      sudo systemctl start docker
+      cd vdirsyncer
+      python setup.py build
+      sudo pip install --no-index .
+  - test: |
+      cd vdirsyncer
+      make -e ci-test
+      make -e ci-test-storage

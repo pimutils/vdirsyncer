@@ -41,9 +41,9 @@ repository or PyPI package. Trying to e.g. run ``pytest`` directly will
 require a lot of environment variables to be set (for configuration) and you
 probably don't want to deal with that.
 
-You can install the testing dependencies with::
+You can install the all development dependencies with::
 
-    make install-test
+    make install-dev
 
 You probably don't want this since it will use pip to download the
 dependencies. Alternatively you can find the testing dependencies in
