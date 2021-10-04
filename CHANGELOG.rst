@@ -29,6 +29,13 @@ Version 0.19.0
   you're validating certificate fingerprints, use `sha256` instead.
 - The ``google`` storage types no longer require ``requests-oauthlib``, but
   require ``python-aiohttp-oauthlib`` instead.
+- Vdirsyncer no longer includes experimental support for `EteSync
+  <https://www.etesync.com/>`_. The existing integration had not been supported
+  for a long time and no longer worked. Support for external storages may be
+  added if anyone is interested in maintaining an EteSync plugin. EteSync
+  users should consider using `etesync-dav`_.
+
+.. _etesync-dav: https://github.com/etesync/etesync-dav
 
 Version 0.18.0
 ==============

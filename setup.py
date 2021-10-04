@@ -56,7 +56,6 @@ setup(
     # Optional dependencies
     extras_require={
         "google": ["aiohttp-oauthlib"],
-        "etesync": ["etesync==0.5.2", "django<2.0"],
     },
     # Build dependencies
     setup_requires=["setuptools_scm != 1.12.0"],
