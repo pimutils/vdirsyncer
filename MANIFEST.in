@@ -2,7 +2,6 @@
 prune docker
 prune scripts
 prune tests/storage/servers
-prune tests/storage/etesync
 recursive-include tests/storage/servers/radicale *
 recursive-include tests/storage/servers/skip *
 

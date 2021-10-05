@@ -12,9 +12,6 @@ export REQUIREMENTS := release
 # Set this to true if you run vdirsyncer's test as part of e.g. packaging.
 export DETERMINISTIC_TESTS := false
 
-# Run the etesync testsuite.
-export ETESYNC_TESTS := false
-
 # Assume to run in CI. Don't use this outside of a virtual machine. It will
 # heavily "pollute" your system, such as attempting to install a new Python
 # systemwide.
@@ -30,11 +27,6 @@ PYTEST_ARGS =
 
 TEST_EXTRA_PACKAGES =
 
-ifeq ($(ETESYNC_TESTS), true)
-	TEST_EXTRA_PACKAGES += git+https://github.com/etesync/journal-manager@v0.5.2
-	TEST_EXTRA_PACKAGES += django djangorestframework==3.8.2 wsgi_intercept drf-nested-routers
-endif
-
 PYTEST = py.test $(PYTEST_ARGS)
 CODECOV_PATH = /tmp/codecov.sh
 
@@ -45,7 +37,6 @@ ci-test:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
 	$(PYTEST) --cov vdirsyncer --cov-append tests/unit/ tests/system/
 	bash $(CODECOV_PATH) -c
-	[ "$(ETESYNC_TESTS)" = "false" ] || make test-storage
 
 ci-test-storage:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
@@ -83,7 +74,6 @@ install-dev:
 	pip install -e .
 	pip install -Ur test-requirements.txt $(TEST_EXTRA_PACKAGES)
 	pip install pre-commit
-	[ "$(ETESYNC_TESTS)" = "false" ] || pip install -Ue .[etesync]
 	set -xe && if [ "$(REQUIREMENTS)" = "minimal" ]; then \
 		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
 	fi

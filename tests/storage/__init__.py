@@ -254,9 +254,6 @@ class StorageTests:
 
     @pytest.mark.asyncio
     async def test_collection_arg(self, get_storage_args):
-        if self.storage_class.storage_name.startswith("etesync"):
-            pytest.skip("etesync uses UUIDs.")
-
         if self.supports_collections:
             s = self.storage_class(**await get_storage_args(collection="test2"))
             # Can't do stronger assertion because of radicale, which needs a
@@ -301,10 +298,6 @@ class StorageTests:
 
         ((_, etag3),) = await aiostream.stream.list(s.list())
         assert etag2 == etag3
-
-        # etesync uses UUIDs for collection names
-        if self.storage_class.storage_name.startswith("etesync"):
-            return
 
         assert collection in urlunquote(s.collection)
         if self.storage_class.storage_name.endswith("dav"):
