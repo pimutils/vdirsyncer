@@ -36,7 +36,7 @@ del _detect_faulty_requests
 def prepare_auth(auth, username, password):
     if username and password:
         if auth == "basic" or auth is None:
-            return (username, password)
+            return aiohttp.BasicAuth(username, password)
         elif auth == "digest":
             from requests.auth import HTTPDigestAuth
 
@@ -59,8 +59,8 @@ def prepare_auth(auth, username, password):
             "You need to specify username and password "
             "for {} authentication.".format(auth)
         )
-    else:
-        return None
+
+    return None
 
 
 def prepare_verify(verify, verify_fingerprint):
@@ -126,8 +126,6 @@ async def request(
 
     session.hooks = {"response": _fix_redirects}
 
-    func = session.request
-
     # TODO: rewrite using
     # https://docs.aiohttp.org/en/stable/client_advanced.html#client-tracing
     logger.debug("=" * 20)
@@ -140,12 +138,7 @@ async def request(
 
     kwargs.pop("cert", None)  # TODO XXX FIXME!
 
-    auth = kwargs.pop("auth", None)
-    if auth:
-        kwargs["auth"] = aiohttp.BasicAuth(*auth)
-
-    r = func(method, url, ssl=ssl, **kwargs)
-    r = await r
+    r = await session.request(method, url, ssl=ssl, **kwargs)
 
     # See https://github.com/kennethreitz/requests/issues/2042
     content_type = r.headers.get("Content-Type", "")

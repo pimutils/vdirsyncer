@@ -385,8 +385,10 @@ class DAVSession:
     ):
         self._settings = {
             "cert": prepare_client_cert(auth_cert),
-            "auth": prepare_auth(auth, username, password),
         }
+        auth = prepare_auth(auth, username, password)
+        if auth:
+            self._settings["auth"] = auth
         self._settings.update(prepare_verify(verify, verify_fingerprint))
 
         self.useragent = useragent

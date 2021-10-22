@@ -35,14 +35,16 @@ class HttpStorage(Storage):
         *,
         connector,
         **kwargs
-    ):
+    ) -> None:
         super().__init__(**kwargs)
 
         self._settings = {
-            "auth": prepare_auth(auth, username, password),
             "cert": prepare_client_cert(auth_cert),
             "latin1_fallback": False,
         }
+        auth = prepare_auth(auth, username, password)
+        if auth:
+            self._settings["auth"] = auth
         self._settings.update(prepare_verify(verify, verify_fingerprint))
 
         self.username, self.password = username, password
