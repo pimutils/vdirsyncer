@@ -1,26 +1,54 @@
 #!/bin/sh
 
-set -xe
+set -xeu
+
+SCRIPT_PATH=$(realpath "$0")
+SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
 
 DISTRO=$1
 DISTROVER=$2
-
-NAME="vdirsyncer-${DISTRO}-${DISTROVER}:latest"
+CONTAINER_NAME="vdirsyncer-${DISTRO}-${DISTROVER}"
 CONTEXT="$(mktemp -d)"
 
+DEST_DIR="$SCRIPT_DIR/../$DISTRO-$DISTROVER"
+
+cleanup() {
+  rm -rf "$CONTEXT"
+}
+trap cleanup EXIT
+
+# Prepare files.
+cp scripts/_build_deb_in_container.bash "$CONTEXT"
 python setup.py sdist -d "$CONTEXT"
 
-# Build the package in a container with the right distro version.
-docker build \
-    --build-arg distro=$DISTRO \
-    --build-arg distrover=$DISTROVER \
-    -t $NAME \
-    -f scripts/dpkg.Dockerfile \
-    "$CONTEXT"
+podman run -it \
+  --name "$CONTAINER_NAME" \
+  --volume "$CONTEXT:/source" \
+  "$DISTRO:$DISTROVER" \
+  bash /source/_build_deb_in_container.bash
 
-# Push the package to packagecloud.
-# TODO: Use ~/.packagecloud for CI.
-docker run -e PACKAGECLOUD_TOKEN=$PACKAGECLOUD_TOKEN $NAME \
-  bash -xec "package_cloud push pimutils/vdirsyncer/$DISTRO/$DISTROVER *.deb"
+# Keep around the package filename.
+PACKAGE=$(ls "$CONTEXT"/*.deb)
+PACKAGE=$(basename "$PACKAGE")
 
-rm -rf "$CONTEXT"
+# Save the build deb files.
+mkdir -p "$DEST_DIR"
+cp "$CONTEXT"/*.deb "$DEST_DIR"
+
+echo Build complete! 🤖
+
+# Packagecloud uses some internal IDs for each distro.
+# Extract the one for the distro we're publishing.
+DISTRO_ID=$(
+  curl -s \
+  https://"$PACKAGECLOUD_TOKEN":@packagecloud.io/api/v1/distributions.json | \
+  jq '.deb | .[] | select(.index_name=="'"$DISTRO"'") | .versions | .[] | select(.index_name=="'"$DISTROVER"'") | .id'
+)
+
+# Actually push the package.
+curl \
+  -F "package[distro_version_id]=$DISTRO_ID" \
+  -F "package[package_file]=@$DEST_DIR/$PACKAGE" \
+  https://"$PACKAGECLOUD_TOKEN":@packagecloud.io/api/v1/repos/pimutils/vdirsyncer/packages.json
+
+echo Done! ✨
