@@ -38,6 +38,12 @@ You can fetch the username as well::
 
 Or really any kind of parameter in a storage section.
 
+You can also pass the command as a string to be executed in a shell::
+
+    [storage foo]
+    ...
+    password.fetch = ["shell", "~/.local/bin/get-my-password | head -n1"]
+
 With pass_ for example, you might find yourself writing something like this in
 your configuration file::
 

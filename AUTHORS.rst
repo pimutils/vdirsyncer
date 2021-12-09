@@ -6,6 +6,7 @@ In alphabetical order:
 - Ben Boeckel
 - Christian Geier
 - Clément Mondon
+- Corey Hinshaw
 - Hugo Osvaldo Barrera
 - Julian Mehne
 - Malte Kiefer
