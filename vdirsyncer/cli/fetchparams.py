@@ -82,7 +82,9 @@ def _strategy_command(*command: str, shell: bool = False):
     expanded_command = list(map(expand_path, command))
 
     try:
-        stdout = subprocess.check_output(expanded_command, universal_newlines=True, shell=shell)
+        stdout = subprocess.check_output(
+            expanded_command, universal_newlines=True, shell=shell
+        )
         return stdout.strip("\n")
     except OSError as e:
         cmd = " ".join(expanded_command)
