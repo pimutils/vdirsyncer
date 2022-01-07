@@ -175,7 +175,7 @@ CalDAV and CardDAV
         url = "..."
         #username = ""
         #password = ""
-        #verify = true
+        #verify = /path/to/custom_ca.pem
         #auth = null
         #useragent = "vdirsyncer/0.16.4"
         #verify_fingerprint = null
@@ -208,12 +208,10 @@ CalDAV and CardDAV
     :param url: Base URL or an URL to a calendar.
     :param username: Username for authentication.
     :param password: Password for authentication.
-    :param verify: Verify SSL certificate, default True. This can also be a
-        local path to a self-signed SSL certificate. See :ref:`ssl-tutorial`
-        for more information.
-    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
-        expected server certificate. See :ref:`ssl-tutorial` for more
-        information.
+    :param verify: Optional. Local path to a self-signed SSL certificate.
+        See :ref:`ssl-tutorial` for more information.
+    :param verify_fingerprint: Optional. SHA256 fingerprint of the expected
+        server certificate. See :ref:`ssl-tutorial` for more information.
     :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. The
         default is preemptive Basic auth, sending credentials even if server
         didn't request them. This saves from an additional roundtrip per
@@ -235,7 +233,7 @@ CalDAV and CardDAV
      url = "..."
      #username = ""
      #password = ""
-     #verify = true
+     #verify = /path/to/custom_ca.pem
      #auth = null
      #useragent = "vdirsyncer/0.16.4"
      #verify_fingerprint = null
@@ -244,12 +242,10 @@ CalDAV and CardDAV
    :param url: Base URL or an URL to an addressbook.
    :param username: Username for authentication.
    :param password: Password for authentication.
-   :param verify: Verify SSL certificate, default True. This can also be a
-                  local path to a self-signed SSL certificate. See
-                  :ref:`ssl-tutorial` for more information.
-   :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the expected
-                              server certificate. See :ref:`ssl-tutorial` for
-                              more information.
+   :param verify: Optional. Local path to a self-signed SSL certificate.
+        See :ref:`ssl-tutorial` for more information.
+   :param verify_fingerprint: Optional. SHA256 fingerprint of the expected
+        server certificate. See :ref:`ssl-tutorial` for more information.
    :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. The
                 default is preemptive Basic auth, sending credentials even if
                 server didn't request them. This saves from an additional
@@ -478,12 +474,10 @@ leads to an error.
     :param url: URL to the ``.ics`` file.
     :param username: Username for authentication.
     :param password: Password for authentication.
-    :param verify: Verify SSL certificate, default True. This can also be a
-        local path to a self-signed SSL certificate. See :ref:`ssl-tutorial`
-        for more information.
-    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
-        expected server certificate. See :ref:`ssl-tutorial` for more
-        information.
+    :param verify: Optional. Local path to a self-signed SSL certificate.
+        See :ref:`ssl-tutorial` for more information.
+    :param verify_fingerprint: Optional. SHA256 fingerprint of the expected
+        server certificate. See :ref:`ssl-tutorial` for more information.
     :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. The
         default is preemptive Basic auth, sending credentials even if server
         didn't request them. This saves from an additional roundtrip per

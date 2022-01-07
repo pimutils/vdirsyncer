@@ -375,7 +375,7 @@ class DAVSession:
         url,
         username="",
         password="",
-        verify=True,
+        verify=None,
         auth=None,
         useragent=USERAGENT,
         verify_fingerprint=None,
@@ -389,7 +389,10 @@ class DAVSession:
         auth = prepare_auth(auth, username, password)
         if auth:
             self._settings["auth"] = auth
-        self._settings.update(prepare_verify(verify, verify_fingerprint))
+
+        ssl = prepare_verify(verify, verify_fingerprint)
+        if ssl:
+            self._settings["ssl"] = ssl
 
         self.useragent = useragent
         self.url = url.rstrip("/") + "/"

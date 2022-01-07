@@ -26,8 +26,6 @@ Version 0.19.0
 - A new ``asyncio`` backend is now used. So far, this shows substantial speed
   improvements in ``discovery`` and ``metasync``, but little change in `sync`.
   This will likely continue improving over time. :gh:`906`
-- Support for `md5` and `sha1` certificate fingerprints has been dropped. If
-  you're validating certificate fingerprints, use `sha256` instead.
 - The ``google`` storage types no longer require ``requests-oauthlib``, but
   require ``python-aiohttp-oauthlib`` instead.
 - Vdirsyncer no longer includes experimental support for `EteSync
@@ -40,6 +38,22 @@ Version 0.19.0
   use that as a reference.
 
 .. _etesync-dav: https://github.com/etesync/etesync-dav
+
+Changes to SSL configuration
+----------------------------
+
+Support for `md5` and `sha1` certificate fingerprints has been dropped. If
+you're validating certificate fingerprints, use `sha256` instead.
+
+# XXX: just make it one arg
+
+When using a custom `verify_fingerprint`, CA validation is always disabled.
+
+If `verify_fingerprint` is unset, CA verification is always active. Disabling
+both features is insecure and no longer supported.
+
+The `verify` parameter no longer takes boolean values, it is now optional and
+only takes a string to a custom CA for verification.
 
 Version 0.18.0
 ==============

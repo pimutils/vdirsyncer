@@ -1,4 +1,5 @@
 import logging
+from ssl import create_default_context
 
 import aiohttp
 
@@ -64,30 +65,23 @@ def prepare_auth(auth, username, password):
 
 
 def prepare_verify(verify, verify_fingerprint):
-    if isinstance(verify, (str, bytes)):
-        verify = expand_path(verify)
-    elif not isinstance(verify, bool):
+    if isinstance(verify, str):
+        return create_default_context(cafile=expand_path(verify))
+    elif verify is not None:
         raise exceptions.UserError(
-            "Invalid value for verify ({}), "
-            "must be a path to a PEM-file or boolean.".format(verify)
+            f"Invalid value for verify ({verify}), must be a path to a PEM-file."
         )
 
     if verify_fingerprint is not None:
-        if not isinstance(verify_fingerprint, (bytes, str)):
+        if not isinstance(verify_fingerprint, str):
             raise exceptions.UserError(
                 "Invalid value for verify_fingerprint "
-                "({}), must be a string or null.".format(verify_fingerprint)
+                f"({verify_fingerprint}), must be a string."
             )
-    elif not verify:
-        raise exceptions.UserError(
-            "Disabling all SSL validation is forbidden. Consider setting "
-            "verify_fingerprint if you have a broken or self-signed cert."
-        )
 
-    return {
-        "verify": verify,
-        "verify_fingerprint": verify_fingerprint,
-    }
+        return aiohttp.Fingerprint(bytes.fromhex(verify_fingerprint.replace(":", "")))
+
+    return None
 
 
 def prepare_client_cert(cert):
@@ -99,15 +93,18 @@ def prepare_client_cert(cert):
 
 
 async def request(
-    method, url, session, latin1_fallback=True, verify_fingerprint=None, **kwargs
+    method,
+    url,
+    session,
+    latin1_fallback=True,
+    **kwargs,
 ):
-    """
-    Wrapper method for requests, to ease logging and mocking. Parameters should
-    be the same as for ``requests.request``, except:
+    """Wrapper method for requests, to ease logging and mocking.
+
+    Parameters should be the same as for ``aiohttp.request``, as well as:
 
     :param session: A requests session object to use.
-    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
-        expected server certificate.
+    :param verify_fingerprint: Optional. SHA256 of the expected server certificate.
     :param latin1_fallback: RFC-2616 specifies the default Content-Type of
         text/* to be latin1, which is not always correct, but exactly what
         requests is doing. Setting this parameter to False will use charset
@@ -116,13 +113,7 @@ async def request(
         https://github.com/kennethreitz/requests/issues/2042
     """
 
-    if verify_fingerprint is not None:
-        ssl = aiohttp.Fingerprint(bytes.fromhex(verify_fingerprint.replace(":", "")))
-        kwargs.pop("verify", None)
-    elif kwargs.pop("verify", None) is False:
-        ssl = False
-    else:
-        ssl = None  # TODO XXX: Check all possible values for this
+    # TODO: Support for client-side certifications.
 
     session.hooks = {"response": _fix_redirects}
 
@@ -138,29 +129,29 @@ async def request(
 
     kwargs.pop("cert", None)  # TODO XXX FIXME!
 
-    r = await session.request(method, url, ssl=ssl, **kwargs)
+    response = await session.request(method, url, **kwargs)
 
     # See https://github.com/kennethreitz/requests/issues/2042
-    content_type = r.headers.get("Content-Type", "")
+    content_type = response.headers.get("Content-Type", "")
     if (
         not latin1_fallback
         and "charset" not in content_type
         and content_type.startswith("text/")
     ):
         logger.debug("Removing latin1 fallback")
-        r.encoding = None
+        response.encoding = None
 
-    logger.debug(r.status)
-    logger.debug(r.headers)
-    logger.debug(r.content)
+    logger.debug(response.status)
+    logger.debug(response.headers)
+    logger.debug(response.content)
 
-    if r.status == 412:
-        raise exceptions.PreconditionFailed(r.reason)
-    if r.status in (404, 410):
-        raise exceptions.NotFoundError(r.reason)
+    if response.status == 412:
+        raise exceptions.PreconditionFailed(response.reason)
+    if response.status in (404, 410):
+        raise exceptions.NotFoundError(response.reason)
 
-    r.raise_for_status()
-    return r
+    response.raise_for_status()
+    return response
 
 
 def _fix_redirects(r, *args, **kwargs):

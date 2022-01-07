@@ -126,5 +126,4 @@ def test_verify_false_disallowed(aio_connector):
     with pytest.raises(ValueError) as excinfo:
         HttpStorage(url="http://example.com", verify=False, connector=aio_connector)
 
-    assert "forbidden" in str(excinfo.value).lower()
-    assert "consider setting verify_fingerprint" in str(excinfo.value).lower()
+    assert "must be a path to a pem-file." in str(excinfo.value).lower()

@@ -15,20 +15,13 @@ To pin the certificate by fingerprint::
     type = "caldav"
     ...
     verify_fingerprint = "94:FD:7A:CB:50:75:A4:69:82:0A:F8:23:DF:07:FC:69:3E:CD:90:CA"
-    #verify = false  # Optional: Disable CA validation, useful for self-signed certs
 
-SHA1-, SHA256- or MD5-Fingerprints can be used. They're detected by their
-length.
+SHA256-Fingerprints can be used. CA validation is disabled when pinning a
+fingerprint.
 
 You can use the following command for obtaining a SHA-1 fingerprint::
 
     echo -n | openssl s_client -connect unterwaditzer.net:443 | openssl x509 -noout -fingerprint
-
-Note that ``verify_fingerprint`` doesn't suffice for vdirsyncer to work with
-self-signed certificates (or certificates that are not in your trust store). You
-most likely need to set ``verify = false`` as well. This disables verification
-of the SSL certificate's expiration time and the existence of it in your trust
-store, all that's verified now is the fingerprint.
 
 However, please consider using `Let's Encrypt <https://letsencrypt.org/>`_ such
 that you can forget about all of that. It is easier to deploy a free
