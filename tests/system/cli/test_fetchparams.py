@@ -11,7 +11,7 @@ def test_get_password_from_command(tmpdir, runner):
         collections = ["a", "b", "c"]
 
         [storage foo]
-        type = "filesystem"
+        type.fetch = ["shell", "echo filesystem"]
         path = "{base}/foo/"
         fileext.fetch = ["command", "echo", ".txt"]
 
