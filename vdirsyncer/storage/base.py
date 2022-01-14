@@ -28,7 +28,7 @@ class StorageMeta(ABCMeta):
     def __init__(cls, name, bases, d):
         """Wrap mutating methods to fail if the storage is readonly."""
 
-        for method in ("update", "upload", "delete"):
+        for method in ("update", "upload", "delete", "set_meta"):
             setattr(cls, method, mutating_storage_method(getattr(cls, method)))
         return super().__init__(name, bases, d)
 
