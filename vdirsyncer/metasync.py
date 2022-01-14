@@ -55,7 +55,7 @@ async def metasync(storage_a, storage_b, status, keys, conflict_resolution=None)
         logger.debug(f"B: {b}")
         logger.debug(f"S: {s}")
 
-        if a != s and b != s:
+        if a != s and b != s or storage_a.read_only or storage_b.read_only:
             await _resolve_conflict()
         elif a != s and b == s:
             await _a_to_b()
