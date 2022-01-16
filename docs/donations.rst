@@ -2,23 +2,17 @@
 Donations
 =========
 
+vdirsyncer is and will always be free and open source software. We appreciate
+sponsors willing to fund our continued work on it.
+
 If you found my work useful, please consider donating. Thank you!
 
-- Bitcoin: ``16sSHxZm263WHR9P9PJjCxp64jp9ooXKVt``
+- Bitcoin: ``13p42uWDL62bNRH3KWA6cSpSgvnHy1fs2E``.
 
-- `PayPal.me <https://www.paypal.me/untitaker>`_
+- Sponsor via one-time tips or recurring donations `via Ko-fi`_.
 
-- `Bountysource <https://www.bountysource.com/teams/vdirsyncer>`_ is useful for
-  funding work on a specific GitHub issue.
+.. _via Ko-fi: https://ko-fi.com/whynothugo
 
-  - There's also `Bountysource Salt
-    <https://salt.bountysource.com/teams/vdirsyncer>`_, for one-time and
-    recurring donations.
+- Sponsor via recurring donations `via liberapay`_.
 
-  - Donations via Bountysource are publicly listed. Use PayPal if you dislike
-    that.
-
-- `Flattr
-  <https://flattr.com/submit/auto?user_id=untitaker&url=https%3A%2F%2Fgithub.com%2Fpimutils%2Fvdirsyncer>`_
-  or `Gratipay <https://gratipay.com/vdirsyncer/>`_ can be used for
-  recurring donations.
+.. _via liberapay: https://liberapay.com/WhyNotHugo/
