@@ -593,12 +593,30 @@ class DAVStorage(Storage):
     async def update(self, href, item, etag):
         if etag is None:
             raise ValueError("etag must be given and must not be None.")
-        href, etag = await self._put(self._normalize_href(href), item, etag)
+        try:
+            href, etag = await self._put(self._normalize_href(href), item, etag)
+        except aiohttp.ClientResponseError as e:
+            if e.status == 409:
+                dav_logger.debug("Conflict, will delete old event and recreate it.")
+                await self.delete(self._normalize_href(href), None)
+                dav_logger.debug("Now trying again")
+                href, etag = await self._put(self._normalize_href(href), item, None)
+            else:
+                raise e
         return etag
 
     async def upload(self, item: Item):
         href = self._get_href(item)
-        rv = await self._put(href, item, None)
+        try:
+            rv = await self._put(href, item, None)
+        except aiohttp.ClientResponseError as e:
+            if e.status == 409:
+                dav_logger.debug("Conflict, will delete old event and recreate it.")
+                await self.delete(href, None)
+                dav_logger.debug("Now trying again")
+                rv = await self._put(href, item, None)
+            else:
+                raise e
         return rv
 
     async def delete(self, href, etag):
