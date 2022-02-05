@@ -61,7 +61,7 @@ class GoogleSession(dav.DAVSession):
 
         return await super().request(method, path, **kwargs)
 
-    def _save_token(self, token):
+    async def _save_token(self, token):
         """Helper function called by OAuth2Session when a token is updated."""
         checkdir(expand_path(os.path.dirname(self._token_file)), create=True)
         with atomic_write(self._token_file, mode="w", overwrite=True) as f:
@@ -81,7 +81,7 @@ class GoogleSession(dav.DAVSession):
                 "client_id": self._client_id,
                 "client_secret": self._client_secret,
             },
-            token_updater=lambda token: self._save_token(token),
+            token_updater=self._save_token,
             connector=self.connector,
             connector_owner=False,
         )
@@ -127,7 +127,7 @@ class GoogleSession(dav.DAVSession):
                 )
 
             # FIXME: Ugly
-            self._save_token(self._token)
+            await self._save_token(self._token)
 
 
 class GoogleCalendarStorage(dav.CalDAVStorage):
