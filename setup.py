@@ -11,7 +11,7 @@ from setuptools import setup
 requirements = [
     # https://github.com/mitsuhiko/click/issues/200
     "click>=5.0,<9.0",
-    "click-log>=0.3.0, <0.4.0",
+    "click-log>=0.3.0, <0.5.0",
     "requests >=2.20.0",
     # https://github.com/sigmavirus24/requests-toolbelt/pull/28
     # And https://github.com/sigmavirus24/requests-toolbelt/issues/54
