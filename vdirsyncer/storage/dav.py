@@ -553,7 +553,7 @@ class DAVStorage(Storage):
                 else:
                     rv.append((href, Item(raw), etag))
             for href in hrefs_left:
-                raise exceptions.NotFoundError(href)
+                dav_logger.warning(f"Skipping {href}, not found")
 
             for href, item, etag in rv:
                 yield href, item, etag
@@ -651,6 +651,7 @@ class DAVStorage(Storage):
             props = response.findall("{DAV:}propstat/{DAV:}prop")
             if props is None or not len(props):
                 dav_logger.debug(f"Skipping {href!r}, properties are missing.")
+                dav_logger.debug(f"Response for {href!r}: {etree.tostring(response)}")
                 continue
             else:
                 props = _merge_xml(props)
