@@ -900,7 +900,7 @@ class CardDAVStorage(DAVStorage):
                     xmlns:C="urn:ietf:params:xml:ns:carddav">
                 <prop>
                     <getetag/>
-                    <C:address-data/>
+                    <C:address-data Content-Type="text/vcard" version="4.0"/>
                 </prop>
                 {hrefs}
             </C:addressbook-multiget>"""
