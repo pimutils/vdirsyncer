@@ -13,7 +13,7 @@
       <string>@@LOCALE@@</string>
     </dict>
     <key>Label</key>
-    <string>vdirsyncer</string>
+    <string>@@LABEL@@</string>
     <key>WorkingDirectory</key>
     <!-- working directory for vdirsyncer, usually the base directory where
          vdirsyncer is installed, e.g. /usr/local/ -->
