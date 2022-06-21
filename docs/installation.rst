@@ -7,15 +7,15 @@ Installation
 OS/distro packages
 ------------------
 
-The following packages are user-contributed and were up-to-date at the time of
-writing:
+The following packages are community-contributed and were up-to-date at the
+time of writing:
 
 - `ArchLinux <https://www.archlinux.org/packages/community/any/vdirsyncer/>`_
 - `Ubuntu and Debian, x86_64-only
   <https://packagecloud.io/pimutils/vdirsyncer>`_ (packages also exist
   in the official repositories but may be out of date)
 - `GNU Guix <https://www.gnu.org/software/guix/package-list.html#vdirsyncer>`_
-- `OS X (homebrew) <http://braumeister.org/formula/vdirsyncer>`_
+- `macOS (homebrew) <https://formulae.brew.sh/formula/vdirsyncer>`_
 - `BSD (pkgsrc) <http://pkgsrc.se/time/py-vdirsyncer>`_
 - `OpenBSD <http://ports.su/productivity/vdirsyncer>`_
 
@@ -44,7 +44,7 @@ following things are installed:
 - Python 3.7+ and pip.
 - ``libxml`` and ``libxslt``
 - ``zlib``
-- Linux or OS X. **Windows is not supported**, see :gh:`535`.
+- Linux or macOS. **Windows is not supported**, see :gh:`535`.
 
 On Linux systems, using the distro's package manager is the best
 way to do this, for example, using Ubuntu::
