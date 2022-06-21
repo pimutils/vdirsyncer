@@ -35,6 +35,9 @@ Version 0.19.0
   for a long time and no longer worked. Support for external storages may be
   added if anyone is interested in maintaining an EteSync plugin. EteSync
   users should consider using `etesync-dav`_.
+- The ``plist`` for macOS has been dropped. It was broken and homebrew
+  generates their own based on package metadata. macOS users are encouraged to
+  use that as a reference.
 
 .. _etesync-dav: https://github.com/etesync/etesync-dav
 
