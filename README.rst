@@ -6,8 +6,8 @@ vdirsyncer
   :target: https://builds.sr.ht/~whynothugo/vdirsyncer
   :alt: CI status
 
-.. image:: https://codecov.io/github/pimutils/vdirsyncer/coverage.svg?branch=master
-  :target: https://codecov.io/github/pimutils/vdirsyncer?branch=master
+.. image:: https://codecov.io/github/pimutils/vdirsyncer/coverage.svg?branch=main
+  :target: https://codecov.io/github/pimutils/vdirsyncer?branch=main
   :alt: Codecov coverage report
 
 .. image:: https://readthedocs.org/projects/vdirsyncer/badge/
@@ -23,7 +23,7 @@ vdirsyncer
   :alt: Debian packages
 
 .. image:: https://img.shields.io/pypi/l/vdirsyncer.svg
-  :target: https://github.com/pimutils/vdirsyncer/blob/master/LICENCE
+  :target: https://github.com/pimutils/vdirsyncer/blob/main/LICENCE
   :alt: licence: BSD
 
 - `Documentation <https://vdirsyncer.pimutils.org/en/stable/>`_
