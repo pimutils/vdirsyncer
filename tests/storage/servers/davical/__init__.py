@@ -39,7 +39,11 @@ class ServerMixin:
                 )
                 s = self.storage_class(**args)
                 if not list(s.list()):
-                    request.addfinalizer(lambda: s.session.request("DELETE", ""))
+                    request.addfinalizer(
+                        # Ignoreng flake8-bugbear false positive.
+                        # See: https://github.com/PyCQA/flake8-bugbear/issues/269
+                        lambda: s.session.request("DELETE", "")  # noqa: B023
+                    )
                     return args
 
             raise RuntimeError("Failed to find free collection.")
