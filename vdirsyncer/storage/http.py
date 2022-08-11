@@ -74,7 +74,7 @@ class HttpStorage(Storage):
             )
         self._items = {}
 
-        for item in split_collection((await r.read()).decode("utf-8")):
+        for item in split_collection(await r.text()):
             item = Item(item)
             if self._ignore_uids:
                 item = item.with_uid(item.hash)

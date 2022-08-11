@@ -519,9 +519,7 @@ class DAVStorage(Storage):
             response = await self.session.request(
                 "REPORT", "", data=data, headers=self.session.get_default_headers()
             )
-            root = _parse_xml(
-                await response.content.read()
-            )  # etree only can handle bytes
+            root = _parse_xml(await response.content.read())
             rv = []
             hrefs_left = set(hrefs)
             for href, etag, prop in self._parse_prop_responses(root):

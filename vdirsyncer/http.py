@@ -159,7 +159,7 @@ async def request(
 
     logger.debug(r.status)
     logger.debug(r.headers)
-    logger.debug(r.content)
+    logger.debug(r.text)
 
     if r.status == 412:
         raise exceptions.PreconditionFailed(r.reason)
