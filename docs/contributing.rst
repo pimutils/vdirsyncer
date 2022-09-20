@@ -79,16 +79,13 @@ For many patches, it might suffice to just let CI run the tests. However,
 CI is slow, so you might want to run them locally too. For this, set up a
 virtualenv_ and run this inside of it::
 
-    # install:
+    # Install development dependencies, including:
     #  - vdirsyncer from the repo into the virtualenv
     #  - stylecheckers (flake8) and code formatters (autopep8)
     make install-dev
 
     # Install git commit hook for some extra linting and checking
     pre-commit install
-
-    # Install development dependencies
-    make install-dev
 
 Then you can run::
 
