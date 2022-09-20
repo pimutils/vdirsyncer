@@ -6,6 +6,7 @@ from urllib.parse import unquote as urlunquote
 
 import aiostream
 import pytest
+import pytest_asyncio
 
 from vdirsyncer import exceptions
 from vdirsyncer.storage.base import normalize_meta_value
@@ -50,7 +51,7 @@ class StorageTests:
         """
         raise NotImplementedError()
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def s(self, get_storage_args):
         rv = self.storage_class(**await get_storage_args())
         return rv

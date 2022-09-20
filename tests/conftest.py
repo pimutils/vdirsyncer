@@ -7,6 +7,7 @@ import os
 import aiohttp
 import click_log
 import pytest
+import pytest_asyncio
 from hypothesis import HealthCheck
 from hypothesis import Verbosity
 from hypothesis import settings
@@ -54,13 +55,13 @@ else:
     settings.load_profile("dev")
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def aio_session(event_loop):
     async with aiohttp.ClientSession() as session:
         yield session
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def aio_connector(event_loop):
     async with aiohttp.TCPConnector(limit_per_host=16) as conn:
         yield conn
