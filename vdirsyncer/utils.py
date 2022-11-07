@@ -11,9 +11,7 @@ from . import exceptions
 # not included, because there are some servers that (incorrectly) encode it to
 # `%40` when it's part of a URL path, and reject or "repair" URLs that contain
 # `@` in the path. So it's better to just avoid it.
-SAFE_UID_CHARS = (
-    "abcdefghijklmnopqrstuvwxyz" "ABCDEFGHIJKLMNOPQRSTUVWXYZ" "0123456789_.-+"
-)
+SAFE_UID_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-+"
 
 
 _missing = object()

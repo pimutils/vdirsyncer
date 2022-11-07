@@ -116,7 +116,7 @@ class FilesystemStorage(Storage):
             fpath, etag = self._upload_impl(item, href)
         except OSError as e:
             if e.errno in (errno.ENAMETOOLONG, errno.ENOENT):  # Unix  # Windows
-                logger.debug("UID as filename rejected, trying with random " "one.")
+                logger.debug("UID as filename rejected, trying with random one.")
                 # random href instead of UID-based
                 href = self._get_href(None)
                 fpath, etag = self._upload_impl(item, href)
