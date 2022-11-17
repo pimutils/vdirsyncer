@@ -106,7 +106,7 @@ def get_storage_init_args(cls, stop_at=object):
     return all, required
 
 
-def checkdir(path: str, create: bool = False, mode: int = 0o750) -> bool:
+def checkdir(path: str, create: bool = False, mode: int = 0o750) -> None:
     """Check whether ``path`` is a directory.
 
     :param create: Whether to create the directory (and all parent directories)
