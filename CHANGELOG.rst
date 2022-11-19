@@ -14,11 +14,11 @@ Version 0.19.0
 
 - Add "shell" password fetch strategy to pass command string to a shell.
 - Add "description" and "order" as metadata.  These fetch the CalDAV:
-  calendar-description, CardDAV:addressbook-description and apple-ns:calendar-order
-  properties.
+  calendar-description, ``CardDAV:addressbook-description`` and
+  ``apple-ns:calendar-order`` properties respectively.
 - Add a new ``showconfig`` status. This prints *some* configuration values as
   JSON. This is intended to be used by external tools and helpers that interact
-  with ``vdirsyncer``.
+  with ``vdirsyncer``, and considered experimental.
 - Update TLS-related tests that were failing due to weak MDs. :gh:`903`
 - ``pytest-httpserver`` and ``trustme`` are now required for tests.
 - ``pytest-localserver`` is no longer required for tests.
@@ -42,18 +42,19 @@ Version 0.19.0
 Changes to SSL configuration
 ----------------------------
 
-Support for `md5` and `sha1` certificate fingerprints has been dropped. If
-you're validating certificate fingerprints, use `sha256` instead.
+Support for ``md5`` and ``sha1`` certificate fingerprints has been dropped. If
+you're validating certificate fingerprints, use ``sha256`` instead.
 
-# XXX: just make it one arg
+When using a custom ``verify_fingerprint``, CA validation is always disabled.
 
-When using a custom `verify_fingerprint`, CA validation is always disabled.
-
-If `verify_fingerprint` is unset, CA verification is always active. Disabling
+If ``verify_fingerprint`` is unset, CA verification is always active. Disabling
 both features is insecure and no longer supported.
 
-The `verify` parameter no longer takes boolean values, it is now optional and
+The ``verify`` parameter no longer takes boolean values, it is now optional and
 only takes a string to a custom CA for verification.
+
+The ``verify`` and ``verify_fingerprint`` will likely be merged into a single
+parameter in future.
 
 Version 0.18.0
 ==============
