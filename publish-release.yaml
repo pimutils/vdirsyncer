@@ -1,0 +1,27 @@
+# Run new version to PyPI.
+#
+# Usage: hut builds submit publish-release.yaml --follow
+
+image: alpine/edge
+packages:
+  - py3-pip
+  - py3-setuptools
+  - py3-wheel
+  - twine
+sources:
+  - https://github.com/pimutils/vdirsyncer
+secrets:
+  - a36c8ba3-fba0-4338-b402-6aea0fbe771e # PyPI token.
+environment:
+  CI: true
+tasks:
+  - check-tag: |
+      cd vdirsyncer
+      git fetch --tags
+
+      # Stop here unless this is a tag.
+      git describe --exact-match --tags || complete-build
+  - publish: |
+      cd vdirsyncer
+      python setup.py sdist bdist_wheel
+      twine upload dist/*
