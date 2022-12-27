@@ -1,7 +1,9 @@
 import logging
 from os.path import basename
 
-import aiostream
+import sys
+if sys.version_info < (3,9):
+    import aiostream
 
 from .utils import generate_href
 from .utils import href_safe

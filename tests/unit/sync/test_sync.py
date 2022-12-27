@@ -1,7 +1,9 @@
 import asyncio
 from copy import deepcopy
 
-import aiostream
+import sys
+if sys.version_info < (3,9):
+    import aiostream
 import hypothesis.strategies as st
 import pytest
 from hypothesis import assume

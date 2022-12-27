@@ -5,7 +5,9 @@ import time
 import uuid
 from typing import Type
 
-import aiostream
+import sys
+if sys.version_info < (3,9):
+    import aiostream
 import pytest
 import pytest_asyncio
 import requests

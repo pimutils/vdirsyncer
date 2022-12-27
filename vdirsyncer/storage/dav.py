@@ -9,7 +9,9 @@ from typing import Optional
 from typing import Type
 
 import aiohttp
-import aiostream
+import sys
+if sys.version_info < (3,9):
+    import aiostream
 
 from vdirsyncer.exceptions import Error
 from vdirsyncer.vobject import Item

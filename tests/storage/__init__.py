@@ -4,7 +4,9 @@ import uuid
 from urllib.parse import quote as urlquote
 from urllib.parse import unquote as urlunquote
 
-import aiostream
+import sys
+if sys.version_info < (3,9):
+    import aiostream
 import pytest
 import pytest_asyncio
 

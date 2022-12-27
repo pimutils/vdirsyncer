@@ -5,7 +5,9 @@ import logging
 import sys
 
 import aiohttp
-import aiostream
+import sys
+if sys.version_info < (3,9):
+    import aiostream
 
 from .. import exceptions
 from .utils import handle_collection_not_found
