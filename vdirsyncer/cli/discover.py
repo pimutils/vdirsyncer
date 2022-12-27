@@ -5,8 +5,8 @@ import logging
 import sys
 
 import aiohttp
-import sys
-if sys.version_info < (3,9):
+
+if sys.version_info < (3, 9):
     import aiostream
 
 from .. import exceptions
