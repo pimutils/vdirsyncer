@@ -223,7 +223,7 @@ async def expand_collections(
 
             if collection in handled_collections:
                 continue
-            elif collection[0] == '!':
+            elif collection[0] == "!":
                 continue
             elif collection in blacklist:
                 continue

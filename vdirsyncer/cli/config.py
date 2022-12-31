@@ -89,7 +89,7 @@ def _validate_collections_param(collections):
                 raise ValueError("Duplicate value.")
             collection_names.add(collection_name)
 
-            if collection[0] == '!':
+            if collection[0] == "!":
                 collection_blacklist.add(collection_name[1:])
         except ValueError as e:
             raise ValueError(f"`collections` parameter, position {i}: {str(e)}")
@@ -239,7 +239,7 @@ class PairConfig:
                 "Set `collections = null` explicitly in your pair config."
             )
         else:
-            self.blacklist=_validate_collections_param(self.collections)
+            self.blacklist = _validate_collections_param(self.collections)
 
         if options:
             raise ValueError("Unknown options: {}".format(", ".join(options)))
