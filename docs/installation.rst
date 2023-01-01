@@ -18,6 +18,7 @@ time of writing:
 - `macOS (homebrew) <https://formulae.brew.sh/formula/vdirsyncer>`_
 - `BSD (pkgsrc) <http://pkgsrc.se/time/py-vdirsyncer>`_
 - `OpenBSD <http://ports.su/productivity/vdirsyncer>`_
+- `Slackware (SlackBuild at Slackbuilds.org) <https://slackbuilds.org/repository/15.0/network/vdirsyncer/>`_
 
 We only support the latest version of vdirsyncer, which is at the time of this
 writing |vdirsyncer_version|. Please **do not file bugs if you use an older
