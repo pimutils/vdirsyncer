@@ -9,6 +9,11 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.19.1
+==============
+
+- Fixed crash when operating on Google Contacts. :gh:`994`
+
 Version 0.19.0
 ==============
 
