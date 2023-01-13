@@ -13,6 +13,7 @@ Version 0.19.1
 ==============
 
 - Fixed crash when operating on Google Contacts. :gh:`994`
+- The ``HTTP_PROXY`` and ``HTTPS_PROXY`` are now respected. :gh:`1031`
 
 Version 0.19.0
 ==============
