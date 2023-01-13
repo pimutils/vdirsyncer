@@ -422,6 +422,7 @@ class DAVSession:
         return aiohttp.ClientSession(
             connector=self.connector,
             connector_owner=False,
+            trust_env=True,
             # TODO use `raise_for_status=true`, though this needs traces first,
         )
 
