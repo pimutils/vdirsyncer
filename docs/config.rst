@@ -287,7 +287,7 @@ Service to hardcode those into opensource software [googleterms]_:
    be a searchbox where you can just enter those terms.
 
 3. In the sidebar, select "Credentials" and create a new "OAuth Client ID". The
-   application type is "Other".
+   application type is "Web application".
 
    You'll be prompted to create a OAuth consent screen first. Fill out that
    form however you like.
@@ -305,7 +305,7 @@ or write anything to it.
 .. note::
 
     You need to configure which calendars Google should offer vdirsyncer using
-    a rather hidden `settings page
+    a secret `settings page
     <https://calendar.google.com/calendar/syncselect>`_.
 
 .. storage:: google_calendar
@@ -344,6 +344,10 @@ or write anything to it.
    :param token_file: A filepath where access tokens are stored.
    :param client_id/client_secret: OAuth credentials, obtained from the Google
                                    API Manager.
+
+The current flow is not ideal, but Google has deprecated the previous APIs used
+for this without providing a suitable replacement. See :gh:`975` for discussion
+on the topic.
 
 Local
 +++++
