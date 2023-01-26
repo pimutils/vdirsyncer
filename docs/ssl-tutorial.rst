@@ -40,22 +40,16 @@ To point vdirsyncer to a custom set of root CAs::
     ...
     verify = "/path/to/cert.pem"
 
-Vdirsyncer uses the requests_ library, which, by default, `uses its own set of
-trusted CAs
-<http://www.python-requests.org/en/latest/user/advanced/#ca-certificates>`_.
+Vdirsyncer uses the aiohttp_ library, which uses the default `ssl.SSLContext
+https://docs.python.org/3/library/ssl.html#ssl.SSLContext`_ by default.
 
-However, the actual behavior depends on how you have installed it. Many Linux
-distributions patch their ``python-requests`` package to use the system
-certificate CAs. Normally these two stores are similar enough for you to not
-care.
+There are cases where certificate validation fails even though you can access
+the server fine through e.g. your browser. This usually indicates that your
+installation of ``python`` or the ``aiohttp`` or library is somehow broken. In
+such cases, it makes sense to explicitly set ``verify`` or
+``verify_fingerprint`` as shown above.
 
-But there are cases where certificate validation fails even though you can
-access the server fine through e.g. your browser. This usually indicates that
-your installation of the ``requests`` library is somehow broken. In such cases,
-it makes sense to explicitly set ``verify`` or ``verify_fingerprint`` as shown
-above.
-
-.. _requests: http://www.python-requests.org/
+.. _aiohttp: https://docs.aiohttp.org/en/stable/index.html
 
 .. _ssl-client-certs:
 
