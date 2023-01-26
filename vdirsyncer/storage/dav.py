@@ -173,7 +173,7 @@ class Discover:
             dav_logger.debug("Trying out well-known URI")
             return await self._find_principal_impl(self._well_known_uri)
 
-    async def _find_principal_impl(self, url):
+    async def _find_principal_impl(self, url) -> str:
         headers = self.session.get_default_headers()
         headers["Depth"] = "0"
         body = b"""
@@ -202,7 +202,7 @@ class Discover:
                     response.url
                 )
             )
-            return response.url
+            return response.url.human_repr()
         return urlparse.urljoin(str(response.url), rv.text).rstrip("/") + "/"
 
     async def find_home(self):
