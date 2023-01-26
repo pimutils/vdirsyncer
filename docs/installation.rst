@@ -55,10 +55,33 @@ way to do this, for example, using Ubuntu::
 Then you have several options. The following text applies for most Python
 software by the way.
 
+pipx: The clean, easy way
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+pipx_ is a new package manager for Python-based software that automatically
+sets up a virtual environment for each program you install. Assuming you have
+it installed on your operating system, you can do::
+
+    pipx install vdirsyncer
+
+and ``~/.local/pipx/venvs/vdirsyncer`` will be your new vdirsyncer installation. To
+update vdirsyncer to the latest version::
+
+    pipx upgrade vdirsyncer
+
+If you're done with vdirsyncer, you can do::
+
+    pipx uninstall vdirsyncer
+
+and vdirsyncer will be uninstalled, including its dependencies.
+
+.. _pipx: https://github.com/pipxproject/pipx
+
 The dirty, easy way
 ~~~~~~~~~~~~~~~~~~~
 
-The easiest way to install vdirsyncer at this point would be to run::
+If pipx is not available on your distirbution, the easiest way to install
+vdirsyncer at this point would be to run::
 
     pip install --ignore-installed vdirsyncer
 
@@ -92,25 +115,4 @@ This method has two advantages:
   distro-specific issues.
 - You can delete ``~/vdirsyncer_env/`` to uninstall vdirsyncer entirely.
 
-The clean, easy way
-~~~~~~~~~~~~~~~~~~~
-
-pipx_ is a new package manager for Python-based software that automatically
-sets up a virtualenv for each program you install. Assuming you have it
-installed on your operating system, you can do::
-
-    pipx install vdirsyncer
-
-and ``~/.local/pipx/venvs/vdirsyncer`` will be your new vdirsyncer installation. To
-update vdirsyncer to the latest version::
-
-    pipx upgrade vdirsyncer
-
-If you're done with vdirsyncer, you can do::
-
-    pipx uninstall vdirsyncer
-
-and vdirsyncer will be uninstalled, including its dependencies.
-
 .. _virtualenv: https://virtualenv.readthedocs.io/
-.. _pipx: https://github.com/pipxproject/pipx
