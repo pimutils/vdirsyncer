@@ -14,6 +14,8 @@ Version 0.19.1
 
 - Fixed crash when operating on Google Contacts. :gh:`994`
 - The ``HTTP_PROXY`` and ``HTTPS_PROXY`` are now respected. :gh:`1031`
+- Instructions for integrating with Google CalDav/CardDav have changed.
+  Applications now need to be registered as "Web Application". :gh:`975`
 - Various documentation updates.
 
 Version 0.19.0
