@@ -54,7 +54,7 @@ You also have to have vdirsyncer fully installed at this point. Merely
 
 Running the tests happens with::
 
-    make test
+    pytest
 
 Hypothesis will randomly generate test input. If you care about deterministic
 tests, set the ``DETERMINISTIC_TESTS`` variable to ``"true"``::
