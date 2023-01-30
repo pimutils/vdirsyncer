@@ -1,0 +1,15 @@
+[tool.ruff]
+select = [
+    "E",
+    "F",
+    "W",
+    "B0",
+    "I",
+    "UP",
+    "C4",
+    # "TID",
+]
+target-version = "py37"
+
+[tool.ruff.isort]
+force-single-line = true
