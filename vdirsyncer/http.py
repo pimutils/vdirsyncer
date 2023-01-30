@@ -127,7 +127,11 @@ async def request(
 
     assert isinstance(kwargs.get("data", b""), bytes)
 
-    kwargs.pop("cert", None)  # TODO XXX FIXME!
+    cert = kwargs.pop("cert", None)
+    if cert is not None:
+        ssl_context = kwargs.pop("ssl", create_default_context())
+        ssl_context.load_cert_chain(*cert)
+        kwargs["ssl"] = ssl_context
 
     response = await session.request(method, url, **kwargs)
 
