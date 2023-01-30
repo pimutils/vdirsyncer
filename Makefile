@@ -22,8 +22,6 @@ export COVERAGE := $(CI)
 
 # Variables below this line are not very interesting for getting started.
 
-TEST_EXTRA_PACKAGES =
-
 CODECOV_PATH = /tmp/codecov.sh
 
 all:
@@ -65,7 +63,7 @@ release-deb:
 install-dev:
 	pip install -U pip setuptools wheel
 	pip install -e .
-	pip install -Ur test-requirements.txt $(TEST_EXTRA_PACKAGES)
+	pip install -Ur test-requirements.txt
 	pip install pre-commit
 	set -xe && if [ "$(REQUIREMENTS)" = "minimal" ]; then \
 		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
