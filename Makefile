@@ -20,14 +20,10 @@ export CI := false
 # Whether to generate coverage data while running tests.
 export COVERAGE := $(CI)
 
-# Additional arguments that should be passed to py.test.
-PYTEST_ARGS =
-
 # Variables below this line are not very interesting for getting started.
 
 TEST_EXTRA_PACKAGES =
 
-PYTEST = py.test $(PYTEST_ARGS)
 CODECOV_PATH = /tmp/codecov.sh
 
 all:
@@ -35,19 +31,16 @@ all:
 
 ci-test:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
-	$(PYTEST) --cov vdirsyncer --cov-append tests/unit/ tests/system/
+	pytest --cov vdirsyncer --cov-append tests/unit/ tests/system/
 	bash $(CODECOV_PATH) -c
 
 ci-test-storage:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
 	set -ex; \
 	for server in $(DAV_SERVER); do \
-		DAV_SERVER=$$server $(PYTEST) --cov vdirsyncer --cov-append tests/storage; \
+		DAV_SERVER=$$server pytest --cov vdirsyncer --cov-append tests/storage; \
 	done
 	bash $(CODECOV_PATH) -c
-
-test:
-	$(PYTEST)
 
 style:
 	pre-commit run --all
