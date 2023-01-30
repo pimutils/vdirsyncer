@@ -115,7 +115,7 @@ async def repair_collection(
     if collection is not None:
         cli_logger.info("Discovering collections (skipping cache).")
         cls, config = storage_class_from_config(config)
-        async for config in cls.discover(**config):
+        async for config in cls.discover(**config):  # noqa E902
             if config["collection"] == collection:
                 break
         else:
