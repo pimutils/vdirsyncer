@@ -193,8 +193,7 @@ class StorageTests:
         )
         assert {href: etag for href, item, etag in items} == info
 
-    @pytest.mark.asyncio
-    def test_repr(self, s, get_storage_args):  # XXX: unused param
+    def test_repr(self, s):
         assert self.storage_class.__name__ in repr(s)
         assert s.instance_name is None
 
