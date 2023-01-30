@@ -89,7 +89,7 @@ virtualenv_ and run this inside of it::
 
 Then you can run::
 
-    make test   # The normal testsuite
+    pytest      # The normal testsuite
     make style  # Stylechecker
     make docs   # Build the HTML docs, output is at docs/_build/html/
 
