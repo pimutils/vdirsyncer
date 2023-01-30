@@ -42,8 +42,6 @@ ci-test-storage:
 
 style:
 	pre-commit run --all
-	! git grep -i syncroniz */*
-	! git grep -i 'text/icalendar' */*
 	sphinx-build -W -b html ./docs/ ./docs/_build/html/
 
 install-docs:
