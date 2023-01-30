@@ -90,7 +90,7 @@ virtualenv_ and run this inside of it::
 Then you can run::
 
     pytest      # The normal testsuite
-    make style  # Stylechecker
+    pre-commit run --all  # Run all linters (which also run via pre-commit)
     make docs   # Build the HTML docs, output is at docs/_build/html/
 
 The ``Makefile`` has a lot of options that allow you to control which tests are

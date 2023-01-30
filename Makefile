@@ -40,10 +40,6 @@ ci-test-storage:
 	done
 	bash $(CODECOV_PATH) -c
 
-style:
-	pre-commit run --all
-	sphinx-build -W -b html ./docs/ ./docs/_build/html/
-
 install-docs:
 	pip install -Ur docs-requirements.txt
 
