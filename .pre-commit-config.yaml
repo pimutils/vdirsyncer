@@ -26,3 +26,17 @@ repos:
     rev: 'v0.0.237'
     hooks:
       - id: ruff
+  - repo: local
+    hooks:
+      - id: typos-syncroniz
+        name: typos-syncroniz
+        language: system
+        # Not how you spell "synchronise"
+        entry: sh -c "git grep -i syncroniz"
+        files: ".*/.*"
+      - id: typos-text-icalendar
+        name: typos-text-icalendar
+        language: system
+        # It's "text/calendar", no "i".
+        entry: sh -c "git grep -i 'text/icalendar'"
+        files: ".*/.*"
