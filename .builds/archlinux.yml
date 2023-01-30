@@ -5,8 +5,10 @@ packages:
   - docker
   - docker-compose
   # Build dependencies:
-  - python-pip
   - python-wheel
+  - python-build
+  - python-installer
+  - python-setuptools-scm
   # Runtime dependencies:
   - python-atomicwrites
   - python-click
@@ -37,8 +39,8 @@ tasks:
   - setup: |
       sudo systemctl start docker
       cd vdirsyncer
-      python setup.py build
-      sudo pip install --no-index .
+      python -m build --wheel --skip-dependency-check --no-isolation
+      sudo python -m installer dist/*.whl
   - test: |
       cd vdirsyncer
       make -e ci-test
