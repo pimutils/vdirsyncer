@@ -89,9 +89,10 @@ virtualenv_ and run this inside of it::
 
 Then you can run::
 
-    pytest      # The normal testsuite
+    pytest                # The normal testsuite
     pre-commit run --all  # Run all linters (which also run via pre-commit)
-    make docs   # Build the HTML docs, output is at docs/_build/html/
+    make -C docs html     # Build the HTML docs, output is at docs/_build/html/
+    make -C docs linkcheck  # Check docs for any broken links
 
 The ``Makefile`` has a lot of options that allow you to control which tests are
 run, and which servers are tested. Take a look at its code where they are all

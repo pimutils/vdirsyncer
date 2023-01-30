@@ -43,10 +43,6 @@ ci-test-storage:
 install-docs:
 	pip install -Ur docs-requirements.txt
 
-docs:
-	cd docs && make html
-	sphinx-build -W -b linkcheck ./docs/ ./docs/_build/linkcheck/
-
 release-deb:
 	sh scripts/release-deb.sh debian jessie
 	sh scripts/release-deb.sh debian stretch
