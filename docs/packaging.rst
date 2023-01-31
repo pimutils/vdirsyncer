@@ -76,7 +76,7 @@ take care of the HTML docs' formatting.
 You can find a list of dependencies in ``docs-requirements.txt``. Again, you
 can install those using pip with::
 
-    make install-docs
+    pip install -r docs-requirements.txt
 
 Then change into the ``docs/`` directory and build whatever format you want
 using the ``Makefile`` in there (run ``make`` for the formats you can build).

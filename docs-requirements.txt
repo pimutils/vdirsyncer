@@ -1,3 +1,4 @@
+# This file is used by readthedocs.org
 sphinx != 1.4.7
 sphinx_rtd_theme
 setuptools_scm

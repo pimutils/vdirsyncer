@@ -40,9 +40,6 @@ ci-test-storage:
 	done
 	bash $(CODECOV_PATH) -c
 
-install-docs:
-	pip install -Ur docs-requirements.txt
-
 release-deb:
 	sh scripts/release-deb.sh debian jessie
 	sh scripts/release-deb.sh debian stretch
@@ -53,8 +50,7 @@ release-deb:
 install-dev:
 	pip install -U pip setuptools wheel
 	pip install -e .
-	pip install -Ur test-requirements.txt
-	pip install pre-commit
+	pip install -Ur test-requirements.txt -r docs-requirements.txt pre-commit
 	set -xe && if [ "$(REQUIREMENTS)" = "minimal" ]; then \
 		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
 	fi

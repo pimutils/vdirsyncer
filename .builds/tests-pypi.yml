@@ -20,7 +20,7 @@ tasks:
   - setup: |
       sudo systemctl start docker
       cd vdirsyncer
-      make -e install-dev -e install-docs
+      make -e install-dev
   - test: |
       cd vdirsyncer
       # Non-system python is used for packages:
