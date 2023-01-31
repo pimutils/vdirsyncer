@@ -9,7 +9,7 @@ repos:
       - id: check-added-large-files
       - id: debug-statements
   - repo: https://github.com/psf/black
-    rev: "22.10.0"
+    rev: "22.12.0"
     hooks:
       - id: black
   - repo: https://github.com/pre-commit/mirrors-mypy
@@ -23,7 +23,7 @@ repos:
           - types-requests
           - types-atomicwrites
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.0.237'
+    rev: 'v0.0.238'
     hooks:
       - id: ruff
   - repo: local
