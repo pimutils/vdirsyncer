@@ -199,7 +199,6 @@ class Upload(Action):
         self.dest = dest
 
     async def _run_impl(self, a, b):
-
         if self.dest.storage.read_only:
             href = etag = None
         else:

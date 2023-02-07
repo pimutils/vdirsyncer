@@ -165,7 +165,6 @@ def metasync(ctx, collections):
 
     async def main(collection_names):
         async with aiohttp.TCPConnector(limit_per_host=16) as conn:
-
             for pair_name, collections in collection_names:
                 collections = prepare_pair(
                     pair_name=pair_name,

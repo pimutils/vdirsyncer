@@ -278,7 +278,6 @@ def test_multiple_pairs(tmpdir, runner):
     ],
 )
 def test_create_collections(collections, tmpdir, runner):
-
     runner.write_with_general(
         dedent(
             """
