@@ -6,7 +6,6 @@ from . import StorageTests
 
 
 class TestMemoryStorage(StorageTests):
-
     storage_class = MemoryStorage
     supports_collections = False
 

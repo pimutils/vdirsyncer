@@ -6,7 +6,6 @@ from . import StorageTests
 
 
 class TestSingleFileStorage(StorageTests):
-
     storage_class = SingleFileStorage
     supports_metadata = False
 
