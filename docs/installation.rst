@@ -16,7 +16,7 @@ time of writing:
   in the official repositories but may be out of date)
 - `GNU Guix <https://www.gnu.org/software/guix/package-list.html#vdirsyncer>`_
 - `macOS (homebrew) <https://formulae.brew.sh/formula/vdirsyncer>`_
-- `BSD (pkgsrc) <http://pkgsrc.se/time/py-vdirsyncer>`_
+- `NetBSD <https://ftp.netbsd.org/pub/pkgsrc/current/pkgsrc/time/py-vdirsyncer/index.html>`_
 - `OpenBSD <http://ports.su/productivity/vdirsyncer>`_
 - `Slackware (SlackBuild at Slackbuilds.org) <https://slackbuilds.org/repository/15.0/network/vdirsyncer/>`_
 
