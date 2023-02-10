@@ -76,7 +76,7 @@ def github_issue_role(name, rawtext, text, lineno, inliner, options=None, conten
     try:
         issue_num = int(text)
         if issue_num <= 0:
-            raise ValueError()
+            raise ValueError
     except ValueError:
         msg = inliner.reporter.error(f"Invalid GitHub issue: {text}", line=lineno)
         prb = inliner.problematic(rawtext, rawtext, msg)

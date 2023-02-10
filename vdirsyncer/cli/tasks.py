@@ -80,12 +80,12 @@ async def sync_collection(
             )
 
         if sync_failed:
-            raise JobFailed()
+            raise JobFailed
     except JobFailed:
         raise
     except BaseException:
         handle_cli_error(status_name)
-        raise JobFailed()
+        raise JobFailed
 
 
 async def discover_collections(pair, **kwargs):
@@ -161,7 +161,7 @@ async def metasync_collection(collection, general, *, connector: aiohttp.TCPConn
         )
     except BaseException:
         handle_cli_error(status_name)
-        raise JobFailed()
+        raise JobFailed
 
     save_status(
         general["status_path"],

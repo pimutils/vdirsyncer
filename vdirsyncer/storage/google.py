@@ -190,7 +190,7 @@ class GoogleCalendarStorage(dav.CalDAVStorage):
         **kwargs,
     ):
         if not kwargs.get("collection"):
-            raise exceptions.CollectionRequired()
+            raise exceptions.CollectionRequired
 
         super().__init__(
             token_file=token_file,
@@ -228,7 +228,7 @@ class GoogleContactsStorage(dav.CardDAVStorage):
 
     def __init__(self, token_file, client_id, client_secret, **kwargs):
         if not kwargs.get("collection"):
-            raise exceptions.CollectionRequired()
+            raise exceptions.CollectionRequired
 
         super().__init__(
             token_file=token_file,

@@ -128,7 +128,7 @@ async def sync(
         - ``revert`` (default): Revert changes on other side.
     """
     if storage_a.read_only and storage_b.read_only:
-        raise BothReadOnly()
+        raise BothReadOnly
 
     if conflict_resolution == "a wins":
         conflict_resolution = lambda a, b: a  # noqa: E731
@@ -165,7 +165,7 @@ async def sync(
 
 class Action:
     async def _run_impl(self, a, b):  # pragma: no cover
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def run(self, a, b, conflict_resolution, partial_sync):
         with self.auto_rollback(a, b):

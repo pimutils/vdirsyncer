@@ -106,7 +106,7 @@ def test_failed_strategy(monkeypatch, value_cache):
 
     def strategy(x):
         calls.append(x)
-        raise KeyboardInterrupt()
+        raise KeyboardInterrupt
 
     monkeypatch.setitem(STRATEGIES, "mystrategy", strategy)
 

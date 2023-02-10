@@ -49,7 +49,7 @@ class StorageTests:
 
         :param collection: The name of the collection to create and use.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @pytest_asyncio.fixture
     async def s(self, get_storage_args):

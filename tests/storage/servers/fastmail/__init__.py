@@ -24,7 +24,7 @@ class ServerMixin:
             elif self.storage_class.fileext == ".vcf":
                 args["url"] = "https://carddav.fastmail.com/"
             else:
-                raise RuntimeError()
+                raise RuntimeError
 
             if collection is not None:
                 args = await slow_create_collection(

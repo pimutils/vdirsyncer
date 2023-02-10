@@ -37,7 +37,7 @@ def _fetch_value(opts, key):
     try:
         ctx = click.get_current_context().find_object(AppContext)
         if ctx is None:
-            raise RuntimeError()
+            raise RuntimeError
         password_cache = ctx.fetched_params
     except RuntimeError:
         password_cache = {}

@@ -690,7 +690,7 @@ class DAVStorage(Storage):
         try:
             tagname, namespace = self._property_table[key]
         except KeyError:
-            raise exceptions.UnsupportedMetadataError()
+            raise exceptions.UnsupportedMetadataError
 
         xpath = f"{{{namespace}}}{tagname}"
         body = f"""<?xml version="1.0" encoding="utf-8" ?>
@@ -724,7 +724,7 @@ class DAVStorage(Storage):
         try:
             tagname, namespace = self._property_table[key]
         except KeyError:
-            raise exceptions.UnsupportedMetadataError()
+            raise exceptions.UnsupportedMetadataError
 
         lxml_selector = f"{{{namespace}}}{tagname}"
         element = etree.Element(lxml_selector)

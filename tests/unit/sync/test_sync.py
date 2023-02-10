@@ -535,7 +535,7 @@ class ActionIntentionallyFailed(Exception):
 
 
 def action_failure(*a, **kw):
-    raise ActionIntentionallyFailed()
+    raise ActionIntentionallyFailed
 
 
 class SyncMachine(RuleBasedStateMachine):

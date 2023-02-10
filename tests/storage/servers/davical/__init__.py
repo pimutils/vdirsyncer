@@ -23,7 +23,7 @@ class ServerMixin:
         elif self.storage_class.fileext == ".vcf":
             pytest.skip("No carddav")
         else:
-            raise RuntimeError()
+            raise RuntimeError
 
     @pytest.fixture
     def get_storage_args(self, davical_args, request):

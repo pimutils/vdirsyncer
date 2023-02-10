@@ -42,7 +42,7 @@ async def repair_storage(storage, repair_unsafe_uid):
 
 def repair_item(href, item, seen_uids, repair_unsafe_uid):
     if item.parsed is None:
-        raise IrreparableItem()
+        raise IrreparableItem
 
     new_item = item
 
@@ -62,6 +62,6 @@ def repair_item(href, item, seen_uids, repair_unsafe_uid):
             new_item = item.with_uid(generate_href())
 
     if not new_item.uid:
-        raise IrreparableItem()
+        raise IrreparableItem
 
     return new_item

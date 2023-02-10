@@ -47,63 +47,63 @@ class _StatusBase(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def transaction(self):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abc.abstractmethod
     def insert_ident_a(self, ident, props):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abc.abstractmethod
     def insert_ident_b(self, ident, props):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abc.abstractmethod
     def update_ident_a(self, ident, props):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abc.abstractmethod
     def update_ident_b(self, ident, props):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abc.abstractmethod
     def remove_ident(self, ident):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abc.abstractmethod
     def get_a(self, ident):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abc.abstractmethod
     def get_b(self, ident):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abc.abstractmethod
     def get_new_a(self, ident):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abc.abstractmethod
     def get_new_b(self, ident):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abc.abstractmethod
     def iter_old(self):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abc.abstractmethod
     def iter_new(self):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abc.abstractmethod
     def get_by_href_a(self, href, default=(None, None)):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abc.abstractmethod
     def get_by_href_b(self, href, default=(None, None)):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abc.abstractmethod
     def rollback(self, ident):
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class SqliteStatus(_StatusBase):

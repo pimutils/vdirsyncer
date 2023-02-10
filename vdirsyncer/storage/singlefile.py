@@ -65,7 +65,7 @@ class SingleFileStorage(Storage):
         except TypeError:
             # If not exactly one '%s' is present, we cannot discover
             # collections because we wouldn't know which name to assign.
-            raise NotImplementedError()
+            raise NotImplementedError
 
         placeholder_pos = path.index("%s")
 

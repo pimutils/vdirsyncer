@@ -352,7 +352,7 @@ class _Component:
                 rv = line[len(prefix_with_params) :].split(":", 1)[-1]
                 break
         else:
-            raise KeyError()
+            raise KeyError
 
         for line in iterlines:
             if line.startswith((" ", "\t")):
