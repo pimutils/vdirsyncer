@@ -28,5 +28,3 @@ addopts = """
 
 [tool.mypy]
 ignore_missing_imports = true
-# See https://github.com/python/mypy/issues/7511:
-warn_no_return = false
