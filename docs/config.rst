@@ -268,6 +268,14 @@ in terms of data safety**. See `this blog post
 <https://evertpot.com/google-carddav-issues/>`_ for the details.  Always back
 up your data.
 
+Another caveat is that Google group labels are not synced with vCard's
+`CATEGORIES <https://www.rfc-editor.org/rfc/rfc6350#section-6.7.1>`_ property
+(also see :gh:`814` and
+`upstream issue #36761530 <https://issuetracker.google.com/issues/36761530>`_
+for reference) and the
+`BDAY <https://www.rfc-editor.org/rfc/rfc6350#section-6.2.5>`_ property is not
+synced when only partial date information is present (e.g. the year is missing).
+
 At first run you will be asked to authorize application for Google account
 access.
 
