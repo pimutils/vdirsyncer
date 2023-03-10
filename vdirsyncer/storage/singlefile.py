@@ -193,7 +193,8 @@ class SingleFileStorage(Storage):
 
     @contextlib.asynccontextmanager
     async def at_once(self):
-        self.list()
+        async for _ in self.list():
+            pass
         self._at_once = True
         try:
             yield self
