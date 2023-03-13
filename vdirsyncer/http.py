@@ -147,7 +147,9 @@ async def request(
 
     logger.debug(response.status)
     logger.debug(response.headers)
-    logger.debug(response.content)
+    if (response.status >= 400 and hasattr(response, 'content')
+            and hasattr(response.content, '_buffer')):
+        logger.debug(response.content._buffer)
 
     if response.status == 412:
         raise exceptions.PreconditionFailed(response.reason)

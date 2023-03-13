@@ -598,11 +598,22 @@ class DAVStorage(Storage):
         except aiohttp.ClientResponseError as e:
             if e.status == 409:
                 dav_logger.debug("Conflict, will delete old event and recreate it.")
-                await self.delete(self._normalize_href(href), None)
-                dav_logger.debug("Now trying again")
-                href, etag = await self._put(self._normalize_href(href), item, None)
+                try:
+                    await self.delete(self._normalize_href(href), None)
+                    dav_logger.debug("Now trying again")
+                    rv = await self._put(self._normalize_href(href), item, None)
+                except aiohttp.ClientResponseError as delerr:
+                    dav_logger.debug(f"delerr.status = {delerr.status}")
+                    if delerr.status == 404:
+                        dav_logger("Old event not found, ignoring")
+                        rv = None, None
+                    else:
+                        raise
+            elif e.status == 403:
+                dav_logger.debug("Google Calendar refusing update, ignore")
+                rv = None, None
             else:
-                raise e
+                raise
         return etag
 
     async def upload(self, item: Item):
@@ -612,11 +623,22 @@ class DAVStorage(Storage):
         except aiohttp.ClientResponseError as e:
             if e.status == 409:
                 dav_logger.debug("Conflict, will delete old event and recreate it.")
-                await self.delete(href, None)
-                dav_logger.debug("Now trying again")
-                rv = await self._put(href, item, None)
+                try:
+                    await self.delete(href, None)
+                    dav_logger.debug("Now trying again")
+                    rv = await self._put(href, item, None)
+                except aiohttp.ClientResponseError as delerr:
+                    dav_logger.debug(f"delerr.status = {delerr.status}")
+                    if delerr.status == 404:
+                        dav_logger.debug("Old event not found, ignoring")
+                        rv = None, None
+                    else:
+                        raise
+            elif e.status == 403:
+                dav_logger.debug("Google Calendar refusing update, ignore")
+                rv = None, None
             else:
-                raise e
+                raise
         return rv
 
     async def delete(self, href, etag):
