@@ -604,8 +604,8 @@ class DAVStorage(Storage):
                     rv = await self._put(self._normalize_href(href), item, None)
                 except aiohttp.ClientResponseError as delerr:
                     dav_logger.debug(f"delerr.status = {delerr.status}")
-                    if delerr.status == 404:
-                        dav_logger("Old event not found, ignoring")
+                    if delerr.status == 403 or delerr.status == 404:
+                        dav_logger.warning("Old event not found, ignoring")
                         rv = None, None
                     else:
                         raise
@@ -629,8 +629,8 @@ class DAVStorage(Storage):
                     rv = await self._put(href, item, None)
                 except aiohttp.ClientResponseError as delerr:
                     dav_logger.debug(f"delerr.status = {delerr.status}")
-                    if delerr.status == 404:
-                        dav_logger.debug("Old event not found, ignoring")
+                    if delerr.status == 403 or delerr.status == 404:
+                        dav_logger.warning("Old event not found, ignoring")
                         rv = None, None
                     else:
                         raise
