@@ -1,4 +1,4 @@
-# Run new version to PyPI.
+# Push new version to PyPI.
 #
 # Usage: hut builds submit publish-release.yaml --follow
 
