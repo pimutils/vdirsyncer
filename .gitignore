@@ -15,3 +15,6 @@ docs/_build/
 vdirsyncer/version.py
 .hypothesis
 coverage.xml
+
+.vscode
+.env
