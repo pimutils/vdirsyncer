@@ -7,7 +7,7 @@ import os
 from typing import Iterable
 
 from atomicwrites import atomic_write
-from pathlib import Path    
+from pathlib import Path
 
 from .. import exceptions
 from ..utils import checkfile
@@ -64,7 +64,7 @@ class SingleFileStorage(Storage):
 
         args = dict(kwargs)
 
-        # By convention the collection name of a unified .vcf file will the 
+        # By convention the collection name of a unified .vcf file will the
         #   file's stem (name of the file without extension)
         args["collection"] = Path(path).stem
         args["path"] = os.path.abspath(expand_path(path))
