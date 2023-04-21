@@ -1,13 +1,12 @@
 import collections
 import contextlib
 import functools
-import glob
 import logging
 import os
+from pathlib import Path
 from typing import Iterable
 
 from atomicwrites import atomic_write
-from pathlib import Path
 
 from .. import exceptions
 from ..utils import checkfile
