@@ -894,14 +894,21 @@ class CardDAVStorage(DAVStorage):
     item_mimetype = "text/vcard"
     discovery_class = CardDiscover
 
-    get_multi_template = """<?xml version="1.0" encoding="utf-8" ?>
+    def __init__(self, *args, use_vcard_4=False, **kwargs):
+        self.use_vcard_4 = use_vcard_4
+        super().__init__(*args, **kwargs)
+
+    @property
+    def get_multi_template(self):
+        ct = 'Content-Type="text/vcard" version="4.0"' if self.use_vcard_4 else ""
+        return f"""<?xml version="1.0" encoding="utf-8" ?>
             <C:addressbook-multiget xmlns="DAV:"
                     xmlns:C="urn:ietf:params:xml:ns:carddav">
                 <prop>
                     <getetag/>
-                    <C:address-data/>
+                    <C:address-data {ct}/>
                 </prop>
-                {hrefs}
+                {{hrefs}}
             </C:addressbook-multiget>"""
 
     get_multi_data_query = "{urn:ietf:params:xml:ns:carddav}address-data"
