@@ -901,7 +901,7 @@ class CardDAVStorage(DAVStorage):
     item_mimetype = "text/vcard"
     discovery_class = CardDiscover
 
-    def __init__(self, *args, use_vcard_4 = False, **kwargs):
+    def __init__(self, *args, use_vcard_4=False, **kwargs):
         self.use_vcard_4 = use_vcard_4
         super().__init__(*args, **kwargs)
 
