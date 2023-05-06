@@ -238,6 +238,7 @@ CalDAV and CardDAV
      #useragent = "vdirsyncer/0.16.4"
      #verify_fingerprint = null
      #auth_cert = null
+     #use_vcard_4 = false
 
    :param url: Base URL or an URL to an addressbook.
    :param username: Username for authentication.
@@ -255,6 +256,7 @@ CalDAV and CardDAV
                      certificate and the key or a list of paths to the files
                      with them.
    :param useragent: Default ``vdirsyncer``.
+   :param use_vcard_4: Whether the server use vCard 4.0.
 
 Google
 ++++++
