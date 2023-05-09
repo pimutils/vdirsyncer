@@ -27,23 +27,27 @@ def test_get_storage_init_args():
 @pytest.mark.asyncio
 async def test_request_ssl():
     async with aiohttp.ClientSession() as session:
-        with pytest.raises(aiohttp.ClientConnectorCertificateError) as excinfo:
+        with pytest.raises(
+            aiohttp.ClientConnectorCertificateError,
+            match="certificate verify failed",
+        ):
             await http.request(
                 "GET",
                 "https://self-signed.badssl.com/",
                 session=session,
             )
-        assert "certificate verify failed" in str(excinfo.value)
 
-        # XXX FIXME
 
-        with pytest.raises(Exception):
-            await http.request(
-                "GET",
-                "https://self-signed.badssl.com/",
-                verify=False,
-                session=session,
-            )
+@pytest.mark.xfail(reason="feature not implemented")
+@pytest.mark.asyncio
+async def test_request_unsafe_ssl():
+    async with aiohttp.ClientSession() as session:
+        await http.request(
+            "GET",
+            "https://self-signed.badssl.com/",
+            verify=False,
+            session=session,
+        )
 
 
 def fingerprint_of_cert(cert, hash=hashes.SHA256) -> str:
