@@ -1,5 +1,6 @@
 import hypothesis.strategies as st
 import pytest
+import pytest_asyncio
 from hypothesis import example
 from hypothesis import given
 
@@ -52,7 +53,7 @@ async def test_basic(monkeypatch):
     assert not await a.get_meta("foo") and not await b.get_meta("foo")
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 @pytest.mark.asyncio
 async def conflict_state(request, event_loop):
     a = MemoryStorage()
@@ -74,7 +75,7 @@ async def conflict_state(request, event_loop):
     return a, b, status
 
 
-@pytest.mark.asyncio
+@pytest_asyncio.fixture
 async def test_conflict(conflict_state):
     a, b, status = conflict_state
 

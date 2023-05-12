@@ -163,6 +163,7 @@ class _DiscoverResult:
             "CardDAVStorage",
             "CalDAVStorage",
             "GoogleCalendarStorage",
+            "GoogleContactsStorage",
         ]:
             assert connector is not None
             config["connector"] = connector

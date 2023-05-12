@@ -7,17 +7,18 @@ Installation
 OS/distro packages
 ------------------
 
-The following packages are user-contributed and were up-to-date at the time of
-writing:
+The following packages are community-contributed and were up-to-date at the
+time of writing:
 
 - `ArchLinux <https://www.archlinux.org/packages/community/any/vdirsyncer/>`_
 - `Ubuntu and Debian, x86_64-only
   <https://packagecloud.io/pimutils/vdirsyncer>`_ (packages also exist
   in the official repositories but may be out of date)
 - `GNU Guix <https://www.gnu.org/software/guix/package-list.html#vdirsyncer>`_
-- `OS X (homebrew) <http://braumeister.org/formula/vdirsyncer>`_
-- `BSD (pkgsrc) <http://pkgsrc.se/time/py-vdirsyncer>`_
+- `macOS (homebrew) <https://formulae.brew.sh/formula/vdirsyncer>`_
+- `NetBSD <https://ftp.netbsd.org/pub/pkgsrc/current/pkgsrc/time/py-vdirsyncer/index.html>`_
 - `OpenBSD <http://ports.su/productivity/vdirsyncer>`_
+- `Slackware (SlackBuild at Slackbuilds.org) <https://slackbuilds.org/repository/15.0/network/vdirsyncer/>`_
 
 We only support the latest version of vdirsyncer, which is at the time of this
 writing |vdirsyncer_version|. Please **do not file bugs if you use an older
@@ -44,24 +45,46 @@ following things are installed:
 - Python 3.7+ and pip.
 - ``libxml`` and ``libxslt``
 - ``zlib``
-- Linux or OS X. **Windows is not supported**, see :gh:`535`.
+- Linux or macOS. **Windows is not supported**, see :gh:`535`.
 
 On Linux systems, using the distro's package manager is the best
 way to do this, for example, using Ubuntu::
 
-    sudo apt-get install libxml2 libxslt1.1 zlib1g python
+    sudo apt-get install libxml2 libxslt1.1 zlib1g python3
 
 Then you have several options. The following text applies for most Python
 software by the way.
 
+pipx: The clean, easy way
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+pipx_ is a new package manager for Python-based software that automatically
+sets up a virtual environment for each program you install. Assuming you have
+it installed on your operating system, you can do::
+
+    pipx install vdirsyncer
+
+and ``~/.local/pipx/venvs/vdirsyncer`` will be your new vdirsyncer installation. To
+update vdirsyncer to the latest version::
+
+    pipx upgrade vdirsyncer
+
+If you're done with vdirsyncer, you can do::
+
+    pipx uninstall vdirsyncer
+
+and vdirsyncer will be uninstalled, including its dependencies.
+
+.. _pipx: https://github.com/pipxproject/pipx
+
 The dirty, easy way
 ~~~~~~~~~~~~~~~~~~~
 
-The easiest way to install vdirsyncer at this point would be to run::
+If pipx is not available on your distirbution, the easiest way to install
+vdirsyncer at this point would be to run::
 
-    pip install --user --ignore-installed vdirsyncer
+    pip install --ignore-installed vdirsyncer
 
-- ``--user`` is to install without root rights (into your home directory)
 - ``--ignore-installed`` is to work around Debian's potentially broken packages
   (see :ref:`debian-urllib3`).
 
@@ -92,25 +115,4 @@ This method has two advantages:
   distro-specific issues.
 - You can delete ``~/vdirsyncer_env/`` to uninstall vdirsyncer entirely.
 
-The clean, easy way
-~~~~~~~~~~~~~~~~~~~
-
-pipx_ is a new package manager for Python-based software that automatically
-sets up a virtualenv for each program you install. Assuming you have it
-installed on your operating system, you can do::
-
-    pipx install vdirsyncer
-
-and ``~/.local/pipx/venvs/vdirsyncer`` will be your new vdirsyncer installation. To
-update vdirsyncer to the latest version::
-
-    pipx upgrade vdirsyncer
-
-If you're done with vdirsyncer, you can do::
-
-    pipx uninstall vdirsyncer
-
-and vdirsyncer will be uninstalled, including its dependencies.
-
 .. _virtualenv: https://virtualenv.readthedocs.io/
-.. _pipx: https://github.com/pipxproject/pipx

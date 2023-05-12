@@ -1,5 +1,4 @@
 import logging
-import sys
 
 import aiohttp
 import click_log
@@ -28,14 +27,21 @@ def test_get_storage_init_args():
 @pytest.mark.asyncio
 async def test_request_ssl():
     async with aiohttp.ClientSession() as session:
-        with pytest.raises(aiohttp.ClientConnectorCertificateError) as excinfo:
+        with pytest.raises(
+            aiohttp.ClientConnectorCertificateError,
+            match="certificate verify failed",
+        ):
             await http.request(
                 "GET",
                 "https://self-signed.badssl.com/",
                 session=session,
             )
-        assert "certificate verify failed" in str(excinfo.value)
 
+
+@pytest.mark.xfail(reason="feature not implemented")
+@pytest.mark.asyncio
+async def test_request_unsafe_ssl():
+    async with aiohttp.ClientSession() as session:
         await http.request(
             "GET",
             "https://self-signed.badssl.com/",
@@ -63,10 +69,12 @@ async def test_request_ssl_leaf_fingerprint(
     httpserver.expect_request("/").respond_with_data("OK")
     url = f"https://127.0.0.1:{httpserver.port}/"
 
-    await http.request("GET", url, verify_fingerprint=fingerprint, session=aio_session)
+    ssl = http.prepare_verify(None, fingerprint)
+    await http.request("GET", url, ssl=ssl, session=aio_session)
 
+    ssl = http.prepare_verify(None, bogus)
     with pytest.raises(aiohttp.ServerFingerprintMismatch):
-        await http.request("GET", url, verify_fingerprint=bogus, session=aio_session)
+        await http.request("GET", url, ssl=ssl, session=aio_session)
 
 
 @pytest.mark.xfail(reason="Not implemented")
@@ -103,10 +111,7 @@ def test_open_graphical_browser(monkeypatch):
 
     # Just assert that this internal attribute still exists and behaves the way
     # expected
-    if sys.version_info < (3, 7):
-        iter(webbrowser._tryorder)
-    else:
-        assert webbrowser._tryorder is None
+    assert webbrowser._tryorder is None
 
     monkeypatch.setattr("webbrowser._tryorder", [])
 

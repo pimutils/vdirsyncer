@@ -37,7 +37,7 @@ def _fetch_value(opts, key):
     try:
         ctx = click.get_current_context().find_object(AppContext)
         if ctx is None:
-            raise RuntimeError()
+            raise RuntimeError
         password_cache = ctx.fetched_params
     except RuntimeError:
         password_cache = {}
@@ -72,7 +72,7 @@ def _fetch_value(opts, key):
         return rv
 
 
-def _strategy_command(*command: str):
+def _strategy_command(*command: str, shell: bool = False):
     """Execute a user-specified command and return its output."""
     import subprocess
 
@@ -82,11 +82,16 @@ def _strategy_command(*command: str):
     expanded_command = list(map(expand_path, command))
 
     try:
-        stdout = subprocess.check_output(expanded_command, universal_newlines=True)
+        stdout = subprocess.check_output(expanded_command, text=True, shell=shell)
         return stdout.strip("\n")
     except OSError as e:
         cmd = " ".join(expanded_command)
         raise exceptions.UserError(f"Failed to execute command: {cmd}\n{str(e)}")
+
+
+def _strategy_shell(*command: str):
+    """Execute a user-specified command string in a shell and return its output."""
+    return _strategy_command(*command, shell=True)
 
 
 def _strategy_prompt(text):
@@ -95,5 +100,6 @@ def _strategy_prompt(text):
 
 STRATEGIES = {
     "command": _strategy_command,
+    "shell": _strategy_shell,
     "prompt": _strategy_prompt,
 }

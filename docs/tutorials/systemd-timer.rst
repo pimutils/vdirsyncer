@@ -13,8 +13,8 @@ minutes).
     unit files, you'll need to download vdirsyncer.service_ and vdirsyncer.timer_
     into either ``/etc/systemd/user/`` or ``~/.local/share/systemd/user``.
 
-.. _vdirsyncer.service: https://raw.githubusercontent.com/pimutils/vdirsyncer/master/contrib/vdirsyncer.service
-.. _vdirsyncer.timer: https://raw.githubusercontent.com/pimutils/vdirsyncer/master/contrib/vdirsyncer.timer
+.. _vdirsyncer.service: https://raw.githubusercontent.com/pimutils/vdirsyncer/main/contrib/vdirsyncer.service
+.. _vdirsyncer.timer: https://raw.githubusercontent.com/pimutils/vdirsyncer/main/contrib/vdirsyncer.timer
 
 Activation
 ----------

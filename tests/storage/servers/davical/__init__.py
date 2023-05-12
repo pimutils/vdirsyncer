@@ -23,7 +23,7 @@ class ServerMixin:
         elif self.storage_class.fileext == ".vcf":
             pytest.skip("No carddav")
         else:
-            raise RuntimeError()
+            raise RuntimeError
 
     @pytest.fixture
     def get_storage_args(self, davical_args, request):
@@ -39,7 +39,8 @@ class ServerMixin:
                 )
                 s = self.storage_class(**args)
                 if not list(s.list()):
-                    request.addfinalizer(lambda: s.session.request("DELETE", ""))
+                    # See: https://stackoverflow.com/a/33984811
+                    request.addfinalizer(lambda x=s: x.session.request("DELETE", ""))
                     return args
 
             raise RuntimeError("Failed to find free collection.")

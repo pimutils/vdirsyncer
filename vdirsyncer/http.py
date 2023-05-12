@@ -1,4 +1,5 @@
 import logging
+from ssl import create_default_context
 
 import aiohttp
 
@@ -36,7 +37,7 @@ del _detect_faulty_requests
 def prepare_auth(auth, username, password):
     if username and password:
         if auth == "basic" or auth is None:
-            return (username, password)
+            return aiohttp.BasicAuth(username, password)
         elif auth == "digest":
             from requests.auth import HTTPDigestAuth
 
@@ -59,35 +60,28 @@ def prepare_auth(auth, username, password):
             "You need to specify username and password "
             "for {} authentication.".format(auth)
         )
-    else:
-        return None
+
+    return None
 
 
 def prepare_verify(verify, verify_fingerprint):
-    if isinstance(verify, (str, bytes)):
-        verify = expand_path(verify)
-    elif not isinstance(verify, bool):
+    if isinstance(verify, str):
+        return create_default_context(cafile=expand_path(verify))
+    elif verify is not None:
         raise exceptions.UserError(
-            "Invalid value for verify ({}), "
-            "must be a path to a PEM-file or boolean.".format(verify)
+            f"Invalid value for verify ({verify}), must be a path to a PEM-file."
         )
 
     if verify_fingerprint is not None:
-        if not isinstance(verify_fingerprint, (bytes, str)):
+        if not isinstance(verify_fingerprint, str):
             raise exceptions.UserError(
                 "Invalid value for verify_fingerprint "
-                "({}), must be a string or null.".format(verify_fingerprint)
+                f"({verify_fingerprint}), must be a string."
             )
-    elif not verify:
-        raise exceptions.UserError(
-            "Disabling all SSL validation is forbidden. Consider setting "
-            "verify_fingerprint if you have a broken or self-signed cert."
-        )
 
-    return {
-        "verify": verify,
-        "verify_fingerprint": verify_fingerprint,
-    }
+        return aiohttp.Fingerprint(bytes.fromhex(verify_fingerprint.replace(":", "")))
+
+    return None
 
 
 def prepare_client_cert(cert):
@@ -99,15 +93,18 @@ def prepare_client_cert(cert):
 
 
 async def request(
-    method, url, session, latin1_fallback=True, verify_fingerprint=None, **kwargs
+    method,
+    url,
+    session,
+    latin1_fallback=True,
+    **kwargs,
 ):
-    """
-    Wrapper method for requests, to ease logging and mocking. Parameters should
-    be the same as for ``requests.request``, except:
+    """Wrapper method for requests, to ease logging and mocking.
+
+    Parameters should be the same as for ``aiohttp.request``, as well as:
 
     :param session: A requests session object to use.
-    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
-        expected server certificate.
+    :param verify_fingerprint: Optional. SHA256 of the expected server certificate.
     :param latin1_fallback: RFC-2616 specifies the default Content-Type of
         text/* to be latin1, which is not always correct, but exactly what
         requests is doing. Setting this parameter to False will use charset
@@ -116,17 +113,9 @@ async def request(
         https://github.com/kennethreitz/requests/issues/2042
     """
 
-    if verify_fingerprint is not None:
-        ssl = aiohttp.Fingerprint(bytes.fromhex(verify_fingerprint.replace(":", "")))
-        kwargs.pop("verify", None)
-    elif kwargs.pop("verify", None) is False:
-        ssl = False
-    else:
-        ssl = None  # TODO XXX: Check all possible values for this
+    # TODO: Support for client-side certifications.
 
     session.hooks = {"response": _fix_redirects}
-
-    func = session.request
 
     # TODO: rewrite using
     # https://docs.aiohttp.org/en/stable/client_advanced.html#client-tracing
@@ -138,36 +127,35 @@ async def request(
 
     assert isinstance(kwargs.get("data", b""), bytes)
 
-    kwargs.pop("cert", None)  # TODO XXX FIXME!
+    cert = kwargs.pop("cert", None)
+    if cert is not None:
+        ssl_context = kwargs.pop("ssl", create_default_context())
+        ssl_context.load_cert_chain(*cert)
+        kwargs["ssl"] = ssl_context
 
-    auth = kwargs.pop("auth", None)
-    if auth:
-        kwargs["auth"] = aiohttp.BasicAuth(*auth)
-
-    r = func(method, url, ssl=ssl, **kwargs)
-    r = await r
+    response = await session.request(method, url, **kwargs)
 
     # See https://github.com/kennethreitz/requests/issues/2042
-    content_type = r.headers.get("Content-Type", "")
+    content_type = response.headers.get("Content-Type", "")
     if (
         not latin1_fallback
         and "charset" not in content_type
         and content_type.startswith("text/")
     ):
         logger.debug("Removing latin1 fallback")
-        r.encoding = None
+        response.encoding = None
 
-    logger.debug(r.status)
-    logger.debug(r.headers)
-    logger.debug(r.content)
+    logger.debug(response.status)
+    logger.debug(response.headers)
+    logger.debug(response.content)
 
-    if r.status == 412:
-        raise exceptions.PreconditionFailed(r.reason)
-    if r.status in (404, 410):
-        raise exceptions.NotFoundError(r.reason)
+    if response.status == 412:
+        raise exceptions.PreconditionFailed(response.reason)
+    if response.status in (404, 410):
+        raise exceptions.NotFoundError(response.reason)
 
-    r.raise_for_status()
-    return r
+    response.raise_for_status()
+    return response
 
 
 def _fix_redirects(r, *args, **kwargs):

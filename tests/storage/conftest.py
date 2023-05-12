@@ -7,6 +7,7 @@ from typing import Type
 
 import aiostream
 import pytest
+import pytest_asyncio
 import requests
 
 
@@ -83,7 +84,7 @@ def xandikos_server():
         yield
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def slow_create_collection(request, aio_connector):
     # We need to properly clean up because otherwise we might run into
     # storage limits.

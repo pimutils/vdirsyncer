@@ -54,7 +54,7 @@ You also have to have vdirsyncer fully installed at this point. Merely
 
 Running the tests happens with::
 
-    make test
+    pytest
 
 Hypothesis will randomly generate test input. If you care about deterministic
 tests, set the ``DETERMINISTIC_TESTS`` variable to ``"true"``::
@@ -76,7 +76,7 @@ take care of the HTML docs' formatting.
 You can find a list of dependencies in ``docs-requirements.txt``. Again, you
 can install those using pip with::
 
-    make install-docs
+    pip install -r docs-requirements.txt
 
 Then change into the ``docs/`` directory and build whatever format you want
 using the ``Makefile`` in there (run ``make`` for the formats you can build).

@@ -19,7 +19,7 @@ class CombinedStorage(Storage):
 
     def __init__(self, url, path, *, connector, **kwargs):
         if kwargs.get("collection", None) is not None:
-            raise ValueError()
+            raise ValueError
 
         super().__init__(**kwargs)
         self.url = url

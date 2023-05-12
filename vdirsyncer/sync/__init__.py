@@ -13,6 +13,9 @@ import contextlib
 import itertools
 import logging
 
+from vdirsyncer.storage.base import Storage
+from vdirsyncer.vobject import Item
+
 from ..exceptions import UserError
 from ..utils import uniq
 from .exceptions import BothReadOnly
@@ -21,6 +24,7 @@ from .exceptions import PartialSync
 from .exceptions import StorageEmpty
 from .exceptions import SyncConflict
 from .status import ItemMetadata
+from .status import SqliteStatus
 from .status import SubStatus
 
 sync_logger = logging.getLogger(__name__)
@@ -30,22 +34,22 @@ class _StorageInfo:
     """A wrapper class that holds prefetched items, the status and other
     things."""
 
-    def __init__(self, storage, status):
+    def __init__(self, storage: Storage, status: SubStatus):
         self.storage = storage
         self.status = status
-        self._item_cache = {}
+        self._item_cache = {}  # type: ignore[var-annotated]
 
-    async def prepare_new_status(self):
+    async def prepare_new_status(self) -> bool:
         storage_nonempty = False
         prefetch = []
 
-        def _store_props(ident, props):
+        def _store_props(ident: str, props: ItemMetadata) -> None:
             try:
                 self.status.insert_ident(ident, props)
             except IdentAlreadyExists as e:
                 raise e.to_ident_conflict(self.storage)
 
-        async for href, etag in self.storage.list():
+        async for href, etag in self.storage.list():  # type: ignore[attr-defined]
             storage_nonempty = True
             ident, meta = self.status.get_by_href(href)
 
@@ -68,7 +72,7 @@ class _StorageInfo:
 
         return storage_nonempty
 
-    def is_changed(self, ident):
+    def is_changed(self, ident: str) -> bool:
         old_meta = self.status.get(ident)
         if old_meta is None:  # new item
             return True
@@ -81,30 +85,28 @@ class _StorageInfo:
             and (old_meta.hash is None or new_meta.hash != old_meta.hash)
         )
 
-    def set_item_cache(self, ident, item):
+    def set_item_cache(self, ident, item) -> None:
         actual_hash = self.status.get_new(ident).hash
         assert actual_hash == item.hash
         self._item_cache[ident] = item
 
-    def get_item_cache(self, ident):
+    def get_item_cache(self, ident: str) -> Item:
         return self._item_cache[ident]
 
 
 async def sync(
-    storage_a,
-    storage_b,
-    status,
+    storage_a: Storage,
+    storage_b: Storage,
+    status: SqliteStatus,
     conflict_resolution=None,
     force_delete=False,
     error_callback=None,
     partial_sync="revert",
-):
+) -> None:
     """Synchronizes two storages.
 
     :param storage_a: The first storage
-    :type storage_a: :class:`vdirsyncer.storage.base.Storage`
     :param storage_b: The second storage
-    :type storage_b: :class:`vdirsyncer.storage.base.Storage`
     :param status: {ident: (href_a, etag_a, href_b, etag_b)}
         metadata about the two storages for detection of changes. Will be
         modified by the function and should be passed to it at the next sync.
@@ -128,7 +130,7 @@ async def sync(
         - ``revert`` (default): Revert changes on other side.
     """
     if storage_a.read_only and storage_b.read_only:
-        raise BothReadOnly()
+        raise BothReadOnly
 
     if conflict_resolution == "a wins":
         conflict_resolution = lambda a, b: a  # noqa: E731
@@ -165,7 +167,7 @@ async def sync(
 
 class Action:
     async def _run_impl(self, a, b):  # pragma: no cover
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def run(self, a, b, conflict_resolution, partial_sync):
         with self.auto_rollback(a, b):
@@ -199,7 +201,6 @@ class Upload(Action):
         self.dest = dest
 
     async def _run_impl(self, a, b):
-
         if self.dest.storage.read_only:
             href = etag = None
         else:

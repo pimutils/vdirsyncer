@@ -15,20 +15,13 @@ To pin the certificate by fingerprint::
     type = "caldav"
     ...
     verify_fingerprint = "94:FD:7A:CB:50:75:A4:69:82:0A:F8:23:DF:07:FC:69:3E:CD:90:CA"
-    #verify = false  # Optional: Disable CA validation, useful for self-signed certs
 
-SHA1-, SHA256- or MD5-Fingerprints can be used. They're detected by their
-length.
+SHA256-Fingerprints can be used. CA validation is disabled when pinning a
+fingerprint.
 
 You can use the following command for obtaining a SHA-1 fingerprint::
 
     echo -n | openssl s_client -connect unterwaditzer.net:443 | openssl x509 -noout -fingerprint
-
-Note that ``verify_fingerprint`` doesn't suffice for vdirsyncer to work with
-self-signed certificates (or certificates that are not in your trust store). You
-most likely need to set ``verify = false`` as well. This disables verification
-of the SSL certificate's expiration time and the existence of it in your trust
-store, all that's verified now is the fingerprint.
 
 However, please consider using `Let's Encrypt <https://letsencrypt.org/>`_ such
 that you can forget about all of that. It is easier to deploy a free
@@ -47,22 +40,16 @@ To point vdirsyncer to a custom set of root CAs::
     ...
     verify = "/path/to/cert.pem"
 
-Vdirsyncer uses the requests_ library, which, by default, `uses its own set of
-trusted CAs
-<http://www.python-requests.org/en/latest/user/advanced/#ca-certificates>`_.
+Vdirsyncer uses the aiohttp_ library, which uses the default `ssl.SSLContext
+https://docs.python.org/3/library/ssl.html#ssl.SSLContext`_ by default.
 
-However, the actual behavior depends on how you have installed it. Many Linux
-distributions patch their ``python-requests`` package to use the system
-certificate CAs. Normally these two stores are similar enough for you to not
-care.
+There are cases where certificate validation fails even though you can access
+the server fine through e.g. your browser. This usually indicates that your
+installation of ``python`` or the ``aiohttp`` or library is somehow broken. In
+such cases, it makes sense to explicitly set ``verify`` or
+``verify_fingerprint`` as shown above.
 
-But there are cases where certificate validation fails even though you can
-access the server fine through e.g. your browser. This usually indicates that
-your installation of the ``requests`` library is somehow broken. In such cases,
-it makes sense to explicitly set ``verify`` or ``verify_fingerprint`` as shown
-above.
-
-.. _requests: http://www.python-requests.org/
+.. _aiohttp: https://docs.aiohttp.org/en/stable/index.html
 
 .. _ssl-client-certs:
 

@@ -278,7 +278,6 @@ def test_multiple_pairs(tmpdir, runner):
     ],
 )
 def test_create_collections(collections, tmpdir, runner):
-
     runner.write_with_general(
         dedent(
             """
@@ -353,16 +352,13 @@ def test_ident_conflict(tmpdir, runner):
         'error: foobar: Storage "foo" contains multiple items with the '
         "same UID or even content"
     ) in result.output
-    assert (
-        sorted(
-            [
-                "one.txt" in result.output,
-                "two.txt" in result.output,
-                "three.txt" in result.output,
-            ]
-        )
-        == [False, True, True]
-    )
+    assert sorted(
+        [
+            "one.txt" in result.output,
+            "two.txt" in result.output,
+            "three.txt" in result.output,
+        ]
+    ) == [False, True, True]
 
 
 @pytest.mark.parametrize(

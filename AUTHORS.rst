@@ -7,12 +7,14 @@ In alphabetical order:
 - Bleala
 - Christian Geier
 - Clément Mondon
+- Corey Hinshaw
 - Hugo Osvaldo Barrera
 - Julian Mehne
 - Malte Kiefer
 - Marek Marczykowski-Górecki
 - Markus Unterwaditzer
 - Michael Adler
+- rEnr3n
 - Thomas Weißschuh
 - Witcher01
 

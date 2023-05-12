@@ -6,6 +6,7 @@ from urllib.parse import unquote as urlunquote
 
 import aiostream
 import pytest
+import pytest_asyncio
 
 from vdirsyncer import exceptions
 from vdirsyncer.storage.base import normalize_meta_value
@@ -48,9 +49,9 @@ class StorageTests:
 
         :param collection: The name of the collection to create and use.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def s(self, get_storage_args):
         rv = self.storage_class(**await get_storage_args())
         return rv
@@ -192,8 +193,7 @@ class StorageTests:
         )
         assert {href: etag for href, item, etag in items} == info
 
-    @pytest.mark.asyncio
-    def test_repr(self, s, get_storage_args):  # XXX: unused param
+    def test_repr(self, s):
         assert self.storage_class.__name__ in repr(s)
         assert s.instance_name is None
 
@@ -254,9 +254,6 @@ class StorageTests:
 
     @pytest.mark.asyncio
     async def test_collection_arg(self, get_storage_args):
-        if self.storage_class.storage_name.startswith("etesync"):
-            pytest.skip("etesync uses UUIDs.")
-
         if self.supports_collections:
             s = self.storage_class(**await get_storage_args(collection="test2"))
             # Can't do stronger assertion because of radicale, which needs a
@@ -282,8 +279,6 @@ class StorageTests:
     async def test_specialchars(
         self, monkeypatch, requires_collections, get_storage_args, get_item
     ):
-        if getattr(self, "dav_server", "") == "radicale":
-            pytest.skip("Radicale is fundamentally broken.")
         if getattr(self, "dav_server", "") in ("icloud", "fastmail"):
             pytest.skip("iCloud and FastMail reject this name.")
 
@@ -304,13 +299,29 @@ class StorageTests:
         ((_, etag3),) = await aiostream.stream.list(s.list())
         assert etag2 == etag3
 
-        # etesync uses UUIDs for collection names
-        if self.storage_class.storage_name.startswith("etesync"):
-            return
-
         assert collection in urlunquote(s.collection)
         if self.storage_class.storage_name.endswith("dav"):
             assert urlquote(uid, "/@:") in href
+
+    @pytest.mark.asyncio
+    async def test_newline_in_uid(
+        self, monkeypatch, requires_collections, get_storage_args, get_item
+    ):
+        monkeypatch.setattr("vdirsyncer.utils.generate_href", lambda x: x)
+
+        uid = "UID:20210609T084907Z-@synaps-web-54fddfdf7-7kcfm%0A.ics"
+
+        s = self.storage_class(**await get_storage_args())
+        item = get_item(uid=uid)
+
+        href, etag = await s.upload(item)
+        item2, etag2 = await s.get(href)
+        if etag is not None:
+            assert etag2 == etag
+            assert_item_equals(item2, item)
+
+        ((_, etag3),) = await aiostream.stream.list(s.list())
+        assert etag2 == etag3
 
     @pytest.mark.asyncio
     async def test_empty_metadata(self, requires_metadata, s):

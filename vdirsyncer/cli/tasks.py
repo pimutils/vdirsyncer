@@ -80,12 +80,12 @@ async def sync_collection(
             )
 
         if sync_failed:
-            raise JobFailed()
+            raise JobFailed
     except JobFailed:
         raise
     except BaseException:
         handle_cli_error(status_name)
-        raise JobFailed()
+        raise JobFailed
 
 
 async def discover_collections(pair, **kwargs):
@@ -115,7 +115,7 @@ async def repair_collection(
     if collection is not None:
         cli_logger.info("Discovering collections (skipping cache).")
         cls, config = storage_class_from_config(config)
-        async for config in cls.discover(**config):
+        async for config in cls.discover(**config):  # noqa E902
             if config["collection"] == collection:
                 break
         else:
@@ -161,7 +161,7 @@ async def metasync_collection(collection, general, *, connector: aiohttp.TCPConn
         )
     except BaseException:
         handle_cli_error(status_name)
-        raise JobFailed()
+        raise JobFailed
 
     save_status(
         general["status_path"],

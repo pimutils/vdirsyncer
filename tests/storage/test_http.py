@@ -1,4 +1,5 @@
 import pytest
+from aiohttp import BasicAuth
 from aioresponses import CallbackResult
 from aioresponses import aioresponses
 
@@ -88,8 +89,8 @@ def test_readonly_param(aio_connector):
 def test_prepare_auth():
     assert prepare_auth(None, "", "") is None
 
-    assert prepare_auth(None, "user", "pwd") == ("user", "pwd")
-    assert prepare_auth("basic", "user", "pwd") == ("user", "pwd")
+    assert prepare_auth(None, "user", "pwd") == BasicAuth("user", "pwd")
+    assert prepare_auth("basic", "user", "pwd") == BasicAuth("user", "pwd")
 
     with pytest.raises(ValueError) as excinfo:
         assert prepare_auth("basic", "", "pwd")
@@ -109,7 +110,8 @@ def test_prepare_auth_guess(monkeypatch):
     import requests_toolbelt.auth.guess
 
     assert isinstance(
-        prepare_auth("guess", "user", "pwd"), requests_toolbelt.auth.guess.GuessAuth
+        prepare_auth("guess", "user", "pwd"),
+        requests_toolbelt.auth.guess.GuessAuth,
     )
 
     monkeypatch.delattr(requests_toolbelt.auth.guess, "GuessAuth")
@@ -124,5 +126,4 @@ def test_verify_false_disallowed(aio_connector):
     with pytest.raises(ValueError) as excinfo:
         HttpStorage(url="http://example.com", verify=False, connector=aio_connector)
 
-    assert "forbidden" in str(excinfo.value).lower()
-    assert "consider setting verify_fingerprint" in str(excinfo.value).lower()
+    assert "must be a path to a pem-file." in str(excinfo.value).lower()

@@ -27,17 +27,15 @@ STATUS_DIR_PERMISSIONS = 0o700
 
 class _StorageIndex:
     def __init__(self):
-        self._storages = dict(
-            caldav="vdirsyncer.storage.dav.CalDAVStorage",
-            carddav="vdirsyncer.storage.dav.CardDAVStorage",
-            filesystem="vdirsyncer.storage.filesystem.FilesystemStorage",
-            http="vdirsyncer.storage.http.HttpStorage",
-            singlefile="vdirsyncer.storage.singlefile.SingleFileStorage",
-            google_calendar="vdirsyncer.storage.google.GoogleCalendarStorage",
-            google_contacts="vdirsyncer.storage.google.GoogleContactsStorage",
-            etesync_calendars="vdirsyncer.storage.etesync.EtesyncCalendars",
-            etesync_contacts="vdirsyncer.storage.etesync.EtesyncContacts",
-        )
+        self._storages = {
+            "caldav": "vdirsyncer.storage.dav.CalDAVStorage",
+            "carddav": "vdirsyncer.storage.dav.CardDAVStorage",
+            "filesystem": "vdirsyncer.storage.filesystem.FilesystemStorage",
+            "http": "vdirsyncer.storage.http.HttpStorage",
+            "singlefile": "vdirsyncer.storage.singlefile.SingleFileStorage",
+            "google_calendar": "vdirsyncer.storage.google.GoogleCalendarStorage",
+            "google_contacts": "vdirsyncer.storage.google.GoogleContactsStorage",
+        }
 
     def __getitem__(self, name):
         item = self._storages[name]

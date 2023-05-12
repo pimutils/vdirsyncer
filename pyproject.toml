@@ -1,0 +1,30 @@
+[tool.ruff]
+select = [
+    "E",
+    "F",
+    "W",
+    "B0",
+    "I",
+    "UP",
+    "C4",
+    # "TID",
+    "RSE"
+]
+target-version = "py37"
+
+[tool.ruff.isort]
+force-single-line = true
+
+[tool.pytest.ini_options]
+addopts = """
+--tb=short
+--cov-config .coveragerc
+--cov=vdirsyncer
+--cov-report=term-missing:skip-covered
+--no-cov-on-fail
+--color=yes
+"""
+# filterwarnings=error
+
+[tool.mypy]
+ignore_missing_imports = true

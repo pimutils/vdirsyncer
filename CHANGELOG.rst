@@ -9,15 +9,25 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.19.1
+==============
+
+- Fixed crash when operating on Google Contacts. :gh:`994`
+- The ``HTTP_PROXY`` and ``HTTPS_PROXY`` are now respected. :gh:`1031`
+- Instructions for integrating with Google CalDav/CardDav have changed.
+  Applications now need to be registered as "Web Application". :gh:`975`
+- Various documentation updates.
+
 Version 0.19.0
 ==============
 
+- Add "shell" password fetch strategy to pass command string to a shell.
 - Add "description" and "order" as metadata.  These fetch the CalDAV:
-  calendar-description, CardDAV:addressbook-description and apple-ns:calendar-order
-  properties.
+  calendar-description, ``CardDAV:addressbook-description`` and
+  ``apple-ns:calendar-order`` properties respectively.
 - Add a new ``showconfig`` status. This prints *some* configuration values as
   JSON. This is intended to be used by external tools and helpers that interact
-  with ``vdirsyncer``.
+  with ``vdirsyncer``, and considered experimental.
 - Update TLS-related tests that were failing due to weak MDs. :gh:`903`
 - ``pytest-httpserver`` and ``trustme`` are now required for tests.
 - ``pytest-localserver`` is no longer required for tests.
@@ -25,10 +35,35 @@ Version 0.19.0
 - A new ``asyncio`` backend is now used. So far, this shows substantial speed
   improvements in ``discovery`` and ``metasync``, but little change in `sync`.
   This will likely continue improving over time. :gh:`906`
-- Support for `md5` and `sha1` certificate fingerprints has been dropped. If
-  you're validating certificate fingerprints, use `sha256` instead.
 - The ``google`` storage types no longer require ``requests-oauthlib``, but
   require ``python-aiohttp-oauthlib`` instead.
+- Vdirsyncer no longer includes experimental support for `EteSync
+  <https://www.etesync.com/>`_. The existing integration had not been supported
+  for a long time and no longer worked. Support for external storages may be
+  added if anyone is interested in maintaining an EteSync plugin. EteSync
+  users should consider using `etesync-dav`_.
+- The ``plist`` for macOS has been dropped. It was broken and homebrew
+  generates their own based on package metadata. macOS users are encouraged to
+  use that as a reference.
+
+.. _etesync-dav: https://github.com/etesync/etesync-dav
+
+Changes to SSL configuration
+----------------------------
+
+Support for ``md5`` and ``sha1`` certificate fingerprints has been dropped. If
+you're validating certificate fingerprints, use ``sha256`` instead.
+
+When using a custom ``verify_fingerprint``, CA validation is always disabled.
+
+If ``verify_fingerprint`` is unset, CA verification is always active. Disabling
+both features is insecure and no longer supported.
+
+The ``verify`` parameter no longer takes boolean values, it is now optional and
+only takes a string to a custom CA for verification.
+
+The ``verify`` and ``verify_fingerprint`` will likely be merged into a single
+parameter in future.
 
 Version 0.18.0
 ==============

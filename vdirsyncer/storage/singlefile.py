@@ -4,6 +4,7 @@ import functools
 import glob
 import logging
 import os
+from typing import Iterable
 
 from atomicwrites import atomic_write
 
@@ -11,6 +12,7 @@ from .. import exceptions
 from ..utils import checkfile
 from ..utils import expand_path
 from ..utils import get_etag_from_file
+from ..utils import uniq
 from ..vobject import Item
 from ..vobject import join_collection
 from ..vobject import split_collection
@@ -65,7 +67,7 @@ class SingleFileStorage(Storage):
         except TypeError:
             # If not exactly one '%s' is present, we cannot discover
             # collections because we wouldn't know which name to assign.
-            raise NotImplementedError()
+            raise NotImplementedError
 
         placeholder_pos = path.index("%s")
 
@@ -132,6 +134,12 @@ class SingleFileStorage(Storage):
         except KeyError:
             raise exceptions.NotFoundError(href)
 
+    async def get_multi(self, hrefs: Iterable[str]):
+        async with self.at_once():
+            for href in uniq(hrefs):
+                item, etag = await self.get(href)
+                yield href, item, etag
+
     @_writing_op
     async def upload(self, item):
         href = item.ident
@@ -185,7 +193,8 @@ class SingleFileStorage(Storage):
 
     @contextlib.asynccontextmanager
     async def at_once(self):
-        self.list()
+        async for _ in self.list():
+            pass
         self._at_once = True
         try:
             yield self

@@ -18,5 +18,5 @@ package that don't play well with packages assuming a normal ``requests``. This
 is due to stubbornness on both sides.
 
 See :gh:`82` and :gh:`140` for past discussions. You have one option to work
-around this, that is, to install vdirsyncer in a virtualenv, see
+around this, that is, to install vdirsyncer in a virtual environment, see
 :ref:`manual-installation`.

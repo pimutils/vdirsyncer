@@ -28,7 +28,7 @@ class StorageMeta(ABCMeta):
     def __init__(cls, name, bases, d):
         """Wrap mutating methods to fail if the storage is readonly."""
 
-        for method in ("update", "upload", "delete"):
+        for method in ("update", "upload", "delete", "set_meta"):
             setattr(cls, method, mutating_storage_method(getattr(cls, method)))
         return super().__init__(name, bases, d)
 
@@ -105,7 +105,7 @@ class Storage(metaclass=StorageMeta):
         """
         if False:
             yield  # Needs to be an async generator
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @classmethod
     async def create_collection(cls, collection, **kwargs):
@@ -117,7 +117,7 @@ class Storage(metaclass=StorageMeta):
 
         The returned args should contain the collection name, for UI purposes.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __repr__(self):
         try:
@@ -184,7 +184,7 @@ class Storage(metaclass=StorageMeta):
 
         :returns: (href, etag)
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def update(self, href: str, item: Item, etag):
         """Update an item.
@@ -197,7 +197,7 @@ class Storage(metaclass=StorageMeta):
 
         :returns: etag
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def delete(self, href: str, etag: str):
         """Delete an item by href.
@@ -205,7 +205,7 @@ class Storage(metaclass=StorageMeta):
         :raises: :exc:`vdirsyncer.exceptions.PreconditionFailed` when item has
             a different etag or doesn't exist.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @contextlib.asynccontextmanager
     async def at_once(self):

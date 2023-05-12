@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v4.4.0
     hooks:
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
@@ -8,27 +8,12 @@ repos:
       - id: check-toml
       - id: check-added-large-files
       - id: debug-statements
-  - repo: https://github.com/PyCQA/flake8
-    rev: "3.9.2"
-    hooks:
-      - id: flake8
-        additional_dependencies: [flake8-import-order, flake8-bugbear]
   - repo: https://github.com/psf/black
-    rev: "21.7b0"
+    rev: "23.3.0"
     hooks:
       - id: black
-  - repo: https://github.com/pycqa/isort
-    rev: 5.9.3
-    hooks:
-      - id: isort
-        name: isort (python)
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v2.23.3
-    hooks:
-    -   id: pyupgrade
-        args: [--py37-plus]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v0.910"
+    rev: "v1.2.0"
     hooks:
       - id: mypy
         files: vdirsyncer/.*
@@ -37,3 +22,21 @@ repos:
           - types-docutils
           - types-requests
           - types-atomicwrites
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: 'v0.0.265'
+    hooks:
+      - id: ruff
+  - repo: local
+    hooks:
+      - id: typos-syncroniz
+        name: typos-syncroniz
+        language: system
+        # Not how you spell "synchronise"
+        entry: sh -c "git grep -i syncroniz"
+        files: ".*/.*"
+      - id: typos-text-icalendar
+        name: typos-text-icalendar
+        language: system
+        # It's "text/calendar", no "i".
+        entry: sh -c "git grep -i 'text/icalendar'"
+        files: ".*/.*"

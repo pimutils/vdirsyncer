@@ -29,25 +29,6 @@ dav_logger = logging.getLogger(__name__)
 CALDAV_DT_FORMAT = "%Y%m%dT%H%M%SZ"
 
 
-def _generate_path_reserved_chars():
-    for x in "/?#[]!$&'()*+,;":
-        x = urlparse.quote(x, "")
-        yield x.upper()
-        yield x.lower()
-
-
-_path_reserved_chars = frozenset(_generate_path_reserved_chars())
-del _generate_path_reserved_chars
-
-
-def _contains_quoted_reserved_chars(x):
-    for y in _path_reserved_chars:
-        if y in x:
-            dav_logger.debug(f"Unsafe character: {y!r}")
-            return True
-    return False
-
-
 async def _assert_multistatus_success(r):
     # Xandikos returns a multistatus on PUT.
     try:
@@ -65,8 +46,7 @@ async def _assert_multistatus_success(r):
 
 
 def _normalize_href(base, href):
-    """Normalize the href to be a path only relative to hostname and
-    schema."""
+    """Normalize the href to be a path only relative to hostname and schema."""
     orig_href = href
     if not href:
         raise ValueError(href)
@@ -74,17 +54,10 @@ def _normalize_href(base, href):
     x = urlparse.urljoin(base, href)
     x = urlparse.urlsplit(x).path
 
-    # Encoding issues:
-    # - https://github.com/owncloud/contacts/issues/581
-    # - https://github.com/Kozea/Radicale/issues/298
-    old_x = None
-    while old_x is None or x != old_x:
-        if _contains_quoted_reserved_chars(x):
-            break
-        old_x = x
-        x = urlparse.unquote(x)
-
-    x = urlparse.quote(x, "/@%:")
+    # We unquote and quote again, but want to make sure we
+    # keep around the "@" character.
+    x = urlparse.unquote(x)
+    x = urlparse.quote(x, "/@")
 
     if orig_href == x:
         dav_logger.debug(f"Already normalized: {x!r}")
@@ -200,7 +173,7 @@ class Discover:
             dav_logger.debug("Trying out well-known URI")
             return await self._find_principal_impl(self._well_known_uri)
 
-    async def _find_principal_impl(self, url):
+    async def _find_principal_impl(self, url) -> str:
         headers = self.session.get_default_headers()
         headers["Depth"] = "0"
         body = b"""
@@ -229,7 +202,7 @@ class Discover:
                     response.url
                 )
             )
-            return response.url
+            return response.url.human_repr()
         return urlparse.urljoin(str(response.url), rv.text).rstrip("/") + "/"
 
     async def find_home(self):
@@ -402,7 +375,7 @@ class DAVSession:
         url,
         username="",
         password="",
-        verify=True,
+        verify=None,
         auth=None,
         useragent=USERAGENT,
         verify_fingerprint=None,
@@ -412,9 +385,14 @@ class DAVSession:
     ):
         self._settings = {
             "cert": prepare_client_cert(auth_cert),
-            "auth": prepare_auth(auth, username, password),
         }
-        self._settings.update(prepare_verify(verify, verify_fingerprint))
+        auth = prepare_auth(auth, username, password)
+        if auth:
+            self._settings["auth"] = auth
+
+        ssl = prepare_verify(verify, verify_fingerprint)
+        if ssl:
+            self._settings["ssl"] = ssl
 
         self.useragent = useragent
         self.url = url.rstrip("/") + "/"
@@ -444,6 +422,7 @@ class DAVSession:
         return aiohttp.ClientSession(
             connector=self.connector,
             connector_owner=False,
+            trust_env=True,
             # TODO use `raise_for_status=true`, though this needs traces first,
         )
 
@@ -711,7 +690,7 @@ class DAVStorage(Storage):
         try:
             tagname, namespace = self._property_table[key]
         except KeyError:
-            raise exceptions.UnsupportedMetadataError()
+            raise exceptions.UnsupportedMetadataError
 
         xpath = f"{{{namespace}}}{tagname}"
         body = f"""<?xml version="1.0" encoding="utf-8" ?>
@@ -745,7 +724,7 @@ class DAVStorage(Storage):
         try:
             tagname, namespace = self._property_table[key]
         except KeyError:
-            raise exceptions.UnsupportedMetadataError()
+            raise exceptions.UnsupportedMetadataError
 
         lxml_selector = f"{{{namespace}}}{tagname}"
         element = etree.Element(lxml_selector)
@@ -878,7 +857,7 @@ class CalDAVStorage(DAVStorage):
             # instead?
             #
             # See https://github.com/dmfs/tasks/issues/118 for backstory.
-            async for href, etag in DAVStorage.list(self):
+            async for href, etag in super().list():
                 yield href, etag
 
         data = """<?xml version="1.0" encoding="utf-8" ?>

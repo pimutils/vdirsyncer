@@ -27,7 +27,7 @@ class HttpStorage(Storage):
         url,
         username="",
         password="",
-        verify=True,
+        verify=None,
         auth=None,
         useragent=USERAGENT,
         verify_fingerprint=None,
@@ -35,15 +35,20 @@ class HttpStorage(Storage):
         *,
         connector,
         **kwargs
-    ):
+    ) -> None:
         super().__init__(**kwargs)
 
         self._settings = {
-            "auth": prepare_auth(auth, username, password),
             "cert": prepare_client_cert(auth_cert),
             "latin1_fallback": False,
         }
-        self._settings.update(prepare_verify(verify, verify_fingerprint))
+        auth = prepare_auth(auth, username, password)
+        if auth:
+            self._settings["auth"] = auth
+
+        ssl = prepare_verify(verify, verify_fingerprint)
+        if ssl:
+            self._settings["ssl"] = ssl
 
         self.username, self.password = username, password
         self.useragent = useragent
@@ -63,6 +68,7 @@ class HttpStorage(Storage):
         async with aiohttp.ClientSession(
             connector=self.connector,
             connector_owner=False,
+            trust_env=True,
             # TODO use `raise_for_status=true`, though this needs traces first,
         ) as session:
             r = await request(

@@ -22,7 +22,7 @@ class ServerMixin:
             elif self.storage_class.fileext == ".vcf":
                 args["url"] = "https://contacts.icloud.com/"
             else:
-                raise RuntimeError()
+                raise RuntimeError
 
             if collection is not None:
                 args = slow_create_collection(self.storage_class, args, collection)

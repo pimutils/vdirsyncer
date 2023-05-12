@@ -175,7 +175,7 @@ CalDAV and CardDAV
         url = "..."
         #username = ""
         #password = ""
-        #verify = true
+        #verify = /path/to/custom_ca.pem
         #auth = null
         #useragent = "vdirsyncer/0.16.4"
         #verify_fingerprint = null
@@ -208,12 +208,10 @@ CalDAV and CardDAV
     :param url: Base URL or an URL to a calendar.
     :param username: Username for authentication.
     :param password: Password for authentication.
-    :param verify: Verify SSL certificate, default True. This can also be a
-        local path to a self-signed SSL certificate. See :ref:`ssl-tutorial`
-        for more information.
-    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
-        expected server certificate. See :ref:`ssl-tutorial` for more
-        information.
+    :param verify: Optional. Local path to a self-signed SSL certificate.
+        See :ref:`ssl-tutorial` for more information.
+    :param verify_fingerprint: Optional. SHA256 fingerprint of the expected
+        server certificate. See :ref:`ssl-tutorial` for more information.
     :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. The
         default is preemptive Basic auth, sending credentials even if server
         didn't request them. This saves from an additional roundtrip per
@@ -235,7 +233,7 @@ CalDAV and CardDAV
      url = "..."
      #username = ""
      #password = ""
-     #verify = true
+     #verify = /path/to/custom_ca.pem
      #auth = null
      #useragent = "vdirsyncer/0.16.4"
      #verify_fingerprint = null
@@ -244,12 +242,10 @@ CalDAV and CardDAV
    :param url: Base URL or an URL to an addressbook.
    :param username: Username for authentication.
    :param password: Password for authentication.
-   :param verify: Verify SSL certificate, default True. This can also be a
-                  local path to a self-signed SSL certificate. See
-                  :ref:`ssl-tutorial` for more information.
-   :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the expected
-                              server certificate. See :ref:`ssl-tutorial` for
-                              more information.
+   :param verify: Optional. Local path to a self-signed SSL certificate.
+        See :ref:`ssl-tutorial` for more information.
+   :param verify_fingerprint: Optional. SHA256 fingerprint of the expected
+        server certificate. See :ref:`ssl-tutorial` for more information.
    :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. The
                 default is preemptive Basic auth, sending credentials even if
                 server didn't request them. This saves from an additional
@@ -272,6 +268,14 @@ in terms of data safety**. See `this blog post
 <https://evertpot.com/google-carddav-issues/>`_ for the details.  Always back
 up your data.
 
+Another caveat is that Google group labels are not synced with vCard's
+`CATEGORIES <https://www.rfc-editor.org/rfc/rfc6350#section-6.7.1>`_ property
+(also see :gh:`814` and
+`upstream issue #36761530 <https://issuetracker.google.com/issues/36761530>`_
+for reference) and the
+`BDAY <https://www.rfc-editor.org/rfc/rfc6350#section-6.2.5>`_ property is not
+synced when only partial date information is present (e.g. the year is missing).
+
 At first run you will be asked to authorize application for Google account
 access.
 
@@ -291,7 +295,7 @@ Service to hardcode those into opensource software [googleterms]_:
    be a searchbox where you can just enter those terms.
 
 3. In the sidebar, select "Credentials" and create a new "OAuth Client ID". The
-   application type is "Other".
+   application type is "Web application".
 
    You'll be prompted to create a OAuth consent screen first. Fill out that
    form however you like.
@@ -309,7 +313,7 @@ or write anything to it.
 .. note::
 
     You need to configure which calendars Google should offer vdirsyncer using
-    a rather hidden `settings page
+    a secret `settings page
     <https://calendar.google.com/calendar/syncselect>`_.
 
 .. storage:: google_calendar
@@ -349,55 +353,9 @@ or write anything to it.
    :param client_id/client_secret: OAuth credentials, obtained from the Google
                                    API Manager.
 
-EteSync
-+++++++
-
-`EteSync <https://www.etesync.com/>`_ is a new cloud provider for end to end
-encrypted contacts and calendar storage. Vdirsyncer contains **experimental**
-support for it.
-
-To use it, you need to install some optional dependencies::
-
-    pip install vdirsyncer[etesync]
-
-On first usage you will be prompted for the service password and the encryption
-password. Neither are stored.
-
-.. storage:: etesync_contacts
-
-    Contacts for etesync.
-
-    ::
-
-        [storage example_for_etesync_contacts]
-        email = ...
-        secrets_dir = ...
-        #server_path = ...
-        #db_path = ...
-
-   :param email: The email address of your account.
-   :param secrets_dir: A directory where vdirsyncer can store the encryption
-                       key and authentication token.
-   :param server_url: Optional. URL to the root of your custom server.
-   :param db_path: Optional. Use a different path for the database.
-
-.. storage:: etesync_calendars
-
-    Calendars for etesync.
-
-    ::
-
-        [storage example_for_etesync_calendars]
-        email = ...
-        secrets_dir = ...
-        #server_path = ...
-        #db_path = ...
-
-    :param email: The email address of your account.
-    :param secrets_dir: A directory where vdirsyncer can store the encryption
-                        key and authentication token.
-    :param server_url: Optional. URL to the root of your custom server.
-    :param db_path: Optional. Use a different path for the database.
+The current flow is not ideal, but Google has deprecated the previous APIs used
+for this without providing a suitable replacement. See :gh:`975` for discussion
+on the topic.
 
 Local
 +++++
@@ -528,12 +486,10 @@ leads to an error.
     :param url: URL to the ``.ics`` file.
     :param username: Username for authentication.
     :param password: Password for authentication.
-    :param verify: Verify SSL certificate, default True. This can also be a
-        local path to a self-signed SSL certificate. See :ref:`ssl-tutorial`
-        for more information.
-    :param verify_fingerprint: Optional. SHA1 or MD5 fingerprint of the
-        expected server certificate. See :ref:`ssl-tutorial` for more
-        information.
+    :param verify: Optional. Local path to a self-signed SSL certificate.
+        See :ref:`ssl-tutorial` for more information.
+    :param verify_fingerprint: Optional. SHA256 fingerprint of the expected
+        server certificate. See :ref:`ssl-tutorial` for more information.
     :param auth: Optional. Either ``basic``, ``digest`` or ``guess``. The
         default is preemptive Basic auth, sending credentials even if server
         didn't request them. This saves from an additional roundtrip per

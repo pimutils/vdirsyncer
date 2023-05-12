@@ -93,7 +93,7 @@ class TestFilesystemStorage(StorageTests):
     @pytest.mark.asyncio
     async def test_post_hook_inactive(self, tmpdir, monkeypatch):
         def check_call_mock(*args, **kwargs):
-            raise AssertionError()
+            raise AssertionError
 
         monkeypatch.setattr(subprocess, "call", check_call_mock)
 

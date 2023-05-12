@@ -12,9 +12,6 @@ export REQUIREMENTS := release
 # Set this to true if you run vdirsyncer's test as part of e.g. packaging.
 export DETERMINISTIC_TESTS := false
 
-# Run the etesync testsuite.
-export ETESYNC_TESTS := false
-
 # Assume to run in CI. Don't use this outside of a virtual machine. It will
 # heavily "pollute" your system, such as attempting to install a new Python
 # systemwide.
@@ -23,19 +20,8 @@ export CI := false
 # Whether to generate coverage data while running tests.
 export COVERAGE := $(CI)
 
-# Additional arguments that should be passed to py.test.
-PYTEST_ARGS =
-
 # Variables below this line are not very interesting for getting started.
 
-TEST_EXTRA_PACKAGES =
-
-ifeq ($(ETESYNC_TESTS), true)
-	TEST_EXTRA_PACKAGES += git+https://github.com/etesync/journal-manager@v0.5.2
-	TEST_EXTRA_PACKAGES += django djangorestframework==3.8.2 wsgi_intercept drf-nested-routers
-endif
-
-PYTEST = py.test $(PYTEST_ARGS)
 CODECOV_PATH = /tmp/codecov.sh
 
 all:
@@ -43,33 +29,16 @@ all:
 
 ci-test:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
-	$(PYTEST) --cov vdirsyncer --cov-append tests/unit/ tests/system/
+	pytest --cov vdirsyncer --cov-append tests/unit/ tests/system/
 	bash $(CODECOV_PATH) -c
-	[ "$(ETESYNC_TESTS)" = "false" ] || make test-storage
 
 ci-test-storage:
 	curl -s https://codecov.io/bash > $(CODECOV_PATH)
 	set -ex; \
 	for server in $(DAV_SERVER); do \
-		DAV_SERVER=$$server $(PYTEST) --cov vdirsyncer --cov-append tests/storage; \
+		DAV_SERVER=$$server pytest --cov vdirsyncer --cov-append tests/storage; \
 	done
 	bash $(CODECOV_PATH) -c
-
-test:
-	$(PYTEST)
-
-style:
-	pre-commit run --all
-	! git grep -i syncroniz */*
-	! git grep -i 'text/icalendar' */*
-	sphinx-build -W -b html ./docs/ ./docs/_build/html/
-
-install-docs:
-	pip install -Ur docs-requirements.txt
-
-docs:
-	cd docs && make html
-	sphinx-build -W -b linkcheck ./docs/ ./docs/_build/linkcheck/
 
 release-deb:
 	sh scripts/release-deb.sh debian jessie
@@ -81,9 +50,7 @@ release-deb:
 install-dev:
 	pip install -U pip setuptools wheel
 	pip install -e .
-	pip install -Ur test-requirements.txt $(TEST_EXTRA_PACKAGES)
-	pip install pre-commit
-	[ "$(ETESYNC_TESTS)" = "false" ] || pip install -Ue .[etesync]
+	pip install -Ur test-requirements.txt -r docs-requirements.txt pre-commit
 	set -xe && if [ "$(REQUIREMENTS)" = "minimal" ]; then \
 		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
 	fi

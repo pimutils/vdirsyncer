@@ -207,13 +207,13 @@ def test_collection_required(a_requires, b_requires, tmpdir, runner, monkeypatch
         def __init__(self, require_collection, **kw):
             if require_collection:
                 assert not kw.get("collection")
-                raise exceptions.CollectionRequired()
+                raise exceptions.CollectionRequired
 
         async def get(self, href: str):
-            raise NotImplementedError()
+            raise NotImplementedError
 
         async def list(self) -> List[tuple]:
-            raise NotImplementedError()
+            raise NotImplementedError
 
     from vdirsyncer.cli.utils import storage_names
 

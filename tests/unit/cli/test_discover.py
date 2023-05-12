@@ -155,18 +155,15 @@ async def test_expand_collections(shortcuts, expected):
     async def handle_not_found(config, collection):
         return missing
 
-    assert (
-        sorted(
-            await aiostream.stream.list(
-                expand_collections(
-                    shortcuts,
-                    config_a,
-                    config_b,
-                    get_discovered_a,
-                    get_discovered_b,
-                    handle_not_found,
-                )
+    assert sorted(
+        await aiostream.stream.list(
+            expand_collections(
+                shortcuts,
+                config_a,
+                config_b,
+                get_discovered_a,
+                get_discovered_b,
+                handle_not_found,
             )
         )
-        == sorted(expected)
-    )
+    ) == sorted(expected)
