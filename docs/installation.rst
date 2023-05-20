@@ -14,7 +14,7 @@ time of writing:
 - `Ubuntu and Debian, x86_64-only
   <https://packagecloud.io/pimutils/vdirsyncer>`_ (packages also exist
   in the official repositories but may be out of date)
-- `GNU Guix <https://www.gnu.org/software/guix/package-list.html#vdirsyncer>`_
+- `GNU Guix <https://packages.guix.gnu.org/packages/vdirsyncer/>`_
 - `macOS (homebrew) <https://formulae.brew.sh/formula/vdirsyncer>`_
 - `NetBSD <https://ftp.netbsd.org/pub/pkgsrc/current/pkgsrc/time/py-vdirsyncer/index.html>`_
 - `OpenBSD <http://ports.su/productivity/vdirsyncer>`_
