@@ -19,12 +19,12 @@ environment:
   REQUIREMENTS: minimal
   # TODO: ETESYNC_TESTS
 tasks:
-  - docker: |
-      sudo addgroup $(whoami) docker
-      sudo service docker start
   - venv: |
       python3 -m venv $HOME/venv
       echo "export PATH=$HOME/venv/bin:$PATH" >> $HOME/.buildenv
+  - docker: |
+      sudo addgroup $(whoami) docker
+      sudo service docker start
   - setup: |
       cd vdirsyncer
       make -e install-dev

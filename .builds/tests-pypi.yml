@@ -20,8 +20,9 @@ tasks:
   - venv: |
       python -m venv $HOME/venv
       echo "export PATH=$HOME/venv/bin:$PATH" >> $HOME/.buildenv
-  - setup: |
+  - docker: |
       sudo systemctl start docker
+  - setup: |
       cd vdirsyncer
       make -e install-dev
   - test: |
