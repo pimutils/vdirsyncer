@@ -17,6 +17,9 @@ environment:
   REQUIREMENTS: release
   # TODO: ETESYNC_TESTS
 tasks:
+  - venv: |
+      python -m venv $HOME/venv
+      echo "export PATH=$HOME/venv/bin:$PATH" >> $HOME/.buildenv
   - setup: |
       sudo systemctl start docker
       cd vdirsyncer
