@@ -19,6 +19,7 @@ Version 0.19.2
   "filesystem/icalendar"`` or ``type = "filesystem/vcard"``. This has not
   functional impact, and is merely for forward compatibility with the Rust
   implementation of vdirsyncer.
+- Python 3.10 and 3.11 are officially supported.
 
 Version 0.19.1
 ==============
