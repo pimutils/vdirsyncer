@@ -9,6 +9,13 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.19.2
+==============
+
+- Improve the performance of ``SingleFileStorage``. :gh:`818`
+- Properly document some caveats of the Google Contacts storage.
+- Fix crash when using auth certs. :gh:`1033`
+
 Version 0.19.1
 ==============
 
