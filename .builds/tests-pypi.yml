@@ -26,8 +26,6 @@ tasks:
       make -e install-dev
   - test: |
       cd vdirsyncer
-      # Non-system python is used for packages:
-      export PATH=$PATH:~/.local/bin/
       make -e ci-test
       make -e ci-test-storage
   - check-secrets: |
