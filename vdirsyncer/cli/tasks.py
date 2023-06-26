@@ -110,7 +110,8 @@ async def repair_collection(
         storage_name, collection = storage_name.split("/")
 
     config = config.get_storage_args(storage_name)
-    storage_type = config["type"]
+    # If storage type has a slash, ignore it and anything after it.
+    storage_type = config["type"].split("/")[0]
 
     if collection is not None:
         cli_logger.info("Discovering collections (skipping cache).")

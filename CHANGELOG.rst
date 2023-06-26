@@ -9,6 +9,14 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.19.2
+==============
+
+- The ``filesystem`` storage can be specified with ``type =
+  "filesystem/icalendar"`` or ``type = "filesystem/vcard"``. This has not
+  functional impact, and is merely for forward compatibility with the Rust
+  implementation of vdirsyncer.
+
 Version 0.19.1
 ==============
 
