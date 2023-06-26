@@ -15,6 +15,10 @@ Version 0.19.2
 - Improve the performance of ``SingleFileStorage``. :gh:`818`
 - Properly document some caveats of the Google Contacts storage.
 - Fix crash when using auth certs. :gh:`1033`
+- The ``filesystem`` storage can be specified with ``type =
+  "filesystem/icalendar"`` or ``type = "filesystem/vcard"``. This has not
+  functional impact, and is merely for forward compatibility with the Rust
+  implementation of vdirsyncer.
 
 Version 0.19.1
 ==============
