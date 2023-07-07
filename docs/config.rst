@@ -295,7 +295,7 @@ Service to hardcode those into opensource software [googleterms]_:
    be a searchbox where you can just enter those terms.
 
 3. In the sidebar, select "Credentials" and create a new "OAuth Client ID". The
-   application type is "Web application".
+   application type is "Desktop".
 
    You'll be prompted to create a OAuth consent screen first. Fill out that
    form however you like.
