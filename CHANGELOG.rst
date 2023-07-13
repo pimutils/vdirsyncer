@@ -20,6 +20,9 @@ Version 0.19.2
   functional impact, and is merely for forward compatibility with the Rust
   implementation of vdirsyncer.
 - Python 3.10 and 3.11 are officially supported.
+- Instructions for integrating with Google CalDav/CardDav have changed.
+  Applications now need to be registered as "Desktop applications". Using "Web
+  application" no longer works due to changes on Google's side. :gh:`1078`
 
 Version 0.19.1
 ==============

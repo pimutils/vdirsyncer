@@ -287,25 +287,29 @@ Furthermore you need to register vdirsyncer as an application yourself to
 obtain ``client_id`` and ``client_secret``, as it is against Google's Terms of
 Service to hardcode those into opensource software [googleterms]_:
 
-1. Go to the `Google API Manager <https://console.developers.google.com>`_ and
-   create a new project under any name.
+1. Go to the `Google API Manager <https://console.developers.google.com>`_
+
+2. Create a new project under any name.
 
 2. Within that project, enable the "CalDAV" and "CardDAV" APIs (**not** the
    Calendar and Contacts APIs, those are different and won't work). There should
-   be a searchbox where you can just enter those terms.
+   be a search box where you can just enter those terms.
 
-3. In the sidebar, select "Credentials" and create a new "OAuth Client ID". The
-   application type is "Desktop".
+3. In the sidebar, select "Credentials", then "Create Credentials" and create a
+   new "OAuth Client ID".
 
    You'll be prompted to create a OAuth consent screen first. Fill out that
    form however you like.
 
+   After setting up the consent screen, finish creating the new "OAuth Client
+   ID'. The correct application type is "Desktop application".
+
 4. Finally you should have a Client ID and a Client secret. Provide these in
    your storage config.
 
-The ``token_file`` parameter should be a filepath where vdirsyncer can later
-store authentication-related data. You do not need to create the file itself
-or write anything to it.
+The ``token_file`` parameter should be a path to a file where vdirsyncer can
+later store authentication-related data. You do not need to create the file
+itself or write anything to it.
 
 .. [googleterms] See `ToS <https://developers.google.com/terms/?hl=th>`_,
    section "Confidential Matters".
