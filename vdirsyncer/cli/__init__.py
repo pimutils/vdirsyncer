@@ -45,7 +45,7 @@ def catch_errors(f):
 @click.option("--config", "-c", metavar="FILE", help="Config file to use.")
 @pass_context
 @catch_errors
-def app(ctx, config):
+def app(ctx, config: str):
     """
     Synchronize calendars and contacts
     """
