@@ -121,9 +121,7 @@ async def repair_collection(
                 break
         else:
             raise exceptions.UserError(
-                "Couldn't find collection {} for storage {}.".format(
-                    collection, storage_name
-                )
+                f"Couldn't find collection {collection} for storage {storage_name}."
             )
 
     config["type"] = storage_type

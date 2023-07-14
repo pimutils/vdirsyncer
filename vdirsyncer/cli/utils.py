@@ -323,9 +323,7 @@ def assert_permissions(path, wanted):
     permissions = os.stat(path).st_mode & 0o777
     if permissions > wanted:
         cli_logger.warning(
-            "Correcting permissions of {} from {:o} to {:o}".format(
-                path, permissions, wanted
-            )
+            f"Correcting permissions of {path} from {permissions:o} to {wanted:o}"
         )
         os.chmod(path, wanted)
 
