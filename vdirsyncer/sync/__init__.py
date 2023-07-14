@@ -205,9 +205,7 @@ class Upload(Action):
             href = etag = None
         else:
             sync_logger.info(
-                "Copying (uploading) item {} to {}".format(
-                    self.ident, self.dest.storage
-                )
+                f"Copying (uploading) item {self.ident} to {self.dest.storage}"
             )
             href, etag = await self.dest.storage.upload(self.item)
             assert href is not None

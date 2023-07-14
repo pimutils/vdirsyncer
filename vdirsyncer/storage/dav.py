@@ -198,9 +198,7 @@ class Discover:
             # E.g. Synology NAS
             # See https://github.com/pimutils/vdirsyncer/issues/498
             dav_logger.debug(
-                "No current-user-principal returned, re-using URL {}".format(
-                    response.url
-                )
+                f"No current-user-principal returned, re-using URL {response.url}"
             )
             return response.url.human_repr()
         return urlparse.urljoin(str(response.url), rv.text).rstrip("/") + "/"
@@ -649,9 +647,7 @@ class DAVStorage(Storage):
             contenttype = getattr(props.find("{DAV:}getcontenttype"), "text", None)
             if not self._is_item_mimetype(contenttype):
                 dav_logger.debug(
-                    "Skipping {!r}, {!r} != {!r}.".format(
-                        href, contenttype, self.item_mimetype
-                    )
+                    f"Skipping {href!r}, {contenttype!r} != {self.item_mimetype!r}."
                 )
                 continue
 
@@ -831,9 +827,7 @@ class CalDAVStorage(DAVStorage):
                 start = start.strftime(CALDAV_DT_FORMAT)
                 end = end.strftime(CALDAV_DT_FORMAT)
 
-                timefilter = '<C:time-range start="{start}" end="{end}"/>'.format(
-                    start=start, end=end
-                )
+                timefilter = f'<C:time-range start="{start}" end="{end}"/>'
             else:
                 timefilter = ""
 
