@@ -5,8 +5,8 @@ import aiohttp
 from .. import exceptions
 from .. import sync
 from .config import CollectionConfig
+from .discover import DiscoverResult
 from .discover import collections_for_pair
-from .discover import storage_class_from_config
 from .discover import storage_instance_from_config
 from .utils import JobFailed
 from .utils import cli_logger
@@ -115,8 +115,9 @@ async def repair_collection(
 
     if collection is not None:
         cli_logger.info("Discovering collections (skipping cache).")
-        cls, config = storage_class_from_config(config)
-        async for config in cls.discover(**config):  # noqa E902
+        get_discovered = DiscoverResult(config, connector=connector)
+        discovered = await get_discovered.get_self()
+        for config in discovered.values():
             if config["collection"] == collection:
                 break
         else:
