@@ -76,8 +76,8 @@ async def collections_for_pair(
 
     logger.info(f"Discovering collections for pair {pair.name}")
 
-    a_discovered = _DiscoverResult(pair.config_a, connector=connector)
-    b_discovered = _DiscoverResult(pair.config_b, connector=connector)
+    a_discovered = DiscoverResult(pair.config_a, connector=connector)
+    b_discovered = DiscoverResult(pair.config_b, connector=connector)
 
     if list_collections:
         # TODO: We should gather data and THEN print, so it can be async.
@@ -155,7 +155,7 @@ def _expand_collections_cache(collections, config_a, config_b):
         yield name, (a, b)
 
 
-class _DiscoverResult:
+class DiscoverResult:
     def __init__(self, config, *, connector):
         self._cls, _ = storage_class_from_config(config)
 
