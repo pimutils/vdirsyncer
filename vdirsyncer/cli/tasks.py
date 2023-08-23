@@ -142,11 +142,11 @@ async def metasync_collection(collection, general, *, connector: aiohttp.TCPConn
     try:
         cli_logger.info(f"Metasyncing {status_name}")
 
-        status = (
-            load_status(
-                general["status_path"], pair.name, collection.name, data_type="metadata"
-            )
-            or {}
+        status = load_status(
+            general["status_path"],
+            pair.name,
+            collection.name,
+            data_type="metadata",
         )
 
         a = await storage_instance_from_config(collection.config_a, connector=connector)
