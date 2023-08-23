@@ -6,6 +6,7 @@ import importlib
 import json
 import os
 import sys
+from typing import Any
 
 import aiohttp
 import click
@@ -186,11 +187,11 @@ def load_status(
     base_path: str,
     pair: str,
     collection: str | None = None,
-    data_type: str | None = None
-) -> dict | None:
+    data_type: str | None = None,
+) -> dict[str, Any]:
     path = get_status_path(base_path, pair, collection, data_type)
     if not os.path.exists(path):
-        return None
+        return {}
     assert_permissions(path, STATUS_PERMISSIONS)
 
     with open(path) as f:
