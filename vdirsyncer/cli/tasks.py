@@ -164,9 +164,9 @@ async def metasync_collection(collection, general, *, connector: aiohttp.TCPConn
         raise JobFailed
 
     save_status(
-        general["status_path"],
-        pair.name,
-        collection.name,
+        base_path=general["status_path"],
+        pair=pair.name,
         data_type="metadata",
         data=status,
+        collection=collection.name,
     )

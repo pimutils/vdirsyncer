@@ -108,8 +108,8 @@ async def collections_for_pair(
     await _sanity_check_collections(rv, connector=connector)
 
     save_status(
-        status_path,
-        pair.name,
+        base_path=status_path,
+        pair=pair.name,
         data_type="collections",
         data={
             "collections": list(

@@ -242,12 +242,10 @@ def manage_sync_status(base_path: str, pair_name: str, collection_name: str):
 def save_status(
     base_path: str,
     pair: str,
+    data_type: str,
+    data: dict[str, Any],
     collection: str | None = None,
-    data_type: str | None = None,
-    data: dict | None = None,
 ) -> None:
-    assert data_type is not None
-    assert data is not None
     status_name = get_status_name(pair, collection)
     path = expand_path(os.path.join(base_path, status_name)) + "." + data_type
     prepare_status_path(path)
