@@ -67,6 +67,10 @@ class Storage(metaclass=StorageMeta):
     # The machine-readable name of this collection.
     collection = None
 
+    #A value of False means storage does not support delete requests. A
+    #value of True mean the storage supports it.
+    no_delete = False
+
     # A value of True means the storage does not support write-methods such as
     # upload, update and delete.  A value of False means the storage does
     # support those methods.
@@ -75,12 +79,18 @@ class Storage(metaclass=StorageMeta):
     # The attribute values to show in the representation of the storage.
     _repr_attributes: List[str] = []
 
-    def __init__(self, instance_name=None, read_only=None, collection=None):
+    def __init__(self, instance_name=None, read_only=None, no_delete=None, collection=None):
         if read_only is None:
             read_only = self.read_only
         if self.read_only and not read_only:
             raise exceptions.UserError("This storage can only be read-only.")
         self.read_only = bool(read_only)
+
+        if no_delete is None:
+            no_delete = self.no_delete
+        if self.no_delete and not no_delete:
+            raise exceptions.UserError("Nothing can be deleted in this storage.")
+        self.no_delete = bool(no_delete)
 
         if collection and instance_name:
             instance_name = f"{instance_name}/{collection}"
