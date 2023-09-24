@@ -26,6 +26,7 @@ repos:
     rev: 'v0.0.265'
     hooks:
       - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
   - repo: local
     hooks:
       - id: typos-syncroniz
