@@ -54,7 +54,7 @@ def app(ctx, config: str):
         cli_logger.warning(
             "Vdirsyncer currently does not support Windows. "
             "You will likely encounter bugs. "
-            "See {}/535 for more information.".format(BUGTRACKER_HOME)
+            f"See {BUGTRACKER_HOME}/535 for more information."
         )
 
     if not ctx.config:

@@ -247,10 +247,10 @@ class SqliteStatus(_StatusBase):
 
     def _get_impl(self, ident, side, table):
         res = self._c.execute(
-            "SELECT href_{side} AS href,"
-            "       hash_{side} AS hash,"
-            "       etag_{side} AS etag "
-            "FROM {table} WHERE ident=?".format(side=side, table=table),
+            f"SELECT href_{side} AS href,"
+            f"       hash_{side} AS hash,"
+            f"       etag_{side} AS etag "
+            f"FROM {table} WHERE ident=?",
             (ident,),
         ).fetchone()
         if res is None:
@@ -304,8 +304,8 @@ class SqliteStatus(_StatusBase):
 
     def _get_by_href_impl(self, href, default=(None, None), side=None):
         res = self._c.execute(
-            "SELECT ident, hash_{side} AS hash, etag_{side} AS etag "
-            "FROM status WHERE href_{side}=?".format(side=side),
+            f"SELECT ident, hash_{side} AS hash, etag_{side} AS etag "
+            f"FROM status WHERE href_{side}=?",
             (href,),
         ).fetchone()
         if not res:

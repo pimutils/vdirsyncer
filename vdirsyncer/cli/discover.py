@@ -66,12 +66,12 @@ async def collections_for_pair(
         elif rv:
             raise exceptions.UserError(
                 "Detected change in config file, "
-                "please run `vdirsyncer discover {}`.".format(pair.name)
+                f"please run `vdirsyncer discover {pair.name}`."
             )
         else:
             raise exceptions.UserError(
-                "Please run `vdirsyncer discover {}` "
-                " before synchronization.".format(pair.name)
+                f"Please run `vdirsyncer discover {pair.name}` "
+                " before synchronization."
             )
 
     logger.info(f"Discovering collections for pair {pair.name}")
@@ -271,8 +271,8 @@ async def _print_collections(
 
         logger.debug("".join(traceback.format_tb(sys.exc_info()[2])))
         logger.warning(
-            "Failed to discover collections for {}, use `-vdebug` "
-            "to see the full traceback.".format(instance_name)
+            f"Failed to discover collections for {instance_name}, use `-vdebug` "
+            "to see the full traceback."
         )
         return
     logger.info(f"{instance_name}:")
