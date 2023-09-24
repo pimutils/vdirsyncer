@@ -106,8 +106,8 @@ class GoogleSession(dav.DAVSession):
             pass
         except ValueError as e:
             raise exceptions.UserError(
-                "Failed to load token file {}, try deleting it. "
-                "Original error: {}".format(self._token_file, e)
+                f"Failed to load token file {self._token_file}, try deleting it. "
+                f"Original error: {e}"
             )
 
         if not self._token:

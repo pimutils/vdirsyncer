@@ -92,8 +92,7 @@ def _parse_xml(content):
         return etree.XML(_clean_body(content))
     except etree.ParseError as e:
         raise InvalidXMLResponse(
-            "Invalid XML encountered: {}\n"
-            "Double-check the URLs in your config.".format(e)
+            f"Invalid XML encountered: {e}\nDouble-check the URLs in your config."
         )
 
 

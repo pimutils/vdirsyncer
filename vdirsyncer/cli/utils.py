@@ -88,23 +88,19 @@ def handle_cli_error(status_name=None, e=None):
         )
     except PartialSync as e:
         cli_logger.error(
-            "{status_name}: Attempted change on {storage}, which is read-only"
+            f"{status_name}: Attempted change on {e.storage}, which is read-only"
             ". Set `partial_sync` in your pair section to `ignore` to ignore "
-            "those changes, or `revert` to revert them on the other side.".format(
-                status_name=status_name, storage=e.storage
-            )
+            "those changes, or `revert` to revert them on the other side."
         )
     except SyncConflict as e:
         cli_logger.error(
-            "{status_name}: One item changed on both sides. Resolve this "
+            f"{status_name}: One item changed on both sides. Resolve this "
             "conflict manually, or by setting the `conflict_resolution` "
             "parameter in your config file.\n"
-            "See also {docs}/config.html#pair-section\n"
-            "Item ID: {e.ident}\n"
-            "Item href on side A: {e.href_a}\n"
-            "Item href on side B: {e.href_b}\n".format(
-                status_name=status_name, e=e, docs=DOCS_HOME
-            )
+            f"See also {DOCS_HOME}/config.html#pair-section\n"
+            f"Item ID: {e.ident}\n"
+            f"Item href on side A: {e.href_a}\n"
+            f"Item href on side B: {e.href_b}\n"
         )
     except IdentConflict as e:
         cli_logger.error(
@@ -125,17 +121,17 @@ def handle_cli_error(status_name=None, e=None):
         pass
     except exceptions.PairNotFound as e:
         cli_logger.error(
-            "Pair {pair_name} does not exist. Please check your "
+            f"Pair {e.pair_name} does not exist. Please check your "
             "configuration file and make sure you've typed the pair name "
-            "correctly".format(pair_name=e.pair_name)
+            "correctly"
         )
     except exceptions.InvalidResponse as e:
         cli_logger.error(
             "The server returned something vdirsyncer doesn't understand. "
-            "Error message: {!r}\n"
+            f"Error message: {e!r}\n"
             "While this is most likely a serverside problem, the vdirsyncer "
             "devs are generally interested in such bugs. Please report it in "
-            "the issue tracker at {}".format(e, BUGTRACKER_HOME)
+            f"the issue tracker at {BUGTRACKER_HOME}"
         )
     except exceptions.CollectionRequired:
         cli_logger.error(
@@ -367,7 +363,7 @@ async def handle_collection_not_found(config, collection, e=None):
             cli_logger.error(e)
 
     raise exceptions.UserError(
-        'Unable to find or create collection "{collection}" for '
-        'storage "{storage}". Please create the collection '
-        "yourself.".format(collection=collection, storage=storage_name)
+        f'Unable to find or create collection "{collection}" for '
+        f'storage "{storage_name}". Please create the collection '
+        "yourself."
     )

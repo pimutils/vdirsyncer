@@ -57,8 +57,7 @@ def prepare_auth(auth, username, password):
             raise exceptions.UserError(f"Unknown authentication method: {auth}")
     elif auth:
         raise exceptions.UserError(
-            "You need to specify username and password "
-            "for {} authentication.".format(auth)
+            f"You need to specify username and password for {auth} authentication."
         )
 
     return None

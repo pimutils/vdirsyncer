@@ -27,9 +27,9 @@ def validate_section_name(name, section_type):
     if invalid:
         chars_display = "".join(sorted(SECTION_NAME_CHARS))
         raise exceptions.UserError(
-            'The {}-section "{}" contains invalid characters. Only '
+            f'The {section_type}-section "{name}" contains invalid characters. Only '
             "the following characters are allowed for storage and "
-            "pair names:\n{}".format(section_type, name, chars_display)
+            f"pair names:\n{chars_display}"
         )
 
 
@@ -51,7 +51,7 @@ def _validate_general_section(general_config: dict[str, str]):
     if problems:
         raise exceptions.UserError(
             "Invalid general section. Copy the example "
-            "config from the repository and edit it: {}".format(PROJECT_HOME),
+            f"config from the repository and edit it: {PROJECT_HOME}",
             problems=problems,
         )
 
@@ -210,10 +210,8 @@ class Config:
             args = self.storages[storage_name]
         except KeyError:
             raise exceptions.UserError(
-                "Storage {!r} not found. "
-                "These are the configured storages: {}".format(
-                    storage_name, list(self.storages)
-                )
+                f"Storage {storage_name!r} not found. "
+                f"These are the configured storages: {list(self.storages)}"
             )
         else:
             return expand_fetch_params(args)
