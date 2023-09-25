@@ -28,3 +28,8 @@ addopts = """
 
 [tool.mypy]
 ignore_missing_imports = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "if TYPE_CHECKING:",
+]
