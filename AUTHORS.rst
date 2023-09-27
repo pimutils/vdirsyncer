@@ -7,6 +7,7 @@ In alphabetical order:
 - Christian Geier
 - Clément Mondon
 - Corey Hinshaw
+- Kai Herlemann
 - Hugo Osvaldo Barrera
 - Julian Mehne
 - Malte Kiefer
