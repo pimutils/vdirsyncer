@@ -12,8 +12,8 @@ may want to subscribe to `GitHub's tag feed
 Version 0.19.3
 ==============
 
-- Fix crash when running ``vdirsyncer repair`` on a collection. :gh:`1019`
 - Added a no_delete option to the storage configuration. :gh:`1090`
+- Fix crash when running ``vdirsyncer repair`` on a collection. :gh:`1019`
 
 Version 0.19.2
 ==============
