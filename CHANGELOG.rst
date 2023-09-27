@@ -13,6 +13,7 @@ Version 0.19.3
 ==============
 
 - Fix crash when running ``vdirsyncer repair`` on a collection. :gh:`1019`
+- Added a no_delete option to the storage configuration. :gh:`1090`
 
 Version 0.19.2
 ==============
