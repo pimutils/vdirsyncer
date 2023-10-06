@@ -13,6 +13,7 @@ Version 0.19.3
 ==============
 
 - Fix crash when running ``vdirsyncer repair`` on a collection. :gh:`1019`
+- Add an option to request vCard v4.0.  :gh:`1066`
 
 Version 0.19.2
 ==============
