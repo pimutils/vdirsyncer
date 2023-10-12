@@ -1,4 +1,7 @@
-import aiostream
+import sys
+
+if sys.version_info < (3, 9):
+    import aiostream
 import pytest
 from aioresponses import CallbackResult
 from aioresponses import aioresponses

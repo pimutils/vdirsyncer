@@ -1,11 +1,14 @@
 import asyncio
 import contextlib
 import subprocess
+import sys
 import time
 import uuid
 from typing import Type
 
-import aiostream
+if sys.version_info < (3, 9):
+    import aiostream
+
 import pytest
 import pytest_asyncio
 import requests

@@ -1,8 +1,12 @@
 import datetime
+import sys
 from textwrap import dedent
 
 import aiohttp
-import aiostream
+
+if sys.version_info < (3, 9):
+    import aiostream
+
 import pytest
 from aioresponses import aioresponses
 

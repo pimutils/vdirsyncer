@@ -1,8 +1,12 @@
 import os
+import sys
 import uuid
 
 import aiohttp
-import aiostream
+
+if sys.version_info < (3, 9):
+    import aiostream
+
 import pytest
 
 from tests import assert_item_equals

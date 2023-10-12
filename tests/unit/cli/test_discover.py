@@ -1,4 +1,7 @@
-import aiostream
+import sys
+
+if sys.version_info < (3, 9):
+    import aiostream
 import pytest
 
 from vdirsyncer.cli.discover import expand_collections

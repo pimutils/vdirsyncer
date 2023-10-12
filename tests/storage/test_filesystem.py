@@ -1,6 +1,9 @@
 import subprocess
+import sys
 
-import aiostream
+if sys.version_info < (3, 9):
+    import aiostream
+
 import pytest
 
 from vdirsyncer.storage.filesystem import FilesystemStorage
