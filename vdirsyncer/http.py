@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from ssl import create_default_context
 

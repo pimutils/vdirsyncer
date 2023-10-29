@@ -2,15 +2,14 @@
 #
 # Based on:
 # https://github.com/googleapis/google-auth-library-python-oauthlib/blob/1fb16be1bad9050ee29293541be44e41e82defd7/google_auth_oauthlib/flow.py#L513
+from __future__ import annotations
 
 import logging
 import wsgiref.simple_server
 import wsgiref.util
 from typing import Any
 from typing import Callable
-from typing import Dict
 from typing import Iterable
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ class _RedirectWSGIApp:
     Stores the request URI and displays the given success message.
     """
 
-    last_request_uri: Optional[str]
+    last_request_uri: str | None
 
     def __init__(self, success_message: str):
         """
@@ -41,7 +40,7 @@ class _RedirectWSGIApp:
 
     def __call__(
         self,
-        environ: Dict[str, Any],
+        environ: dict[str, Any],
         start_response: Callable[[str, list], None],
     ) -> Iterable[bytes]:
         """WSGI Callable.

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 
 from vdirsyncer.storage.dav import _BAD_XML_CHARS

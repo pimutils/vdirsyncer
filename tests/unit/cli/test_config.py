@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 from vdirsyncer.cli.config import _resolve_conflict_via_command

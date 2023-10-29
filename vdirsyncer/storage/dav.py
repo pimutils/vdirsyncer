@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 import logging
 import urllib.parse as urlparse
@@ -5,8 +7,6 @@ import xml.etree.ElementTree as etree
 from abc import abstractmethod
 from inspect import getfullargspec
 from inspect import signature
-from typing import Optional
-from typing import Type
 
 import aiohttp
 import aiostream
@@ -127,7 +127,7 @@ class Discover:
 
     @property
     @abstractmethod
-    def _resourcetype(self) -> Optional[str]:
+    def _resourcetype(self) -> str | None:
         pass
 
     @property
@@ -339,7 +339,7 @@ class CalDiscover(Discover):
 
 class CardDiscover(Discover):
     _namespace = "urn:ietf:params:xml:ns:carddav"
-    _resourcetype: Optional[str] = "{%s}addressbook" % _namespace
+    _resourcetype: str | None = "{%s}addressbook" % _namespace
     _homeset_xml = b"""
     <propfind xmlns="DAV:" xmlns:c="urn:ietf:params:xml:ns:carddav">
         <prop>
@@ -448,7 +448,7 @@ class DAVStorage(Storage):
 
     @property
     @abstractmethod
-    def discovery_class(self) -> Type[Discover]:
+    def discovery_class(self) -> type[Discover]:
         """Discover subclass to use."""
 
     # The DAVSession class to use
@@ -681,7 +681,7 @@ class DAVStorage(Storage):
         for href, etag, _prop in rv:
             yield href, etag
 
-    async def get_meta(self, key) -> Optional[str]:
+    async def get_meta(self, key) -> str | None:
         try:
             tagname, namespace = self._property_table[key]
         except KeyError:

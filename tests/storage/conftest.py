@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 import asyncio
 import contextlib
 import subprocess
 import time
 import uuid
-from typing import Type
 
 import aiostream
 import pytest
@@ -90,7 +91,7 @@ async def slow_create_collection(request, aio_connector):
     # storage limits.
     to_delete = []
 
-    async def inner(cls: Type, args: dict, collection_name: str) -> dict:
+    async def inner(cls: type, args: dict, collection_name: str) -> dict:
         """Create a collection
 
         Returns args necessary to create a Storage instance pointing to it.

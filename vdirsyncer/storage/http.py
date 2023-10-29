@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import urllib.parse as urlparse
 
 import aiohttp
@@ -34,7 +36,7 @@ class HttpStorage(Storage):
         auth_cert=None,
         *,
         connector,
-        **kwargs
+        **kwargs,
     ) -> None:
         super().__init__(**kwargs)
 

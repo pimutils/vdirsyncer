@@ -9,6 +9,8 @@ Yang: http://blog.ezyang.com/2012/08/how-offlineimap-works/
 Some modifications to it are explained in
 https://unterwaditzer.net/2016/sync-algorithm.html
 """
+from __future__ import annotations
+
 import contextlib
 import itertools
 import logging

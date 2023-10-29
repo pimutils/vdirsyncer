@@ -1,6 +1,8 @@
 """
 Test suite for vdirsyncer.
 """
+from __future__ import annotations
+
 import hypothesis.strategies as st
 import urllib3.exceptions
 

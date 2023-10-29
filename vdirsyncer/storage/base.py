@@ -1,10 +1,10 @@
+from __future__ import annotations
+
 import contextlib
 import functools
 from abc import ABCMeta
 from abc import abstractmethod
 from typing import Iterable
-from typing import List
-from typing import Optional
 
 from vdirsyncer.vobject import Item
 
@@ -73,7 +73,7 @@ class Storage(metaclass=StorageMeta):
     read_only = False
 
     # The attribute values to show in the representation of the storage.
-    _repr_attributes: List[str] = []
+    _repr_attributes: list[str] = []
 
     def __init__(self, instance_name=None, read_only=None, collection=None):
         if read_only is None:
@@ -132,7 +132,7 @@ class Storage(metaclass=StorageMeta):
         )
 
     @abstractmethod
-    async def list(self) -> List[tuple]:
+    async def list(self) -> list[tuple]:
         """
         :returns: list of (href, etag)
         """
@@ -227,7 +227,7 @@ class Storage(metaclass=StorageMeta):
         """
         yield
 
-    async def get_meta(self, key: str) -> Optional[str]:
+    async def get_meta(self, key: str) -> str | None:
         """Get metadata value for collection/storage.
 
         See the vdir specification for the keys that *have* to be accepted.
@@ -237,7 +237,7 @@ class Storage(metaclass=StorageMeta):
         """
         raise NotImplementedError("This storage does not support metadata.")
 
-    async def set_meta(self, key: str, value: Optional[str]):
+    async def set_meta(self, key: str, value: str | None):
         """Set metadata value for collection/storage.
 
         :param key: The metadata key.
@@ -246,7 +246,7 @@ class Storage(metaclass=StorageMeta):
         raise NotImplementedError("This storage does not support metadata.")
 
 
-def normalize_meta_value(value) -> Optional[str]:
+def normalize_meta_value(value) -> str | None:
     # `None` is returned by iCloud for empty properties.
     if value is None or value == "None":
         return None
