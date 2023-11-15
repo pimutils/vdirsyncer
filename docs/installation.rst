@@ -59,21 +59,25 @@ pipx: The clean, easy way
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 pipx_ is a new package manager for Python-based software that automatically
-sets up a virtual environment for each program you install. Assuming you have
-it installed on your operating system, you can do::
+sets up a virtual environment for each program it installs. Please note that
+installing via pipx will not include manual pages nor systemd services.
+
+pipx will install vdirsyncer into ``~/.local/pipx/venvs/vdirsyncer``
+
+Assuming that pipx is installed, vdirsyncer can be installed with::
 
     pipx install vdirsyncer
 
-and ``~/.local/pipx/venvs/vdirsyncer`` will be your new vdirsyncer installation. To
-update vdirsyncer to the latest version::
+It can later be updated to the latest version with::
 
     pipx upgrade vdirsyncer
 
-If you're done with vdirsyncer, you can do::
+And can be uninstalled with::
 
     pipx uninstall vdirsyncer
 
-and vdirsyncer will be uninstalled, including its dependencies.
+This last command will remove vdirsyncer and any dependencies installed into
+the above location.
 
 .. _pipx: https://github.com/pipxproject/pipx
 
