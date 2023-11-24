@@ -78,3 +78,19 @@ You can also simply prompt for the password::
     type = "caldav"
     username = "myusername"
     password.fetch = ["prompt", "Password for CalDAV"]
+
+Environment variable
+===============
+
+To read the password from an environment variable::
+
+    [storage foo]
+    type = "caldav"
+    username = "myusername"
+    password.fetch = ["command", "printenv", "DAV_PW"]
+
+This is especially handy if you use the same password multiple times
+(say, for a CardDAV and a CalDAV storage).
+On bash, you can read and export the password without printing::
+
+    read -s DAV_PW "DAV Password: " && export DAV_PW
