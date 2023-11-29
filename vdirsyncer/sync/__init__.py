@@ -241,7 +241,9 @@ class Delete(Action):
 
     async def _run_impl(self, a, b):
         meta = self.dest.status.get_new(self.ident)
-        if not self.dest.storage.read_only and not self.dest.storage.no_delete:
+        if self.dest.storage.read_only or self.dest.storage.no_delete:
+            sync_logger.debug(f"Skipping deletion of item {self.ident} from {self.dest.storage}")
+        else:
             sync_logger.info(f"Deleting item {self.ident} from {self.dest.storage}")
             await self.dest.storage.delete(meta.href, meta.etag)
 
