@@ -9,6 +9,7 @@ In alphabetical order:
 - Corey Hinshaw
 - Kai Herlemann
 - Hugo Osvaldo Barrera
+- Jason Cox
 - Julian Mehne
 - Malte Kiefer
 - Marek Marczykowski-Górecki
