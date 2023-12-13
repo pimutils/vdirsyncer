@@ -237,6 +237,31 @@ def test_broken_item():
     assert item.parsed is None
 
 
+def test_mismatched_end():
+    with pytest.raises(ValueError) as excinfo:
+        vobject._Component.parse(
+            [
+                "BEGIN:FOO",
+                "END:BAR",
+            ]
+        )
+
+    assert "Got END:BAR, expected END:FOO at line 2" in str(excinfo.value)
+
+
+def test_missing_end():
+    with pytest.raises(ValueError) as excinfo:
+        vobject._Component.parse(
+            [
+                "BEGIN:FOO",
+                "BEGIN:BAR",
+                "END:BAR",
+            ]
+        )
+
+    assert "Missing END for component(s): FOO" in str(excinfo.value)
+
+
 def test_multiple_items():
     with pytest.raises(ValueError) as excinfo:
         vobject._Component.parse(
