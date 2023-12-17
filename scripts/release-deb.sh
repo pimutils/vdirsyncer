@@ -21,7 +21,7 @@ trap cleanup EXIT
 cp scripts/_build_deb_in_container.bash "$CONTEXT"
 python setup.py sdist -d "$CONTEXT"
 
-podman run -it \
+docker run -it \
   --name "$CONTAINER_NAME" \
   --volume "$CONTEXT:/source" \
   "$DISTRO:$DISTROVER" \
