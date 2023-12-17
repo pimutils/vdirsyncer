@@ -24,4 +24,4 @@ tasks:
   - publish: |
       cd vdirsyncer
       python setup.py sdist bdist_wheel
-      twine upload dist/*
+      twine upload --non-interactive dist/*
