@@ -9,7 +9,4 @@ Support and Contact
 * Open `a GitHub issue <https://github.com/pimutils/vdirsyncer/issues/>`_ for
   concrete bug reports and feature requests.
 
-* Lastly, you can also `contact the author directly
-  <https://unterwaditzer.net/contact.html>`_. Do this for security issues. If
-  that doesn't work out (i.e. if I don't respond within one week), use
-  ``contact@pimutils.org``.
+* For security issues, contact ``contact@pimutils.org``.
