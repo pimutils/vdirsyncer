@@ -57,6 +57,35 @@ class Item:
 
         return Item("\r\n".join(parsed.dump_lines()))
 
+    def without_details(self):
+        """Returns a minimal version of this item.
+
+        Filters out data to reduce content size and hide private details:
+        * Description
+        * Location
+        * Organizer
+        * Attendees list
+        * Redundant timezone data (actual timezone of event is preserved)
+        """
+        parsed = _Component.parse(self.raw)
+        stack = [parsed]
+        while stack:
+            component = stack.pop()
+
+            component.subcomponents = [
+                subcomp for subcomp
+                in component.subcomponents
+                if subcomp.name != "VTIMEZONE"
+            ]
+            for field in ["DESCRIPTION", "ORGANIZER", "ATTENDEE", "LOCATION"]:
+                # Repeatedly delete because some fields can appear multiple times
+                while field in component:
+                    del component[field]
+
+            stack.extend(component.subcomponents)
+
+        return Item("\r\n".join(parsed.dump_lines()))
+
     @cached_property
     def raw(self):
         """Raw content of the item, as unicode string.
@@ -240,9 +269,9 @@ class _Component:
     Raw outline of the components.
 
     Vdirsyncer's operations on iCalendar and VCard objects are limited to
-    retrieving the UID and splitting larger files into items. Consequently this
-    parser is very lazy, with the downside that manipulation of item properties
-    are extremely costly.
+    retrieving the UID, removing fields, and splitting larger files into items.
+    Consequently this parser is very lazy, with the downside that manipulation
+    of item properties are extremely costly.
 
     Other features:
 
