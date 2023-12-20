@@ -42,7 +42,7 @@ class _StorageInfo:
         self.status = status
         self._item_cache = {}  # type: ignore[var-annotated]
 
-    async def prepare_new_status(self, remove_details: bool = False) -> bool:
+    async def prepare_new_status(self, remove_details: bool = False, required_attendee: str | None = None) -> bool:
         storage_nonempty = False
         prefetch = []
 
@@ -67,6 +67,8 @@ class _StorageInfo:
         # Prefetch items
         if prefetch:
             async for href, item, etag in self.storage.get_multi(prefetch):
+                if required_attendee and not item.has_confirmed_attendee(required_attendee):
+                    continue
                 if remove_details:
                     item = item.without_details()
                 _store_props(
@@ -107,7 +109,8 @@ async def sync(
     force_delete=False,
     error_callback=None,
     partial_sync="revert",
-    remove_details: bool=False,
+    remove_details: bool = False,
+    required_attendee: str | None = None,
 ) -> None:
     """Synchronizes two storages.
 
@@ -149,8 +152,14 @@ async def sync(
         a_info = _StorageInfo(storage_a, SubStatus(status, "a"))
         b_info = _StorageInfo(storage_b, SubStatus(status, "b"))
 
-        a_nonempty = await a_info.prepare_new_status(remove_details=remove_details)
-        b_nonempty = await b_info.prepare_new_status(remove_details=remove_details)
+        a_nonempty = await a_info.prepare_new_status(
+            remove_details=remove_details,
+            required_attendee=required_attendee
+        )
+        b_nonempty = await b_info.prepare_new_status(
+            remove_details=remove_details,
+            required_attendee=required_attendee
+        )
 
         if status_nonempty and not force_delete:
             if a_nonempty and not b_nonempty:

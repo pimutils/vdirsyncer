@@ -80,6 +80,7 @@ async def sync_collection(
                 error_callback=error_callback,
                 partial_sync=pair.partial_sync,
                 remove_details=pair.remove_details,
+                required_attendee=pair.required_attendee,
             )
 
         if sync_failed:

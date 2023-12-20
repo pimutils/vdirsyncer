@@ -56,6 +56,20 @@ class Item:
                     component["UID"] = new_uid
 
         return Item("\r\n".join(parsed.dump_lines()))
+    
+    def has_confirmed_attendee(self, email: str) -> bool:
+        """Returns True if the given attendee has accepted an invite to this event"""
+        parsed = _Component.parse(self.raw)
+        stack = [parsed]
+        while stack:
+            component = stack.pop()
+            for attendee_line in component.get_all("ATTENDEE"):
+                sections = attendee_line.split(";")
+                if f"CN={email}" in sections and "PARTSTAT=ACCEPTED" in sections:
+                    return True
+            stack.extend(component.subcomponents)
+
+        return False
 
     def without_details(self):
         """Returns a minimal version of this item.
@@ -78,8 +92,7 @@ class Item:
                 if subcomp.name != "VTIMEZONE"
             ]
             for field in ["DESCRIPTION", "ORGANIZER", "ATTENDEE", "LOCATION"]:
-                # Repeatedly delete because some fields can appear multiple times
-                while field in component:
+                if field in component:
                     del component[field]
 
             stack.extend(component.subcomponents)
@@ -264,6 +277,17 @@ def _get_item_type(components, wrappers):
         raise ValueError("Not sure how to join components.")
 
 
+def _extract_prop_value(line, key):
+    if line.startswith(key):
+        prefix_without_params = f"{key}:"
+        prefix_with_params = f"{key};"
+        if line.startswith(prefix_without_params):
+            return line[len(prefix_without_params) :]
+        elif line.startswith(prefix_with_params):
+            return line[len(prefix_with_params) :].split(":", 1)[-1]
+
+    return None
+
 class _Component:
     """
     Raw outline of the components.
@@ -347,20 +371,15 @@ class _Component:
     def __delitem__(self, key):
         prefix = (f"{key}:", f"{key};")
         new_lines = []
-        lineiter = iter(self.props)
-        while True:
-            for line in lineiter:
+        in_prop = False
+        for line in iter(self.props):
+            if not in_prop:
                 if line.startswith(prefix):
-                    break
+                    in_prop = True
                 else:
                     new_lines.append(line)
-            else:
-                break
-
-            for line in lineiter:
-                if not line.startswith((" ", "\t")):
-                    new_lines.append(line)
-                    break
+            elif not line.startswith((" ", "\t")):
+                in_prop = False
 
         self.props = new_lines
 
@@ -382,26 +401,25 @@ class _Component:
             raise ValueError(obj)
 
     def __getitem__(self, key):
-        prefix_without_params = f"{key}:"
-        prefix_with_params = f"{key};"
-        iterlines = iter(self.props)
-        for line in iterlines:
-            if line.startswith(prefix_without_params):
-                rv = line[len(prefix_without_params) :]
-                break
-            elif line.startswith(prefix_with_params):
-                rv = line[len(prefix_with_params) :].split(":", 1)[-1]
-                break
-        else:
+        try:
+            return next(self.get_all(key))
+        except StopIteration:
             raise KeyError
-
-        for line in iterlines:
-            if line.startswith((" ", "\t")):
-                rv += line[1:]
+    
+    def get_all(self, key: str):
+        rv = None
+        for line in iter(self.props):
+            if rv is None:
+                rv = _extract_prop_value(line, key)
             else:
-                break
-
-        return rv
+                if line.startswith((" ", "\t")):
+                    rv += line[1:]
+                else:
+                    yield rv
+                    rv = _extract_prop_value(line, key)
+        
+        if rv is not None:
+            yield rv
 
     def get(self, key, default=None):
         try:
