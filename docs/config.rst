@@ -378,6 +378,7 @@ Local
       fileext = "..."
       #encoding = "utf-8"
       #post_hook = null
+      #pre_deletion_hook = null
       #fileignoreext = ".tmp"
 
     Can be used with `khal <http://lostpackets.de/khal/>`_. See :doc:`vdir` for
@@ -399,6 +400,8 @@ Local
     :param post_hook: A command to call for each item creation and
         modification. The command will be called with the path of the
         new/updated file.
+    :param pre_deletion_hook: A command to call for each item deletion.
+        The command will be called with the path of the deleted file.
     :param fileeignoreext: The file extention to ignore. It is only useful
         if fileext is set to the empty string. The default is ``.tmp``.
 

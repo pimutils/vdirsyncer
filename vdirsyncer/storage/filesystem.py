@@ -29,6 +29,7 @@ class FilesystemStorage(Storage):
         fileext,
         encoding="utf-8",
         post_hook=None,
+        pre_deletion_hook=None,
         fileignoreext=".tmp",
         **kwargs,
     ):
@@ -40,6 +41,7 @@ class FilesystemStorage(Storage):
         self.fileext = fileext
         self.fileignoreext = fileignoreext
         self.post_hook = post_hook
+        self.pre_deletion_hook = pre_deletion_hook
 
     @classmethod
     async def discover(cls, path, **kwargs):
@@ -166,12 +168,22 @@ class FilesystemStorage(Storage):
         actual_etag = get_etag_from_file(fpath)
         if etag != actual_etag:
             raise exceptions.WrongEtagError(etag, actual_etag)
+        if self.pre_deletion_hook:
+            self._run_pre_deletion_hook(fpath)
+
         os.remove(fpath)
 
     def _run_post_hook(self, fpath):
         logger.info(f"Calling post_hook={self.post_hook} with argument={fpath}")
         try:
             subprocess.call([self.post_hook, fpath])
+        except OSError as e:
+            logger.warning(f"Error executing external hook: {str(e)}")
+
+    def _run_pre_deletion_hook(self, fpath):
+        logger.info(f"Calling pre_deletion_hook={self.pre_deletion_hook} with argument={fpath}")
+        try:
+            subprocess.call([self.pre_deletion_hook, fpath])
         except OSError as e:
             logger.warning(f"Error executing external hook: {str(e)}")
 
