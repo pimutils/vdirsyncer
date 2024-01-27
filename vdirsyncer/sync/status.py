@@ -187,7 +187,7 @@ class SqliteStatus(_StatusBase):
                 self._c = new_c
                 yield
                 self._c.execute("DELETE FROM status")
-                self._c.execute("INSERT INTO status " "SELECT * FROM new_status")
+                self._c.execute("INSERT INTO status SELECT * FROM new_status")
                 self._c.execute("DELETE FROM new_status")
         finally:
             self._c = old_c
@@ -199,7 +199,7 @@ class SqliteStatus(_StatusBase):
             raise IdentAlreadyExists(old_href=old_props.href, new_href=a_props.href)
         b_props = self.get_new_b(ident) or ItemMetadata()
         self._c.execute(
-            "INSERT OR REPLACE INTO new_status " "VALUES(?, ?, ?, ?, ?, ?, ?)",
+            "INSERT OR REPLACE INTO new_status VALUES(?, ?, ?, ?, ?, ?, ?)",
             (
                 ident,
                 a_props.href,
@@ -218,7 +218,7 @@ class SqliteStatus(_StatusBase):
             raise IdentAlreadyExists(old_href=old_props.href, new_href=b_props.href)
         a_props = self.get_new_a(ident) or ItemMetadata()
         self._c.execute(
-            "INSERT OR REPLACE INTO new_status " "VALUES(?, ?, ?, ?, ?, ?, ?)",
+            "INSERT OR REPLACE INTO new_status VALUES(?, ?, ?, ?, ?, ?, ?)",
             (
                 ident,
                 a_props.href,
@@ -232,14 +232,14 @@ class SqliteStatus(_StatusBase):
 
     def update_ident_a(self, ident, props):
         self._c.execute(
-            "UPDATE new_status" " SET href_a=?, hash_a=?, etag_a=?" " WHERE ident=?",
+            "UPDATE new_status SET href_a=?, hash_a=?, etag_a=? WHERE ident=?",
             (props.href, props.hash, props.etag, ident),
         )
         assert self._c.rowcount > 0
 
     def update_ident_b(self, ident, props):
         self._c.execute(
-            "UPDATE new_status" " SET href_b=?, hash_b=?, etag_b=?" " WHERE ident=?",
+            "UPDATE new_status SET href_b=?, hash_b=?, etag_b=? WHERE ident=?",
             (props.href, props.hash, props.etag, ident),
         )
         assert self._c.rowcount > 0
@@ -300,7 +300,7 @@ class SqliteStatus(_StatusBase):
             return
 
         self._c.execute(
-            "INSERT OR REPLACE INTO new_status" " VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT OR REPLACE INTO new_status VALUES (?, ?, ?, ?, ?, ?, ?)",
             (ident, a.href, b.href, a.hash, b.hash, a.etag, b.etag),
         )
 
