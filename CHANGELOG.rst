@@ -15,6 +15,7 @@ Version 0.19.3
 - Added a no_delete option to the storage configuration. :gh:`1090`
 - Fix crash when running ``vdirsyncer repair`` on a collection. :gh:`1019`
 - Add an option to request vCard v4.0.  :gh:`1066`
+- Require matching ``BEGIN`` and ``END`` lines in vobjects. :gh:`1103`
 
 Version 0.19.2
 ==============

@@ -281,6 +281,12 @@ class _Component:
                     stack.append(cls(c_name, [], []))
                 elif line.startswith("END:"):
                     component = stack.pop()
+                    c_name = line[len("END:") :].strip().upper()
+                    if c_name != component.name:
+                        raise ValueError(
+                            f"Got END:{c_name}, expected END:{component.name}"
+                            + f" at line {_i + 1}"
+                        )
                     if stack:
                         stack[-1].subcomponents.append(component)
                     else:
@@ -290,6 +296,11 @@ class _Component:
                         stack[-1].props.append(line)
         except IndexError:
             raise ValueError(f"Parsing error at line {_i + 1}")
+
+        if len(stack) > 0:
+            raise ValueError(
+                f"Missing END for component(s): {', '.join(c.name for c in stack)}"
+            )
 
         if multiple:
             return rv
