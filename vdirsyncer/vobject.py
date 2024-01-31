@@ -36,7 +36,6 @@ IGNORE_PROPS = (
 
 
 class Item:
-
     """Immutable wrapper class for VCALENDAR (VEVENT, VTODO) and
     VCARD"""
 

@@ -2,6 +2,7 @@
 Contains exception classes used by vdirsyncer. Not all exceptions are here,
 only the most commonly used ones.
 """
+
 from __future__ import annotations
 
 

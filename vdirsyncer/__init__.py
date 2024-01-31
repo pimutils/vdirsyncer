@@ -1,6 +1,7 @@
 """
 Vdirsyncer synchronizes calendars and contacts.
 """
+
 from __future__ import annotations
 
 PROJECT_HOME = "https://github.com/pimutils/vdirsyncer"
