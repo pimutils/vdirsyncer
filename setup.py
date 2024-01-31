@@ -4,6 +4,7 @@ Vdirsyncer synchronizes calendars and contacts.
 Please refer to https://vdirsyncer.pimutils.org/en/stable/packaging.html for
 how to package vdirsyncer.
 """
+
 from __future__ import annotations
 
 from setuptools import Command

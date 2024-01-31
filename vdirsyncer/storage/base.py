@@ -34,7 +34,6 @@ class StorageMeta(ABCMeta):
 
 
 class Storage(metaclass=StorageMeta):
-
     """Superclass of all storages, interface that all storages have to
     implement.
 
@@ -67,8 +66,8 @@ class Storage(metaclass=StorageMeta):
     # The machine-readable name of this collection.
     collection = None
 
-    #A value of False means storage does not support delete requests. A
-    #value of True mean the storage supports it.
+    # A value of False means storage does not support delete requests. A
+    # value of True mean the storage supports it.
     no_delete = False
 
     # A value of True means the storage does not support write-methods such as
@@ -79,7 +78,13 @@ class Storage(metaclass=StorageMeta):
     # The attribute values to show in the representation of the storage.
     _repr_attributes: list[str] = []
 
-    def __init__(self, instance_name=None, read_only=None, no_delete=None, collection=None):
+    def __init__(
+        self,
+        instance_name=None,
+        read_only=None,
+        no_delete=None,
+        collection=None,
+    ):
         if read_only is None:
             read_only = self.read_only
         if self.read_only and not read_only:

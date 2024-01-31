@@ -9,6 +9,7 @@ Yang: http://blog.ezyang.com/2012/08/how-offlineimap-works/
 Some modifications to it are explained in
 https://unterwaditzer.net/2016/sync-algorithm.html
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -244,7 +245,9 @@ class Delete(Action):
     async def _run_impl(self, a, b):
         meta = self.dest.status.get_new(self.ident)
         if self.dest.storage.read_only or self.dest.storage.no_delete:
-            sync_logger.debug(f"Skipping deletion of item {self.ident} from {self.dest.storage}")
+            sync_logger.debug(
+                f"Skipping deletion of item {self.ident} from {self.dest.storage}"
+            )
         else:
             sync_logger.info(f"Deleting item {self.ident} from {self.dest.storage}")
             await self.dest.storage.delete(meta.href, meta.etag)
