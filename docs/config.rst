@@ -61,7 +61,8 @@ Pair Section
   sync`` is executed. See also :ref:`collections_tutorial`.
 
   The special values ``"from a"`` and ``"from b"``, tell vdirsyncer to try
-  autodiscovery on a specific storage.
+  autodiscovery on a specific storage. It means all the collections on side A / 
+  side B.
 
   If the collection you want to sync doesn't have the same name on each side,
   you may also use a value of the form ``["config_name", "name_a", "name_b"]``.
@@ -71,8 +72,8 @@ Pair Section
 
   Examples:
 
-  - ``collections = ["from b", "foo", "bar"]`` makes vdirsyncer synchronize the
-    collections from side B, and also the collections named "foo" and "bar".
+  - ``collections = ["from b", "foo", "bar"]`` makes vdirsyncer synchronize all 
+    the collections from side B, and also the collections named "foo" and "bar".
 
   - ``collections = ["from b", "from a"]`` makes vdirsyncer synchronize all
     existing collections on either side.
