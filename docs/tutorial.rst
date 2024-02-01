@@ -176,8 +176,11 @@ as a file called ``color`` within the calendar folder.
 More information about collections
 ----------------------------------
 
-"Collection" is a collective term for addressbooks and calendars. Each
-collection from a storage has a "collection name", a unique identifier for each
+"Collection" is a collective term for addressbooks and calendars. A Cardav or 
+Caldav server can contains several "collections" which correspond to several 
+addressbooks or calendar.
+
+Each collection from a storage has a "collection name", a unique identifier for each
 collection. In the case of :storage:`filesystem`-storage, this is the name of the
 directory that represents the collection, in the case of the DAV-storages this
 is the last segment of the URL. We use this identifier in the ``collections``
