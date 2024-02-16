@@ -59,6 +59,15 @@ Links of interest
 
 * `Donations <https://vdirsyncer.pimutils.org/en/stable/donations.html>`_
 
+Dockerized
+=================
+If you want to run `Vdirsyncer <https://vdirsyncer.pimutils.org/en/stable/>`_ in a
+Docker environment, you can check out the following GitHub Repository:
+
+* `Vdirsyncer DOCKERIZED <https://github.com/Bleala/Vdirsyncer-DOCKERIZED>`_
+
+Note: This is an unofficial Docker build, it is maintained by `Bleala <https://github.com/Bleala>`_.
+
 License
 =======
 
