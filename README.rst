@@ -64,7 +64,7 @@ Dockerized
 If you want to run `Vdirsyncer <https://vdirsyncer.pimutils.org/en/stable/>`_ in a
 Docker environment, you can check out the following Docker Hub Repository:
 
-* `Vdirsyncer DOCKERIZED <https://hub.docker.com/r/bleala/vdirsyncer>`_
+* `Vdirsyncer DOCKERIZED <https://github.com/Bleala/Vdirsyncer-DOCKERIZED>`_
 
 Note: This is an unofficial Docker build, this is maintained by `Bleala <https://github.com/Bleala>`_
 
