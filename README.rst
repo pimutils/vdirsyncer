@@ -62,7 +62,7 @@ Links of interest
 Dockerized
 =================
 If you want to run `Vdirsyncer <https://vdirsyncer.pimutils.org/en/stable/>`_ in a
-Docker environment, you can check out the following Docker Hub Repository:
+Docker environment, you can check out the following GitHub Repository:
 
 * `Vdirsyncer DOCKERIZED <https://github.com/Bleala/Vdirsyncer-DOCKERIZED>`_
 
