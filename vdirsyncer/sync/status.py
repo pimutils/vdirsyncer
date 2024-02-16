@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import abc
 import contextlib
 import sqlite3
@@ -185,7 +187,7 @@ class SqliteStatus(_StatusBase):
                 self._c = new_c
                 yield
                 self._c.execute("DELETE FROM status")
-                self._c.execute("INSERT INTO status " "SELECT * FROM new_status")
+                self._c.execute("INSERT INTO status SELECT * FROM new_status")
                 self._c.execute("DELETE FROM new_status")
         finally:
             self._c = old_c
@@ -197,7 +199,7 @@ class SqliteStatus(_StatusBase):
             raise IdentAlreadyExists(old_href=old_props.href, new_href=a_props.href)
         b_props = self.get_new_b(ident) or ItemMetadata()
         self._c.execute(
-            "INSERT OR REPLACE INTO new_status " "VALUES(?, ?, ?, ?, ?, ?, ?)",
+            "INSERT OR REPLACE INTO new_status VALUES(?, ?, ?, ?, ?, ?, ?)",
             (
                 ident,
                 a_props.href,
@@ -216,7 +218,7 @@ class SqliteStatus(_StatusBase):
             raise IdentAlreadyExists(old_href=old_props.href, new_href=b_props.href)
         a_props = self.get_new_a(ident) or ItemMetadata()
         self._c.execute(
-            "INSERT OR REPLACE INTO new_status " "VALUES(?, ?, ?, ?, ?, ?, ?)",
+            "INSERT OR REPLACE INTO new_status VALUES(?, ?, ?, ?, ?, ?, ?)",
             (
                 ident,
                 a_props.href,
@@ -230,14 +232,14 @@ class SqliteStatus(_StatusBase):
 
     def update_ident_a(self, ident, props):
         self._c.execute(
-            "UPDATE new_status" " SET href_a=?, hash_a=?, etag_a=?" " WHERE ident=?",
+            "UPDATE new_status SET href_a=?, hash_a=?, etag_a=? WHERE ident=?",
             (props.href, props.hash, props.etag, ident),
         )
         assert self._c.rowcount > 0
 
     def update_ident_b(self, ident, props):
         self._c.execute(
-            "UPDATE new_status" " SET href_b=?, hash_b=?, etag_b=?" " WHERE ident=?",
+            "UPDATE new_status SET href_b=?, hash_b=?, etag_b=? WHERE ident=?",
             (props.href, props.hash, props.etag, ident),
         )
         assert self._c.rowcount > 0
@@ -247,10 +249,10 @@ class SqliteStatus(_StatusBase):
 
     def _get_impl(self, ident, side, table):
         res = self._c.execute(
-            "SELECT href_{side} AS href,"
-            "       hash_{side} AS hash,"
-            "       etag_{side} AS etag "
-            "FROM {table} WHERE ident=?".format(side=side, table=table),
+            f"SELECT href_{side} AS href,"
+            f"       hash_{side} AS hash,"
+            f"       etag_{side} AS etag "
+            f"FROM {table} WHERE ident=?",
             (ident,),
         ).fetchone()
         if res is None:
@@ -298,14 +300,14 @@ class SqliteStatus(_StatusBase):
             return
 
         self._c.execute(
-            "INSERT OR REPLACE INTO new_status" " VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT OR REPLACE INTO new_status VALUES (?, ?, ?, ?, ?, ?, ?)",
             (ident, a.href, b.href, a.hash, b.hash, a.etag, b.etag),
         )
 
     def _get_by_href_impl(self, href, default=(None, None), side=None):
         res = self._c.execute(
-            "SELECT ident, hash_{side} AS hash, etag_{side} AS etag "
-            "FROM status WHERE href_{side}=?".format(side=side),
+            f"SELECT ident, hash_{side} AS hash, etag_{side} AS etag "
+            f"FROM status WHERE href_{side}=?",
             (href,),
         ).fetchone()
         if not res:

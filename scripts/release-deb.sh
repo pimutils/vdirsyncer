@@ -5,8 +5,10 @@ set -xeu
 SCRIPT_PATH=$(realpath "$0")
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
 
-DISTRO=$1
-DISTROVER=$2
+# E.g.: debian, ubuntu
+DISTRO=${DISTRO:1}
+# E.g.: bullseye, bookwork
+DISTROVER=${DISTROVER:2}
 CONTAINER_NAME="vdirsyncer-${DISTRO}-${DISTROVER}"
 CONTEXT="$(mktemp -d)"
 
@@ -21,7 +23,7 @@ trap cleanup EXIT
 cp scripts/_build_deb_in_container.bash "$CONTEXT"
 python setup.py sdist -d "$CONTEXT"
 
-podman run -it \
+docker run -it \
   --name "$CONTAINER_NAME" \
   --volume "$CONTEXT:/source" \
   "$DISTRO:$DISTROVER" \

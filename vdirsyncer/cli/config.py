@@ -5,11 +5,15 @@ import os
 import string
 from configparser import RawConfigParser
 from itertools import chain
+from typing import IO
+from typing import Any
+from typing import Generator
 
 from .. import PROJECT_HOME
 from .. import exceptions
 from ..utils import cached_property
 from ..utils import expand_path
+from ..vobject import Item
 from .fetchparams import expand_fetch_params
 from .utils import storage_class_from_config
 
@@ -23,16 +27,16 @@ def validate_section_name(name, section_type):
     if invalid:
         chars_display = "".join(sorted(SECTION_NAME_CHARS))
         raise exceptions.UserError(
-            'The {}-section "{}" contains invalid characters. Only '
+            f'The {section_type}-section "{name}" contains invalid characters. Only '
             "the following characters are allowed for storage and "
-            "pair names:\n{}".format(section_type, name, chars_display)
+            f"pair names:\n{chars_display}"
         )
 
 
-def _validate_general_section(general_config):
+def _validate_general_section(general_config: dict[str, str]):
     invalid = set(general_config) - GENERAL_ALL
     missing = GENERAL_REQUIRED - set(general_config)
-    problems = []
+    problems: list[str] = []
 
     if invalid:
         problems.append(
@@ -47,7 +51,7 @@ def _validate_general_section(general_config):
     if problems:
         raise exceptions.UserError(
             "Invalid general section. Copy the example "
-            "config from the repository and edit it: {}".format(PROJECT_HOME),
+            f"config from the repository and edit it: {PROJECT_HOME}",
             problems=problems,
         )
 
@@ -92,17 +96,19 @@ def _validate_collections_param(collections):
 
 
 class _ConfigReader:
-    def __init__(self, f):
-        self._file = f
+    def __init__(self, f: IO[Any]):
+        self._file: IO[Any] = f
         self._parser = c = RawConfigParser()
         c.read_file(f)
-        self._seen_names = set()
+        self._seen_names: set = set()
 
-        self._general = {}
-        self._pairs = {}
-        self._storages = {}
+        self._general: dict[str, str] = {}
+        self._pairs: dict[str, dict[str, str]] = {}
+        self._storages: dict[str, dict[str, str]] = {}
 
-    def _parse_section(self, section_type, name, options):
+    def _parse_section(
+        self, section_type: str, name: str, options: dict[str, Any]
+    ) -> None:
         validate_section_name(name, section_type)
         if name in self._seen_names:
             raise ValueError(f'Name "{name}" already used.')
@@ -119,7 +125,9 @@ class _ConfigReader:
         else:
             raise ValueError("Unknown section type.")
 
-    def parse(self):
+    def parse(
+        self,
+    ) -> tuple[dict[str, str], dict[str, dict[str, str]], dict[str, dict[str, str]]]:
         for section in self._parser.sections():
             if " " in section:
                 section_type, name = section.split(" ", 1)
@@ -145,7 +153,9 @@ class _ConfigReader:
         return self._general, self._pairs, self._storages
 
 
-def _parse_options(items, section=None):
+def _parse_options(
+    items: list[tuple[str, str]], section: str | None = None
+) -> Generator[tuple[str, dict[str, str]], None, None]:
     for key, value in items:
         try:
             yield key, json.loads(value)
@@ -154,13 +164,18 @@ def _parse_options(items, section=None):
 
 
 class Config:
-    def __init__(self, general, pairs, storages):
+    def __init__(
+        self,
+        general: dict[str, str],
+        pairs: dict[str, dict[str, str]],
+        storages: dict[str, dict[str, str]],
+    ) -> None:
         self.general = general
         self.storages = storages
         for name, options in storages.items():
             options["instance_name"] = name
 
-        self.pairs = {}
+        self.pairs: dict[str, PairConfig] = {}
         for name, options in pairs.items():
             try:
                 self.pairs[name] = PairConfig(self, name, options)
@@ -168,12 +183,12 @@ class Config:
                 raise exceptions.UserError(f"Pair {name}: {e}")
 
     @classmethod
-    def from_fileobject(cls, f):
+    def from_fileobject(cls, f: IO[Any]):
         reader = _ConfigReader(f)
         return cls(*reader.parse())
 
     @classmethod
-    def from_filename_or_environment(cls, fname=None):
+    def from_filename_or_environment(cls, fname: str | None = None):
         if fname is None:
             fname = os.environ.get("VDIRSYNCER_CONFIG", None)
         if fname is None:
@@ -190,15 +205,13 @@ class Config:
         except Exception as e:
             raise exceptions.UserError(f"Error during reading config {fname}: {e}")
 
-    def get_storage_args(self, storage_name):
+    def get_storage_args(self, storage_name: str):
         try:
             args = self.storages[storage_name]
         except KeyError:
             raise exceptions.UserError(
-                "Storage {!r} not found. "
-                "These are the configured storages: {}".format(
-                    storage_name, list(self.storages)
-                )
+                f"Storage {storage_name!r} not found. "
+                f"These are the configured storages: {list(self.storages)}"
             )
         else:
             return expand_fetch_params(args)
@@ -211,13 +224,13 @@ class Config:
 
 
 class PairConfig:
-    def __init__(self, full_config, name, options):
-        self._config = full_config
-        self.name = name
-        self.name_a = options.pop("a")
-        self.name_b = options.pop("b")
+    def __init__(self, full_config: Config, name: str, options: dict[str, str]):
+        self._config: Config = full_config
+        self.name: str = name
+        self.name_a: str = options.pop("a")
+        self.name_b: str = options.pop("b")
 
-        self._partial_sync = options.pop("partial_sync", None)
+        self._partial_sync: str | None = options.pop("partial_sync", None)
         self.metadata = options.pop("metadata", None) or ()
 
         self.conflict_resolution = self._process_conflict_resolution_param(
@@ -238,7 +251,9 @@ class PairConfig:
         if options:
             raise ValueError("Unknown options: {}".format(", ".join(options)))
 
-    def _process_conflict_resolution_param(self, conflict_resolution):
+    def _process_conflict_resolution_param(
+        self, conflict_resolution: str | list[str] | None
+    ):
         if conflict_resolution in (None, "a wins", "b wins"):
             return conflict_resolution
         elif (
@@ -302,10 +317,10 @@ class PairConfig:
 
 
 class CollectionConfig:
-    def __init__(self, pair, name, config_a, config_b):
+    def __init__(self, pair, name: str, config_a, config_b):
         self.pair = pair
         self._config = pair._config
-        self.name = name
+        self.name: str = name
         self.config_a = config_a
         self.config_b = config_b
 
@@ -314,7 +329,9 @@ class CollectionConfig:
 load_config = Config.from_filename_or_environment
 
 
-def _resolve_conflict_via_command(a, b, command, a_name, b_name, _check_call=None):
+def _resolve_conflict_via_command(
+    a, b, command, a_name, b_name, _check_call=None
+) -> Item:
     import shutil
     import tempfile
 

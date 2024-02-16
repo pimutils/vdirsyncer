@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import hypothesis.strategies as st
 from hypothesis import assume
 from hypothesis import given

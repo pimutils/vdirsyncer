@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 
 import click
@@ -65,8 +67,7 @@ def _fetch_value(opts, key):
     else:
         if not rv:
             raise exceptions.UserError(
-                "Empty value for {}, this most likely "
-                "indicates an error.".format(key)
+                f"Empty value for {key}, this most likely indicates an error."
             )
         password_cache[cache_key] = rv
         return rv

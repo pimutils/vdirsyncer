@@ -16,6 +16,8 @@ SPDX-License-Identifier: BSD-3-Clause
 SPDX-FileCopyrightText: 2021 Intevation GmbH <https://intevation.de>
 Author: <bernhard.reiter@intevation.de>
 """
+from __future__ import annotations
+
 import re
 import subprocess
 import sys

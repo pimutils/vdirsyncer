@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import hypothesis.strategies as st
 import pytest
 import pytest_asyncio

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import hashlib
 import json
@@ -57,7 +59,7 @@ async def collections_for_pair(
     cache_key = _get_collections_cache_key(pair)
     if from_cache:
         rv = load_status(status_path, pair.name, data_type="collections")
-        if rv and rv.get("cache_key", None) == cache_key:
+        if rv.get("cache_key", None) == cache_key:
             return list(
                 _expand_collections_cache(
                     rv["collections"], pair.config_a, pair.config_b
@@ -66,18 +68,18 @@ async def collections_for_pair(
         elif rv:
             raise exceptions.UserError(
                 "Detected change in config file, "
-                "please run `vdirsyncer discover {}`.".format(pair.name)
+                f"please run `vdirsyncer discover {pair.name}`."
             )
         else:
             raise exceptions.UserError(
-                "Please run `vdirsyncer discover {}` "
-                " before synchronization.".format(pair.name)
+                f"Please run `vdirsyncer discover {pair.name}` "
+                " before synchronization."
             )
 
     logger.info(f"Discovering collections for pair {pair.name}")
 
-    a_discovered = _DiscoverResult(pair.config_a, connector=connector)
-    b_discovered = _DiscoverResult(pair.config_b, connector=connector)
+    a_discovered = DiscoverResult(pair.config_a, connector=connector)
+    b_discovered = DiscoverResult(pair.config_b, connector=connector)
 
     if list_collections:
         # TODO: We should gather data and THEN print, so it can be async.
@@ -108,8 +110,8 @@ async def collections_for_pair(
     await _sanity_check_collections(rv, connector=connector)
 
     save_status(
-        status_path,
-        pair.name,
+        base_path=status_path,
+        pair=pair.name,
         data_type="collections",
         data={
             "collections": list(
@@ -155,7 +157,7 @@ def _expand_collections_cache(collections, config_a, config_b):
         yield name, (a, b)
 
 
-class _DiscoverResult:
+class DiscoverResult:
     def __init__(self, config, *, connector):
         self._cls, _ = storage_class_from_config(config)
 
@@ -271,8 +273,8 @@ async def _print_collections(
 
         logger.debug("".join(traceback.format_tb(sys.exc_info()[2])))
         logger.warning(
-            "Failed to discover collections for {}, use `-vdebug` "
-            "to see the full traceback.".format(instance_name)
+            f"Failed to discover collections for {instance_name}, use `-vdebug` "
+            "to see the full traceback."
         )
         return
     logger.info(f"{instance_name}:")

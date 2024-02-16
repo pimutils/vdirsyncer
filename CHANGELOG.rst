@@ -9,6 +9,29 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.19.3
+==============
+
+- Added a no_delete option to the storage configuration. :gh:`1090`
+- Fix crash when running ``vdirsyncer repair`` on a collection. :gh:`1019`
+- Add an option to request vCard v4.0.  :gh:`1066`
+- Require matching ``BEGIN`` and ``END`` lines in vobjects. :gh:`1103`
+
+Version 0.19.2
+==============
+
+- Improve the performance of ``SingleFileStorage``. :gh:`818`
+- Properly document some caveats of the Google Contacts storage.
+- Fix crash when using auth certs. :gh:`1033`
+- The ``filesystem`` storage can be specified with ``type =
+  "filesystem/icalendar"`` or ``type = "filesystem/vcard"``. This has not
+  functional impact, and is merely for forward compatibility with the Rust
+  implementation of vdirsyncer.
+- Python 3.10 and 3.11 are officially supported.
+- Instructions for integrating with Google CalDav/CardDav have changed.
+  Applications now need to be registered as "Desktop applications". Using "Web
+  application" no longer works due to changes on Google's side. :gh:`1078`
+
 Version 0.19.1
 ==============
 

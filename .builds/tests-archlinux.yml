@@ -36,8 +36,9 @@ environment:
   REQUIREMENTS: release
   # TODO: ETESYNC_TESTS
 tasks:
-  - setup: |
+  - docker: |
       sudo systemctl start docker
+  - setup: |
       cd vdirsyncer
       python -m build --wheel --skip-dependency-check --no-isolation
       sudo python -m installer dist/*.whl

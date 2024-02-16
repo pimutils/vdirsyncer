@@ -10,11 +10,11 @@ OS/distro packages
 The following packages are community-contributed and were up-to-date at the
 time of writing:
 
-- `ArchLinux <https://www.archlinux.org/packages/community/any/vdirsyncer/>`_
+- `Arch Linux <https://archlinux.org/packages/extra/any/vdirsyncer/>`_
 - `Ubuntu and Debian, x86_64-only
   <https://packagecloud.io/pimutils/vdirsyncer>`_ (packages also exist
   in the official repositories but may be out of date)
-- `GNU Guix <https://www.gnu.org/software/guix/package-list.html#vdirsyncer>`_
+- `GNU Guix <https://packages.guix.gnu.org/packages/vdirsyncer/>`_
 - `macOS (homebrew) <https://formulae.brew.sh/formula/vdirsyncer>`_
 - `NetBSD <https://ftp.netbsd.org/pub/pkgsrc/current/pkgsrc/time/py-vdirsyncer/index.html>`_
 - `OpenBSD <http://ports.su/productivity/vdirsyncer>`_
@@ -42,7 +42,7 @@ If your distribution doesn't provide a package for vdirsyncer, you still can
 use Python's package manager "pip". First, you'll have to check that the
 following things are installed:
 
-- Python 3.7+ and pip.
+- Python 3.7 to 3.11 and pip.
 - ``libxml`` and ``libxslt``
 - ``zlib``
 - Linux or macOS. **Windows is not supported**, see :gh:`535`.
@@ -59,21 +59,25 @@ pipx: The clean, easy way
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 pipx_ is a new package manager for Python-based software that automatically
-sets up a virtual environment for each program you install. Assuming you have
-it installed on your operating system, you can do::
+sets up a virtual environment for each program it installs. Please note that
+installing via pipx will not include manual pages nor systemd services.
+
+pipx will install vdirsyncer into ``~/.local/pipx/venvs/vdirsyncer``
+
+Assuming that pipx is installed, vdirsyncer can be installed with::
 
     pipx install vdirsyncer
 
-and ``~/.local/pipx/venvs/vdirsyncer`` will be your new vdirsyncer installation. To
-update vdirsyncer to the latest version::
+It can later be updated to the latest version with::
 
     pipx upgrade vdirsyncer
 
-If you're done with vdirsyncer, you can do::
+And can be uninstalled with::
 
     pipx uninstall vdirsyncer
 
-and vdirsyncer will be uninstalled, including its dependencies.
+This last command will remove vdirsyncer and any dependencies installed into
+the above location.
 
 .. _pipx: https://github.com/pipxproject/pipx
 

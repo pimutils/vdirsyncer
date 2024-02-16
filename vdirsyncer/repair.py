@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from os.path import basename
 
@@ -24,9 +26,9 @@ async def repair_storage(storage, repair_unsafe_uid):
             new_item = repair_item(href, item, seen_uids, repair_unsafe_uid)
         except IrreparableItem:
             logger.error(
-                "Item {!r} is malformed beyond repair. "
+                f"Item {href!r} is malformed beyond repair. "
                 "The PRODID property may indicate which software "
-                "created this item.".format(href)
+                "created this item."
             )
             logger.error(f"Item content: {item.raw!r}")
             continue

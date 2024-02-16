@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import json
 from textwrap import dedent
-from typing import List
 
 import pytest
 
@@ -152,7 +153,7 @@ def test_discover_direct_path(tmpdir, runner):
 def test_null_collection_with_named_collection(tmpdir, runner):
     runner.write_with_general(
         dedent(
-            """
+            f"""
     [pair foobar]
     a = "foo"
     b = "bar"
@@ -160,15 +161,13 @@ def test_null_collection_with_named_collection(tmpdir, runner):
 
     [storage foo]
     type = "filesystem"
-    path = "{base}/foo/"
+    path = "{str(tmpdir)}/foo/"
     fileext = ".txt"
 
     [storage bar]
     type = "singlefile"
-    path = "{base}/bar.txt"
-    """.format(
-                base=str(tmpdir)
-            )
+    path = "{str(tmpdir)}/bar.txt"
+    """
         )
     )
 
@@ -212,7 +211,7 @@ def test_collection_required(a_requires, b_requires, tmpdir, runner, monkeypatch
         async def get(self, href: str):
             raise NotImplementedError
 
-        async def list(self) -> List[tuple]:
+        async def list(self) -> list[tuple]:
             raise NotImplementedError
 
     from vdirsyncer.cli.utils import storage_names
@@ -221,7 +220,7 @@ def test_collection_required(a_requires, b_requires, tmpdir, runner, monkeypatch
 
     runner.write_with_general(
         dedent(
-            """
+            f"""
     [pair foobar]
     a = "foo"
     b = "bar"
@@ -229,14 +228,12 @@ def test_collection_required(a_requires, b_requires, tmpdir, runner, monkeypatch
 
     [storage foo]
     type = "test"
-    require_collection = {a}
+    require_collection = {json.dumps(a_requires)}
 
     [storage bar]
     type = "test"
-    require_collection = {b}
-    """.format(
-                a=json.dumps(a_requires), b=json.dumps(b_requires)
-            )
+    require_collection = {json.dumps(b_requires)}
+    """
         )
     )
 

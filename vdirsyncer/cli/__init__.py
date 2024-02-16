@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import functools
 import json
@@ -45,7 +47,7 @@ def catch_errors(f):
 @click.option("--config", "-c", metavar="FILE", help="Config file to use.")
 @pass_context
 @catch_errors
-def app(ctx, config):
+def app(ctx, config: str):
     """
     Synchronize calendars and contacts
     """
@@ -54,7 +56,7 @@ def app(ctx, config):
         cli_logger.warning(
             "Vdirsyncer currently does not support Windows. "
             "You will likely encounter bugs. "
-            "See {}/535 for more information.".format(BUGTRACKER_HOME)
+            f"See {BUGTRACKER_HOME}/535 for more information."
         )
 
     if not ctx.config:

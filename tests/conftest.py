@@ -1,6 +1,9 @@
 """
 General-purpose fixtures for vdirsyncer's testsuite.
 """
+
+from __future__ import annotations
+
 import logging
 import os
 

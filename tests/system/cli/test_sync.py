@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import sys
 from textwrap import dedent
@@ -280,24 +282,22 @@ def test_multiple_pairs(tmpdir, runner):
 def test_create_collections(collections, tmpdir, runner):
     runner.write_with_general(
         dedent(
-            """
+            f"""
     [pair foobar]
     a = "foo"
     b = "bar"
-    collections = {colls}
+    collections = {json.dumps(list(collections))}
 
     [storage foo]
     type = "filesystem"
-    path = "{base}/foo/"
+    path = "{str(tmpdir)}/foo/"
     fileext = ".txt"
 
     [storage bar]
     type = "filesystem"
-    path = "{base}/bar/"
+    path = "{str(tmpdir)}/bar/"
     fileext = ".txt"
-    """.format(
-                base=str(tmpdir), colls=json.dumps(list(collections))
-            )
+    """
         )
     )
 
@@ -315,7 +315,7 @@ def test_create_collections(collections, tmpdir, runner):
 def test_ident_conflict(tmpdir, runner):
     runner.write_with_general(
         dedent(
-            """
+            f"""
     [pair foobar]
     a = "foo"
     b = "bar"
@@ -323,16 +323,14 @@ def test_ident_conflict(tmpdir, runner):
 
     [storage foo]
     type = "filesystem"
-    path = "{base}/foo/"
+    path = "{str(tmpdir)}/foo/"
     fileext = ".txt"
 
     [storage bar]
     type = "filesystem"
-    path = "{base}/bar/"
+    path = "{str(tmpdir)}/bar/"
     fileext = ".txt"
-    """.format(
-                base=str(tmpdir)
-            )
+    """
         )
     )
 
@@ -371,7 +369,7 @@ def test_ident_conflict(tmpdir, runner):
 def test_unknown_storage(tmpdir, runner, existing, missing):
     runner.write_with_general(
         dedent(
-            """
+            f"""
     [pair foobar]
     a = "foo"
     b = "bar"
@@ -379,11 +377,9 @@ def test_unknown_storage(tmpdir, runner, existing, missing):
 
     [storage {existing}]
     type = "filesystem"
-    path = "{base}/{existing}/"
+    path = "{str(tmpdir)}/{existing}/"
     fileext = ".txt"
-    """.format(
-                base=str(tmpdir), existing=existing
-            )
+    """
         )
     )
 
@@ -393,10 +389,8 @@ def test_unknown_storage(tmpdir, runner, existing, missing):
     assert result.exception
 
     assert (
-        "Storage '{missing}' not found. "
-        "These are the configured storages: ['{existing}']".format(
-            missing=missing, existing=existing
-        )
+        f"Storage '{missing}' not found. "
+        f"These are the configured storages: ['{existing}']"
     ) in result.output
 
 
@@ -416,25 +410,23 @@ def test_no_configured_pairs(tmpdir, runner, cmd):
 def test_conflict_resolution(tmpdir, runner, resolution, expect_foo, expect_bar):
     runner.write_with_general(
         dedent(
-            """
+            f"""
     [pair foobar]
     a = "foo"
     b = "bar"
     collections = null
-    conflict_resolution = {val}
+    conflict_resolution = {json.dumps(resolution)}
 
     [storage foo]
     type = "filesystem"
     fileext = ".txt"
-    path = "{base}/foo"
+    path = "{str(tmpdir)}/foo"
 
     [storage bar]
     type = "filesystem"
     fileext = ".txt"
-    path = "{base}/bar"
-    """.format(
-                base=str(tmpdir), val=json.dumps(resolution)
-            )
+    path = "{str(tmpdir)}/bar"
+    """
         )
     )
 
@@ -526,13 +518,11 @@ def test_fetch_only_necessary_params(tmpdir, runner):
     fetch_script = tmpdir.join("fetch_script")
     fetch_script.write(
         dedent(
-            """
+            f"""
     set -e
-    touch "{}"
+    touch "{str(fetched_file)}"
     echo ".txt"
-    """.format(
-                str(fetched_file)
-            )
+    """
         )
     )
 

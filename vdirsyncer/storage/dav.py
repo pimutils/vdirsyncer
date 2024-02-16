@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 import logging
 import urllib.parse as urlparse
@@ -5,8 +7,6 @@ import xml.etree.ElementTree as etree
 from abc import abstractmethod
 from inspect import getfullargspec
 from inspect import signature
-from typing import Optional
-from typing import Type
 
 import aiohttp
 import aiostream
@@ -92,8 +92,7 @@ def _parse_xml(content):
         return etree.XML(_clean_body(content))
     except etree.ParseError as e:
         raise InvalidXMLResponse(
-            "Invalid XML encountered: {}\n"
-            "Double-check the URLs in your config.".format(e)
+            f"Invalid XML encountered: {e}\nDouble-check the URLs in your config."
         )
 
 
@@ -128,7 +127,7 @@ class Discover:
 
     @property
     @abstractmethod
-    def _resourcetype(self) -> Optional[str]:
+    def _resourcetype(self) -> str | None:
         pass
 
     @property
@@ -198,9 +197,7 @@ class Discover:
             # E.g. Synology NAS
             # See https://github.com/pimutils/vdirsyncer/issues/498
             dav_logger.debug(
-                "No current-user-principal returned, re-using URL {}".format(
-                    response.url
-                )
+                f"No current-user-principal returned, re-using URL {response.url}"
             )
             return response.url.human_repr()
         return urlparse.urljoin(str(response.url), rv.text).rstrip("/") + "/"
@@ -342,7 +339,7 @@ class CalDiscover(Discover):
 
 class CardDiscover(Discover):
     _namespace = "urn:ietf:params:xml:ns:carddav"
-    _resourcetype: Optional[str] = "{%s}addressbook" % _namespace
+    _resourcetype: str | None = "{%s}addressbook" % _namespace
     _homeset_xml = b"""
     <propfind xmlns="DAV:" xmlns:c="urn:ietf:params:xml:ns:carddav">
         <prop>
@@ -451,7 +448,7 @@ class DAVStorage(Storage):
 
     @property
     @abstractmethod
-    def discovery_class(self) -> Type[Discover]:
+    def discovery_class(self) -> type[Discover]:
         """Discover subclass to use."""
 
     # The DAVSession class to use
@@ -649,9 +646,7 @@ class DAVStorage(Storage):
             contenttype = getattr(props.find("{DAV:}getcontenttype"), "text", None)
             if not self._is_item_mimetype(contenttype):
                 dav_logger.debug(
-                    "Skipping {!r}, {!r} != {!r}.".format(
-                        href, contenttype, self.item_mimetype
-                    )
+                    f"Skipping {href!r}, {contenttype!r} != {self.item_mimetype!r}."
                 )
                 continue
 
@@ -686,7 +681,7 @@ class DAVStorage(Storage):
         for href, etag, _prop in rv:
             yield href, etag
 
-    async def get_meta(self, key) -> Optional[str]:
+    async def get_meta(self, key) -> str | None:
         try:
             tagname, namespace = self._property_table[key]
         except KeyError:
@@ -831,9 +826,7 @@ class CalDAVStorage(DAVStorage):
                 start = start.strftime(CALDAV_DT_FORMAT)
                 end = end.strftime(CALDAV_DT_FORMAT)
 
-                timefilter = '<C:time-range start="{start}" end="{end}"/>'.format(
-                    start=start, end=end
-                )
+                timefilter = f'<C:time-range start="{start}" end="{end}"/>'
             else:
                 timefilter = ""
 
@@ -901,14 +894,21 @@ class CardDAVStorage(DAVStorage):
     item_mimetype = "text/vcard"
     discovery_class = CardDiscover
 
-    get_multi_template = """<?xml version="1.0" encoding="utf-8" ?>
+    def __init__(self, *args, use_vcard_4=False, **kwargs):
+        self.use_vcard_4 = use_vcard_4
+        super().__init__(*args, **kwargs)
+
+    @property
+    def get_multi_template(self):
+        ct = 'Content-Type="text/vcard" version="4.0"' if self.use_vcard_4 else ""
+        return f"""<?xml version="1.0" encoding="utf-8" ?>
             <C:addressbook-multiget xmlns="DAV:"
                     xmlns:C="urn:ietf:params:xml:ns:carddav">
                 <prop>
                     <getetag/>
-                    <C:address-data/>
+                    <C:address-data {ct}/>
                 </prop>
-                {hrefs}
+                {{hrefs}}
             </C:addressbook-multiget>"""
 
     get_multi_data_query = "{urn:ietf:params:xml:ns:carddav}address-data"

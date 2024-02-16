@@ -14,6 +14,7 @@ target-version = "py37"
 
 [tool.ruff.isort]
 force-single-line = true
+required-imports = ["from __future__ import annotations"]
 
 [tool.pytest.ini_options]
 addopts = """
@@ -28,3 +29,8 @@ addopts = """
 
 [tool.mypy]
 ignore_missing_imports = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "if TYPE_CHECKING:",
+]

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import random
 import textwrap
 import uuid
@@ -383,7 +385,7 @@ class StorageTests:
         uid = str(uuid.uuid4())
         item = Item(
             textwrap.dedent(
-                """
+                f"""
         BEGIN:VCALENDAR
         VERSION:2.0
         BEGIN:VEVENT
@@ -417,9 +419,7 @@ class StorageTests:
         TRANSP:OPAQUE
         END:VEVENT
         END:VCALENDAR
-        """.format(
-                    uid=uid
-                )
+        """
             ).strip()
         )
 

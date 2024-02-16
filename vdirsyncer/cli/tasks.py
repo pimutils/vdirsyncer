@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 
 import aiohttp
@@ -5,8 +7,8 @@ import aiohttp
 from .. import exceptions
 from .. import sync
 from .config import CollectionConfig
+from .discover import DiscoverResult
 from .discover import collections_for_pair
-from .discover import storage_class_from_config
 from .discover import storage_instance_from_config
 from .utils import JobFailed
 from .utils import cli_logger
@@ -110,19 +112,19 @@ async def repair_collection(
         storage_name, collection = storage_name.split("/")
 
     config = config.get_storage_args(storage_name)
-    storage_type = config["type"]
+    # If storage type has a slash, ignore it and anything after it.
+    storage_type = config["type"].split("/")[0]
 
     if collection is not None:
         cli_logger.info("Discovering collections (skipping cache).")
-        cls, config = storage_class_from_config(config)
-        async for config in cls.discover(**config):  # noqa E902
+        get_discovered = DiscoverResult(config, connector=connector)
+        discovered = await get_discovered.get_self()
+        for config in discovered.values():
             if config["collection"] == collection:
                 break
         else:
             raise exceptions.UserError(
-                "Couldn't find collection {} for storage {}.".format(
-                    collection, storage_name
-                )
+                f"Couldn't find collection {collection} for storage {storage_name}."
             )
 
     config["type"] = storage_type
@@ -142,11 +144,11 @@ async def metasync_collection(collection, general, *, connector: aiohttp.TCPConn
     try:
         cli_logger.info(f"Metasyncing {status_name}")
 
-        status = (
-            load_status(
-                general["status_path"], pair.name, collection.name, data_type="metadata"
-            )
-            or {}
+        status = load_status(
+            general["status_path"],
+            pair.name,
+            collection.name,
+            data_type="metadata",
         )
 
         a = await storage_instance_from_config(collection.config_a, connector=connector)
@@ -164,9 +166,9 @@ async def metasync_collection(collection, general, *, connector: aiohttp.TCPConn
         raise JobFailed
 
     save_status(
-        general["status_path"],
-        pair.name,
-        collection.name,
+        base_path=general["status_path"],
+        pair=pair.name,
         data_type="metadata",
         data=status,
+        collection=collection.name,
     )

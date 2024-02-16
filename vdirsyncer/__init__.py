@@ -2,6 +2,7 @@
 Vdirsyncer synchronizes calendars and contacts.
 """
 
+from __future__ import annotations
 
 PROJECT_HOME = "https://github.com/pimutils/vdirsyncer"
 BUGTRACKER_HOME = PROJECT_HOME + "/issues"
@@ -17,10 +18,10 @@ except ImportError:  # pragma: no cover
     )
 
 
-def _check_python_version():  # pragma: no cover
+def _check_python_version():
     import sys
 
-    if sys.version_info < (3, 7, 0):
+    if sys.version_info < (3, 7, 0):  # noqa: UP036
         print("vdirsyncer requires at least Python 3.7.")
         sys.exit(1)
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import collections
 import contextlib
 import functools
@@ -177,11 +179,9 @@ class SingleFileStorage(Storage):
             self.path
         ):
             raise exceptions.PreconditionFailed(
-                (
-                    "Some other program modified the file {!r}. Re-run the "
-                    "synchronization and make sure absolutely no other program is "
-                    "writing into the same file."
-                ).format(self.path)
+                f"Some other program modified the file {self.path!r}. Re-run the "
+                "synchronization and make sure absolutely no other program is "
+                "writing into the same file."
             )
         text = join_collection(item.raw for item, etag in self._items.values())
         try:

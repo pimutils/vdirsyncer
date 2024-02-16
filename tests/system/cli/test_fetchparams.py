@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 from textwrap import dedent
 
 
 def test_get_password_from_command(tmpdir, runner):
     runner.write_with_general(
         dedent(
-            """
+            f"""
         [pair foobar]
         a = "foo"
         b = "bar"
@@ -12,16 +14,14 @@ def test_get_password_from_command(tmpdir, runner):
 
         [storage foo]
         type.fetch = ["shell", "echo filesystem"]
-        path = "{base}/foo/"
+        path = "{str(tmpdir)}/foo/"
         fileext.fetch = ["command", "echo", ".txt"]
 
         [storage bar]
         type = "filesystem"
-        path = "{base}/bar/"
+        path = "{str(tmpdir)}/bar/"
         fileext.fetch = ["prompt", "Fileext for bar"]
-    """.format(
-                base=str(tmpdir)
-            )
+    """
         )
     )
 

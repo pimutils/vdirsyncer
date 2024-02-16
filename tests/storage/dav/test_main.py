@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 
 from vdirsyncer.storage.dav import _BAD_XML_CHARS
@@ -39,8 +41,8 @@ def test_xml_utilities():
 def test_xml_specialchars(char):
     x = _parse_xml(
         '<?xml version="1.0" encoding="UTF-8" ?>'
-        "<foo>ye{}s\r\n"
-        "hello</foo>".format(chr(char)).encode("ascii")
+        f"<foo>ye{chr(char)}s\r\n"
+        "hello</foo>".encode("ascii")
     )
 
     if char in _BAD_XML_CHARS:

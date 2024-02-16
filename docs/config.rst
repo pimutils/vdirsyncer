@@ -61,7 +61,8 @@ Pair Section
   sync`` is executed. See also :ref:`collections_tutorial`.
 
   The special values ``"from a"`` and ``"from b"``, tell vdirsyncer to try
-  autodiscovery on a specific storage.
+  autodiscovery on a specific storage. It means all the collections on side A / 
+  side B.
 
   If the collection you want to sync doesn't have the same name on each side,
   you may also use a value of the form ``["config_name", "name_a", "name_b"]``.
@@ -71,8 +72,8 @@ Pair Section
 
   Examples:
 
-  - ``collections = ["from b", "foo", "bar"]`` makes vdirsyncer synchronize the
-    collections from side B, and also the collections named "foo" and "bar".
+  - ``collections = ["from b", "foo", "bar"]`` makes vdirsyncer synchronize all 
+    the collections from side B, and also the collections named "foo" and "bar".
 
   - ``collections = ["from b", "from a"]`` makes vdirsyncer synchronize all
     existing collections on either side.
@@ -238,6 +239,7 @@ CalDAV and CardDAV
      #useragent = "vdirsyncer/0.16.4"
      #verify_fingerprint = null
      #auth_cert = null
+     #use_vcard_4 = false
 
    :param url: Base URL or an URL to an addressbook.
    :param username: Username for authentication.
@@ -255,6 +257,7 @@ CalDAV and CardDAV
                      certificate and the key or a list of paths to the files
                      with them.
    :param useragent: Default ``vdirsyncer``.
+   :param use_vcard_4: Whether the server use vCard 4.0.
 
 Google
 ++++++
@@ -287,25 +290,29 @@ Furthermore you need to register vdirsyncer as an application yourself to
 obtain ``client_id`` and ``client_secret``, as it is against Google's Terms of
 Service to hardcode those into opensource software [googleterms]_:
 
-1. Go to the `Google API Manager <https://console.developers.google.com>`_ and
-   create a new project under any name.
+1. Go to the `Google API Manager <https://console.developers.google.com>`_
+
+2. Create a new project under any name.
 
 2. Within that project, enable the "CalDAV" and "CardDAV" APIs (**not** the
    Calendar and Contacts APIs, those are different and won't work). There should
-   be a searchbox where you can just enter those terms.
+   be a search box where you can just enter those terms.
 
-3. In the sidebar, select "Credentials" and create a new "OAuth Client ID". The
-   application type is "Web application".
+3. In the sidebar, select "Credentials", then "Create Credentials" and create a
+   new "OAuth Client ID".
 
    You'll be prompted to create a OAuth consent screen first. Fill out that
    form however you like.
 
+   After setting up the consent screen, finish creating the new "OAuth Client
+   ID'. The correct application type is "Desktop application".
+
 4. Finally you should have a Client ID and a Client secret. Provide these in
    your storage config.
 
-The ``token_file`` parameter should be a filepath where vdirsyncer can later
-store authentication-related data. You do not need to create the file itself
-or write anything to it.
+The ``token_file`` parameter should be a path to a file where vdirsyncer can
+later store authentication-related data. You do not need to create the file
+itself or write anything to it.
 
 .. [googleterms] See `ToS <https://developers.google.com/terms/?hl=th>`_,
    section "Confidential Matters".
@@ -372,6 +379,7 @@ Local
       fileext = "..."
       #encoding = "utf-8"
       #post_hook = null
+      #pre_deletion_hook = null
       #fileignoreext = ".tmp"
 
     Can be used with `khal <http://lostpackets.de/khal/>`_. See :doc:`vdir` for
@@ -393,6 +401,8 @@ Local
     :param post_hook: A command to call for each item creation and
         modification. The command will be called with the path of the
         new/updated file.
+    :param pre_deletion_hook: A command to call for each item deletion.
+        The command will be called with the path of the deleted file.
     :param fileeignoreext: The file extention to ignore. It is only useful
         if fileext is set to the empty string. The default is ``.tmp``.
 

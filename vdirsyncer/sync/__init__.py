@@ -9,6 +9,9 @@ Yang: http://blog.ezyang.com/2012/08/how-offlineimap-works/
 Some modifications to it are explained in
 https://unterwaditzer.net/2016/sync-algorithm.html
 """
+
+from __future__ import annotations
+
 import contextlib
 import itertools
 import logging
@@ -205,9 +208,7 @@ class Upload(Action):
             href = etag = None
         else:
             sync_logger.info(
-                "Copying (uploading) item {} to {}".format(
-                    self.ident, self.dest.storage
-                )
+                f"Copying (uploading) item {self.ident} to {self.dest.storage}"
             )
             href, etag = await self.dest.storage.upload(self.item)
             assert href is not None
@@ -243,7 +244,11 @@ class Delete(Action):
 
     async def _run_impl(self, a, b):
         meta = self.dest.status.get_new(self.ident)
-        if not self.dest.storage.read_only:
+        if self.dest.storage.read_only or self.dest.storage.no_delete:
+            sync_logger.debug(
+                f"Skipping deletion of item {self.ident} from {self.dest.storage}"
+            )
+        else:
             sync_logger.info(f"Deleting item {self.ident} from {self.dest.storage}")
             await self.dest.storage.delete(meta.href, meta.etag)
 
