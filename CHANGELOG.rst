@@ -16,6 +16,7 @@ Version 0.19.3
 - Fix crash when running ``vdirsyncer repair`` on a collection. :gh:`1019`
 - Add an option to request vCard v4.0.  :gh:`1066`
 - Require matching ``BEGIN`` and ``END`` lines in vobjects. :gh:`1103`
+- A Docker environment for Vdirsyncer has been added `Vdirsyncer DOCKERIZED <https://github.com/Bleala/Vdirsyncer-DOCKERIZED>`_.
 
 Version 0.19.2
 ==============
