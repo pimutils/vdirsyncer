@@ -66,7 +66,7 @@ Docker environment, you can check out the following GitHub Repository:
 
 * `Vdirsyncer DOCKERIZED <https://github.com/Bleala/Vdirsyncer-DOCKERIZED>`_
 
-Note: This is an unofficial Docker build, this is maintained by `Bleala <https://github.com/Bleala>`_
+Note: This is an unofficial Docker build, this is maintained by `Bleala <https://github.com/Bleala>`_.
 
 License
 =======
