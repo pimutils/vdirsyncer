@@ -296,7 +296,7 @@ class ResolveConflict(Action):
                 )
 
 
-def _get_actions(a_info, b_info):
+def _get_actions(a_info: _StorageInfo, b_info: _StorageInfo):
     for ident in uniq(
         itertools.chain(
             a_info.status.parent.iter_new(), a_info.status.parent.iter_old()
