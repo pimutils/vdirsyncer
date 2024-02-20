@@ -328,7 +328,7 @@ class SqliteStatus(_StatusBase):
 
 
 class SubStatus:
-    def __init__(self, parent, side):
+    def __init__(self, parent: SqliteStatus, side: str):
         self.parent = parent
         assert side in "ab"
 
