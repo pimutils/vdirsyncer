@@ -32,6 +32,7 @@ IGNORE_PROPS = (
     # - http://www.feiertage-oesterreich.at/
     "DTSTAMP",
     "UID",
+    "RECURRENCE-ID",
 )
 
 
@@ -85,8 +86,8 @@ class Item:
     @cached_property
     def ident(self):
         """Used for generating hrefs and matching up items during
-        synchronization. This is either the UID or the hash of the item's
-        content."""
+        synchronization. This is either based on the UID and RECURRENCE-ID, or
+        it is the hash of the item's content."""
 
         # We hash the item instead of directly using its raw content, because
         #
@@ -94,7 +95,12 @@ class Item:
         #    with a picture, which bloats the status file.
         #
         # 2. The status file would contain really sensitive information.
-        return self.uid or self.hash
+        recurrence_id = None
+        if "RECURRENCE-ID" in self.raw:
+            x = _Component("TEMP", self.raw.splitlines(), [])
+            if "RECURRENCE-ID" in x:
+                recurrence_id = x["RECURRENCE-ID"].strip()
+        return _generate_ident(self.uid, recurrence_id) or self.hash
 
     @property
     def parsed(self):
@@ -113,7 +119,7 @@ def normalize_item(item, ignore_props=IGNORE_PROPS):
     item = _strip_timezones(item)
 
     x = _Component("TEMP", item.raw.splitlines(), [])
-    for prop in IGNORE_PROPS:
+    for prop in ignore_props:
         del x[prop]
 
     x.props.sort()
@@ -129,15 +135,24 @@ def _strip_timezones(item):
 
     return Item("\r\n".join(parsed.dump_lines()))
 
-
 def hash_item(text):
     return hashlib.sha256(normalize_item(text).encode("utf-8")).hexdigest()
+
+
+def _generate_ident(uid, recurrence_id):
+    if not uid:
+        return None
+
+    parts = [uid.strip()]
+    if recurrence_id:
+        parts.append(recurrence_id.strip())
+    return "---".join(parts)
 
 
 def split_collection(text):
     assert isinstance(text, str)
     inline = []
-    items = {}  # uid => item
+    items = {}  # ident => item
     ungrouped_items = []
 
     for main in _Component.parse(text, multiple=True):
@@ -154,11 +169,11 @@ def _split_collection_impl(item, main, inline, items, ungrouped_items):
     elif item.name == "VCARD":
         ungrouped_items.append(item)
     elif item.name in ("VTODO", "VEVENT", "VJOURNAL"):
-        uid = item.get("UID", "")
+        ident = _generate_ident(item.get("UID"), item.get("RECURRENCE-ID"))
         wrapper = _Component(main.name, main.props[:], [])
 
-        if uid.strip():
-            wrapper = items.setdefault(uid, wrapper)
+        if ident:
+            wrapper = items.setdefault(ident, wrapper)
         else:
             ungrouped_items.append(wrapper)
 
