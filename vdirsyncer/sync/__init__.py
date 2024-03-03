@@ -67,8 +67,10 @@ class _StorageInfo:
         # Prefetch items
         if prefetch:
             async for href, item, etag in self.storage.get_multi(prefetch):
-                if required_attendee and not item.has_confirmed_attendee(required_attendee):
-                    continue
+                if required_attendee:
+                    item = item.only_with_attendee(required_attendee)
+                    if item is None:
+                        continue
                 if remove_details:
                     item = item.without_details()
                 _store_props(

@@ -35,6 +35,13 @@ IGNORE_PROPS = (
 )
 
 
+def _includes_attendee(component, attendee_email):
+    for attendee_line in component.get_all("ATTENDEE"):
+        sections = attendee_line.split(";")
+        if f"CN={attendee_email}" in sections and "PARTSTAT=ACCEPTED" in sections:
+            return True
+
+
 class Item:
     """Immutable wrapper class for VCALENDAR (VEVENT, VTODO) and
     VCARD"""
@@ -56,20 +63,25 @@ class Item:
                     component["UID"] = new_uid
 
         return Item("\r\n".join(parsed.dump_lines()))
-    
-    def has_confirmed_attendee(self, email: str) -> bool:
+
+    def only_with_attendee(self, email: str):
         """Returns True if the given attendee has accepted an invite to this event"""
         parsed = _Component.parse(self.raw)
-        stack = [parsed]
-        while stack:
-            component = stack.pop()
-            for attendee_line in component.get_all("ATTENDEE"):
-                sections = attendee_line.split(";")
-                if f"CN={email}" in sections and "PARTSTAT=ACCEPTED" in sections:
-                    return True
-            stack.extend(component.subcomponents)
 
-        return False
+        parsed.subcomponents = [
+            subcomponent
+            for subcomponent in parsed.subcomponents
+            if subcomponent.name != "VEVENT" or _includes_attendee(subcomponent, email)
+        ]
+
+        if not any(
+            True
+            for subcomponent in parsed.subcomponents
+            if subcomponent.name == "VEVENT"
+        ):
+            return None
+
+        return Item("\r\n".join(parsed.dump_lines()))
 
     def without_details(self):
         """Returns a minimal version of this item.
