@@ -136,7 +136,8 @@ class Item:
         #    with a picture, which bloats the status file.
         #
         # 2. The status file would contain really sensitive information.
-        return self.uid or self.hash
+        my_ident = self.uid or self.hash
+        return my_ident
 
     @property
     def parsed(self):
@@ -371,15 +372,27 @@ class _Component:
     def __delitem__(self, key):
         prefix = (f"{key}:", f"{key};")
         new_lines = []
-        in_prop = False
+
+        in_target_prop = False
         for line in iter(self.props):
-            if not in_prop:
-                if line.startswith(prefix):
-                    in_prop = True
+            if in_target_prop:
+                if line.startswith((" ", "\t")):
+                    # Continuing with the prop contents, drop this line
+                    pass
+                elif line.startswith(prefix):
+                    # Another instance of the target prop, drop this line
+                    pass
                 else:
+                    # No longer in the target prop, keep this line
+                    in_target_prop = False
                     new_lines.append(line)
-            elif not line.startswith((" ", "\t")):
-                in_prop = False
+            else:
+                if line.startswith(prefix):
+                    # Entering the target prop, drop this line
+                    in_target_prop = True
+                else:
+                    # Un-targetted prop, keep this line
+                    new_lines.append(line)
 
         self.props = new_lines
 
