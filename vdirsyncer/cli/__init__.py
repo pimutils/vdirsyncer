@@ -65,9 +65,6 @@ def app(ctx, config: str):
         ctx.config = load_config(config)
 
 
-main = app
-
-
 def collections_arg_callback(ctx, param, value):
     """
     Expand the various CLI shortforms ("pair, pair/collection") to an iterable
