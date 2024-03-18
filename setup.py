@@ -67,7 +67,7 @@ setup(
     include_package_data=True,
     cmdclass={"minimal_requirements": PrintRequirements},
     use_scm_version={"write_to": "vdirsyncer/version.py"},
-    entry_points={"console_scripts": ["vdirsyncer = vdirsyncer.cli:main"]},
+    entry_points={"console_scripts": ["vdirsyncer = vdirsyncer.cli:app"]},
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",
