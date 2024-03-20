@@ -390,6 +390,7 @@ class DAVSession:
         ssl = prepare_verify(verify, verify_fingerprint)
         if ssl:
             self._settings["ssl"] = ssl
+            ssl.load_cert_chain(*self._settings["cert"])
 
         self.useragent = useragent
         self.url = url.rstrip("/") + "/"
