@@ -45,6 +45,11 @@ General Section
 Pair Section
 ============
 
+.. note::
+
+    Pairs can be nested to allow to syncronize more than 2 storages, see 
+    examples below.
+
 ::
 
     [pair pair_name]
