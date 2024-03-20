@@ -59,6 +59,7 @@ setup(
     # Optional dependencies
     extras_require={
         "google": ["aiohttp-oauthlib"],
+        "ldap": ["ldap3", "vobject"],
     },
     # Build dependencies
     setup_requires=["setuptools_scm != 1.12.0"],
