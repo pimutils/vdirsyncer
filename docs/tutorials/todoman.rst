@@ -48,10 +48,9 @@ instance to subfolders of ``~/.calendar/``.
 Setting up todoman
 ==================
 
-Write this to ``~/.config/todoman/todoman.conf``::
+Write this to ``~/.config/todoman/config.py``::
 
-    [main]
-    path = ~/.calendars/*
+    path = "~/.calendars/*"
 
 The glob_ pattern in ``path`` will match all subfolders in ``~/.calendars/``,
 which is exactly the tasklists we want. Now you can use ``todoman`` as
