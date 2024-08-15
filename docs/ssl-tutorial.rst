@@ -14,14 +14,14 @@ To pin the certificate by fingerprint::
     [storage foo]
     type = "caldav"
     ...
-    verify_fingerprint = "94:FD:7A:CB:50:75:A4:69:82:0A:F8:23:DF:07:FC:69:3E:CD:90:CA"
+    verify_fingerprint = "6D:83:EA:32:6C:39:BA:08:ED:EB:C9:BC:BE:12:BB:BF:0F:D9:83:00:CC:89:7E:C7:32:05:94:96:CA:C5:59:5E"
 
-SHA256-Fingerprints can be used. CA validation is disabled when pinning a
-fingerprint.
+SHA256-Fingerprints must be used, MD5 and SHA-1 are insecure and not supported.
+CA validation is disabled when pinning a fingerprint.
 
-You can use the following command for obtaining a SHA-1 fingerprint::
+You can use the following command for obtaining a SHA256 fingerprint::
 
-    echo -n | openssl s_client -connect unterwaditzer.net:443 | openssl x509 -noout -fingerprint
+    echo -n | openssl s_client -connect unterwaditzer.net:443 | openssl x509 -noout -fingerprint -sha256
 
 However, please consider using `Let's Encrypt <https://letsencrypt.org/>`_ such
 that you can forget about all of that. It is easier to deploy a free
