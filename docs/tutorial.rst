@@ -176,8 +176,8 @@ as a file called ``color`` within the calendar folder.
 More information about collections
 ----------------------------------
 
-"Collection" is a collective term for addressbooks and calendars. A Cardav or 
-Caldav server can contains several "collections" which correspond to several 
+"Collection" is a collective term for addressbooks and calendars. A Cardav or
+Caldav server can contains several "collections" which correspond to several
 addressbooks or calendar.
 
 Each collection from a storage has a "collection name", a unique identifier for each

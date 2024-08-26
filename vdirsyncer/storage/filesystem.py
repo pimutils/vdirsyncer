@@ -181,7 +181,9 @@ class FilesystemStorage(Storage):
             logger.warning(f"Error executing external hook: {str(e)}")
 
     def _run_pre_deletion_hook(self, fpath):
-        logger.info(f"Calling pre_deletion_hook={self.pre_deletion_hook} with argument={fpath}")
+        logger.info(
+            f"Calling pre_deletion_hook={self.pre_deletion_hook} with argument={fpath}"
+        )
         try:
             subprocess.call([self.pre_deletion_hook, fpath])
         except OSError as e:
