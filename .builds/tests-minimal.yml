@@ -3,12 +3,13 @@
 # TODO: It might make more sense to test with an older Ubuntu or Fedora version
 # here, and consider that our "oldest suppported environment".
 
-image: alpine/3.15
+image: alpine/3.17 # python 3.10
 packages:
   - docker
   - docker-cli
   - docker-compose
   - py3-pip
+  - python3-dev
 sources:
   - https://github.com/pimutils/vdirsyncer
 environment:
