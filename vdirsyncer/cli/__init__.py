@@ -16,6 +16,9 @@ from .. import __version__
 cli_logger = logging.getLogger(__name__)
 click_log.basic_config("vdirsyncer")
 
+# add short option for the help option
+click_context_settings = dict(help_option_names=['-h', '--help'])
+
 
 class AppContext:
     def __init__(self):
@@ -41,7 +44,7 @@ def catch_errors(f):
     return inner
 
 
-@click.group()
+@click.group(context_settings=click_context_settings)
 @click_log.simple_verbosity_option("vdirsyncer")
 @click.version_option(version=__version__)
 @click.option("--config", "-c", metavar="FILE", help="Config file to use.")
