@@ -17,7 +17,7 @@ cli_logger = logging.getLogger(__name__)
 click_log.basic_config("vdirsyncer")
 
 # add short option for the help option
-click_context_settings = dict(help_option_names=['-h', '--help'])
+click_context_settings = {"help_option_names": ["-h", "--help"]}
 
 
 class AppContext:
