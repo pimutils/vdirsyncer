@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+import subprocess
 import urllib.parse as urlparse
 
 import aiohttp
@@ -13,6 +15,8 @@ from ..http import request
 from ..vobject import Item
 from ..vobject import split_collection
 from .base import Storage
+
+logger = logging.getLogger(__name__)
 
 
 class HttpStorage(Storage):
@@ -34,6 +38,7 @@ class HttpStorage(Storage):
         useragent=USERAGENT,
         verify_fingerprint=None,
         auth_cert=None,
+        filter_hook=None,
         *,
         connector,
         **kwargs,
@@ -56,6 +61,7 @@ class HttpStorage(Storage):
         self.useragent = useragent
         assert connector is not None
         self.connector = connector
+        self._filter_hook = filter_hook
 
         collection = kwargs.get("collection")
         if collection is not None:
@@ -65,6 +71,19 @@ class HttpStorage(Storage):
 
     def _default_headers(self):
         return {"User-Agent": self.useragent}
+
+    def _run_filter_hook(self, raw_item):
+        try:
+            result = subprocess.run(
+                [self._filter_hook],
+                input=raw_item,
+                capture_output=True,
+                encoding="utf-8",
+            )
+            return result.stdout
+        except OSError as e:
+            logger.warning(f"Error executing external command: {str(e)}")
+            return raw_item
 
     async def list(self):
         async with aiohttp.ClientSession(
@@ -82,8 +101,13 @@ class HttpStorage(Storage):
             )
         self._items = {}
 
-        for item in split_collection((await r.read()).decode("utf-8")):
-            item = Item(item)
+        for raw_item in split_collection((await r.read()).decode("utf-8")):
+            if self._filter_hook:
+                raw_item = self._run_filter_hook(raw_item)
+            if not raw_item:
+                continue
+
+            item = Item(raw_item)
             if self._ignore_uids:
                 item = item.with_uid(item.hash)
 
