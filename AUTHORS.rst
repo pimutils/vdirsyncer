@@ -8,6 +8,7 @@ In alphabetical order:
 - Christian Geier
 - Clément Mondon
 - Corey Hinshaw
+- Euxane TRAN-GIRARD
 - Kai Herlemann
 - Hugo Osvaldo Barrera
 - Jason Cox

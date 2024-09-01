@@ -484,14 +484,7 @@ leads to an error.
         [storage holidays_remote]
         type = "http"
         url = https://example.com/holidays_from_hicksville.ics
-
-    Too many WebCAL providers generate UIDs of all ``VEVENT``-components
-    on-the-fly, i.e. all UIDs change every time the calendar is downloaded.
-    This leads many synchronization programs to believe that all events have
-    been deleted and new ones created, and accordingly causes a lot of
-    unnecessary uploads and deletions on the other side. Vdirsyncer completely
-    ignores UIDs coming from :storage:`http` and will replace them with a hash
-    of the normalized item content.
+        #ignore_uids = true
 
     :param url: URL to the ``.ics`` file.
     :param username: Username for authentication.
@@ -508,3 +501,11 @@ leads to an error.
     :param auth_cert: Optional. Either a path to a certificate with a client
         certificate and the key or a list of paths to the files with them.
     :param useragent: Default ``vdirsyncer``.
+    :param ignore_uids: Ignore UIDs coming from :storage:`http` and replace
+        them with a hash of the normalized item content.
+        Too many WebCAL providers generate UIDs of all ``VEVENT``-components
+        on-the-fly, i.e. all UIDs change every time the calendar is downloaded.
+        This leads many synchronization programs to believe that all events
+        have been deleted and new ones created, and accordingly causes a lot of
+        unnecessary uploads and deletions on the other side.
+        Default: ``true``.
