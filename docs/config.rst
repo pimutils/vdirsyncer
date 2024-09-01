@@ -484,6 +484,7 @@ leads to an error.
         [storage holidays_remote]
         type = "http"
         url = https://example.com/holidays_from_hicksville.ics
+        #filter_hook = null
 
     Too many WebCAL providers generate UIDs of all ``VEVENT``-components
     on-the-fly, i.e. all UIDs change every time the calendar is downloaded.
@@ -508,3 +509,8 @@ leads to an error.
     :param auth_cert: Optional. Either a path to a certificate with a client
         certificate and the key or a list of paths to the files with them.
     :param useragent: Default ``vdirsyncer``.
+    :param filter_hook: Optional. A filter command to call for each fetched
+        item, passed in raw form to stdin and returned via stdout.
+        If nothing is returned by the filter command, the item is skipped.
+        This can be used to alter fields as needed when dealing with providers
+        generating malformed events.
