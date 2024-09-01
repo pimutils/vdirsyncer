@@ -26,8 +26,11 @@ class CombinedStorage(Storage):
         super().__init__(**kwargs)
         self.url = url
         self.path = path
-        self._reader = vdirsyncer.storage.http.HttpStorage(url=url, connector=connector)
-        self._reader._ignore_uids = False
+        self._reader = vdirsyncer.storage.http.HttpStorage(
+            url=url,
+            connector=connector,
+            ignore_uids=False,
+        )
         self._writer = SingleFileStorage(path=path)
 
     async def list(self, *a, **kw):

@@ -32,6 +32,7 @@ class HttpStorage(Storage):
         verify=None,
         auth=None,
         useragent=USERAGENT,
+        ignore_uids=True,
         verify_fingerprint=None,
         auth_cert=None,
         *,
@@ -54,6 +55,7 @@ class HttpStorage(Storage):
 
         self.username, self.password = username, password
         self.useragent = useragent
+        self._ignore_uids = ignore_uids
         assert connector is not None
         self.connector = connector
 
