@@ -31,6 +31,11 @@ class AuthMethod(ABC):
     def get_auth_header(self, method, url):
         raise NotImplementedError
 
+    def __eq__(self, other):
+        if not isinstance(other, AuthMethod):
+            return False
+        return self.__class__ == other.__class__ and self.username == other.username and self.password == other.password
+
 
 class BasicAuthMethod(AuthMethod):
     def handle_401(self, _response):
@@ -131,7 +136,7 @@ async def request(
     method,
     url,
     session,
-    auth,
+    auth=None,
     latin1_fallback=True,
     **kwargs,
 ):
@@ -174,10 +179,12 @@ async def request(
     headers = kwargs.pop("headers", {})
     num_401 = 0
     while num_401 < 2:
-        headers["Authorization"] = auth.get_auth_header(method, url)
+        if auth:
+            headers["Authorization"] = auth.get_auth_header(method, url)
         response = await session.request(method, url, headers=headers, **kwargs)
 
-        if response.ok:
+        if response.ok or not auth:
+            # we don't need to do the 401-loop if we don't do auth in the first place
             break
 
         if response.status == 401:
