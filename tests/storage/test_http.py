@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import pytest
-from aiohttp import BasicAuth
 from aioresponses import CallbackResult
 from aioresponses import aioresponses
 
 from tests import normalize_item
 from vdirsyncer.exceptions import UserError
+from vdirsyncer.http import BasicAuthMethod, DigestAuthMethod
 from vdirsyncer.storage.http import HttpStorage
 from vdirsyncer.storage.http import prepare_auth
 
@@ -91,16 +91,14 @@ def test_readonly_param(aio_connector):
 def test_prepare_auth():
     assert prepare_auth(None, "", "") is None
 
-    assert prepare_auth(None, "user", "pwd") == BasicAuth("user", "pwd")
-    assert prepare_auth("basic", "user", "pwd") == BasicAuth("user", "pwd")
+    assert prepare_auth(None, "user", "pwd") == BasicAuthMethod("user", "pwd")
+    assert prepare_auth("basic", "user", "pwd") == BasicAuthMethod("user", "pwd")
 
     with pytest.raises(ValueError) as excinfo:
         assert prepare_auth("basic", "", "pwd")
     assert "you need to specify username and password" in str(excinfo.value).lower()
 
-    from requests.auth import HTTPDigestAuth
-
-    assert isinstance(prepare_auth("digest", "user", "pwd"), HTTPDigestAuth)
+    assert isinstance(prepare_auth("digest", "user", "pwd"), DigestAuthMethod)
 
     with pytest.raises(ValueError) as excinfo:
         prepare_auth("ladida", "user", "pwd")
