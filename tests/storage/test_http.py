@@ -6,7 +6,8 @@ from aioresponses import aioresponses
 
 from tests import normalize_item
 from vdirsyncer.exceptions import UserError
-from vdirsyncer.http import BasicAuthMethod, DigestAuthMethod
+from vdirsyncer.http import BasicAuthMethod
+from vdirsyncer.http import DigestAuthMethod
 from vdirsyncer.storage.http import HttpStorage
 from vdirsyncer.storage.http import prepare_auth
 
@@ -106,20 +107,12 @@ def test_prepare_auth():
     assert "unknown authentication method" in str(excinfo.value).lower()
 
 
-def test_prepare_auth_guess(monkeypatch):
-    import requests_toolbelt.auth.guess
-
-    assert isinstance(
-        prepare_auth("guess", "user", "pwd"),
-        requests_toolbelt.auth.guess.GuessAuth,
-    )
-
-    monkeypatch.delattr(requests_toolbelt.auth.guess, "GuessAuth")
-
+def test_prepare_auth_guess():
+    # guess auth is currently not supported
     with pytest.raises(UserError) as excinfo:
-        prepare_auth("guess", "user", "pwd")
+        prepare_auth("guess", "usr", "pwd")
 
-    assert "requests_toolbelt is too old" in str(excinfo.value).lower()
+    assert "not supported" in str(excinfo.value).lower()
 
 
 def test_verify_false_disallowed(aio_connector):
