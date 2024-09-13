@@ -84,7 +84,7 @@ the above location.
 The dirty, easy way
 ~~~~~~~~~~~~~~~~~~~
 
-If pipx is not available on your distirbution, the easiest way to install
+If pipx is not available on your distribution, the easiest way to install
 vdirsyncer at this point would be to run::
 
     pip install --ignore-installed vdirsyncer
