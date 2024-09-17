@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import os
+import platform
 import re
 from abc import ABC, abstractmethod
 from base64 import b64encode
@@ -16,6 +18,13 @@ from .utils import expand_path
 
 logger = logging.getLogger(__name__)
 USERAGENT = f"vdirsyncer/{__version__}"
+
+# 'hack' to prevent aiohttp from loading the netrc config,
+# but still allow it to read PROXY_* env vars.
+# Otherwise, if our host is defined in the netrc config,
+# aiohttp will overwrite our Authorization header.
+# https://github.com/pimutils/vdirsyncer/issues/1138
+os.environ["NETRC"] = "NUL" if platform.system() == "Windows" else "/dev/null"
 
 
 class AuthMethod(ABC):
