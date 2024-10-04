@@ -237,6 +237,9 @@ class PairConfig:
             options.pop("conflict_resolution", None)
         )
 
+        self.required_attendee = options.pop("required_attendee", None)
+        self.remove_details = options.pop("remove_details", False)
+
         try:
             self.collections = options.pop("collections")
         except KeyError:

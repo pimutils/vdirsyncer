@@ -35,6 +35,13 @@ IGNORE_PROPS = (
 )
 
 
+def _includes_attendee(component, attendee_email):
+    for attendee_line in component.get_all("ATTENDEE"):
+        sections = attendee_line.split(";")
+        if f"CN={attendee_email}" in sections and "PARTSTAT=ACCEPTED" in sections:
+            return True
+
+
 class Item:
     """Immutable wrapper class for VCALENDAR (VEVENT, VTODO) and
     VCARD"""
@@ -54,6 +61,53 @@ class Item:
                 del component["UID"]
                 if new_uid:
                     component["UID"] = new_uid
+
+        return Item("\r\n".join(parsed.dump_lines()))
+
+    def only_with_attendee(self, email: str):
+        """Returns True if the given attendee has accepted an invite to this event"""
+        parsed = _Component.parse(self.raw)
+
+        parsed.subcomponents = [
+            subcomponent
+            for subcomponent in parsed.subcomponents
+            if subcomponent.name != "VEVENT" or _includes_attendee(subcomponent, email)
+        ]
+
+        if not any(
+            True
+            for subcomponent in parsed.subcomponents
+            if subcomponent.name == "VEVENT"
+        ):
+            return None
+
+        return Item("\r\n".join(parsed.dump_lines()))
+
+    def without_details(self):
+        """Returns a minimal version of this item.
+
+        Filters out data to reduce content size and hide private details:
+        * Description
+        * Location
+        * Organizer
+        * Attendees list
+        * Redundant timezone data (actual timezone of event is preserved)
+        """
+        parsed = _Component.parse(self.raw)
+        stack = [parsed]
+        while stack:
+            component = stack.pop()
+
+            component.subcomponents = [
+                subcomp for subcomp
+                in component.subcomponents
+                if subcomp.name != "VTIMEZONE"
+            ]
+            for field in ["DESCRIPTION", "ORGANIZER", "ATTENDEE", "LOCATION"]:
+                if field in component:
+                    del component[field]
+
+            stack.extend(component.subcomponents)
 
         return Item("\r\n".join(parsed.dump_lines()))
 
@@ -94,7 +148,8 @@ class Item:
         #    with a picture, which bloats the status file.
         #
         # 2. The status file would contain really sensitive information.
-        return self.uid or self.hash
+        my_ident = self.uid or self.hash
+        return my_ident
 
     @property
     def parsed(self):
@@ -235,14 +290,25 @@ def _get_item_type(components, wrappers):
         raise ValueError("Not sure how to join components.")
 
 
+def _extract_prop_value(line, key):
+    if line.startswith(key):
+        prefix_without_params = f"{key}:"
+        prefix_with_params = f"{key};"
+        if line.startswith(prefix_without_params):
+            return line[len(prefix_without_params) :]
+        elif line.startswith(prefix_with_params):
+            return line[len(prefix_with_params) :].split(":", 1)[-1]
+
+    return None
+
 class _Component:
     """
     Raw outline of the components.
 
     Vdirsyncer's operations on iCalendar and VCard objects are limited to
-    retrieving the UID and splitting larger files into items. Consequently this
-    parser is very lazy, with the downside that manipulation of item properties
-    are extremely costly.
+    retrieving the UID, removing fields, and splitting larger files into items.
+    Consequently this parser is very lazy, with the downside that manipulation
+    of item properties are extremely costly.
 
     Other features:
 
@@ -318,20 +384,27 @@ class _Component:
     def __delitem__(self, key):
         prefix = (f"{key}:", f"{key};")
         new_lines = []
-        lineiter = iter(self.props)
-        while True:
-            for line in lineiter:
-                if line.startswith(prefix):
-                    break
+
+        in_target_prop = False
+        for line in iter(self.props):
+            if in_target_prop:
+                if line.startswith((" ", "\t")):
+                    # Continuing with the prop contents, drop this line
+                    pass
+                elif line.startswith(prefix):
+                    # Another instance of the target prop, drop this line
+                    pass
                 else:
+                    # No longer in the target prop, keep this line
+                    in_target_prop = False
                     new_lines.append(line)
             else:
-                break
-
-            for line in lineiter:
-                if not line.startswith((" ", "\t")):
+                if line.startswith(prefix):
+                    # Entering the target prop, drop this line
+                    in_target_prop = True
+                else:
+                    # Un-targetted prop, keep this line
                     new_lines.append(line)
-                    break
 
         self.props = new_lines
 
@@ -353,26 +426,25 @@ class _Component:
             raise ValueError(obj)
 
     def __getitem__(self, key):
-        prefix_without_params = f"{key}:"
-        prefix_with_params = f"{key};"
-        iterlines = iter(self.props)
-        for line in iterlines:
-            if line.startswith(prefix_without_params):
-                rv = line[len(prefix_without_params) :]
-                break
-            elif line.startswith(prefix_with_params):
-                rv = line[len(prefix_with_params) :].split(":", 1)[-1]
-                break
-        else:
+        try:
+            return next(self.get_all(key))
+        except StopIteration:
             raise KeyError
-
-        for line in iterlines:
-            if line.startswith((" ", "\t")):
-                rv += line[1:]
+    
+    def get_all(self, key: str):
+        rv = None
+        for line in iter(self.props):
+            if rv is None:
+                rv = _extract_prop_value(line, key)
             else:
-                break
-
-        return rv
+                if line.startswith((" ", "\t")):
+                    rv += line[1:]
+                else:
+                    yield rv
+                    rv = _extract_prop_value(line, key)
+        
+        if rv is not None:
+            yield rv
 
     def get(self, key, default=None):
         try:
