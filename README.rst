@@ -40,7 +40,7 @@ servers. It can also be used to synchronize calendars and/or addressbooks
 between two servers directly.
 
 It aims to be for calendars and contacts what `OfflineIMAP
-<http://offlineimap.org/>`_ is for emails.
+<https://www.offlineimap.org/>`_ is for emails.
 
 .. _programs: https://vdirsyncer.pimutils.org/en/latest/tutorials/
 
