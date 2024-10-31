@@ -53,11 +53,7 @@ def _normalize_href(base, href):
 
     x = urlparse.urljoin(base, href)
     x = urlparse.urlsplit(x).path
-
-    # We unquote and quote again, but want to make sure we
-    # keep around the "@" character.
-    x = urlparse.unquote(x)
-    x = urlparse.quote(x, "/@")
+    x = urlparse.quote(x, "%/@")
 
     if orig_href == x:
         dav_logger.debug(f"Already normalized: {x!r}")
