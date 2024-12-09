@@ -57,13 +57,10 @@ setup(
     extras_require={
         "google": ["aiohttp-oauthlib"],
     },
-    # Build dependencies
-    setup_requires=["setuptools_scm != 1.12.0"],
     # Other
     packages=find_packages(exclude=["tests.*", "tests"]),
     include_package_data=True,
     cmdclass={"minimal_requirements": PrintRequirements},
-    use_scm_version={"write_to": "vdirsyncer/version.py"},
     entry_points={"console_scripts": ["vdirsyncer = vdirsyncer.cli:app"]},
     classifiers=[
         "Development Status :: 4 - Beta",
