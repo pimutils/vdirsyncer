@@ -45,7 +45,7 @@ settings.register_profile(
     "deterministic",
     settings(
         derandomize=True,
-        suppress_health_check=HealthCheck.all(),
+        suppress_health_check=list(HealthCheck),
     ),
 )
 settings.register_profile("dev", settings(suppress_health_check=[HealthCheck.too_slow]))

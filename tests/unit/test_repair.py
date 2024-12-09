@@ -17,7 +17,7 @@ from vdirsyncer.vobject import Item
 
 @given(uid=uid_strategy)
 # Using the random module for UIDs:
-@settings(suppress_health_check=HealthCheck.all())
+@settings(suppress_health_check=list(HealthCheck))
 @pytest.mark.asyncio
 async def test_repair_uids(uid):
     s = MemoryStorage()
@@ -40,7 +40,7 @@ async def test_repair_uids(uid):
 
 @given(uid=uid_strategy.filter(lambda x: not href_safe(x)))
 # Using the random module for UIDs:
-@settings(suppress_health_check=HealthCheck.all())
+@settings(suppress_health_check=list(HealthCheck))
 @pytest.mark.asyncio
 async def test_repair_unsafe_uids(uid):
     s = MemoryStorage()
