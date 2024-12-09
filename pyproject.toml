@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
+
 [tool.ruff]
 select = [
     "E",
@@ -34,3 +38,7 @@ ignore_missing_imports = true
 exclude_lines = [
     "if TYPE_CHECKING:",
 ]
+
+[tool.setuptools_scm]
+write_to = "vdirsyncer/version.py"
+version_scheme = "no-guess-dev"
