@@ -299,7 +299,7 @@ def test_input_types():
 
 value_strategy = st.text(
     st.characters(
-        blacklist_categories=("Zs", "Zl", "Zp", "Cc", "Cs"), blacklist_characters=":="
+        exclude_categories=("Zs", "Zl", "Zp", "Cc", "Cs"), exclude_characters=":="
     ),
     min_size=1,
 ).filter(lambda x: x.strip() == x)
