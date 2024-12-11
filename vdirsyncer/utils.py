@@ -20,9 +20,9 @@ _missing = object()
 
 
 def expand_path(p: str) -> str:
-    """Expand $HOME in a path and normalise slashes."""
+    """Expand $HOME/~(user) and environment variables in a path."""
     p = os.path.expanduser(p)
-    p = os.path.normpath(p)
+    p = os.path.expandvars(p)
     return p
 
 
