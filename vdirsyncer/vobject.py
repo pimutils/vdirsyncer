@@ -329,7 +329,7 @@ class _Component:
                 break
 
             for line in lineiter:
-                if not line.startswith((" ", "\t")):
+                if not line.startswith((" ", "\t", *prefix)):
                     new_lines.append(line)
                     break
 
