@@ -21,7 +21,6 @@ repos:
           - types-setuptools
           - types-docutils
           - types-requests
-          - types-atomicwrites
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: 'v0.2.2'
     hooks:

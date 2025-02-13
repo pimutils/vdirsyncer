@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import contextlib
 import functools
 import os
 import sys
+import tempfile
 import uuid
 from inspect import getfullargspec
 from typing import Callable
@@ -220,3 +222,27 @@ def open_graphical_browser(url, new=0, autoraise=True):
             return
 
     raise RuntimeError("No graphical browser found. Please open the URL " "manually.")
+
+
+@contextlib.contextmanager
+def atomic_write(dest, mode="wb", overwrite=False):
+    if "w" not in mode:
+        raise RuntimeError("`atomic_write` requires write access")
+
+    fd, src = tempfile.mkstemp(prefix=os.path.basename(dest), dir=os.path.dirname(dest))
+    file = os.fdopen(fd, mode=mode)
+
+    try:
+        yield file
+    except Exception:
+        os.unlink(src)
+        raise
+    else:
+        file.flush()
+        file.close()
+
+        if overwrite:
+            os.rename(src, dest)
+        else:
+            os.link(src, dest)
+            os.unlink(src)

@@ -10,7 +10,6 @@ from typing import Any
 
 import aiohttp
 import click
-from atomicwrites import atomic_write
 
 from .. import BUGTRACKER_HOME
 from .. import DOCS_HOME
@@ -21,6 +20,7 @@ from ..sync.exceptions import PartialSync
 from ..sync.exceptions import StorageEmpty
 from ..sync.exceptions import SyncConflict
 from ..sync.status import SqliteStatus
+from ..utils import atomic_write
 from ..utils import expand_path
 from ..utils import get_storage_init_args
 from . import cli_logger
