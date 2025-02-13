@@ -11,9 +11,9 @@ from threading import Thread
 
 import aiohttp
 import click
-from atomicwrites import atomic_write
 
 from .. import exceptions
+from ..utils import atomic_write
 from ..utils import checkdir
 from ..utils import expand_path
 from ..utils import open_graphical_browser

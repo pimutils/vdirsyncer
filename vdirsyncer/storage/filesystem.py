@@ -5,9 +5,8 @@ import logging
 import os
 import subprocess
 
-from atomicwrites import atomic_write
-
 from .. import exceptions
+from ..utils import atomic_write
 from ..utils import checkdir
 from ..utils import expand_path
 from ..utils import generate_href

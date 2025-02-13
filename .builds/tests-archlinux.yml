@@ -10,7 +10,6 @@ packages:
   - python-installer
   - python-setuptools-scm
   # Runtime dependencies:
-  - python-atomicwrites
   - python-click
   - python-click-log
   - python-click-threading

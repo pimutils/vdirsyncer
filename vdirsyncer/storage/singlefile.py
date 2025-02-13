@@ -8,9 +8,8 @@ import logging
 import os
 from typing import Iterable
 
-from atomicwrites import atomic_write
-
 from .. import exceptions
+from ..utils import atomic_write
 from ..utils import checkfile
 from ..utils import expand_path
 from ..utils import get_etag_from_file
