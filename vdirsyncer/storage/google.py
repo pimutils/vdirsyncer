@@ -98,6 +98,7 @@ class GoogleSession(dav.DAVSession):
             token_updater=self._save_token,
             connector=self.connector,
             connector_owner=False,
+            trust_env=True,
         )
 
     async def _init_token(self):
