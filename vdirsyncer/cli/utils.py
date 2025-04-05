@@ -39,6 +39,7 @@ class _StorageIndex:
             "singlefile": "vdirsyncer.storage.singlefile.SingleFileStorage",
             "google_calendar": "vdirsyncer.storage.google.GoogleCalendarStorage",
             "google_contacts": "vdirsyncer.storage.google.GoogleContactsStorage",
+            "ldap": "vdirsyncer.storage.ldap.LDAPStorage",
         }
 
     def __getitem__(self, name: str) -> Storage:

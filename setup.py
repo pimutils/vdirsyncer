@@ -53,6 +53,7 @@ setup(
     # Optional dependencies
     extras_require={
         "google": ["aiohttp-oauthlib"],
+        "ldap": ["ldap3", "vobject"],
     },
     # Other
     packages=find_packages(exclude=["tests.*", "tests"]),
