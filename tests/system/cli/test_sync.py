@@ -553,9 +553,7 @@ def test_fetch_only_necessary_params(tmpdir, runner):
     type = "filesystem"
     path = "{path}"
     fileext.fetch = ["command", "sh", "{script}"]
-    """.format(
-                path=str(tmpdir.mkdir("bogus")), script=str(fetch_script)
-            )
+    """.format(path=str(tmpdir.mkdir("bogus")), script=str(fetch_script))
         )
     )
 

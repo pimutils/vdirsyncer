@@ -364,13 +364,14 @@ class VobjectMachine(RuleBasedStateMachine):
 
 TestVobjectMachine = VobjectMachine.TestCase
 
+
 def test_dupe_consecutive_keys():
     state = VobjectMachine()
     unparsed_0 = state.get_unparsed_lines(encoded=False, joined=False)
     parsed_0 = state.parse(unparsed=unparsed_0)
-    state.add_prop_raw(c=parsed_0, key='0', params=[], value='0')
-    state.add_prop_raw(c=parsed_0, key='0', params=[], value='0')
-    state.add_prop(c=parsed_0, key='0', value='1')
+    state.add_prop_raw(c=parsed_0, key="0", params=[], value="0")
+    state.add_prop_raw(c=parsed_0, key="0", params=[], value="0")
+    state.add_prop(c=parsed_0, key="0", value="1")
     state.teardown()
 
 
