@@ -1,6 +1,50 @@
+# Vdirsyncer synchronizes calendars and contacts.
+#
+# Please refer to https://vdirsyncer.pimutils.org/en/stable/packaging.html for
+# how to package vdirsyncer.
+
 [build-system]
 requires = ["setuptools>=64", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "vdirsyncer"
+authors = [
+    {name = "Markus Unterwaditzer", email = "markus@unterwaditzer.net"},
+]
+description = "Synchronize calendars and contacts"
+readme = "README.rst"
+requires-python = ">=3.8"
+keywords = ["todo", "task", "icalendar", "cli"]
+license = {text = "ISC"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Internet",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "click>=5.0,<9.0",
+    "click-log>=0.3.0,<0.5.0",
+    "requests>=2.20.0",
+    "aiohttp>=3.8.2,<4.0.0",
+    "aiostream>=0.4.3,<0.5.0",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+google = ["aiohttp-oauthlib"]
+
+[project.scripts]
+vdirsyncer = "vdirsyncer.cli:app"
 
 [tool.ruff]
 select = [
@@ -38,6 +82,9 @@ ignore_missing_imports = true
 exclude_lines = [
     "if TYPE_CHECKING:",
 ]
+
+[tool.setuptools]
+packages = ["vdirsyncer"]
 
 [tool.setuptools_scm]
 write_to = "vdirsyncer/version.py"
