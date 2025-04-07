@@ -1,7 +1,0 @@
-hypothesis>=6.72.0,<7.0.0
-pytest
-pytest-cov
-pytest-httpserver
-trustme
-pytest-asyncio
-aioresponses
