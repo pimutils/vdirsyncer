@@ -4,7 +4,8 @@ import logging
 import os
 import platform
 import re
-from abc import ABC, abstractmethod
+from abc import ABC
+from abc import abstractmethod
 from base64 import b64encode
 from ssl import create_default_context
 
@@ -43,7 +44,11 @@ class AuthMethod(ABC):
     def __eq__(self, other):
         if not isinstance(other, AuthMethod):
             return False
-        return self.__class__ == other.__class__ and self.username == other.username and self.password == other.password
+        return (
+            self.__class__ == other.__class__
+            and self.username == other.username
+            and self.password == other.password
+        )
 
 
 class BasicAuthMethod(AuthMethod):
@@ -52,7 +57,7 @@ class BasicAuthMethod(AuthMethod):
 
     def get_auth_header(self, _method, _url):
         auth_str = f"{self.username}:{self.password}"
-        return "Basic " + b64encode(auth_str.encode('utf-8')).decode("utf-8")
+        return "Basic " + b64encode(auth_str.encode("utf-8")).decode("utf-8")
 
 
 class DigestAuthMethod(AuthMethod):
@@ -64,8 +69,7 @@ class DigestAuthMethod(AuthMethod):
         super().__init__(username, password)
 
         self._auth_helper = self._auth_helpers.get(
-            (username, password),
-            requests.auth.HTTPDigestAuth(username, password)
+            (username, password), requests.auth.HTTPDigestAuth(username, password)
         )
         self._auth_helpers[(username, password)] = self._auth_helper
 
@@ -87,7 +91,7 @@ class DigestAuthMethod(AuthMethod):
 
         if not self.auth_helper_vars.chal:
             # Need to do init request first
-            return ''
+            return ""
 
         return self._auth_helper.build_digest_header(method, url)
 
@@ -99,10 +103,12 @@ def prepare_auth(auth, username, password):
         elif auth == "digest":
             return DigestAuthMethod(username, password)
         elif auth == "guess":
-            raise exceptions.UserError(f"'Guess' authentication is not supported in this version of vdirsyncer. \n"
-                                       f"Please explicitly specify either 'basic' or 'digest' auth instead. \n"
-                                       f"See the following issue for more information: "
-                                       f"https://github.com/pimutils/vdirsyncer/issues/1015")
+            raise exceptions.UserError(
+                "'Guess' authentication is not supported in this version of vdirsyncer. \n"
+                "Please explicitly specify either 'basic' or 'digest' auth instead. \n"
+                "See the following issue for more information: "
+                "https://github.com/pimutils/vdirsyncer/issues/1015"
+            )
         else:
             raise exceptions.UserError(f"Unknown authentication method: {auth}")
     elif auth:

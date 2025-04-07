@@ -310,9 +310,7 @@ class Discover:
             </mkcol>
         """.format(
             etree.tostring(etree.Element(self._resourcetype), encoding="unicode")
-        ).encode(
-            "utf-8"
-        )
+        ).encode("utf-8")
 
         response = await self.session.request(
             "MKCOL",
@@ -740,9 +738,7 @@ class DAVStorage(Storage):
         """.format(
             etree.tostring(element, encoding="unicode"),
             action=action,
-        ).encode(
-            "utf-8"
-        )
+        ).encode("utf-8")
 
         await self.session.request(
             "PROPPATCH",
