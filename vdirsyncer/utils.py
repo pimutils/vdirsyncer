@@ -221,7 +221,7 @@ def open_graphical_browser(url, new=0, autoraise=True):
         if browser.open(url, new, autoraise):
             return
 
-    raise RuntimeError("No graphical browser found. Please open the URL " "manually.")
+    raise RuntimeError("No graphical browser found. Please open the URL manually.")
 
 
 @contextlib.contextmanager

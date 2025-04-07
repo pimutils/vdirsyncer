@@ -37,9 +37,7 @@ except ImportError:
     html_theme = "default"
     if not on_rtd:
         print("-" * 74)
-        print(
-            "Warning: sphinx-rtd-theme not installed, building with default " "theme."
-        )
+        print("Warning: sphinx-rtd-theme not installed, building with default theme.")
         print("-" * 74)
 
 html_static_path = ["_static"]

@@ -72,8 +72,7 @@ async def collections_for_pair(
             )
         else:
             raise exceptions.UserError(
-                f"Please run `vdirsyncer discover {pair.name}` "
-                " before synchronization."
+                f"Please run `vdirsyncer discover {pair.name}`  before synchronization."
             )
 
     logger.info(f"Discovering collections for pair {pair.name}")

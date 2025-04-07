@@ -90,9 +90,7 @@ def test_empty_storage(tmpdir, runner):
     result = runner.invoke(["sync"])
     lines = result.output.splitlines()
     assert lines[0] == "Syncing my_pair"
-    assert lines[1].startswith(
-        "error: my_pair: " 'Storage "my_b" was completely emptied.'
-    )
+    assert lines[1].startswith('error: my_pair: Storage "my_b" was completely emptied.')
     assert result.exception
 
 

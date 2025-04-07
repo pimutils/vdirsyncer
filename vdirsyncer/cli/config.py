@@ -359,7 +359,7 @@ def _resolve_conflict_via_command(
             new_b = f.read()
 
         if new_a != new_b:
-            raise exceptions.UserError("The two files are not completely " "equal.")
+            raise exceptions.UserError("The two files are not completely equal.")
         return Item(new_a)
     finally:
         shutil.rmtree(dir)
