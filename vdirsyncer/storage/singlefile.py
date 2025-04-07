@@ -94,7 +94,7 @@ class SingleFileStorage(Storage):
                 path = path % (collection,)
             except TypeError:
                 raise ValueError(
-                    "Exactly one %s required in path " "if collection is not null."
+                    "Exactly one %s required in path if collection is not null."
                 )
 
         checkfile(path, create=True)

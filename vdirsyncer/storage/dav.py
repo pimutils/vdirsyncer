@@ -261,7 +261,7 @@ class Discover:
 
             href = response.find("{DAV:}href")
             if href is None:
-                raise InvalidXMLResponse("Missing href tag for collection " "props.")
+                raise InvalidXMLResponse("Missing href tag for collection props.")
             href = urlparse.urljoin(str(r.url), href.text)
             if href not in done:
                 done.add(href)
@@ -792,7 +792,7 @@ class CalDAVStorage(DAVStorage):
         self.item_types = tuple(item_types)
         if (start_date is None) != (end_date is None):
             raise exceptions.UserError(
-                "If start_date is given, " "end_date has to be given too."
+                "If start_date is given, end_date has to be given too."
             )
         elif start_date is not None and end_date is not None:
             namespace = dict(datetime.__dict__)

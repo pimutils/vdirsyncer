@@ -154,7 +154,7 @@ def test_hash_item():
 
 
 def test_multiline_uid(benchmark):
-    a = "BEGIN:FOO\r\n" "UID:123456789abcd\r\n" " efgh\r\n" "END:FOO\r\n"
+    a = "BEGIN:FOO\r\nUID:123456789abcd\r\n efgh\r\nEND:FOO\r\n"
     assert benchmark(lambda: vobject.Item(a).uid) == "123456789abcdefgh"
 
 

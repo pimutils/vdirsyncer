@@ -56,9 +56,7 @@ def repair_item(href, item, seen_uids, repair_unsafe_uid):
         new_item = item.with_uid(generate_href())
     elif not href_safe(item.uid) or not href_safe(basename(href)):
         if not repair_unsafe_uid:
-            logger.warning(
-                "UID may cause problems, add " "--repair-unsafe-uid to repair."
-            )
+            logger.warning("UID may cause problems, add --repair-unsafe-uid to repair.")
         else:
             logger.warning("UID or href is unsafe, assigning random UID.")
             new_item = item.with_uid(generate_href())
