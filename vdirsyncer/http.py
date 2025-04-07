@@ -63,9 +63,9 @@ class BasicAuthMethod(AuthMethod):
 class DigestAuthMethod(AuthMethod):
     # make class var to 'cache' the state, which is more efficient because otherwise
     # each request would first require another 'initialization' request.
-    _auth_helpers = {}
+    _auth_helpers: dict[tuple[str, str], requests.auth.HTTPDigestAuth] = {}
 
-    def __init__(self, username, password):
+    def __init__(self, username: str, password: str):
         super().__init__(username, password)
 
         self._auth_helper = self._auth_helpers.get(
