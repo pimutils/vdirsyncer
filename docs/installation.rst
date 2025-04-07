@@ -42,7 +42,7 @@ If your distribution doesn't provide a package for vdirsyncer, you still can
 use Python's package manager "pip". First, you'll have to check that the
 following things are installed:
 
-- Python 3.7 to 3.11 and pip.
+- Python 3.8 to 3.11 and pip.
 - ``libxml`` and ``libxslt``
 - ``zlib``
 - Linux or macOS. **Windows is not supported**, see :gh:`535`.

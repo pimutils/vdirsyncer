@@ -26,7 +26,6 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Topic :: Internet",
@@ -60,7 +59,6 @@ select = [
     # "TID",
     "RSE"
 ]
-target-version = "py37"
 
 [tool.ruff.isort]
 force-single-line = true

@@ -210,7 +210,7 @@ def open_graphical_browser(url, new=0, autoraise=True):
 
     cli_names = {"www-browser", "links", "links2", "elinks", "lynx", "w3m"}
 
-    if webbrowser._tryorder is None:  # Python 3.7
+    if webbrowser._tryorder is None:  # Python 3.8
         webbrowser.register_standard_browsers()
 
     for name in webbrowser._tryorder:
