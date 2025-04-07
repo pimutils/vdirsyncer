@@ -13,6 +13,7 @@ Version 0.19.4
 ==============
 
 - Remove dependency on abandoned ``atomicwrites`` library.
+- Implement ``filter_hook`` for the HTTP storage.
 
 Version 0.19.3
 ==============
