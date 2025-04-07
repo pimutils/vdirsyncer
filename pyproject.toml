@@ -47,7 +47,7 @@ google = ["aiohttp-oauthlib"]
 [project.scripts]
 vdirsyncer = "vdirsyncer.cli:app"
 
-[tool.ruff]
+[tool.lint.ruff]
 select = [
     "E",
     "F",
@@ -60,7 +60,7 @@ select = [
     "RSE"
 ]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 force-single-line = true
 required-imports = ["from __future__ import annotations"]
 
