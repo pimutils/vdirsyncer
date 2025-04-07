@@ -43,6 +43,15 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 google = ["aiohttp-oauthlib"]
+test = [
+  "hypothesis>=6.72.0,<7.0.0",
+  "pytest",
+  "pytest-cov",
+  "pytest-httpserver",
+  "trustme",
+  "pytest-asyncio",
+  "aioresponses",
+]
 
 [project.scripts]
 vdirsyncer = "vdirsyncer.cli:app"

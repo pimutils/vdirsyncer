@@ -46,8 +46,9 @@ You can install the all development dependencies with::
     make install-dev
 
 You probably don't want this since it will use pip to download the
-dependencies. Alternatively you can find the testing dependencies in
-``test-requirements.txt``, again with lower-bound version requirements.
+dependencies. Alternatively test dependencies are listed as ``test`` optional
+dependencies in ``pyproject.toml``, again with lower-bound version
+requirements.
 
 You also have to have vdirsyncer fully installed at this point. Merely
 ``cd``-ing into the tarball will not be sufficient.
