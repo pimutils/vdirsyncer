@@ -18,7 +18,6 @@ environment:
   CODECOV_TOKEN: b834a3c5-28fa-4808-9bdb-182210069c79
   DAV_SERVER: radicale xandikos
   REQUIREMENTS: minimal
-  # TODO: ETESYNC_TESTS
 tasks:
   - venv: |
       python3 -m venv $HOME/venv
