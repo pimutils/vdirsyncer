@@ -8,10 +8,6 @@ repos:
       - id: check-toml
       - id: check-added-large-files
       - id: debug-statements
-  - repo: https://github.com/psf/black
-    rev: "24.2.0"
-    hooks:
-      - id: black
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: "v1.8.0"
     hooks:
@@ -26,6 +22,7 @@ repos:
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
   - repo: local
     hooks:
       - id: typos-syncroniz

@@ -81,7 +81,7 @@ virtualenv_ and run this inside of it::
 
     # Install development dependencies, including:
     #  - vdirsyncer from the repo into the virtualenv
-    #  - stylecheckers (ruff) and code formatters (black)
+    #  - style checks and formatting (ruff)
     make install-dev
 
     # Install git commit hook for some extra linting and checking
