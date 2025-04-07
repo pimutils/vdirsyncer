@@ -52,7 +52,8 @@ install-dev:
 	pip install -e .
 	pip install -Ur test-requirements.txt -r docs-requirements.txt pre-commit
 	set -xe && if [ "$(REQUIREMENTS)" = "minimal" ]; then \
-		pip install -U --force-reinstall $$(python setup.py --quiet minimal_requirements); \
+		pip install pyproject-dependencies && \
+		pip install -U --force-reinstall $$(pyproject-dependencies . | sed 's/>/=/'); \
 	fi
 
 .PHONY: docs
