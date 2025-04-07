@@ -9,11 +9,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
-Version 0.19.4
+Version 0.20.0
 ==============
 
 - Remove dependency on abandoned ``atomicwrites`` library.
 - Implement ``filter_hook`` for the HTTP storage.
+- Drop support for Python 3.7.
 
 Version 0.19.3
 ==============
