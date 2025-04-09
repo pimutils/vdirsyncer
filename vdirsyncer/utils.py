@@ -127,12 +127,13 @@ def checkdir(path: str, create: bool = False, mode: int = 0o750) -> None:
             raise exceptions.CollectionNotFound(f"Directory {path} does not exist.")
 
 
-def checkfile(path, create=False):
-    """
-    Check whether ``path`` is a file.
+def checkfile(path, create=False) -> None:
+    """Check whether ``path`` is a file.
 
     :param create: Whether to create the file's parent directories if they do
         not exist.
+    :raises CollectionNotFound: if path does not exist.
+    :raises OSError: if path exists but is not a file.
     """
     checkdir(os.path.dirname(path), create=create)
     if not os.path.isfile(path):
