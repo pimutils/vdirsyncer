@@ -16,11 +16,11 @@ description = "Synchronize calendars and contacts"
 readme = "README.rst"
 requires-python = ">=3.8"
 keywords = ["todo", "task", "icalendar", "cli"]
-license = {text = "ISC"}
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
-    "License :: OSI Approved :: BSD License",
     "Operating System :: POSIX",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
