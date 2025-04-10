@@ -92,8 +92,8 @@ exclude_lines = [
     "if TYPE_CHECKING:",
 ]
 
-[tool.setuptools]
-packages = ["vdirsyncer"]
+[tool.setuptools.packages.find]
+include = ["vdirsyncer*"]
 
 [tool.setuptools_scm]
 write_to = "vdirsyncer/version.py"
