@@ -392,6 +392,7 @@ class DAVSession:
         self.useragent = useragent
         self.url = url.rstrip("/") + "/"
         self.connector = connector
+        self.ignore_missing_href = ignore_missing_href
 
     @utils.cached_property
     def parsed_url(self):
@@ -548,7 +549,8 @@ class DAVStorage(Storage):
                 else:
                     rv.append((href, Item(raw), etag))
             for href in hrefs_left:
-                raise exceptions.NotFoundError(href)
+                if not self.session.ignore_missing_href:
+                    raise exceptions.NotFoundError(href)
 
             for href, item, etag in rv:
                 yield href, item, etag
