@@ -3,9 +3,9 @@ from __future__ import annotations
 import collections
 import contextlib
 import functools
-import glob
 import logging
 import os
+from pathlib import Path
 from typing import Iterable
 
 from .. import exceptions
@@ -62,28 +62,14 @@ class SingleFileStorage(Storage):
         if kwargs.pop("collection", None) is not None:
             raise TypeError("collection argument must not be given.")
 
-        path = os.path.abspath(expand_path(path))
-        try:
-            path_glob = path % "*"
-        except TypeError:
-            # If not exactly one '%s' is present, we cannot discover
-            # collections because we wouldn't know which name to assign.
-            raise NotImplementedError
+        args = dict(kwargs)
 
-        placeholder_pos = path.index("%s")
+        # By convention the collection name of a unified .vcf file will the
+        #   file's stem (name of the file without extension)
+        args["collection"] = Path(path).stem
+        args["path"] = os.path.abspath(expand_path(path))
 
-        for subpath in glob.iglob(path_glob):
-            if os.path.isfile(subpath):
-                args = dict(kwargs)
-                args["path"] = subpath
-
-                collection_end = (
-                    placeholder_pos + 2 + len(subpath) - len(path)  # length of '%s'
-                )
-                collection = subpath[placeholder_pos:collection_end]
-                args["collection"] = collection
-
-                yield args
+        yield args
 
     @classmethod
     async def create_collection(cls, collection, **kwargs):
