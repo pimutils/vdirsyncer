@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import pytz
+from icalendar import Calendar, Todo
+from datetime import datetime
 import json
 import logging
 import os
@@ -17,13 +20,14 @@ from ..utils import atomic_write
 from ..utils import checkdir
 from ..utils import expand_path
 from ..utils import open_graphical_browser
+from ..vobject import Item
 from . import base
 from . import dav
 from .google_helpers import _RedirectWSGIApp
 from .google_helpers import _WSGIRequestHandler
+from googleapiclient.errors import HttpError
 
 logger = logging.getLogger(__name__)
-
 
 TOKEN_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 REFRESH_URL = "https://www.googleapis.com/oauth2/v4/token"
@@ -244,3 +248,197 @@ class GoogleContactsStorage(dav.CardDAVStorage):
     # docs here because the current way we autogenerate those docs are too
     # simple for our advanced argspec juggling in `vdirsyncer.storage.dav`.
     __init__._traverse_superclass = base.Storage  # type: ignore
+
+
+class GoogleTasksStorage(base.Storage):
+    SCOPES = ["https://www.googleapis.com/auth/tasks"]
+    read_only = False
+    no_delete = False
+    storage_name = "google_tasks"
+    authenticated_service = None
+
+    def __init__(self, **kwargs):
+        super().__init__(
+            kwargs["collection"],
+            self.read_only,
+            self.no_delete,
+            kwargs["instance_name"],
+        )
+        self.tasklist_id = kwargs["collection"]
+        self.service = GoogleTasksStorage.get_authenticated_service(
+            kwargs["token_file"], kwargs["client_id"], kwargs["client_secret"]
+        )
+
+    async def list(self):
+        tasks_result = (
+            self.service.tasks()
+            .list(tasklist=self.tasklist_id, showCompleted=True, showHidden=True)
+            .execute()
+        )
+        tasks = tasks_result.get("items", [])
+        for t in tasks:
+            yield t["id"], t["etag"]
+
+    async def get(self, href: str):
+        tasks_result = (
+            self.service.tasks().get(tasklist=self.tasklist_id, task=href).execute()
+        )
+        ics = GoogleTasksStorage.task_to_ics(tasks_result, self.tasklist_id)
+        return (Item(ics), tasks_result["etag"])
+
+    async def upload(self, item: Item):
+        try:
+            task = GoogleTasksStorage.ics_to_task(item.raw)
+            tasks_result = (
+                self.service.tasks()
+                .insert(tasklist=self.tasklist_id, body=task)
+                .execute()
+            )
+            return tasks_result["id"], tasks_result["etag"]
+        except HttpError as e:
+            logger.debug(f"GTasks API error :\n {e.content}")
+            raise e
+
+    async def update(self, href: str, item: Item, etag: str):
+        tasks_result = (
+            self.service.tasks().get(tasklist=self.tasklist_id, task=href).execute()
+        )
+        if tasks_result["etag"] != etag:
+            raise exceptions.WrongEtagError(etag, tasks_result["etag"])
+        task = GoogleTasksStorage.ics_to_task(item.raw, tasks_result)
+        tasks_result = (
+            self.service.tasks().insert(tasklist=self.tasklist_id, body=task).execute()
+        )
+        return tasks_result["id"], tasks_result["etag"]
+
+    async def delete(self, href: str, etag: str):
+        try:
+            self.service.tasks().delete(tasklist=self.tasklist_id, task=href).execute()
+        except HttpError as e:
+            logger.debug(f"GTasks API error:\n{e.content}")
+            raise e
+
+    async def get_meta(self, key: str):
+        if key == "displayname":
+            tasks_result = (
+                self.service.tasklists().get(tasklist=self.tasklist_id).execute()
+            )
+            return tasks_result["title"]
+        else:
+            return None
+
+    @classmethod
+    async def discover(cls, **kwargs):
+        service = GoogleTasksStorage.get_authenticated_service(
+            kwargs["token_file"], kwargs["client_id"], kwargs["client_secret"]
+        )
+        tasks_result = service.tasklists().list().execute()
+        for tl in tasks_result["items"]:
+            print(f"tl: {tl['id']} / {tl['title']} etag: {tl['etag']}")
+            yield dict(collection=tl["id"], **kwargs)
+
+    @staticmethod
+    def get_authenticated_service(token_file: str, client_id: str, client_secret: str):
+        from google.oauth2.credentials import Credentials
+        from google_auth_oauthlib.flow import InstalledAppFlow
+        from google.auth.transport.requests import Request
+        from googleapiclient.discovery import build
+
+        creds = None
+        token_dir = os.path.dirname(token_file)
+        if not os.path.isdir(token_dir):
+            os.makedirs(token_dir)
+        if os.path.isfile(token_file):
+            creds = Credentials.from_authorized_user_file(
+                token_file, GoogleTasksStorage.SCOPES
+            )
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_config(
+                    {
+                        "installed": {
+                            "client_id": client_id,
+                            "client_secret": client_secret,
+                            "auth_uri": TOKEN_URL,
+                            "token_uri": REFRESH_URL,
+                            "redirect_uris": [
+                                "urn:ietf:wg:oauth:2.0:oob",
+                                "http://localhost",
+                            ],
+                        }
+                    },
+                    GoogleTasksStorage.SCOPES,
+                )
+                creds = flow.run_local_server(port=0)
+                with open(token_file, "w") as token:
+                    token.write(creds.to_json())
+
+        service = build("tasks", "v1", credentials=creds)
+        return service
+
+    @staticmethod
+    def task_to_ics(task, calendar_name: str):
+        """
+        Convert a Google Task to an iCalendar (ICS) event.
+
+        Args:
+            task (dict): A task returned from the Google Tasks API.
+            calendar_name (str): Name to assign to the calendar.
+
+        Returns:
+            str: An ICS file content string.
+        """
+        now = datetime.now(pytz.utc)
+        cal = Calendar()
+        cal.add("prodid", "-//Google Tasks to ICS//mxm.dk//")
+        cal.add("version", "2.0")
+        cal.add("X-WR-CALNAME", calendar_name)
+
+        todo = Todo()
+        todo.add("uid", task.get("id"))
+        todo.add("summary", task.get("title", "Untitled Task"))
+        notes = task.get("notes")
+        if notes:
+            todo.add("description", notes)
+
+        updated = task.get("updated")
+        if updated:
+            dt = datetime.fromisoformat(task.get("updated").rstrip("Z"))
+            todo.add("dtstart", dt)
+        else:
+            todo.add("dtstart", now)
+        due = task.get("due")
+        if due:
+            dt = datetime.fromisoformat(due.rstrip("Z"))
+            todo.add("due", dt)
+
+        todo.add(
+            "status",
+            "COMPLETED" if task.get("status") == "completed" else "NEEDS-ACTION",
+        )
+
+        cal.add_component(todo)
+        return cal.to_ical().decode("utf-8")
+
+    @staticmethod
+    def ics_to_task(ics: str, task_to_update=None):
+        task = {}
+        cal = Calendar.from_ical(ics)
+        todo = cal.walk("VTODO")
+        if todo is None:
+            raise Exception("ICS contains no VTODO")
+        todo = todo[0]
+        # task['id'] = str(todo['UID'])
+        task["title"] = str(todo["SUMMARY"])
+        if "DESCRIPTION" in todo.keys():
+            task["notes"] = str(todo.get("DESCRIPTION"))
+        task["status"] = (
+            "needsAction"
+            if "STATUS" not in todo.keys() or todo["STATUS"] != "COMPLETED"
+            else "completed"
+        )
+        if "DUE" in todo.keys():
+            task["due"] = todo["DUE"].dt.isoformat().replace("+00:00", "Z")
+        return task
