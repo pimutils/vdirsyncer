@@ -165,6 +165,7 @@ class DiscoverResult:
             "CalDAVStorage",
             "GoogleCalendarStorage",
             "GoogleContactsStorage",
+            "GoogleTasksStorage",
         ]:
             assert connector is not None
             config["connector"] = connector
