@@ -222,3 +222,62 @@ def test_validate_collections_param():
     x([["c", None, "b"]])
     x([["c", "a", None]])
     x([["c", None, None]])
+
+
+def test_invalid_implicit_value(read_config):
+    expected_message = "`implicit` parameter must be 'create' or absent"
+    with pytest.raises(exceptions.UserError) as excinfo:
+        read_config(
+            """
+            [general]
+            status_path = "/tmp/status/"
+
+            [pair my_pair]
+            a = "my_a"
+            b = "my_b"
+            collections = null
+            implicit = "invalid"
+
+            [storage my_a]
+            type = "filesystem"
+            path = "{base}/path_a/"
+            fileext = ".txt"
+
+            [storage my_b]
+            type = "filesystem"
+            path = "{base}/path_b/"
+            fileext = ".txt"
+            """
+        )
+
+    assert expected_message in str(excinfo.value)
+
+
+def test_implicit_create_only(read_config):
+    """Test that implicit create works."""
+    errors, c = read_config(
+        """
+        [general]
+        status_path = "/tmp/status/"
+
+        [pair my_pair]
+        a = "my_a"
+        b = "my_b"
+        collections = ["from a", "from b"]
+        implicit = "create"
+
+        [storage my_a]
+        type = "filesystem"
+        path = "{base}/path_a/"
+        fileext = ".txt"
+
+        [storage my_b]
+        type = "filesystem"
+        path = "{base}/path_b/"
+        fileext = ".txt"
+        """
+    )
+
+    assert not errors
+    pair = c.pairs["my_pair"]
+    assert pair.implicit == "create"
