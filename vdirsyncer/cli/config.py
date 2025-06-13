@@ -95,6 +95,14 @@ def _validate_collections_param(collections):
             raise ValueError(f"`collections` parameter, position {i}: {str(e)}")
 
 
+def _validate_implicit_param(implicit):
+    if implicit is None:
+        return
+
+    if implicit != "create":
+        raise ValueError("`implicit` parameter must be 'create' or absent.")
+
+
 class _ConfigReader:
     def __init__(self, f: IO[Any]):
         self._file: IO[Any] = f
@@ -229,6 +237,7 @@ class PairConfig:
         self.name: str = name
         self.name_a: str = options.pop("a")
         self.name_b: str = options.pop("b")
+        self.implicit = options.pop("implicit", None)
 
         self._partial_sync: str | None = options.pop("partial_sync", None)
         self.metadata = options.pop("metadata", None) or ()
@@ -247,6 +256,7 @@ class PairConfig:
             )
         else:
             _validate_collections_param(self.collections)
+            _validate_implicit_param(self.implicit)
 
         if options:
             raise ValueError("Unknown options: {}".format(", ".join(options)))

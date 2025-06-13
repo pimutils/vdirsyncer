@@ -93,6 +93,13 @@ async def collections_for_pair(
             connector=connector,
         )
 
+    async def _handle_collection_not_found(
+        config, collection, e=None, implicit_create=False
+    ):
+        return await handle_collection_not_found(
+            config, collection, e=e, implicit_create=pair.implicit == "create"
+        )
+
     # We have to use a list here because the special None/null value would get
     # mangled to string (because JSON objects always have string keys).
     rv = await aiostream.stream.list(
@@ -102,7 +109,7 @@ async def collections_for_pair(
             config_b=pair.config_b,
             get_a_discovered=a_discovered.get_self,
             get_b_discovered=b_discovered.get_self,
-            _handle_collection_not_found=handle_collection_not_found,
+            _handle_collection_not_found=_handle_collection_not_found,
         )
     )
 

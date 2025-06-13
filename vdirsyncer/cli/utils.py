@@ -286,7 +286,7 @@ async def storage_instance_from_config(
     except exceptions.CollectionNotFound as e:
         if create:
             config = await handle_collection_not_found(
-                config, config.get("collection", None), e=str(e)
+                config, config.get("collection", None), e=str(e), implicit_create=True
             )
             return await storage_instance_from_config(
                 config,
@@ -342,7 +342,9 @@ def assert_permissions(path: str, wanted: int) -> None:
         os.chmod(path, wanted)
 
 
-async def handle_collection_not_found(config, collection, e=None):
+async def handle_collection_not_found(
+    config, collection, e=None, implicit_create=False
+):
     storage_name = config.get("instance_name", None)
 
     cli_logger.warning(
@@ -351,7 +353,7 @@ async def handle_collection_not_found(config, collection, e=None):
         )
     )
 
-    if click.confirm("Should vdirsyncer attempt to create it?"):
+    if implicit_create or click.confirm("Should vdirsyncer attempt to create it?"):
         storage_type = config["type"]
         cls, config = storage_class_from_config(config)
         config["collection"] = collection
