@@ -35,6 +35,8 @@ environment:
   REQUIREMENTS: release
   # TODO: ETESYNC_TESTS
 tasks:
+  - check-python:
+      python --version | grep 'Python 3.13'
   - docker: |
       sudo systemctl start docker
   - setup: |

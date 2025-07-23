@@ -15,6 +15,7 @@ Version 0.20.0
 - Remove dependency on abandoned ``atomicwrites`` library.
 - Implement ``filter_hook`` for the HTTP storage.
 - Drop support for Python 3.7.
+- Add support for Python 3.12 and Python 3.13.
 
 Version 0.19.3
 ==============
