@@ -16,6 +16,8 @@ Version 0.20.0
 - Implement ``filter_hook`` for the HTTP storage.
 - Drop support for Python 3.7.
 - Add support for Python 3.12 and Python 3.13.
+- Properly close the status database after using. This especially affects tests,
+  where we were leaking a large amount of file descriptors.
 
 Version 0.19.3
 ==============
