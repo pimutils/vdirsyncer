@@ -3,7 +3,7 @@
 # TODO: It might make more sense to test with an older Ubuntu or Fedora version
 # here, and consider that our "oldest suppported environment".
 
-image: alpine/3.18 # python 3.11
+image: alpine/3.19 # python 3.11
 packages:
   - docker
   - docker-cli
