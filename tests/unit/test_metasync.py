@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+
 import hypothesis.strategies as st
 import pytest
 import pytest_asyncio
@@ -56,23 +58,19 @@ async def test_basic(monkeypatch):
 
 
 @pytest_asyncio.fixture
-@pytest.mark.asyncio
-async def conflict_state(request, event_loop):
+async def conflict_state(request):
     a = MemoryStorage()
     b = MemoryStorage()
     status = {}
     await a.set_meta("foo", "bar")
     await b.set_meta("foo", "baz")
 
-    def cleanup():
-        async def do_cleanup():
-            assert await a.get_meta("foo") == "bar"
-            assert await b.get_meta("foo") == "baz"
-            assert not status
+    async def do_cleanup():
+        assert await a.get_meta("foo") == "bar"
+        assert await b.get_meta("foo") == "baz"
+        assert not status
 
-        event_loop.run_until_complete(do_cleanup())
-
-    request.addfinalizer(cleanup)
+    request.addfinalizer(lambda: asyncio.run(do_cleanup()))
 
     return a, b, status
 

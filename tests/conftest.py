@@ -59,12 +59,12 @@ else:
 
 
 @pytest_asyncio.fixture
-async def aio_session(event_loop):
+async def aio_session():
     async with aiohttp.ClientSession() as session:
         yield session
 
 
 @pytest_asyncio.fixture
-async def aio_connector(event_loop):
+async def aio_connector():
     async with aiohttp.TCPConnector(limit_per_host=16) as conn:
         yield conn

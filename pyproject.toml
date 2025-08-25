@@ -84,6 +84,7 @@ addopts = """
 --color=yes
 """
 # filterwarnings=error
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.mypy]
 ignore_missing_imports = true
