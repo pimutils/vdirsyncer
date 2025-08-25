@@ -232,7 +232,8 @@ def manage_sync_status(base_path: str, pair_name: str, collection_name: str):
         prepare_status_path(path)
         status = SqliteStatus(path)
 
-    yield status
+    with contextlib.closing(status):
+        yield status
 
 
 def save_status(

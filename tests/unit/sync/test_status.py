@@ -34,3 +34,5 @@ def test_legacy_status(status_dict):
         assert meta2_a.to_status() == meta_a
         assert meta2_b.to_status() == meta_b
         assert ident_a == ident_b == ident
+
+    status.close()

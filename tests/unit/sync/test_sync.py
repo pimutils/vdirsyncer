@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from copy import deepcopy
 
 import aiostream
@@ -25,13 +26,12 @@ from vdirsyncer.sync.status import SqliteStatus
 from vdirsyncer.vobject import Item
 
 
-async def sync(a, b, status, *args, **kwargs):
-    new_status = SqliteStatus(":memory:")
-    new_status.load_legacy_status(status)
-    rv = await _sync(a, b, new_status, *args, **kwargs)
-    status.clear()
-    status.update(new_status.to_legacy_status())
-    return rv
+async def sync(a, b, status, *args, **kwargs) -> None:
+    with contextlib.closing(SqliteStatus(":memory:")) as new_status:
+        new_status.load_legacy_status(status)
+        await _sync(a, b, new_status, *args, **kwargs)
+        status.clear()
+        status.update(new_status.to_legacy_status())
 
 
 def empty_storage(x):
