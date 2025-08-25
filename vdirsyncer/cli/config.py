@@ -8,6 +8,7 @@ from itertools import chain
 from typing import IO
 from typing import Any
 from typing import Generator
+from typing import Tuple
 
 from .. import PROJECT_HOME
 from .. import exceptions
@@ -231,7 +232,7 @@ class PairConfig:
         self.name_b: str = options.pop("b")
 
         self._partial_sync: str | None = options.pop("partial_sync", None)
-        self.metadata = options.pop("metadata", None) or ()
+        self.metadata: str | Tuple[()] = options.pop("metadata", ())
 
         self.conflict_resolution = self._process_conflict_resolution_param(
             options.pop("conflict_resolution", None)
