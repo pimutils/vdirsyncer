@@ -223,6 +223,10 @@ async def request(
     logger.debug(response.headers)
     logger.debug(response.content)
 
+    if logger.getEffectiveLevel() <= logging.DEBUG and response.status >= 400:
+        # https://github.com/pimutils/vdirsyncer/issues/1186
+        logger.debug(await response.text())
+
     if response.status == 412:
         raise exceptions.PreconditionFailed(response.reason)
     if response.status in (404, 410):
