@@ -58,9 +58,8 @@ test = [
 vdirsyncer = "vdirsyncer.cli:app"
 
 [tool.lint.ruff]
-select = [
+extend-select = [
     "E",
-    "F",
     "W",
     "B0",
     "I",
