@@ -18,6 +18,7 @@ Version 0.20.0
 - Add support for Python 3.12 and Python 3.13.
 - Properly close the status database after using. This especially affects tests,
   where we were leaking a large amount of file descriptors.
+- Extend supported versions of ``aiostream`` to include 0.7.x.
 
 Version 0.19.3
 ==============
