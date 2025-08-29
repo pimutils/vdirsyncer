@@ -35,7 +35,8 @@ async def test_basic(monkeypatch):
 
     await a.set_meta("foo", None)
     await metasync(a, b, status, keys=["foo"])
-    assert await a.get_meta("foo") is None and await b.get_meta("foo") is None
+    assert await a.get_meta("foo") is None
+    assert await b.get_meta("foo") is None
 
     await a.set_meta("foo", "bar")
     await metasync(a, b, status, keys=["foo"])
@@ -54,7 +55,8 @@ async def test_basic(monkeypatch):
 
     await b.set_meta("foo", None)
     await metasync(a, b, status, keys=["foo"])
-    assert not await a.get_meta("foo") and not await b.get_meta("foo")
+    assert not await a.get_meta("foo")
+    assert not await b.get_meta("foo")
 
 
 @pytest_asyncio.fixture

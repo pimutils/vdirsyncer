@@ -48,7 +48,8 @@ class TestFilesystemStorage(StorageTests):
         s = self.storage_class(str(tmpdir), ".txt")
         await s.upload(Item("UID:a/b/c"))
         (item_file,) = tmpdir.listdir()
-        assert "/" not in item_file.basename and item_file.isfile()
+        assert "/" not in item_file.basename
+        assert item_file.isfile()
 
     @pytest.mark.asyncio
     async def test_ignore_tmp_files(self, tmpdir):

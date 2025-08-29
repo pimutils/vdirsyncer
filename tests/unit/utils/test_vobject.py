@@ -335,7 +335,8 @@ class VobjectMachine(RuleBasedStateMachine):
         assert key in c
         assert c.get(key) == value
         dump = "\r\n".join(c.dump_lines())
-        assert key in dump and value in dump
+        assert key in dump
+        assert value in dump
 
     @rule(
         c=Parsed,
