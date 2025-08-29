@@ -8,11 +8,13 @@ import pytest
 class ServerMixin:
     @pytest.fixture
     def get_storage_args(self, slow_create_collection, aio_connector, request):
-        if "item_type" in request.fixturenames:
-            if request.getfixturevalue("item_type") == "VTODO":
-                # Fastmail has non-standard support for TODOs
-                # See https://github.com/pimutils/vdirsyncer/issues/824
-                pytest.skip("Fastmail has non-standard VTODO support.")
+        if (
+            "item_type" in request.fixturenames
+            and request.getfixturevalue("item_type") == "VTODO"
+        ):
+            # Fastmail has non-standard support for TODOs
+            # See https://github.com/pimutils/vdirsyncer/issues/824
+            pytest.skip("Fastmail has non-standard VTODO support.")
 
         async def inner(collection="test"):
             args = {

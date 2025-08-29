@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import errno
 import logging
 import os
@@ -65,9 +66,7 @@ class FilesystemStorage(Storage):
     def _validate_collection(cls, path):
         if not os.path.isdir(path):
             return False
-        if os.path.basename(path).startswith("."):
-            return False
-        return True
+        return not os.path.basename(path).startswith(".")
 
     @classmethod
     async def create_collection(cls, collection, **kwargs):
@@ -205,10 +204,8 @@ class FilesystemStorage(Storage):
 
         fpath = os.path.join(self.path, key)
         if value is None:
-            try:
+            with contextlib.suppress(OSError):
                 os.remove(fpath)
-            except OSError:
-                pass
         else:
             with atomic_write(fpath, mode="wb", overwrite=True) as f:
                 f.write(value.encode(self.encoding))

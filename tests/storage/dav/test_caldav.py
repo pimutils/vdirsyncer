@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import datetime
 from textwrap import dedent
 
@@ -30,11 +31,9 @@ class TestCalDAVStorage(DAVStorageTests):
     async def test_doesnt_accept_vcard(self, item_type, get_storage_args):
         s = self.storage_class(item_types=(item_type,), **await get_storage_args())
 
-        try:
+        # Most storages hard-fail, but xandikos doesn't.
+        with contextlib.suppress(exceptions.Error, aiohttp.ClientResponseError):
             await s.upload(format_item(VCARD_TEMPLATE))
-        except (exceptions.Error, aiohttp.ClientResponseError):
-            # Most storages hard-fail, but xandikos doesn't.
-            pass
 
         assert not await aiostream.stream.list(s.list())
 
