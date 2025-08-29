@@ -382,4 +382,4 @@ def test_component_contains():
     assert "BAZ" not in item
 
     with pytest.raises(ValueError):
-        42 in item
+        42 in item  # noqa: B015, this check raises.
