@@ -104,7 +104,8 @@ def prepare_auth(auth, username, password):
             return DigestAuthMethod(username, password)
         if auth == "guess":
             raise exceptions.UserError(
-                "'Guess' authentication is not supported in this version of vdirsyncer. \n"
+                "'Guess' authentication is not supported in this version of "
+                "vdirsyncer.\n"
                 "Please explicitly specify either 'basic' or 'digest' auth instead. \n"
                 "See the following issue for more information: "
                 "https://github.com/pimutils/vdirsyncer/issues/1015"

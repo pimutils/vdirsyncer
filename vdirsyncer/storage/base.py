@@ -140,7 +140,8 @@ class Storage(metaclass=StorageMeta):
         except ValueError:
             pass
 
-        return f"<{self.__class__.__name__}(**{ ({x: getattr(self, x) for x in self._repr_attributes}) })>"
+        attrs = {x: getattr(self, x) for x in self._repr_attributes}
+        return f"<{self.__class__.__name__}(**{attrs})>"
 
     @abstractmethod
     async def list(self) -> list[tuple]:
