@@ -14,7 +14,6 @@ packages:
   - python-click-log
   - python-click-threading
   - python-requests
-  - python-requests-toolbelt
   - python-aiohttp-oauthlib
   # Test dependencies:
   - python-hypothesis
