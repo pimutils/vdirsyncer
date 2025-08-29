@@ -181,7 +181,7 @@ async def request(
     logger.debug("=" * 20)
     logger.debug(f"{method} {url}")
     logger.debug(kwargs.get("headers", {}))
-    logger.debug(kwargs.get("data", None))
+    logger.debug(kwargs.get("data"))
     logger.debug("Sending request...")
 
     assert isinstance(kwargs.get("data", b""), bytes)

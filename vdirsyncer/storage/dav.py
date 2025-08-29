@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import datetime
 import logging
 import urllib.parse as urlparse
@@ -217,10 +218,8 @@ class Discover:
 
     async def find_collections(self):
         rv = None
-        try:
+        with contextlib.suppress(aiohttp.ClientResponseError, exceptions.Error):
             rv = await aiostream.stream.list(self._find_collections_impl(""))
-        except (aiohttp.ClientResponseError, exceptions.Error):
-            pass
 
         if rv:
             return rv
