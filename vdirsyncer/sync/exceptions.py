@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .. import exceptions
+from vdirsyncer import exceptions
 
 
 class SyncError(exceptions.Error):

@@ -4,8 +4,9 @@ import json
 
 import aiohttp
 
-from .. import exceptions
-from .. import sync
+from vdirsyncer import exceptions
+from vdirsyncer import sync
+
 from .config import CollectionConfig
 from .discover import DiscoverResult
 from .discover import collections_for_pair
@@ -35,10 +36,8 @@ async def prepare_pair(pair_name, collections, config, *, connector):
             config_a, config_b = all_collections[collection_name]
         except KeyError:
             raise exceptions.UserError(
-                "Pair {}: Collection {} not found. These are the "
-                "configured collections:\n{}".format(
-                    pair_name, json.dumps(collection_name), list(all_collections)
-                )
+                f"Pair {pair_name}: Collection {json.dumps(collection_name)} not found. These are the "
+                f"configured collections:\n{list(all_collections)}"
             )
 
         collection = CollectionConfig(pair, collection_name, config_a, config_b)
@@ -105,7 +104,7 @@ async def repair_collection(
     *,
     connector: aiohttp.TCPConnector,
 ):
-    from ..repair import repair_storage
+    from vdirsyncer.repair import repair_storage
 
     storage_name, collection = collection, None
     if "/" in storage_name:
@@ -136,7 +135,7 @@ async def repair_collection(
 
 
 async def metasync_collection(collection, general, *, connector: aiohttp.TCPConnector):
-    from ..metasync import metasync
+    from vdirsyncer.metasync import metasync
 
     pair = collection.pair
     status_name = get_status_name(pair.name, collection.name)

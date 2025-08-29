@@ -4,9 +4,10 @@ import logging
 
 import click
 
-from .. import exceptions
-from ..utils import expand_path
-from ..utils import synchronized
+from vdirsyncer import exceptions
+from vdirsyncer.utils import expand_path
+from vdirsyncer.utils import synchronized
+
 from . import AppContext
 
 SUFFIX = ".fetch"

@@ -8,15 +8,16 @@ import logging
 import os
 from typing import Iterable
 
-from .. import exceptions
-from ..utils import atomic_write
-from ..utils import checkfile
-from ..utils import expand_path
-from ..utils import get_etag_from_file
-from ..utils import uniq
-from ..vobject import Item
-from ..vobject import join_collection
-from ..vobject import split_collection
+from vdirsyncer import exceptions
+from vdirsyncer.utils import atomic_write
+from vdirsyncer.utils import checkfile
+from vdirsyncer.utils import expand_path
+from vdirsyncer.utils import get_etag_from_file
+from vdirsyncer.utils import uniq
+from vdirsyncer.vobject import Item
+from vdirsyncer.vobject import join_collection
+from vdirsyncer.vobject import split_collection
+
 from .base import Storage
 
 logger = logging.getLogger(__name__)

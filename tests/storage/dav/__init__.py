@@ -8,11 +8,10 @@ import aiostream
 import pytest
 
 from tests import assert_item_equals
+from tests.storage import StorageTests
+from tests.storage import get_server_mixin
 from vdirsyncer import exceptions
 from vdirsyncer.vobject import Item
-
-from .. import StorageTests
-from .. import get_server_mixin
 
 dav_server = os.environ.get("DAV_SERVER", "skip")
 ServerMixin = get_server_mixin(dav_server)

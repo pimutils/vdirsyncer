@@ -16,11 +16,11 @@ import contextlib
 import itertools
 import logging
 
+from vdirsyncer.exceptions import UserError
 from vdirsyncer.storage.base import Storage
+from vdirsyncer.utils import uniq
 from vdirsyncer.vobject import Item
 
-from ..exceptions import UserError
-from ..utils import uniq
 from .exceptions import BothReadOnly
 from .exceptions import IdentAlreadyExists
 from .exceptions import PartialSync

@@ -6,14 +6,15 @@ import urllib.parse as urlparse
 
 import aiohttp
 
-from .. import exceptions
-from ..http import USERAGENT
-from ..http import prepare_auth
-from ..http import prepare_client_cert
-from ..http import prepare_verify
-from ..http import request
-from ..vobject import Item
-from ..vobject import split_collection
+from vdirsyncer import exceptions
+from vdirsyncer.http import USERAGENT
+from vdirsyncer.http import prepare_auth
+from vdirsyncer.http import prepare_client_cert
+from vdirsyncer.http import prepare_verify
+from vdirsyncer.http import request
+from vdirsyncer.vobject import Item
+from vdirsyncer.vobject import split_collection
+
 from .base import Storage
 
 logger = logging.getLogger(__name__)
