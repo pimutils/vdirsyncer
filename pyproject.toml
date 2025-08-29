@@ -59,14 +59,14 @@ vdirsyncer = "vdirsyncer.cli:app"
 
 [tool.ruff.lint]
 extend-select = [
-    "E",
-    "W",
     "B0",
-    "I",
-    "UP",
     "C4",
+    "E",
+    "I",
+    "RSE",
     "TID",
-    "RSE"
+    "UP",
+    "W",
 ]
 
 [tool.ruff.lint.isort]
