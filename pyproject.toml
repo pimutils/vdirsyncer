@@ -57,7 +57,7 @@ test = [
 [project.scripts]
 vdirsyncer = "vdirsyncer.cli:app"
 
-[tool.lint.ruff]
+[tool.ruff.lint]
 extend-select = [
     "E",
     "W",
