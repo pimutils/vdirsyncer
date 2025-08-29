@@ -177,7 +177,7 @@ class FilesystemStorage(Storage):
         try:
             subprocess.call([self.post_hook, fpath])
         except OSError as e:
-            logger.warning(f"Error executing external hook: {str(e)}")
+            logger.warning(f"Error executing external hook: {e!s}")
 
     def _run_pre_deletion_hook(self, fpath):
         logger.info(
@@ -186,7 +186,7 @@ class FilesystemStorage(Storage):
         try:
             subprocess.call([self.pre_deletion_hook, fpath])
         except OSError as e:
-            logger.warning(f"Error executing external hook: {str(e)}")
+            logger.warning(f"Error executing external hook: {e!s}")
 
     async def get_meta(self, key):
         fpath = os.path.join(self.path, key)

@@ -136,9 +136,9 @@ async def sync(
         raise BothReadOnly
 
     if conflict_resolution == "a wins":
-        conflict_resolution = lambda a, b: a  # noqa: E731
+        conflict_resolution = lambda a, b: a
     elif conflict_resolution == "b wins":
-        conflict_resolution = lambda a, b: b  # noqa: E731
+        conflict_resolution = lambda a, b: b
 
     status_nonempty = bool(next(status.iter_old(), None))
 

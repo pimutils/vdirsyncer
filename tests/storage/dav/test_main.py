@@ -52,7 +52,7 @@ def test_xml_specialchars(char):
 @pytest.mark.parametrize(
     "href",
     [
-        "/dav/calendars/user/testuser/123/UID%253A20210609T084907Z-@synaps-web-54fddfdf7-7kcfm%250A.ics",  # noqa: E501
+        "/dav/calendars/user/testuser/123/UID%253A20210609T084907Z-@synaps-web-54fddfdf7-7kcfm%250A.ics",
     ],
 )
 def test_normalize_href(href):
