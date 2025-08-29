@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class HttpStorage(Storage):
     storage_name = "http"
     read_only = True
-    _repr_attributes = ["username", "url"]
+    _repr_attributes = ("username", "url")
     _items = None
 
     # Required for tests.

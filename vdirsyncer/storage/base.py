@@ -75,7 +75,7 @@ class Storage(metaclass=StorageMeta):
     read_only = False
 
     # The attribute values to show in the representation of the storage.
-    _repr_attributes: list[str] = []
+    _repr_attributes: tuple[str, ...] = ()
 
     def __init__(
         self,

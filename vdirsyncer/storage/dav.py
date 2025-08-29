@@ -451,7 +451,7 @@ class DAVStorage(Storage):
 
     connector: aiohttp.TCPConnector
 
-    _repr_attributes = ["username", "url"]
+    _repr_attributes = ("username", "url")
 
     _property_table = {
         "displayname": ("displayname", "DAV:"),
