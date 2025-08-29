@@ -6,6 +6,7 @@ import logging
 import urllib.parse as urlparse
 import xml.etree.ElementTree as etree
 from abc import abstractmethod
+from functools import cached_property
 from inspect import getfullargspec
 from inspect import signature
 
@@ -390,7 +391,7 @@ class DAVSession:
         self.url = url.rstrip("/") + "/"
         self.connector = connector
 
-    @utils.cached_property
+    @cached_property
     def parsed_url(self):
         return urlparse.urlparse(self.url)
 

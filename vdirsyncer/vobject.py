@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import hashlib
+from functools import cached_property
 from itertools import chain
 from itertools import tee
 
-from .utils import cached_property
 from .utils import uniq
 
 IGNORE_PROPS = (
