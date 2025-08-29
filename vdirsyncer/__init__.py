@@ -17,6 +17,8 @@ except ImportError:  # pragma: no cover
         "use the PyPI ones."
     )
 
+__all__ = ["__version__"]
+
 
 def _check_python_version():
     import sys
