@@ -25,7 +25,7 @@ _simple_split = [
 ]
 
 _simple_joined = "\r\n".join(
-    ["BEGIN:VADDRESSBOOK"] + _simple_split + ["END:VADDRESSBOOK\r\n"]
+    ["BEGIN:VADDRESSBOOK", *_simple_split, "END:VADDRESSBOOK\r\n"]
 )
 
 
@@ -124,7 +124,7 @@ def test_split_collection_timezones():
         "END:VTIMEZONE"
     )
 
-    full = "\r\n".join(["BEGIN:VCALENDAR"] + items + [timezone, "END:VCALENDAR"])
+    full = "\r\n".join(["BEGIN:VCALENDAR", *items, timezone, "END:VCALENDAR"])
 
     given = {normalize_item(item) for item in vobject.split_collection(full)}
     expected = {

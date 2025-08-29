@@ -351,7 +351,7 @@ def _resolve_conflict_via_command(
             f.write(b.raw)
 
         command[0] = expand_path(command[0])
-        _check_call(command + [a_tmp, b_tmp])
+        _check_call([*command, a_tmp, b_tmp])
 
         with open(a_tmp) as f:
             new_a = f.read()
