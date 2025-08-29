@@ -437,7 +437,7 @@ async def test_partial_sync_revert():
     assert items(a) == {"UID:2"}
 
 
-@pytest.mark.parametrize("sync_inbetween", (True, False))
+@pytest.mark.parametrize("sync_inbetween", [True, False])
 @pytest.mark.asyncio
 async def test_ident_conflict(sync_inbetween):
     a = MemoryStorage()

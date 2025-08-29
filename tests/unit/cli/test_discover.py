@@ -9,7 +9,7 @@ missing = object()
 
 
 @pytest.mark.parametrize(
-    "shortcuts,expected",
+    ("shortcuts", "expected"),
     [
         (
             ["from a"],

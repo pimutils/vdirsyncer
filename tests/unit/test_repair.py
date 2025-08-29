@@ -58,7 +58,7 @@ async def test_repair_unsafe_uids(uid):
 
 
 @pytest.mark.parametrize(
-    "uid,href", [("b@dh0mbr3", "perfectly-fine"), ("perfectly-fine", "b@dh0mbr3")]
+    ("uid", "href"), [("b@dh0mbr3", "perfectly-fine"), ("perfectly-fine", "b@dh0mbr3")]
 )
 def test_repair_unsafe_href(uid, href):
     item = Item(f"BEGIN:VCARD\nUID:{uid}\nEND:VCARD")
