@@ -191,7 +191,7 @@ def test_null_collection_with_named_collection(tmpdir, runner):
 
 
 @pytest.mark.parametrize(
-    "a_requires,b_requires",
+    ("a_requires", "b_requires"),
     [
         (True, True),
         (True, False),

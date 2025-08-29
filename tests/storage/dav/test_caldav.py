@@ -40,7 +40,7 @@ class TestCalDAVStorage(DAVStorageTests):
     # The `arg` param is not named `item_types` because that would hit
     # https://bitbucket.org/pytest-dev/pytest/issue/745/
     @pytest.mark.parametrize(
-        "arg,calls_num",
+        ("arg", "calls_num"),
         [
             (("VTODO",), 1),
             (("VEVENT",), 1),

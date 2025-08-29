@@ -358,7 +358,7 @@ def test_ident_conflict(tmpdir, runner):
 
 
 @pytest.mark.parametrize(
-    "existing,missing",
+    ("existing", "missing"),
     [
         ("foo", "bar"),
         ("bar", "foo"),
@@ -402,7 +402,7 @@ def test_no_configured_pairs(tmpdir, runner, cmd):
 
 
 @pytest.mark.parametrize(
-    "resolution,expect_foo,expect_bar",
+    ("resolution", "expect_foo", "expect_bar"),
     [(["command", "cp"], "UID:lol\nfööcontent", "UID:lol\nfööcontent")],
 )
 def test_conflict_resolution(tmpdir, runner, resolution, expect_foo, expect_bar):
