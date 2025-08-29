@@ -145,24 +145,6 @@ def checkfile(path, create=False) -> None:
             raise exceptions.CollectionNotFound(f"File {path} does not exist.")
 
 
-class cached_property:
-    """A read-only @property that is only evaluated once. Only usable on class
-    instances' methods.
-    """
-
-    def __init__(self, fget, doc=None):
-        self.__name__ = fget.__name__
-        self.__module__ = fget.__module__
-        self.__doc__ = doc or fget.__doc__
-        self.fget = fget
-
-    def __get__(self, obj, cls):
-        if obj is None:  # pragma: no cover
-            return self
-        obj.__dict__[self.__name__] = result = self.fget(obj)
-        return result
-
-
 def href_safe(ident, safe=SAFE_UID_CHARS):
     return not bool(set(ident) - set(safe))
 

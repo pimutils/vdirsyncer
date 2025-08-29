@@ -4,6 +4,7 @@ import json
 import os
 import string
 from configparser import RawConfigParser
+from functools import cached_property
 from itertools import chain
 from typing import IO
 from typing import Any
@@ -11,7 +12,6 @@ from typing import Generator
 
 from vdirsyncer import PROJECT_HOME
 from vdirsyncer import exceptions
-from vdirsyncer.utils import cached_property
 from vdirsyncer.utils import expand_path
 from vdirsyncer.vobject import Item
 
