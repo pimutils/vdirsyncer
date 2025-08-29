@@ -87,7 +87,7 @@ def get_storage_init_specs(cls, stop_at=object):
     else:
         superspecs = ()
 
-    return (spec,) + superspecs
+    return (spec, *superspecs)
 
 
 def get_storage_init_args(cls, stop_at=object):

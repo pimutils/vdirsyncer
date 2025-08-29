@@ -41,7 +41,7 @@ async def test_list(aio_connector):
         ),
     ]
 
-    responses = ["\n".join(["BEGIN:VCALENDAR"] + items + ["END:VCALENDAR"])] * 2
+    responses = ["\n".join(["BEGIN:VCALENDAR", *items, "END:VCALENDAR"])] * 2
 
     def callback(url, headers, **kwargs):
         assert headers["User-Agent"].startswith("vdirsyncer/")

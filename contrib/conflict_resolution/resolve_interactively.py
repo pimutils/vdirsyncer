@@ -54,8 +54,8 @@ def main(ical1_filename, ical2_filename):
             f"{get_summary(ical1)}...\n(full contents: {ical1_filename})\n\n"
             "or the second entry:\n"
             f"{get_summary(ical2)}...\n(full contents: {ical2_filename})?",
+            *additional_args,
         ]
-        + additional_args
     )
 
     if r.returncode == 2:
