@@ -98,7 +98,8 @@ async def test_read_only_and_prefetch():
     await sync(a, b, status, force_delete=True)
     await sync(a, b, status, force_delete=True)
 
-    assert not items(a) and not items(b)
+    assert not items(a)
+    assert not items(b)
 
 
 @pytest.mark.asyncio
@@ -226,7 +227,8 @@ async def test_insert_hash():
 
     await a.update(href, Item("UID:1\nHAHA:YES"), etag)
     await sync(a, b, status)
-    assert "hash" in status["1"][0] and "hash" in status["1"][1]
+    assert "hash" in status["1"][0]
+    assert "hash" in status["1"][1]
 
 
 @pytest.mark.asyncio
@@ -665,7 +667,8 @@ class SyncMachine(RuleBasedStateMachine):
             except ActionIntentionallyFailed:
                 pass
             except BothReadOnly:
-                assert a.read_only and b.read_only
+                assert a.read_only
+                assert b.read_only
                 assume(False)
             except StorageEmpty:
                 if force_delete:
