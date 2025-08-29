@@ -93,7 +93,7 @@ def _validate_collections_param(collections):
                 raise ValueError("Duplicate value.")
             collection_names.add(collection_name)
         except ValueError as e:
-            raise ValueError(f"`collections` parameter, position {i}: {str(e)}")
+            raise ValueError(f"`collections` parameter, position {i}: {e!s}")
 
 
 class _ConfigReader:
@@ -142,7 +142,7 @@ class _ConfigReader:
                     dict(_parse_options(self._parser.items(section), section=section)),
                 )
             except ValueError as e:
-                raise exceptions.UserError(f'Section "{section}": {str(e)}')
+                raise exceptions.UserError(f'Section "{section}": {e!s}')
 
         _validate_general_section(self._general)
         if getattr(self._file, "name", None):

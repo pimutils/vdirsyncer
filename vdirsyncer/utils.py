@@ -77,7 +77,7 @@ def get_storage_init_specs(cls, stop_at=object):
     spec = getfullargspec(cls.__init__)
     traverse_superclass = getattr(cls.__init__, "_traverse_superclass", True)
     if traverse_superclass:
-        if traverse_superclass is True:  # noqa
+        if traverse_superclass is True:
             supercls = next(
                 getattr(x.__init__, "__objclass__", x) for x in cls.__mro__[1:]
             )

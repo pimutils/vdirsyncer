@@ -83,7 +83,7 @@ class HttpStorage(Storage):
             )
             return result.stdout
         except OSError as e:
-            logger.warning(f"Error executing external command: {str(e)}")
+            logger.warning(f"Error executing external command: {e!s}")
             return raw_item
 
     async def list(self):
