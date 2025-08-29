@@ -20,7 +20,7 @@ class CombinedStorage(Storage):
     storage_name = "http_and_singlefile"
 
     def __init__(self, url, path, *, connector, **kwargs):
-        if kwargs.get("collection", None) is not None:
+        if kwargs.get("collection") is not None:
             raise ValueError
 
         super().__init__(**kwargs)

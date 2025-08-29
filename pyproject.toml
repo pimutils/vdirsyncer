@@ -64,6 +64,7 @@ extend-select = [
     "E",
     "I",
     "RSE",
+    "SIM",
     "TID",
     "UP",
     "W",

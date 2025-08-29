@@ -642,10 +642,7 @@ class SyncMachine(RuleBasedStateMachine):
 
             errors = []
 
-            if with_error_callback:
-                error_callback = errors.append
-            else:
-                error_callback = None
+            error_callback = errors.append if with_error_callback else None
 
             try:
                 # If one storage is read-only, double-sync because changes don't
