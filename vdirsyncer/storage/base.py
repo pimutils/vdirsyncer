@@ -6,10 +6,9 @@ from abc import ABCMeta
 from abc import abstractmethod
 from typing import Iterable
 
+from vdirsyncer import exceptions
+from vdirsyncer.utils import uniq
 from vdirsyncer.vobject import Item
-
-from .. import exceptions
-from ..utils import uniq
 
 
 def mutating_storage_method(f):
@@ -141,10 +140,7 @@ class Storage(metaclass=StorageMeta):
         except ValueError:
             pass
 
-        return "<{}(**{})>".format(
-            self.__class__.__name__,
-            {x: getattr(self, x) for x in self._repr_attributes},
-        )
+        return f"<{self.__class__.__name__}(**{ ({x: getattr(self, x) for x in self._repr_attributes}) })>"
 
     @abstractmethod
     async def list(self) -> list[tuple]:

@@ -5,13 +5,14 @@ import logging
 import os
 import subprocess
 
-from .. import exceptions
-from ..utils import atomic_write
-from ..utils import checkdir
-from ..utils import expand_path
-from ..utils import generate_href
-from ..utils import get_etag_from_file
-from ..vobject import Item
+from vdirsyncer import exceptions
+from vdirsyncer.utils import atomic_write
+from vdirsyncer.utils import checkdir
+from vdirsyncer.utils import expand_path
+from vdirsyncer.utils import generate_href
+from vdirsyncer.utils import get_etag_from_file
+from vdirsyncer.vobject import Item
+
 from .base import Storage
 from .base import normalize_meta_value
 

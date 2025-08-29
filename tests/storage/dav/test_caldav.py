@@ -11,10 +11,10 @@ from aioresponses import aioresponses
 from tests import EVENT_TEMPLATE
 from tests import TASK_TEMPLATE
 from tests import VCARD_TEMPLATE
+from tests.storage import format_item
 from vdirsyncer import exceptions
 from vdirsyncer.storage.dav import CalDAVStorage
 
-from .. import format_item
 from . import DAVStorageTests
 from . import dav_server
 

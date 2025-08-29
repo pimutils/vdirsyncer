@@ -9,7 +9,8 @@ import sys
 import aiohttp
 import aiostream
 
-from .. import exceptions
+from vdirsyncer import exceptions
+
 from .utils import handle_collection_not_found
 from .utils import handle_storage_init_error
 from .utils import load_status

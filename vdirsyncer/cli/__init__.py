@@ -10,8 +10,8 @@ import aiohttp
 import click
 import click_log
 
-from .. import BUGTRACKER_HOME
-from .. import __version__
+from vdirsyncer import BUGTRACKER_HOME
+from vdirsyncer import __version__
 
 cli_logger = logging.getLogger(__name__)
 click_log.basic_config("vdirsyncer")

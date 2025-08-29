@@ -11,16 +11,16 @@ from inspect import signature
 import aiohttp
 import aiostream
 
+from vdirsyncer import exceptions
+from vdirsyncer import http
+from vdirsyncer import utils
 from vdirsyncer.exceptions import Error
+from vdirsyncer.http import USERAGENT
+from vdirsyncer.http import prepare_auth
+from vdirsyncer.http import prepare_client_cert
+from vdirsyncer.http import prepare_verify
 from vdirsyncer.vobject import Item
 
-from .. import exceptions
-from .. import http
-from .. import utils
-from ..http import USERAGENT
-from ..http import prepare_auth
-from ..http import prepare_client_cert
-from ..http import prepare_verify
 from .base import Storage
 from .base import normalize_meta_value
 
@@ -321,7 +321,7 @@ class Discover:
 
 class CalDiscover(Discover):
     _namespace = "urn:ietf:params:xml:ns:caldav"
-    _resourcetype = "{%s}calendar" % _namespace
+    _resourcetype = f"{{{_namespace}}}calendar"
     _homeset_xml = b"""
     <propfind xmlns="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
         <prop>
@@ -329,13 +329,13 @@ class CalDiscover(Discover):
         </prop>
     </propfind>
     """
-    _homeset_tag = "{%s}calendar-home-set" % _namespace
+    _homeset_tag = f"{{{_namespace}}}calendar-home-set"
     _well_known_uri = "/.well-known/caldav"
 
 
 class CardDiscover(Discover):
     _namespace = "urn:ietf:params:xml:ns:carddav"
-    _resourcetype: str | None = "{%s}addressbook" % _namespace
+    _resourcetype: str | None = f"{{{_namespace}}}addressbook"
     _homeset_xml = b"""
     <propfind xmlns="DAV:" xmlns:c="urn:ietf:params:xml:ns:carddav">
         <prop>
@@ -343,7 +343,7 @@ class CardDiscover(Discover):
         </prop>
     </propfind>
     """
-    _homeset_tag = "{%s}addressbook-home-set" % _namespace
+    _homeset_tag = f"{{{_namespace}}}addressbook-home-set"
     _well_known_uri = "/.well-known/carddav"
 
 

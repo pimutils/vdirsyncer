@@ -8,13 +8,13 @@ from itertools import chain
 from typing import IO
 from typing import Any
 from typing import Generator
-from typing import Tuple
 
-from .. import PROJECT_HOME
-from .. import exceptions
-from ..utils import cached_property
-from ..utils import expand_path
-from ..vobject import Item
+from vdirsyncer import PROJECT_HOME
+from vdirsyncer import exceptions
+from vdirsyncer.utils import cached_property
+from vdirsyncer.utils import expand_path
+from vdirsyncer.vobject import Item
+
 from .fetchparams import expand_fetch_params
 from .utils import storage_class_from_config
 
@@ -232,7 +232,7 @@ class PairConfig:
         self.name_b: str = options.pop("b")
 
         self._partial_sync: str | None = options.pop("partial_sync", None)
-        self.metadata: str | Tuple[()] = options.pop("metadata", ())
+        self.metadata: str | tuple[()] = options.pop("metadata", ())
 
         self.conflict_resolution = self._process_conflict_resolution_param(
             options.pop("conflict_resolution", None)
@@ -338,7 +338,7 @@ def _resolve_conflict_via_command(
     if _check_call is None:
         from subprocess import check_call as _check_call
 
-    from ..vobject import Item
+    from vdirsyncer.vobject import Item
 
     dir = tempfile.mkdtemp(prefix="vdirsyncer-conflict.")
     try:

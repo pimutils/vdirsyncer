@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import random
 
-from .. import exceptions
+from vdirsyncer import exceptions
+
 from .base import Storage
 from .base import normalize_meta_value
 
