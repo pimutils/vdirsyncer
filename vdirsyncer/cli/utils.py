@@ -79,9 +79,9 @@ def handle_cli_error(status_name=None, e=None):
         cli_logger.critical(e)
     except StorageEmpty as e:
         cli_logger.error(
-            f'{status_name}: Storage "{e.empty_storage.instance_name}" was completely emptied. If you '
-            "want to delete ALL entries on BOTH sides, then use "
-            f"`vdirsyncer sync --force-delete {status_name}`. "
+            f'{status_name}: Storage "{e.empty_storage.instance_name}" was '
+            "completely emptied. If you want to delete ALL entries on BOTH sides,"
+            f"then use `vdirsyncer sync --force-delete {status_name}`. "
             f"Otherwise delete the files for {status_name} in your status "
             "directory."
         )

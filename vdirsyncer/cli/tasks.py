@@ -36,8 +36,8 @@ async def prepare_pair(pair_name, collections, config, *, connector):
             config_a, config_b = all_collections[collection_name]
         except KeyError:
             raise exceptions.UserError(
-                f"Pair {pair_name}: Collection {json.dumps(collection_name)} not found. These are the "
-                f"configured collections:\n{list(all_collections)}"
+                f"Pair {pair_name}: Collection {json.dumps(collection_name)} not found."
+                f"These are the configured collections:\n{list(all_collections)}"
             )
 
         collection = CollectionConfig(pair, collection_name, config_a, config_b)
