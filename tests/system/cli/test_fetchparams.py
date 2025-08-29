@@ -14,12 +14,12 @@ def test_get_password_from_command(tmpdir, runner):
 
         [storage foo]
         type.fetch = ["shell", "echo filesystem"]
-        path = "{str(tmpdir)}/foo/"
+        path = "{tmpdir!s}/foo/"
         fileext.fetch = ["command", "echo", ".txt"]
 
         [storage bar]
         type = "filesystem"
-        path = "{str(tmpdir)}/bar/"
+        path = "{tmpdir!s}/bar/"
         fileext.fetch = ["prompt", "Fileext for bar"]
     """
         )
