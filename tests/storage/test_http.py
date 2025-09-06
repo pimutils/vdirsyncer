@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import pytest
+import aiohttp
 from aioresponses import CallbackResult
 from aioresponses import aioresponses
 
 from tests import normalize_item
 from vdirsyncer.exceptions import UserError
+from vdirsyncer.http import request
 from vdirsyncer.http import BasicAuthMethod
 from vdirsyncer.http import DigestAuthMethod
+from vdirsyncer.http import UsageLimitReached
 from vdirsyncer.storage.http import HttpStorage
 from vdirsyncer.storage.http import prepare_auth
 
@@ -120,3 +123,41 @@ def test_verify_false_disallowed(aio_connector):
         HttpStorage(url="http://example.com", verify=False, connector=aio_connector)
 
     assert "must be a path to a pem-file." in str(excinfo.value).lower()
+
+
+@pytest.mark.asyncio
+async def test_403_usage_limit_exceeded(aio_connector):
+    url = "http://127.0.0.1/test_403"
+    error_body = {
+        "error": {
+            "errors": [
+                {
+                    "domain": "usageLimits",
+                    "message": "Calendar usage limits exceeded.",
+                    "reason": "quotaExceeded",
+                }
+            ],
+            "code": 403,
+            "message": "Calendar usage limits exceeded.",
+        }
+    }
+
+    async with aiohttp.ClientSession(connector=aio_connector) as session:
+        with aioresponses() as m:
+            m.get(url, status=403, payload=error_body, repeat=True)
+            with pytest.raises(UsageLimitReached):
+                await request("GET", url, session)
+
+
+@pytest.mark.asyncio
+async def test_403_without_usage_limits_domain(aio_connector):
+    """A 403 JSON error without the Google 'usageLimits' domain should not be
+    treated as UsageLimitReached and should surface as ClientResponseError.
+    """
+    url = "http://127.0.0.1/test_403_no_usage_limits"
+
+    async with aiohttp.ClientSession(connector=aio_connector) as session:
+        with aioresponses() as m:
+            m.get(url, status=403, repeat=True)
+            with pytest.raises(aiohttp.ClientResponseError):
+                await request("GET", url, session)
