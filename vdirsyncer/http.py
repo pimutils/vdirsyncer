@@ -12,6 +12,12 @@ from ssl import create_default_context
 import aiohttp
 import requests.auth
 from requests.utils import parse_dict_header
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from . import __version__
 from . import exceptions
@@ -148,6 +154,47 @@ def prepare_client_cert(cert):
     return cert
 
 
+class UsageLimitReached(exceptions.Error):
+    pass
+
+
+async def _is_quota_exceeded_google(response: aiohttp.ClientResponse) -> bool:
+    """Return True if the response JSON indicates Google-style `usageLimits` exceeded.
+
+    Expected shape:
+    {"error": {"errors": [{"domain": "usageLimits", ...}], ...}}
+
+    See https://developers.google.com/workspace/calendar/api/guides/errors#403_usage_limits_exceeded
+    """
+    try:
+        data = await response.json(content_type=None)
+    except Exception:
+        return False
+
+    if not isinstance(data, dict):
+        return False
+
+    error = data.get("error")
+    if not isinstance(error, dict):
+        return False
+
+    errors = error.get("errors")
+    if not isinstance(errors, list):
+        return False
+
+    for entry in errors:
+        if isinstance(entry, dict) and entry.get("domain") == "usageLimits":
+            return True
+
+    return False
+
+
+@retry(
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=1, min=4, max=10),
+    retry=retry_if_exception_type(UsageLimitReached),
+    reraise=True,
+)
 async def request(
     method,
     url,
@@ -209,6 +256,12 @@ async def request(
         else:
             # some other error, will be handled later on
             break
+
+    if response.status == 429:
+        raise UsageLimitReached(response.reason)
+
+    if response.status == 403 and await _is_quota_exceeded_google(response):
+        raise UsageLimitReached(response.reason)
 
     # See https://github.com/kennethreitz/requests/issues/2042
     content_type = response.headers.get("Content-Type", "")
