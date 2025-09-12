@@ -15,6 +15,7 @@ packages:
   - python-click-threading
   - python-requests
   - python-aiohttp-oauthlib
+  - python-tenacity
   # Test dependencies:
   - python-hypothesis
   - python-pytest-cov
