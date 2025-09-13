@@ -259,8 +259,8 @@ async def request(
         kwargs["ssl"] = ssl_context
 
     headers = kwargs.pop("headers", {})
-    num_401 = 0
-    while num_401 < 2:
+    response: aiohttp.ClientResponse | None = None
+    for _attempt in range(2):
         if auth:
             headers["Authorization"] = auth.get_auth_header(method, url)
         try:
@@ -279,16 +279,23 @@ async def request(
                 raise TransientNetworkError(str(e)) from e
             raise e from None
 
+        if response is None:
+            raise RuntimeError("No HTTP response obtained")
+
         if response.ok or not auth:
             # we don't need to do the 401-loop if we don't do auth in the first place
             break
 
         if response.status == 401:
-            num_401 += 1
             auth.handle_401(response)
+            # retry once more after handling the 401 challenge
+            continue
         else:
             # some other error, will be handled later on
             break
+
+    if response is None:
+        raise RuntimeError("No HTTP response obtained")
 
     # See https://github.com/kennethreitz/requests/issues/2042
     content_type = response.headers.get("Content-Type", "")
