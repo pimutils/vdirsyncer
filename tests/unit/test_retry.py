@@ -11,7 +11,6 @@ from vdirsyncer.exceptions import Error as VdirsyncerError
 from vdirsyncer.http import UsageLimitReached, request
 
 
-@pytest.mark.asyncio
 async def _create_mock_response(status: int, body: str | dict):
     raw_body = body
     if isinstance(body, dict):
