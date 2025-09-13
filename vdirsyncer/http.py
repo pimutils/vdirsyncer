@@ -257,12 +257,6 @@ async def request(
             # some other error, will be handled later on
             break
 
-    if response.status == 429:
-        raise UsageLimitReached(response.reason)
-
-    if response.status == 403 and await _is_quota_exceeded_google(response):
-        raise UsageLimitReached(response.reason)
-
     # See https://github.com/kennethreitz/requests/issues/2042
     content_type = response.headers.get("Content-Type", "")
     if (
@@ -281,10 +275,14 @@ async def request(
         # https://github.com/pimutils/vdirsyncer/issues/1186
         logger.debug(await response.text())
 
+    if response.status == 403 and await _is_quota_exceeded_google(response):
+        raise UsageLimitReached(response.reason)
     if response.status == 412:
         raise exceptions.PreconditionFailed(response.reason)
     if response.status in (404, 410):
         raise exceptions.NotFoundError(response.reason)
+    if response.status == 429:
+        raise UsageLimitReached(response.reason)
 
     response.raise_for_status()
     return response
