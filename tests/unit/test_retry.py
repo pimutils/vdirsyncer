@@ -13,10 +13,7 @@ from vdirsyncer.http import UsageLimitReached, request
 
 async def _create_mock_response(status: int, body: str | dict):
     raw_body = body
-    if isinstance(body, dict):
-        text_body = json.dumps(body)
-    else:
-        text_body = body
+    text_body = json.dumps(body) if isinstance(body, dict) else body
 
     mock_response = AsyncMock()
     mock_response.status = status
