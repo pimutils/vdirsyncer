@@ -95,7 +95,7 @@ async def collections_for_pair(
 
     # We have to use a list here because the special None/null value would get
     # mangled to string (because JSON objects always have string keys).
-    rv = await aiostream.stream.list(
+    rv = await aiostream.stream.list(  #  type: ignore[assignment]
         expand_collections(
             shortcuts=pair.collections,
             config_a=pair.config_a,

@@ -150,7 +150,7 @@ class Storage(metaclass=StorageMeta):
         """
 
     @abstractmethod
-    async def get(self, href: str):
+    async def get(self, href: str) -> tuple[Item, str]:
         """Fetch a single item.
 
         :param href: href to fetch

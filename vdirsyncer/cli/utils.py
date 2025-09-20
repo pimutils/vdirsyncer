@@ -31,7 +31,7 @@ STATUS_DIR_PERMISSIONS = 0o700
 
 
 class _StorageIndex:
-    def __init__(self):
+    def __init__(self) -> None:
         self._storages: dict[str, str] = {
             "caldav": "vdirsyncer.storage.dav.CalDAVStorage",
             "carddav": "vdirsyncer.storage.dav.CardDAVStorage",

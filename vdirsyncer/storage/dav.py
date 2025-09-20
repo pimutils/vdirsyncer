@@ -497,8 +497,12 @@ class DAVStorage(Storage):
     def _is_item_mimetype(self, mimetype):
         return _fuzzy_matches_mimetype(self.item_mimetype, mimetype)
 
-    async def get(self, href: str):
-        ((actual_href, item, etag),) = await aiostream.stream.list(
+    async def get(self, href: str) -> tuple[Item, str]:
+        actual_href: str
+        item: Item
+        etag: str
+
+        ((actual_href, item, etag),) = await aiostream.stream.list(  # type: ignore[misc]
             self.get_multi([href])
         )
         assert href == actual_href
