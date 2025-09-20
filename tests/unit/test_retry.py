@@ -68,7 +68,7 @@ async def test_request_retry_on_usage_limit():
 
     async with (
         aiohttp.ClientSession()
-    ) as session:  # Dummy session. Will be replaced by mock_session at call
+    ):  # Dummy session. Will be replaced by mock_session at call
         response = await request("GET", url, mock_session)
 
         assert response.status == 200
@@ -96,7 +96,7 @@ async def test_request_retry_exceeds_max_attempts():
 
     async with (
         aiohttp.ClientSession()
-    ) as session:  # Dummy session. Will be replaced by mock_session at call
+    ):  # Dummy session. Will be replaced by mock_session at call
         with pytest.raises(UsageLimitReached):
             await request("GET", url, mock_session)
         assert mock_session.request.call_count == max_retries
@@ -112,7 +112,7 @@ async def test_request_no_retry_on_generic_403_json():
         await _create_mock_response(403, {"message": "API rate limit exceeded"})
     ]
 
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession():
         with pytest.raises(aiohttp.ClientResponseError):
             await request("GET", url, mock_session)
         # Should not retry because it's not the Google quotaExceeded shape
@@ -129,7 +129,7 @@ async def test_request_no_retry_on_generic_403_text():
         await _create_mock_response(403, "Rate limit exceeded")
     ]
 
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession():
         with pytest.raises(aiohttp.ClientResponseError):
             await request("GET", url, mock_session)
         # Should not retry because the JSON shape is not Google quotaExceeded
