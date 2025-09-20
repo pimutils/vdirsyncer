@@ -24,6 +24,13 @@ logger = logging.getLogger(__name__)
 
 
 def _writing_op(f):
+    """Implement at_once for write operations.
+
+    Wrap an operation which writes to the storage, implementing `at_once` if it has been
+    requested. Changes are stored in-memory until the at_once block finishes, at which
+    time they are all written at once.
+    """
+
     @functools.wraps(f)
     async def inner(self, *args, **kwargs):
         if self._items is None or not self._at_once:
