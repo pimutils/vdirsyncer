@@ -23,8 +23,8 @@ __all__ = ["__version__"]
 def _check_python_version():
     import sys
 
-    if sys.version_info < (3, 8, 0):  # noqa: UP036
-        print("vdirsyncer requires at least Python 3.8.")
+    if sys.version_info < (3, 9, 0):  # noqa: UP036
+        print("vdirsyncer requires at least Python 3.9.")
         sys.exit(1)
 
 
