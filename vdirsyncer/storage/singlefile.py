@@ -133,11 +133,12 @@ class SingleFileStorage(Storage):
 
                 yield href, etag
 
-    async def get(self, href):
+    async def get(self, href) -> tuple[Item, str]:
         if self._items is None or not self._at_once:
             async for _ in self.list():
                 pass
 
+        assert self._items is not None  # type assertion
         try:
             return self._items[href]
         except KeyError:

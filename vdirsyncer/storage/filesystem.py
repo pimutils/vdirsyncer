@@ -98,7 +98,7 @@ class FilesystemStorage(Storage):
             ):
                 yield fname, get_etag_from_file(fpath)
 
-    async def get(self, href):
+    async def get(self, href) -> tuple[Item, str]:
         fpath = self._get_filepath(href)
         try:
             with open(fpath, "rb") as f:

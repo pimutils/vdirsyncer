@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 
 from vdirsyncer import exceptions
+from vdirsyncer.vobject import Item
 
 from .base import Storage
 from .base import normalize_meta_value
@@ -34,7 +35,7 @@ class MemoryStorage(Storage):
         for href, (etag, _item) in self.items.items():
             yield href, etag
 
-    async def get(self, href):
+    async def get(self, href) -> tuple[Item, str]:
         etag, item = self.items[href]
         return item, etag
 
