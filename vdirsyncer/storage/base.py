@@ -4,7 +4,7 @@ import contextlib
 import functools
 from abc import ABCMeta
 from abc import abstractmethod
-from typing import Iterable
+from collections.abc import Iterable
 
 from vdirsyncer import exceptions
 from vdirsyncer.utils import uniq

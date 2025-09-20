@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import json
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock
+from unittest.mock import Mock
 
 import aiohttp
 import pytest
-from aioresponses import aioresponses
 
-from vdirsyncer.exceptions import Error as VdirsyncerError
-from vdirsyncer.http import UsageLimitReached, request
+from vdirsyncer.http import UsageLimitReached
+from vdirsyncer.http import request
 
 
 async def _create_mock_response(status: int, body: str | dict):
