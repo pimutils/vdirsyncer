@@ -9,6 +9,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.21.0
+==============
+
+- Implement retrying for ``google`` storage type when a rate limit is reached.
+- ``tenacity`` is now a required dependency.
+
 Version 0.20.0
 ==============
 
