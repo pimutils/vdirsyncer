@@ -29,6 +29,9 @@ tasks:
       cd vdirsyncer
       make -e ci-test
       make -e ci-test-storage
+  - check: |
+      cd vdirsyncer
+      make check
   - check-secrets: |
       # Stop here if this is a PR. PRs can't run with the below secrets.
       [ -f ~/fastmail-secrets ] || complete-build

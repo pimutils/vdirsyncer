@@ -40,6 +40,11 @@ ci-test-storage:
 	done
 	bash $(CODECOV_PATH) -c
 
+check:
+	ruff check
+	ruff format --diff
+	#mypy vdirsyncer
+
 release-deb:
 	sh scripts/release-deb.sh debian jessie
 	sh scripts/release-deb.sh debian stretch
