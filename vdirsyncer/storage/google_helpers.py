@@ -7,9 +7,9 @@ from __future__ import annotations
 import logging
 import wsgiref.simple_server
 import wsgiref.util
+from collections.abc import Callable
 from collections.abc import Iterable
 from typing import Any
-from typing import Callable
 
 logger = logging.getLogger(__name__)
 

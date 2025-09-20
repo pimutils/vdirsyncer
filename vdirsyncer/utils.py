@@ -6,8 +6,8 @@ import os
 import sys
 import tempfile
 import uuid
+from collections.abc import Callable
 from inspect import getfullargspec
-from typing import Callable
 
 from . import exceptions
 
