@@ -58,6 +58,13 @@ docs = [
   "sphinx_rtd_theme",
   "setuptools_scm",
 ]
+check = [
+  "mypy",
+  "ruff",
+  "types-docutils",
+  "types-requests",
+  "types-setuptools",
+]
 
 [project.scripts]
 vdirsyncer = "vdirsyncer.cli:app"

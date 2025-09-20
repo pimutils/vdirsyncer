@@ -49,8 +49,7 @@ release-deb:
 
 install-dev:
 	pip install -U pip setuptools wheel
-	pip install -e '.[test,docs]'
-	pip install -U pre-commit
+	pip install -e '.[test,check,docs]'
 	set -xe && if [ "$(REQUIREMENTS)" = "minimal" ]; then \
 		pip install pyproject-dependencies && \
 		pip install -U --force-reinstall $$(pyproject-dependencies . | sed 's/>/=/'); \
