@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-import pytest
 import aiohttp
+import pytest
 from aioresponses import CallbackResult
 from aioresponses import aioresponses
 
 from tests import normalize_item
 from vdirsyncer.exceptions import UserError
-from vdirsyncer.http import request
 from vdirsyncer.http import BasicAuthMethod
 from vdirsyncer.http import DigestAuthMethod
 from vdirsyncer.http import UsageLimitReached
+from vdirsyncer.http import request
 from vdirsyncer.storage.http import HttpStorage
 from vdirsyncer.storage.http import prepare_auth
 

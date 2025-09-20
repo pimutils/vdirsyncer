@@ -3,12 +3,12 @@ from __future__ import annotations
 import json
 import os
 import string
+from collections.abc import Generator
 from configparser import RawConfigParser
 from functools import cached_property
 from itertools import chain
 from typing import IO
 from typing import Any
-from typing import Generator
 
 from vdirsyncer import PROJECT_HOME
 from vdirsyncer import exceptions

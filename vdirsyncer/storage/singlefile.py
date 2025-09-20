@@ -6,7 +6,7 @@ import functools
 import glob
 import logging
 import os
-from typing import Iterable
+from collections.abc import Iterable
 
 from vdirsyncer import exceptions
 from vdirsyncer.utils import atomic_write
