@@ -14,6 +14,7 @@ Version 0.21.0
 
 - Implement retrying for ``google`` storage type when a rate limit is reached.
 - ``tenacity`` is now a required dependency.
+- Drop support for Python 3.8.
 
 Version 0.20.0
 ==============
