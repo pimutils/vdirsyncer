@@ -74,10 +74,11 @@ Using Sphinx_ you can generate the documentation you're reading right now in a
 variety of formats, such as HTML, PDF, or even as a manpage. That said, I only
 take care of the HTML docs' formatting.
 
-You can find a list of dependencies in ``docs-requirements.txt``. Again, you
-can install those using pip with::
+You can find a list of dependencies in ``pyproject.toml``, in the
+``project.optional-dependencies`` section as ``docs``. Again, you can install
+those using pip with::
 
-    pip install -r docs-requirements.txt
+    pip install '.[docs]'
 
 Then change into the ``docs/`` directory and build whatever format you want
 using the ``Makefile`` in there (run ``make`` for the formats you can build).
