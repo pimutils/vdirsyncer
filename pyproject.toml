@@ -53,6 +53,11 @@ test = [
   "pytest-asyncio",
   "aioresponses",
 ]
+docs = [
+  "sphinx!=1.4.7",
+  "sphinx_rtd_theme",
+  "setuptools_scm",
+]
 
 [project.scripts]
 vdirsyncer = "vdirsyncer.cli:app"
