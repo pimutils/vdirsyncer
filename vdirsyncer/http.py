@@ -267,7 +267,12 @@ async def request(
 
     logger.debug(response.status)
     logger.debug(response.headers)
-    logger.debug(response.content)
+    if (
+        response.status >= 400
+        and hasattr(response, "content")
+        and hasattr(response.content, "_buffer")
+    ):
+        logger.debug(response.content._buffer)
 
     if logger.getEffectiveLevel() <= logging.DEBUG and response.status >= 400:
         # https://github.com/pimutils/vdirsyncer/issues/1186

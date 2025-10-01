@@ -215,7 +215,6 @@ class Upload(Action):
                 f"Copying (uploading) item {self.ident} to {self.dest.storage}"
             )
             href, etag = await self.dest.storage.upload(self.item)
-            assert href is not None
 
         self.dest.status.insert_ident(
             self.ident, ItemMetadata(href=href, hash=self.item.hash, etag=etag)
