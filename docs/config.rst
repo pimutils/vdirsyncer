@@ -128,6 +128,16 @@ Pair Section
 
   The ``conflict_resolution`` parameter applies for these properties too.
 
+.. _implicit_def:
+
+- ``implicit``: Opt into implicitly creating collections. Example::
+
+      implicit = "create"
+
+  When set to "create", missing collections are automatically created on both
+  sides during sync without prompting the user. This simplifies workflows where
+  all collections should be synchronized bidirectionally.
+
 .. _storage_config:
 
 Storage Section
