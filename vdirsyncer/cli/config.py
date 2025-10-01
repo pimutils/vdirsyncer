@@ -65,6 +65,7 @@ def _validate_collections_param(collections):
         raise ValueError("`collections` parameter must be a list or `null`.")
 
     collection_names = set()
+    collection_blacklist = set()
 
     for i, collection in enumerate(collections):
         try:
@@ -92,8 +93,13 @@ def _validate_collections_param(collections):
             if collection_name in collection_names:
                 raise ValueError("Duplicate value.")
             collection_names.add(collection_name)
+
+            if collection[0] == "!":
+                collection_blacklist.add(collection_name[1:])
         except ValueError as e:
             raise ValueError(f"`collections` parameter, position {i}: {e!s}")
+
+    return collection_blacklist
 
 
 class _ConfigReader:
@@ -247,7 +253,7 @@ class PairConfig:
                 "Set `collections = null` explicitly in your pair config."
             )
         else:
-            _validate_collections_param(self.collections)
+            self.blacklist = _validate_collections_param(self.collections)
 
         if options:
             raise ValueError("Unknown options: {}".format(", ".join(options)))
