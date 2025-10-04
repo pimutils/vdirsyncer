@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import platform
@@ -11,6 +12,9 @@ from ssl import create_default_context
 
 import aiohttp
 import requests.auth
+from aiohttp import ClientConnectionError
+from aiohttp import ServerDisconnectedError
+from aiohttp import ServerTimeoutError
 from requests.utils import parse_dict_header
 from tenacity import retry
 from tenacity import retry_if_exception_type
@@ -152,6 +156,20 @@ def prepare_client_cert(cert):
     return cert
 
 
+class TransientNetworkError(exceptions.Error):
+    """Transient network condition that should be retried."""
+
+
+def _is_safe_to_retry_method(method: str) -> bool:
+    """Returns True if the HTTP method is safe/idempotent to retry.
+
+    We consider these safe for our WebDAV usage:
+    - GET, HEAD, OPTIONS: standard safe methods
+    - PROPFIND, REPORT: read-only DAV queries used for listing/fetching
+    """
+    return method.upper() in {"GET", "HEAD", "OPTIONS", "PROPFIND", "REPORT"}
+
+
 class UsageLimitReached(exceptions.Error):
     pass
 
@@ -190,7 +208,10 @@ async def _is_quota_exceeded_google(response: aiohttp.ClientResponse) -> bool:
 @retry(
     stop=stop_after_attempt(5),
     wait=wait_exponential(multiplier=1, min=4, max=10),
-    retry=retry_if_exception_type(UsageLimitReached),
+    retry=(
+        retry_if_exception_type(UsageLimitReached)
+        | retry_if_exception_type(TransientNetworkError)
+    ),
     reraise=True,
 )
 async def request(
@@ -238,22 +259,43 @@ async def request(
         kwargs["ssl"] = ssl_context
 
     headers = kwargs.pop("headers", {})
-    num_401 = 0
-    while num_401 < 2:
+    response: aiohttp.ClientResponse | None = None
+    for _attempt in range(2):
         if auth:
             headers["Authorization"] = auth.get_auth_header(method, url)
-        response = await session.request(method, url, headers=headers, **kwargs)
+        try:
+            response = await session.request(method, url, headers=headers, **kwargs)
+        except (
+            ServerDisconnectedError,
+            ServerTimeoutError,
+            ClientConnectionError,
+            asyncio.TimeoutError,
+        ) as e:
+            # Retry only if the method is safe/idempotent for our DAV use
+            if _is_safe_to_retry_method(method):
+                logger.debug(
+                    f"Transient network error on {method} {url}: {e}. Will retry."
+                )
+                raise TransientNetworkError(str(e)) from e
+            raise e from None
+
+        if response is None:
+            raise RuntimeError("No HTTP response obtained")
 
         if response.ok or not auth:
             # we don't need to do the 401-loop if we don't do auth in the first place
             break
 
         if response.status == 401:
-            num_401 += 1
             auth.handle_401(response)
+            # retry once more after handling the 401 challenge
+            continue
         else:
             # some other error, will be handled later on
             break
+
+    if response is None:
+        raise RuntimeError("No HTTP response obtained")
 
     # See https://github.com/kennethreitz/requests/issues/2042
     content_type = response.headers.get("Content-Type", "")

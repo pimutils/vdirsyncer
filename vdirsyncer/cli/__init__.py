@@ -147,7 +147,14 @@ def sync(ctx, collections, force_delete):
                         )
                     )
 
-            await asyncio.gather(*tasks)
+            # `return_exceptions=True` ensures that the event loop lives long enough for
+            # backoffs to be able to finish
+            gathered = await asyncio.gather(*tasks, return_exceptions=True)
+            # but now we need to manually check for and propogate a single failure after
+            # allowing all tasks to finish in order to keep exit status non-zero
+            failures = [e for e in gathered if isinstance(e, BaseException)]
+            if failures:
+                raise failures[0]
 
     asyncio.run(main(collections))
 
