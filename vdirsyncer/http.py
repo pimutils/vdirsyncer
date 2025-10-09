@@ -268,7 +268,6 @@ async def request(
         except (
             ServerDisconnectedError,
             ServerTimeoutError,
-            ClientConnectionError,
             asyncio.TimeoutError,
         ) as e:
             # Retry only if the method is safe/idempotent for our DAV use
