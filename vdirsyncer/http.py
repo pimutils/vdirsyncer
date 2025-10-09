@@ -12,7 +12,6 @@ from ssl import create_default_context
 
 import aiohttp
 import requests.auth
-from aiohttp import ClientConnectionError
 from aiohttp import ServerDisconnectedError
 from aiohttp import ServerTimeoutError
 from requests.utils import parse_dict_header
