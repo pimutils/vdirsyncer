@@ -4,8 +4,10 @@
 
 image: alpine/edge
 packages:
+  - py3-build
   - py3-pip
   - py3-setuptools
+  - py3-setuptools_scm
   - py3-wheel
   - twine
 sources:
@@ -23,5 +25,5 @@ tasks:
       git describe --exact-match --tags || complete-build
   - publish: |
       cd vdirsyncer
-      python setup.py sdist bdist_wheel
+      python -m build --no-isolation
       twine upload --non-interactive dist/*

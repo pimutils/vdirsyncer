@@ -1,26 +1,28 @@
 from __future__ import annotations
 
+import contextlib
 import datetime
 import logging
 import urllib.parse as urlparse
 import xml.etree.ElementTree as etree
 from abc import abstractmethod
+from functools import cached_property
 from inspect import getfullargspec
 from inspect import signature
 
 import aiohttp
 import aiostream
 
+from vdirsyncer import exceptions
+from vdirsyncer import http
+from vdirsyncer import utils
 from vdirsyncer.exceptions import Error
+from vdirsyncer.http import USERAGENT
+from vdirsyncer.http import prepare_auth
+from vdirsyncer.http import prepare_client_cert
+from vdirsyncer.http import prepare_verify
 from vdirsyncer.vobject import Item
 
-from .. import exceptions
-from .. import http
-from .. import utils
-from ..http import USERAGENT
-from ..http import prepare_auth
-from ..http import prepare_client_cert
-from ..http import prepare_verify
 from .base import Storage
 from .base import normalize_meta_value
 
@@ -114,9 +116,7 @@ def _fuzzy_matches_mimetype(strict, weak):
         return True
 
     mediatype, subtype = strict.split("/")
-    if subtype in weak:
-        return True
-    return False
+    return subtype in weak
 
 
 class Discover:
@@ -219,10 +219,8 @@ class Discover:
 
     async def find_collections(self):
         rv = None
-        try:
+        with contextlib.suppress(aiohttp.ClientResponseError, exceptions.Error):
             rv = await aiostream.stream.list(self._find_collections_impl(""))
-        except (aiohttp.ClientResponseError, exceptions.Error):
-            pass
 
         if rv:
             return rv
@@ -237,7 +235,7 @@ class Discover:
             return True
 
         props = _merge_xml(response.findall("{DAV:}propstat/{DAV:}prop"))
-        if props is None or not len(props):
+        if props is None or not props:
             dav_logger.debug("Skipping, missing <prop>: %s", response)
             return False
         if props.find("{DAV:}resourcetype/" + self._resourcetype) is None:
@@ -323,7 +321,7 @@ class Discover:
 
 class CalDiscover(Discover):
     _namespace = "urn:ietf:params:xml:ns:caldav"
-    _resourcetype = "{%s}calendar" % _namespace
+    _resourcetype = f"{{{_namespace}}}calendar"
     _homeset_xml = b"""
     <propfind xmlns="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
         <prop>
@@ -331,13 +329,13 @@ class CalDiscover(Discover):
         </prop>
     </propfind>
     """
-    _homeset_tag = "{%s}calendar-home-set" % _namespace
+    _homeset_tag = f"{{{_namespace}}}calendar-home-set"
     _well_known_uri = "/.well-known/caldav"
 
 
 class CardDiscover(Discover):
     _namespace = "urn:ietf:params:xml:ns:carddav"
-    _resourcetype: str | None = "{%s}addressbook" % _namespace
+    _resourcetype: str | None = f"{{{_namespace}}}addressbook"
     _homeset_xml = b"""
     <propfind xmlns="DAV:" xmlns:c="urn:ietf:params:xml:ns:carddav">
         <prop>
@@ -345,7 +343,7 @@ class CardDiscover(Discover):
         </prop>
     </propfind>
     """
-    _homeset_tag = "{%s}addressbook-home-set" % _namespace
+    _homeset_tag = f"{{{_namespace}}}addressbook-home-set"
     _well_known_uri = "/.well-known/carddav"
 
 
@@ -393,7 +391,7 @@ class DAVSession:
         self.url = url.rstrip("/") + "/"
         self.connector = connector
 
-    @utils.cached_property
+    @cached_property
     def parsed_url(self):
         return urlparse.urlparse(self.url)
 
@@ -454,7 +452,7 @@ class DAVStorage(Storage):
 
     connector: aiohttp.TCPConnector
 
-    _repr_attributes = ["username", "url"]
+    _repr_attributes = ("username", "url")
 
     _property_table = {
         "displayname": ("displayname", "DAV:"),
@@ -499,8 +497,12 @@ class DAVStorage(Storage):
     def _is_item_mimetype(self, mimetype):
         return _fuzzy_matches_mimetype(self.item_mimetype, mimetype)
 
-    async def get(self, href: str):
-        ((actual_href, item, etag),) = await aiostream.stream.list(
+    async def get(self, href: str) -> tuple[Item, str]:
+        actual_href: str
+        item: Item
+        etag: str
+
+        ((actual_href, item, etag),) = await aiostream.stream.list(  # type: ignore[misc]
             self.get_multi([href])
         )
         assert href == actual_href
@@ -626,7 +628,7 @@ class DAVStorage(Storage):
                 continue
 
             props = response.findall("{DAV:}propstat/{DAV:}prop")
-            if props is None or not len(props):
+            if props is None or not props:
                 dav_logger.debug(f"Skipping {href!r}, properties are missing.")
                 continue
             else:

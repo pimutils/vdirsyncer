@@ -24,8 +24,7 @@ _missing = object()
 def expand_path(p: str) -> str:
     """Expand $HOME in a path and normalise slashes."""
     p = os.path.expanduser(p)
-    p = os.path.normpath(p)
-    return p
+    return os.path.normpath(p)
 
 
 def split_dict(d: dict, f: Callable):
@@ -78,7 +77,7 @@ def get_storage_init_specs(cls, stop_at=object):
     spec = getfullargspec(cls.__init__)
     traverse_superclass = getattr(cls.__init__, "_traverse_superclass", True)
     if traverse_superclass:
-        if traverse_superclass is True:  # noqa
+        if traverse_superclass is True:
             supercls = next(
                 getattr(x.__init__, "__objclass__", x) for x in cls.__mro__[1:]
             )
@@ -88,7 +87,7 @@ def get_storage_init_specs(cls, stop_at=object):
     else:
         superspecs = ()
 
-    return (spec,) + superspecs
+    return (spec, *superspecs)
 
 
 def get_storage_init_args(cls, stop_at=object):
@@ -146,24 +145,6 @@ def checkfile(path, create=False) -> None:
             raise exceptions.CollectionNotFound(f"File {path} does not exist.")
 
 
-class cached_property:
-    """A read-only @property that is only evaluated once. Only usable on class
-    instances' methods.
-    """
-
-    def __init__(self, fget, doc=None):
-        self.__name__ = fget.__name__
-        self.__module__ = fget.__module__
-        self.__doc__ = doc or fget.__doc__
-        self.fget = fget
-
-    def __get__(self, obj, cls):
-        if obj is None:  # pragma: no cover
-            return self
-        obj.__dict__[self.__name__] = result = self.fget(obj)
-        return result
-
-
 def href_safe(ident, safe=SAFE_UID_CHARS):
     return not bool(set(ident) - set(safe))
 
@@ -177,8 +158,7 @@ def generate_href(ident=None, safe=SAFE_UID_CHARS):
     """
     if not ident or not href_safe(ident, safe):
         return str(uuid.uuid4())
-    else:
-        return ident
+    return ident
 
 
 def synchronized(lock=None):

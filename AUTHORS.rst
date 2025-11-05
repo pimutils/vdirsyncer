@@ -19,6 +19,7 @@ In alphabetical order:
 - rEnr3n
 - Thomas Weißschuh
 - Witcher01
+- samm81
 
 Special thanks goes to:
 

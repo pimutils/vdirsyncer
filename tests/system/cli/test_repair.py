@@ -58,7 +58,7 @@ def test_repair_uids(storage, runner, repair_uids):
     else:
         opt = ["--no-repair-unsafe-uid"]
 
-    result = runner.invoke(["repair"] + opt + ["foo"], input="y")
+    result = runner.invoke(["repair", *opt, "foo"], input="y")
     assert not result.exception
 
     if repair_uids:

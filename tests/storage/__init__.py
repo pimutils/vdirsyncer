@@ -10,15 +10,14 @@ import aiostream
 import pytest
 import pytest_asyncio
 
+from tests import EVENT_TEMPLATE
+from tests import TASK_TEMPLATE
+from tests import VCARD_TEMPLATE
+from tests import assert_item_equals
+from tests import normalize_item
 from vdirsyncer import exceptions
 from vdirsyncer.storage.base import normalize_meta_value
 from vdirsyncer.vobject import Item
-
-from .. import EVENT_TEMPLATE
-from .. import TASK_TEMPLATE
-from .. import VCARD_TEMPLATE
-from .. import assert_item_equals
-from .. import normalize_item
 
 
 def get_server_mixin(server_name):

@@ -6,14 +6,15 @@ import urllib.parse as urlparse
 
 import aiohttp
 
-from .. import exceptions
-from ..http import USERAGENT
-from ..http import prepare_auth
-from ..http import prepare_client_cert
-from ..http import prepare_verify
-from ..http import request
-from ..vobject import Item
-from ..vobject import split_collection
+from vdirsyncer import exceptions
+from vdirsyncer.http import USERAGENT
+from vdirsyncer.http import prepare_auth
+from vdirsyncer.http import prepare_client_cert
+from vdirsyncer.http import prepare_verify
+from vdirsyncer.http import request
+from vdirsyncer.vobject import Item
+from vdirsyncer.vobject import split_collection
+
 from .base import Storage
 
 logger = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ logger = logging.getLogger(__name__)
 class HttpStorage(Storage):
     storage_name = "http"
     read_only = True
-    _repr_attributes = ["username", "url"]
+    _repr_attributes = ("username", "url")
     _items = None
 
     # Required for tests.
@@ -82,7 +83,7 @@ class HttpStorage(Storage):
             )
             return result.stdout
         except OSError as e:
-            logger.warning(f"Error executing external command: {str(e)}")
+            logger.warning(f"Error executing external command: {e!s}")
             return raw_item
 
     async def list(self):
@@ -116,11 +117,12 @@ class HttpStorage(Storage):
         for href, (_, etag) in self._items.items():
             yield href, etag
 
-    async def get(self, href):
+    async def get(self, href) -> tuple[Item, str]:
         if self._items is None:
             async for _ in self.list():
                 pass
 
+        assert self._items is not None  # type assertion
         try:
             return self._items[href]
         except KeyError:

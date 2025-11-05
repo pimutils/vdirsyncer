@@ -16,11 +16,11 @@ import contextlib
 import itertools
 import logging
 
+from vdirsyncer.exceptions import UserError
 from vdirsyncer.storage.base import Storage
+from vdirsyncer.utils import uniq
 from vdirsyncer.vobject import Item
 
-from ..exceptions import UserError
-from ..utils import uniq
 from .exceptions import BothReadOnly
 from .exceptions import IdentAlreadyExists
 from .exceptions import PartialSync
@@ -136,9 +136,13 @@ async def sync(
         raise BothReadOnly
 
     if conflict_resolution == "a wins":
-        conflict_resolution = lambda a, b: a  # noqa: E731
+
+        def conflict_resolution(a, b):
+            return a
     elif conflict_resolution == "b wins":
-        conflict_resolution = lambda a, b: b  # noqa: E731
+
+        def conflict_resolution(a, b):
+            return b
 
     status_nonempty = bool(next(status.iter_old(), None))
 

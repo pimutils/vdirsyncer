@@ -11,18 +11,19 @@ from typing import Any
 import aiohttp
 import click
 
-from .. import BUGTRACKER_HOME
-from .. import DOCS_HOME
-from .. import exceptions
-from ..storage.base import Storage
-from ..sync.exceptions import IdentConflict
-from ..sync.exceptions import PartialSync
-from ..sync.exceptions import StorageEmpty
-from ..sync.exceptions import SyncConflict
-from ..sync.status import SqliteStatus
-from ..utils import atomic_write
-from ..utils import expand_path
-from ..utils import get_storage_init_args
+from vdirsyncer import BUGTRACKER_HOME
+from vdirsyncer import DOCS_HOME
+from vdirsyncer import exceptions
+from vdirsyncer.storage.base import Storage
+from vdirsyncer.sync.exceptions import IdentConflict
+from vdirsyncer.sync.exceptions import PartialSync
+from vdirsyncer.sync.exceptions import StorageEmpty
+from vdirsyncer.sync.exceptions import SyncConflict
+from vdirsyncer.sync.status import SqliteStatus
+from vdirsyncer.utils import atomic_write
+from vdirsyncer.utils import expand_path
+from vdirsyncer.utils import get_storage_init_args
+
 from . import cli_logger
 
 STATUS_PERMISSIONS = 0o600
@@ -30,7 +31,7 @@ STATUS_DIR_PERMISSIONS = 0o700
 
 
 class _StorageIndex:
-    def __init__(self):
+    def __init__(self) -> None:
         self._storages: dict[str, str] = {
             "caldav": "vdirsyncer.storage.dav.CalDAVStorage",
             "carddav": "vdirsyncer.storage.dav.CardDAVStorage",
@@ -78,13 +79,11 @@ def handle_cli_error(status_name=None, e=None):
         cli_logger.critical(e)
     except StorageEmpty as e:
         cli_logger.error(
-            '{status_name}: Storage "{name}" was completely emptied. If you '
-            "want to delete ALL entries on BOTH sides, then use "
-            "`vdirsyncer sync --force-delete {status_name}`. "
-            "Otherwise delete the files for {status_name} in your status "
-            "directory.".format(
-                name=e.empty_storage.instance_name, status_name=status_name
-            )
+            f'{status_name}: Storage "{e.empty_storage.instance_name}" was '
+            "completely emptied. If you want to delete ALL entries on BOTH sides,"
+            f"then use `vdirsyncer sync --force-delete {status_name}`. "
+            f"Otherwise delete the files for {status_name} in your status "
+            "directory."
         )
     except PartialSync as e:
         cli_logger.error(
@@ -232,7 +231,8 @@ def manage_sync_status(base_path: str, pair_name: str, collection_name: str):
         prepare_status_path(path)
         status = SqliteStatus(path)
 
-    yield status
+    with contextlib.closing(status):
+        yield status
 
 
 def save_status(
@@ -293,8 +293,7 @@ async def storage_instance_from_config(
                 create=False,
                 connector=connector,
             )
-        else:
-            raise
+        raise
     except Exception:
         return handle_storage_init_error(cls, new_config)
 

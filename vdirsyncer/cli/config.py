@@ -3,17 +3,18 @@ from __future__ import annotations
 import json
 import os
 import string
+from collections.abc import Generator
 from configparser import RawConfigParser
+from functools import cached_property
 from itertools import chain
 from typing import IO
 from typing import Any
-from typing import Generator
 
-from .. import PROJECT_HOME
-from .. import exceptions
-from ..utils import cached_property
-from ..utils import expand_path
-from ..vobject import Item
+from vdirsyncer import PROJECT_HOME
+from vdirsyncer import exceptions
+from vdirsyncer.utils import expand_path
+from vdirsyncer.vobject import Item
+
 from .fetchparams import expand_fetch_params
 from .utils import storage_class_from_config
 
@@ -92,7 +93,7 @@ def _validate_collections_param(collections):
                 raise ValueError("Duplicate value.")
             collection_names.add(collection_name)
         except ValueError as e:
-            raise ValueError(f"`collections` parameter, position {i}: {str(e)}")
+            raise ValueError(f"`collections` parameter, position {i}: {e!s}")
 
 
 def _validate_implicit_param(implicit):
@@ -149,7 +150,7 @@ class _ConfigReader:
                     dict(_parse_options(self._parser.items(section), section=section)),
                 )
             except ValueError as e:
-                raise exceptions.UserError(f'Section "{section}": {str(e)}')
+                raise exceptions.UserError(f'Section "{section}": {e!s}')
 
         _validate_general_section(self._general)
         if getattr(self._file, "name", None):
@@ -240,7 +241,7 @@ class PairConfig:
         self.implicit = options.pop("implicit", None)
 
         self._partial_sync: str | None = options.pop("partial_sync", None)
-        self.metadata = options.pop("metadata", None) or ()
+        self.metadata: str | tuple[()] = options.pop("metadata", ())
 
         self.conflict_resolution = self._process_conflict_resolution_param(
             options.pop("conflict_resolution", None)
@@ -266,7 +267,7 @@ class PairConfig:
     ):
         if conflict_resolution in (None, "a wins", "b wins"):
             return conflict_resolution
-        elif (
+        if (
             isinstance(conflict_resolution, list)
             and len(conflict_resolution) > 1
             and conflict_resolution[0] == "command"
@@ -280,8 +281,7 @@ class PairConfig:
                 return _resolve_conflict_via_command(a, b, command, a_name, b_name)
 
             return resolve
-        else:
-            raise ValueError("Invalid value for `conflict_resolution`.")
+        raise ValueError("Invalid value for `conflict_resolution`.")
 
     # The following parameters are lazily evaluated because evaluating
     # self.config_a would expand all `x.fetch` parameters. This is costly and
@@ -348,7 +348,7 @@ def _resolve_conflict_via_command(
     if _check_call is None:
         from subprocess import check_call as _check_call
 
-    from ..vobject import Item
+    from vdirsyncer.vobject import Item
 
     dir = tempfile.mkdtemp(prefix="vdirsyncer-conflict.")
     try:
@@ -361,7 +361,7 @@ def _resolve_conflict_via_command(
             f.write(b.raw)
 
         command[0] = expand_path(command[0])
-        _check_call(command + [a_tmp, b_tmp])
+        _check_call([*command, a_tmp, b_tmp])
 
         with open(a_tmp) as f:
             new_a = f.read()

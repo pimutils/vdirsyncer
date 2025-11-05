@@ -161,12 +161,12 @@ def test_null_collection_with_named_collection(tmpdir, runner):
 
     [storage foo]
     type = "filesystem"
-    path = "{str(tmpdir)}/foo/"
+    path = "{tmpdir!s}/foo/"
     fileext = ".txt"
 
     [storage bar]
     type = "singlefile"
-    path = "{str(tmpdir)}/bar.txt"
+    path = "{tmpdir!s}/bar.txt"
     """
         )
     )
@@ -191,7 +191,7 @@ def test_null_collection_with_named_collection(tmpdir, runner):
 
 
 @pytest.mark.parametrize(
-    "a_requires,b_requires",
+    ("a_requires", "b_requires"),
     [
         (True, True),
         (True, False),

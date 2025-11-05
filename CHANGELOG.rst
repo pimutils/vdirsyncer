@@ -9,12 +9,24 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.21.0
+==============
+
+- Implement retrying for ``google`` storage type when a rate limit is reached.
+- ``tenacity`` is now a required dependency.
+- Drop support for Python 3.8.
+- Retry transient network errors for nullipotent requests.
+
 Version 0.20.0
 ==============
 
 - Remove dependency on abandoned ``atomicwrites`` library.
 - Implement ``filter_hook`` for the HTTP storage.
 - Drop support for Python 3.7.
+- Add support for Python 3.12 and Python 3.13.
+- Properly close the status database after using. This especially affects tests,
+  where we were leaking a large amount of file descriptors.
+- Extend supported versions of ``aiostream`` to include 0.7.x.
 
 Version 0.19.3
 ==============

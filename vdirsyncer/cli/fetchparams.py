@@ -4,9 +4,10 @@ import logging
 
 import click
 
-from .. import exceptions
-from ..utils import expand_path
-from ..utils import synchronized
+from vdirsyncer import exceptions
+from vdirsyncer.utils import expand_path
+from vdirsyncer.utils import synchronized
+
 from . import AppContext
 
 SUFFIX = ".fetch"
@@ -87,7 +88,7 @@ def _strategy_command(*command: str, shell: bool = False):
         return stdout.strip("\n")
     except OSError as e:
         cmd = " ".join(expanded_command)
-        raise exceptions.UserError(f"Failed to execute command: {cmd}\n{str(e)}")
+        raise exceptions.UserError(f"Failed to execute command: {cmd}\n{e!s}")
 
 
 def _strategy_shell(*command: str):

@@ -169,6 +169,11 @@ class SqliteStatus(_StatusBase):
             ); """
             )
 
+    def close(self):
+        if self._c:
+            self._c.close()
+            self._c = None
+
     def _is_latest_version(self):
         try:
             return bool(

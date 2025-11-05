@@ -14,8 +14,8 @@ packages:
   - python-click-log
   - python-click-threading
   - python-requests
-  - python-requests-toolbelt
   - python-aiohttp-oauthlib
+  - python-tenacity
   # Test dependencies:
   - python-hypothesis
   - python-pytest-cov
@@ -35,6 +35,8 @@ environment:
   REQUIREMENTS: release
   # TODO: ETESYNC_TESTS
 tasks:
+  - check-python:
+      python --version | grep 'Python 3.13'
   - docker: |
       sudo systemctl start docker
   - setup: |

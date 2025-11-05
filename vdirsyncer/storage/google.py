@@ -12,11 +12,12 @@ from threading import Thread
 import aiohttp
 import click
 
-from .. import exceptions
-from ..utils import atomic_write
-from ..utils import checkdir
-from ..utils import expand_path
-from ..utils import open_graphical_browser
+from vdirsyncer import exceptions
+from vdirsyncer.utils import atomic_write
+from vdirsyncer.utils import checkdir
+from vdirsyncer.utils import expand_path
+from vdirsyncer.utils import open_graphical_browser
+
 from . import base
 from . import dav
 from .google_helpers import _RedirectWSGIApp

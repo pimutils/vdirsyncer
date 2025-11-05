@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from copy import deepcopy
 
 import aiostream
@@ -25,13 +26,12 @@ from vdirsyncer.sync.status import SqliteStatus
 from vdirsyncer.vobject import Item
 
 
-async def sync(a, b, status, *args, **kwargs):
-    new_status = SqliteStatus(":memory:")
-    new_status.load_legacy_status(status)
-    rv = await _sync(a, b, new_status, *args, **kwargs)
-    status.clear()
-    status.update(new_status.to_legacy_status())
-    return rv
+async def sync(a, b, status, *args, **kwargs) -> None:
+    with contextlib.closing(SqliteStatus(":memory:")) as new_status:
+        new_status.load_legacy_status(status)
+        await _sync(a, b, new_status, *args, **kwargs)
+        status.clear()
+        status.update(new_status.to_legacy_status())
 
 
 def empty_storage(x):
@@ -98,7 +98,8 @@ async def test_read_only_and_prefetch():
     await sync(a, b, status, force_delete=True)
     await sync(a, b, status, force_delete=True)
 
-    assert not items(a) and not items(b)
+    assert not items(a)
+    assert not items(b)
 
 
 @pytest.mark.asyncio
@@ -226,7 +227,8 @@ async def test_insert_hash():
 
     await a.update(href, Item("UID:1\nHAHA:YES"), etag)
     await sync(a, b, status)
-    assert "hash" in status["1"][0] and "hash" in status["1"][1]
+    assert "hash" in status["1"][0]
+    assert "hash" in status["1"][1]
 
 
 @pytest.mark.asyncio
@@ -437,7 +439,7 @@ async def test_partial_sync_revert():
     assert items(a) == {"UID:2"}
 
 
-@pytest.mark.parametrize("sync_inbetween", (True, False))
+@pytest.mark.parametrize("sync_inbetween", [True, False])
 @pytest.mark.asyncio
 async def test_ident_conflict(sync_inbetween):
     a = MemoryStorage()
@@ -642,10 +644,7 @@ class SyncMachine(RuleBasedStateMachine):
 
             errors = []
 
-            if with_error_callback:
-                error_callback = errors.append
-            else:
-                error_callback = None
+            error_callback = errors.append if with_error_callback else None
 
             try:
                 # If one storage is read-only, double-sync because changes don't
@@ -668,7 +667,8 @@ class SyncMachine(RuleBasedStateMachine):
             except ActionIntentionallyFailed:
                 pass
             except BothReadOnly:
-                assert a.read_only and b.read_only
+                assert a.read_only
+                assert b.read_only
                 assume(False)
             except StorageEmpty:
                 if force_delete:

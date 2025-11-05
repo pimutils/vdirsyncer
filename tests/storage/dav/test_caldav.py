@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import datetime
 from textwrap import dedent
 
@@ -11,10 +12,10 @@ from aioresponses import aioresponses
 from tests import EVENT_TEMPLATE
 from tests import TASK_TEMPLATE
 from tests import VCARD_TEMPLATE
+from tests.storage import format_item
 from vdirsyncer import exceptions
 from vdirsyncer.storage.dav import CalDAVStorage
 
-from .. import format_item
 from . import DAVStorageTests
 from . import dav_server
 
@@ -30,18 +31,16 @@ class TestCalDAVStorage(DAVStorageTests):
     async def test_doesnt_accept_vcard(self, item_type, get_storage_args):
         s = self.storage_class(item_types=(item_type,), **await get_storage_args())
 
-        try:
+        # Most storages hard-fail, but xandikos doesn't.
+        with contextlib.suppress(exceptions.Error, aiohttp.ClientResponseError):
             await s.upload(format_item(VCARD_TEMPLATE))
-        except (exceptions.Error, aiohttp.ClientResponseError):
-            # Most storages hard-fail, but xandikos doesn't.
-            pass
 
         assert not await aiostream.stream.list(s.list())
 
     # The `arg` param is not named `item_types` because that would hit
     # https://bitbucket.org/pytest-dev/pytest/issue/745/
     @pytest.mark.parametrize(
-        "arg,calls_num",
+        ("arg", "calls_num"),
         [
             (("VTODO",), 1),
             (("VEVENT",), 1),

@@ -9,7 +9,8 @@ import sys
 import aiohttp
 import aiostream
 
-from .. import exceptions
+from vdirsyncer import exceptions
+
 from .utils import handle_collection_not_found
 from .utils import handle_storage_init_error
 from .utils import load_status
@@ -59,21 +60,20 @@ async def collections_for_pair(
     cache_key = _get_collections_cache_key(pair)
     if from_cache:
         rv = load_status(status_path, pair.name, data_type="collections")
-        if rv.get("cache_key", None) == cache_key:
+        if rv and rv.get("cache_key", None) == cache_key:
             return list(
                 _expand_collections_cache(
                     rv["collections"], pair.config_a, pair.config_b
                 )
             )
-        elif rv:
+        if rv:
             raise exceptions.UserError(
                 "Detected change in config file, "
                 f"please run `vdirsyncer discover {pair.name}`."
             )
-        else:
-            raise exceptions.UserError(
-                f"Please run `vdirsyncer discover {pair.name}`  before synchronization."
-            )
+        raise exceptions.UserError(
+            f"Please run `vdirsyncer discover {pair.name}`  before synchronization."
+        )
 
     logger.info(f"Discovering collections for pair {pair.name}")
 
@@ -102,7 +102,7 @@ async def collections_for_pair(
 
     # We have to use a list here because the special None/null value would get
     # mangled to string (because JSON objects always have string keys).
-    rv = await aiostream.stream.list(
+    rv = await aiostream.stream.list(  #  type: ignore[assignment]
         expand_collections(
             shortcuts=pair.collections,
             config_a=pair.config_a,

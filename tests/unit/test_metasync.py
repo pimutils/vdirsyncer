@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+
 import hypothesis.strategies as st
 import pytest
 import pytest_asyncio
@@ -33,7 +35,8 @@ async def test_basic(monkeypatch):
 
     await a.set_meta("foo", None)
     await metasync(a, b, status, keys=["foo"])
-    assert await a.get_meta("foo") is None and await b.get_meta("foo") is None
+    assert await a.get_meta("foo") is None
+    assert await b.get_meta("foo") is None
 
     await a.set_meta("foo", "bar")
     await metasync(a, b, status, keys=["foo"])
@@ -52,27 +55,24 @@ async def test_basic(monkeypatch):
 
     await b.set_meta("foo", None)
     await metasync(a, b, status, keys=["foo"])
-    assert not await a.get_meta("foo") and not await b.get_meta("foo")
+    assert not await a.get_meta("foo")
+    assert not await b.get_meta("foo")
 
 
 @pytest_asyncio.fixture
-@pytest.mark.asyncio
-async def conflict_state(request, event_loop):
+async def conflict_state(request):
     a = MemoryStorage()
     b = MemoryStorage()
     status = {}
     await a.set_meta("foo", "bar")
     await b.set_meta("foo", "baz")
 
-    def cleanup():
-        async def do_cleanup():
-            assert await a.get_meta("foo") == "bar"
-            assert await b.get_meta("foo") == "baz"
-            assert not status
+    async def do_cleanup():
+        assert await a.get_meta("foo") == "bar"
+        assert await b.get_meta("foo") == "baz"
+        assert not status
 
-        event_loop.run_until_complete(do_cleanup())
-
-    request.addfinalizer(cleanup)
+    request.addfinalizer(lambda: asyncio.run(do_cleanup()))
 
     return a, b, status
 

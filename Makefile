@@ -40,6 +40,11 @@ ci-test-storage:
 	done
 	bash $(CODECOV_PATH) -c
 
+check:
+	ruff check
+	ruff format --diff
+	#mypy vdirsyncer
+
 release-deb:
 	sh scripts/release-deb.sh debian jessie
 	sh scripts/release-deb.sh debian stretch
@@ -49,8 +54,7 @@ release-deb:
 
 install-dev:
 	pip install -U pip setuptools wheel
-	pip install -e '.[test]'
-	pip install -U -r docs-requirements.txt pre-commit
+	pip install -e '.[test,check,docs]'
 	set -xe && if [ "$(REQUIREMENTS)" = "minimal" ]; then \
 		pip install pyproject-dependencies && \
 		pip install -U --force-reinstall $$(pyproject-dependencies . | sed 's/>/=/'); \

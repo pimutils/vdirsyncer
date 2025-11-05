@@ -25,7 +25,7 @@ _simple_split = [
 ]
 
 _simple_joined = "\r\n".join(
-    ["BEGIN:VADDRESSBOOK"] + _simple_split + ["END:VADDRESSBOOK\r\n"]
+    ["BEGIN:VADDRESSBOOK", *_simple_split, "END:VADDRESSBOOK\r\n"]
 )
 
 
@@ -124,7 +124,7 @@ def test_split_collection_timezones():
         "END:VTIMEZONE"
     )
 
-    full = "\r\n".join(["BEGIN:VCALENDAR"] + items + [timezone, "END:VCALENDAR"])
+    full = "\r\n".join(["BEGIN:VCALENDAR", *items, timezone, "END:VCALENDAR"])
 
     given = {normalize_item(item) for item in vobject.split_collection(full)}
     expected = {
@@ -335,7 +335,8 @@ class VobjectMachine(RuleBasedStateMachine):
         assert key in c
         assert c.get(key) == value
         dump = "\r\n".join(c.dump_lines())
-        assert key in dump and value in dump
+        assert key in dump
+        assert value in dump
 
     @rule(
         c=Parsed,
@@ -382,4 +383,4 @@ def test_component_contains():
     assert "BAZ" not in item
 
     with pytest.raises(ValueError):
-        42 in item  # noqa: B015
+        42 in item  # noqa: B015, this check raises.

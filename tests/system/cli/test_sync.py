@@ -288,12 +288,12 @@ def test_create_collections(collections, tmpdir, runner):
 
     [storage foo]
     type = "filesystem"
-    path = "{str(tmpdir)}/foo/"
+    path = "{tmpdir!s}/foo/"
     fileext = ".txt"
 
     [storage bar]
     type = "filesystem"
-    path = "{str(tmpdir)}/bar/"
+    path = "{tmpdir!s}/bar/"
     fileext = ".txt"
     """
         )
@@ -321,12 +321,12 @@ def test_ident_conflict(tmpdir, runner):
 
     [storage foo]
     type = "filesystem"
-    path = "{str(tmpdir)}/foo/"
+    path = "{tmpdir!s}/foo/"
     fileext = ".txt"
 
     [storage bar]
     type = "filesystem"
-    path = "{str(tmpdir)}/bar/"
+    path = "{tmpdir!s}/bar/"
     fileext = ".txt"
     """
         )
@@ -358,7 +358,7 @@ def test_ident_conflict(tmpdir, runner):
 
 
 @pytest.mark.parametrize(
-    "existing,missing",
+    ("existing", "missing"),
     [
         ("foo", "bar"),
         ("bar", "foo"),
@@ -375,7 +375,7 @@ def test_unknown_storage(tmpdir, runner, existing, missing):
 
     [storage {existing}]
     type = "filesystem"
-    path = "{str(tmpdir)}/{existing}/"
+    path = "{tmpdir!s}/{existing}/"
     fileext = ".txt"
     """
         )
@@ -402,7 +402,7 @@ def test_no_configured_pairs(tmpdir, runner, cmd):
 
 
 @pytest.mark.parametrize(
-    "resolution,expect_foo,expect_bar",
+    ("resolution", "expect_foo", "expect_bar"),
     [(["command", "cp"], "UID:lol\nfööcontent", "UID:lol\nfööcontent")],
 )
 def test_conflict_resolution(tmpdir, runner, resolution, expect_foo, expect_bar):
@@ -418,12 +418,12 @@ def test_conflict_resolution(tmpdir, runner, resolution, expect_foo, expect_bar)
     [storage foo]
     type = "filesystem"
     fileext = ".txt"
-    path = "{str(tmpdir)}/foo"
+    path = "{tmpdir!s}/foo"
 
     [storage bar]
     type = "filesystem"
     fileext = ".txt"
-    path = "{str(tmpdir)}/bar"
+    path = "{tmpdir!s}/bar"
     """
         )
     )
@@ -518,7 +518,7 @@ def test_fetch_only_necessary_params(tmpdir, runner):
         dedent(
             f"""
     set -e
-    touch "{str(fetched_file)}"
+    touch "{fetched_file!s}"
     echo ".txt"
     """
         )

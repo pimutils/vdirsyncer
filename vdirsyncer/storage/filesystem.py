@@ -1,17 +1,19 @@
 from __future__ import annotations
 
+import contextlib
 import errno
 import logging
 import os
 import subprocess
 
-from .. import exceptions
-from ..utils import atomic_write
-from ..utils import checkdir
-from ..utils import expand_path
-from ..utils import generate_href
-from ..utils import get_etag_from_file
-from ..vobject import Item
+from vdirsyncer import exceptions
+from vdirsyncer.utils import atomic_write
+from vdirsyncer.utils import checkdir
+from vdirsyncer.utils import expand_path
+from vdirsyncer.utils import generate_href
+from vdirsyncer.utils import get_etag_from_file
+from vdirsyncer.vobject import Item
+
 from .base import Storage
 from .base import normalize_meta_value
 
@@ -20,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 class FilesystemStorage(Storage):
     storage_name = "filesystem"
-    _repr_attributes = ["path"]
+    _repr_attributes = ("path",)
 
     def __init__(
         self,
@@ -64,9 +66,7 @@ class FilesystemStorage(Storage):
     def _validate_collection(cls, path):
         if not os.path.isdir(path):
             return False
-        if os.path.basename(path).startswith("."):
-            return False
-        return True
+        return not os.path.basename(path).startswith(".")
 
     @classmethod
     async def create_collection(cls, collection, **kwargs):
@@ -98,7 +98,7 @@ class FilesystemStorage(Storage):
             ):
                 yield fname, get_etag_from_file(fpath)
 
-    async def get(self, href):
+    async def get(self, href) -> tuple[Item, str]:
         fpath = self._get_filepath(href)
         try:
             with open(fpath, "rb") as f:
@@ -177,7 +177,7 @@ class FilesystemStorage(Storage):
         try:
             subprocess.call([self.post_hook, fpath])
         except OSError as e:
-            logger.warning(f"Error executing external hook: {str(e)}")
+            logger.warning(f"Error executing external hook: {e!s}")
 
     def _run_pre_deletion_hook(self, fpath):
         logger.info(
@@ -186,7 +186,7 @@ class FilesystemStorage(Storage):
         try:
             subprocess.call([self.pre_deletion_hook, fpath])
         except OSError as e:
-            logger.warning(f"Error executing external hook: {str(e)}")
+            logger.warning(f"Error executing external hook: {e!s}")
 
     async def get_meta(self, key):
         fpath = os.path.join(self.path, key)
@@ -204,10 +204,8 @@ class FilesystemStorage(Storage):
 
         fpath = os.path.join(self.path, key)
         if value is None:
-            try:
+            with contextlib.suppress(OSError):
                 os.remove(fpath)
-            except OSError:
-                pass
         else:
             with atomic_write(fpath, mode="wb", overwrite=True) as f:
                 f.write(value.encode(self.encoding))

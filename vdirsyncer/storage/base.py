@@ -4,12 +4,11 @@ import contextlib
 import functools
 from abc import ABCMeta
 from abc import abstractmethod
-from typing import Iterable
+from collections.abc import Iterable
 
+from vdirsyncer import exceptions
+from vdirsyncer.utils import uniq
 from vdirsyncer.vobject import Item
-
-from .. import exceptions
-from ..utils import uniq
 
 
 def mutating_storage_method(f):
@@ -76,7 +75,7 @@ class Storage(metaclass=StorageMeta):
     read_only = False
 
     # The attribute values to show in the representation of the storage.
-    _repr_attributes: list[str] = []
+    _repr_attributes: tuple[str, ...] = ()
 
     def __init__(
         self,
@@ -141,10 +140,8 @@ class Storage(metaclass=StorageMeta):
         except ValueError:
             pass
 
-        return "<{}(**{})>".format(
-            self.__class__.__name__,
-            {x: getattr(self, x) for x in self._repr_attributes},
-        )
+        attrs = {x: getattr(self, x) for x in self._repr_attributes}
+        return f"<{self.__class__.__name__}(**{attrs})>"
 
     @abstractmethod
     async def list(self) -> list[tuple]:
@@ -153,7 +150,7 @@ class Storage(metaclass=StorageMeta):
         """
 
     @abstractmethod
-    async def get(self, href: str):
+    async def get(self, href: str) -> tuple[Item, str]:
         """Fetch a single item.
 
         :param href: href to fetch

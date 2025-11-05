@@ -6,23 +6,31 @@ import functools
 import glob
 import logging
 import os
-from typing import Iterable
+from collections.abc import Iterable
 
-from .. import exceptions
-from ..utils import atomic_write
-from ..utils import checkfile
-from ..utils import expand_path
-from ..utils import get_etag_from_file
-from ..utils import uniq
-from ..vobject import Item
-from ..vobject import join_collection
-from ..vobject import split_collection
+from vdirsyncer import exceptions
+from vdirsyncer.utils import atomic_write
+from vdirsyncer.utils import checkfile
+from vdirsyncer.utils import expand_path
+from vdirsyncer.utils import get_etag_from_file
+from vdirsyncer.utils import uniq
+from vdirsyncer.vobject import Item
+from vdirsyncer.vobject import join_collection
+from vdirsyncer.vobject import split_collection
+
 from .base import Storage
 
 logger = logging.getLogger(__name__)
 
 
 def _writing_op(f):
+    """Implement at_once for write operations.
+
+    Wrap an operation which writes to the storage, implementing `at_once` if it has been
+    requested. Changes are stored in-memory until the at_once block finishes, at which
+    time they are all written at once.
+    """
+
     @functools.wraps(f)
     async def inner(self, *args, **kwargs):
         if self._items is None or not self._at_once:
@@ -39,7 +47,7 @@ def _writing_op(f):
 
 class SingleFileStorage(Storage):
     storage_name = "singlefile"
-    _repr_attributes = ["path"]
+    _repr_attributes = ("path",)
 
     _write_mode = "wb"
     _append_mode = "ab"
@@ -125,11 +133,12 @@ class SingleFileStorage(Storage):
 
                 yield href, etag
 
-    async def get(self, href):
+    async def get(self, href) -> tuple[Item, str]:
         if self._items is None or not self._at_once:
             async for _ in self.list():
                 pass
 
+        assert self._items is not None  # type assertion
         try:
             return self._items[href]
         except KeyError:
