@@ -2,8 +2,14 @@ from __future__ import annotations
 
 import datetime
 import os
+from collections.abc import Sequence
+from typing import Any
 
+from docutils.nodes import Node
+from docutils.nodes import system_message
+from docutils.parsers.rst.states import Inliner
 from pkg_resources import get_distribution
+from sphinx.application import Sphinx
 
 extensions = ["sphinx.ext.autodoc"]
 
@@ -43,7 +49,7 @@ except ImportError:
 html_static_path = ["_static"]
 htmlhelp_basename = "vdirsyncerdoc"
 
-latex_elements = {}
+latex_elements: dict[str, Any] = {}
 latex_documents = [
     (
         "index",
@@ -71,7 +77,15 @@ texinfo_documents = [
 ]
 
 
-def github_issue_role(name, rawtext, text, lineno, inliner, options=None, content=()):
+def github_issue_role(
+    name: str,
+    rawtext: str,
+    text: str,
+    lineno: int,
+    inliner: Inliner,
+    options: dict[str, Any] | None = None,
+    content: Sequence[str] = (),
+) -> tuple[list[Node], list[system_message]]:
     options = options or {}
     try:
         issue_num = int(text)
@@ -93,7 +107,7 @@ def github_issue_role(name, rawtext, text, lineno, inliner, options=None, conten
     return [node], []
 
 
-def setup(app):
+def setup(app: Sphinx) -> None:
     from sphinx.domains.python import PyObject
 
     app.add_object_type(
