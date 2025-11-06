@@ -188,7 +188,7 @@ def join_collection(items, wrappers=_default_join_wrappers):
     """
 
     items1, items2 = tee((_Component.parse(x) for x in items), 2)
-    item_type, wrapper_type = _get_item_type(items1, wrappers)
+    _item_type, wrapper_type = _get_item_type(items1, wrappers)
     wrapper_props = []
 
     def _get_item_components(x):

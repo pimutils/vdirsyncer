@@ -48,6 +48,6 @@ class DAVStorageTests(ServerMixin, StorageTests):
 
         monkeypatch.setattr(s, "_get_href", lambda item: item.ident + s.fileext)
         item = get_item(uid="град сатану" + str(uuid.uuid4()))
-        href, etag = await s.upload(item)
-        item2, etag2 = await s.get(href)
+        href, _etag = await s.upload(item)
+        item2, _etag2 = await s.get(href)
         assert_item_equals(item, item2)

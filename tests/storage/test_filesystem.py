@@ -90,7 +90,7 @@ class TestFilesystemStorage(StorageTests):
         storage = self.storage_class(str(tmpdir), ".txt")
         item = Item("UID:" + "hue" * 600)
 
-        href, etag = await storage.upload(item)
+        href, _etag = await storage.upload(item)
         assert item.uid not in href
 
     @pytest.mark.asyncio

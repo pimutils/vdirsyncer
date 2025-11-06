@@ -115,7 +115,7 @@ def _fuzzy_matches_mimetype(strict, weak):
     if strict is None or weak is None:
         return True
 
-    mediatype, subtype = strict.split("/")
+    _mediatype, subtype = strict.split("/")
     return subtype in weak
 
 

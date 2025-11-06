@@ -130,7 +130,7 @@ class GoogleSession(dav.DAVSession):
             async with self._session as session:
                 # Fail fast if the address is occupied
 
-                authorization_url, state = session.authorization_url(
+                authorization_url, _state = session.authorization_url(
                     TOKEN_URL,
                     # access_type and approval_prompt are Google specific
                     # extra parameters.

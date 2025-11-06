@@ -104,7 +104,7 @@ class StorageTests:
         href, etag = await s.upload(get_item())
         if etag is None:
             _, etag = await s.get(href)
-        ((href2, item, etag2),) = await aiostream.stream.list(s.get_multi([href] * 2))
+        ((href2, _item, etag2),) = await aiostream.stream.list(s.get_multi([href] * 2))
         assert href2 == href
         assert etag2 == etag
 
@@ -118,7 +118,7 @@ class StorageTests:
     @pytest.mark.asyncio
     async def test_upload(self, s, get_item):
         item = get_item()
-        href, etag = await s.upload(item)
+        href, _etag = await s.upload(item)
         assert_item_equals((await s.get(href))[0], item)
 
     @pytest.mark.asyncio
@@ -146,7 +146,7 @@ class StorageTests:
     @pytest.mark.asyncio
     async def test_wrong_etag(self, s, get_item):
         item = get_item()
-        href, etag = await s.upload(item)
+        href, _etag = await s.upload(item)
         with pytest.raises(exceptions.PreconditionFailed):
             await s.update(href, item, '"lolnope"')
         with pytest.raises(exceptions.PreconditionFailed):
@@ -422,7 +422,7 @@ class StorageTests:
             ).strip()
         )
 
-        href, etag = await s.upload(item)
+        href, _etag = await s.upload(item)
 
-        item2, etag2 = await s.get(href)
+        item2, _etag2 = await s.get(href)
         assert normalize_item(item) == normalize_item(item2)

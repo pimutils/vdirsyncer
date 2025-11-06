@@ -45,7 +45,7 @@ async def test_repair_uids(uid):
 async def test_repair_unsafe_uids(uid):
     s = MemoryStorage()
     item = Item(f"BEGIN:VCARD\nUID:{uid}\nEND:VCARD")
-    href, etag = await s.upload(item)
+    href, _etag = await s.upload(item)
     assert (await s.get(href))[0].uid == uid
     assert not href_safe(uid)
 

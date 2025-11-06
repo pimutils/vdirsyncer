@@ -26,7 +26,7 @@ def read_config(tmpdir, monkeypatch):
 
 
 def test_read_config(read_config):
-    errors, c = read_config(
+    _errors, c = read_config(
         """
         [general]
         status_path = "/tmp/status/"
