@@ -36,7 +36,9 @@ class DAVStorageTests(ServerMixin, StorageTests):  # type: ignore[valid-type,mis
 
     @pytest.mark.asyncio
     async def test_dav_empty_get_multi_performance(
-        self, s: Any, monkeypatch: Any
+        self,
+        s: Any,
+        monkeypatch: Any,
     ) -> None:
         def breakdown(*a: Any, **kw: Any) -> None:
             raise AssertionError("Expected not to be called.")
@@ -51,7 +53,10 @@ class DAVStorageTests(ServerMixin, StorageTests):  # type: ignore[valid-type,mis
 
     @pytest.mark.asyncio
     async def test_dav_unicode_href(
-        self, s: Any, get_item: Any, monkeypatch: Any
+        self,
+        s: Any,
+        get_item: Any,
+        monkeypatch: Any,
     ) -> None:
         if self.dav_server == "radicale":
             pytest.skip("Radicale is unable to deal with unicode hrefs")

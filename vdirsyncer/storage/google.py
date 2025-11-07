@@ -66,7 +66,10 @@ class GoogleSession(dav.DAVSession):
         self._redirect_uri: str | None = None
 
     async def request(
-        self, method: str, path: str, **kwargs: Any
+        self,
+        method: str,
+        path: str,
+        **kwargs: Any,
     ) -> aiohttp.ClientResponse:
         if not self._token:
             await self._init_token()
@@ -114,7 +117,7 @@ class GoogleSession(dav.DAVSession):
         except ValueError as e:
             raise exceptions.UserError(
                 f"Failed to load token file {self._token_file}, try deleting it. "
-                f"Original error: {e}"
+                f"Original error: {e}",
             )
 
         if not self._token:
@@ -127,7 +130,7 @@ class GoogleSession(dav.DAVSession):
             local_server = wsgiref.simple_server.make_server(
                 host,
                 0,
-                wsgi_app,
+                wsgi_app,  # type: ignore[arg-type]
                 handler_class=_WSGIRequestHandler,  # type: ignore[arg-type]
             )
             thread = Thread(target=local_server.handle_request)
@@ -157,7 +160,9 @@ class GoogleSession(dav.DAVSession):
                 # OAuth 2.0 should only occur over https.
                 assert wsgi_app.last_request_uri is not None
                 authorization_response = wsgi_app.last_request_uri.replace(
-                    "http", "https", 1
+                    "http",
+                    "https",
+                    1,
                 )
                 logger.debug(f"authorization_response: {authorization_response}")
                 self._token = await session.fetch_token(
@@ -239,7 +244,11 @@ class GoogleContactsStorage(dav.CardDAVStorage):
     storage_name = "google_contacts"
 
     def __init__(
-        self, token_file: str, client_id: str, client_secret: str, **kwargs: Any
+        self,
+        token_file: str,
+        client_id: str,
+        client_secret: str,
+        **kwargs: Any,
     ) -> None:
         if not kwargs.get("collection"):
             raise exceptions.CollectionRequired

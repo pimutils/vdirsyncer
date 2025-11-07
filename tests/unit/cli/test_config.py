@@ -23,7 +23,12 @@ def test_conflict_resolution_command() -> None:
     b = Item("UID:BBBBBBB")
     assert (
         _resolve_conflict_via_command(
-            a, b, ["~/command"], "a", "b", _check_call=check_call
+            a,
+            b,
+            ["~/command"],
+            "a",
+            "b",
+            _check_call=check_call,
         ).raw
         == a.raw
     )

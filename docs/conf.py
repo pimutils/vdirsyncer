@@ -100,7 +100,9 @@ def github_issue_role(
 
     PROJECT_HOME = "https://github.com/pimutils/vdirsyncer"
     link = "{}/{}/{}".format(
-        PROJECT_HOME, "issues" if name == "gh" else "pull", issue_num
+        PROJECT_HOME,
+        "issues" if name == "gh" else "pull",
+        issue_num,
     )
     linktext = ("issue #{}" if name == "gh" else "pull request #{}").format(issue_num)
     node = nodes.reference(rawtext, linktext, refuri=link, **options)

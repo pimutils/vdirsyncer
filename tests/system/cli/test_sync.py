@@ -407,7 +407,11 @@ def test_no_configured_pairs(tmpdir: Any, runner: Any, cmd: Any) -> None:
     [(["command", "cp"], "UID:lol\nfööcontent", "UID:lol\nfööcontent")],
 )
 def test_conflict_resolution(
-    tmpdir: Any, runner: Any, resolution: Any, expect_foo: Any, expect_bar: Any
+    tmpdir: Any,
+    runner: Any,
+    resolution: Any,
+    expect_foo: Any,
+    expect_bar: Any,
 ) -> None:
     runner.write_with_general(
         dedent(

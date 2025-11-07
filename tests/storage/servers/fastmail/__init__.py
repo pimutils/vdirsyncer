@@ -12,7 +12,10 @@ class ServerMixin:
 
     @pytest.fixture
     def get_storage_args(
-        self, slow_create_collection: Any, aio_connector: Any, request: Any
+        self,
+        slow_create_collection: Any,
+        aio_connector: Any,
+        request: Any,
     ) -> Any:
         if (
             "item_type" in request.fixturenames

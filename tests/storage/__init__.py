@@ -246,12 +246,14 @@ class StorageTests:
 
         href = (await s.upload(get_item()))[0]
         assert href in await aiostream.stream.list(
-            (href async for href, etag in s.list())
+            (href async for href, etag in s.list()),
         )
 
     @pytest.mark.asyncio
     async def test_discover_collection_arg(
-        self, requires_collections: Any, get_storage_args: Any
+        self,
+        requires_collections: Any,
+        get_storage_args: Any,
     ) -> None:
         assert self.storage_class is not None
         args = await get_storage_args(collection="test2")
@@ -387,7 +389,10 @@ class StorageTests:
     )
     @pytest.mark.asyncio
     async def test_metadata_normalization(
-        self, requires_metadata: Any, s: Any, value: str | None
+        self,
+        requires_metadata: Any,
+        s: Any,
+        value: str | None,
     ) -> None:
         x = await s.get_meta("displayname")
         assert x == normalize_meta_value(x)

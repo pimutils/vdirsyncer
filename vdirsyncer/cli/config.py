@@ -116,7 +116,10 @@ class _ConfigReader:
         self._storages: dict[str, dict[str, str]] = {}
 
     def _parse_section(
-        self, section_type: str, name: str, options: dict[str, Any]
+        self,
+        section_type: str,
+        name: str,
+        options: dict[str, Any],
     ) -> None:
         validate_section_name(name, section_type)
         if name in self._seen_names:
@@ -163,7 +166,8 @@ class _ConfigReader:
 
 
 def _parse_options(
-    items: list[tuple[str, str]], section: str | None = None
+    items: list[tuple[str, str]],
+    section: str | None = None,
 ) -> Generator[tuple[str, dict[str, str]], None, None]:
     for key, value in items:
         try:
@@ -204,7 +208,8 @@ class Config:
             fname = expand_path("~/.vdirsyncer/config")
             if not os.path.exists(fname):
                 xdg_config_dir = os.environ.get(
-                    "XDG_CONFIG_HOME", expand_path("~/.config/")
+                    "XDG_CONFIG_HOME",
+                    expand_path("~/.config/"),
                 )
                 fname = os.path.join(xdg_config_dir, "vdirsyncer/config")
 
@@ -263,7 +268,8 @@ class PairConfig:
             raise ValueError("Unknown options: {}".format(", ".join(options)))
 
     def _process_conflict_resolution_param(
-        self, conflict_resolution: str | list[str] | None
+        self,
+        conflict_resolution: str | list[str] | None,
     ) -> Any:
         if conflict_resolution in (None, "a wins", "b wins"):
             return conflict_resolution
@@ -328,7 +334,11 @@ class PairConfig:
 
 class CollectionConfig:
     def __init__(
-        self, pair: PairConfig, name: str, config_a: Any, config_b: Any
+        self,
+        pair: PairConfig,
+        name: str,
+        config_a: Any,
+        config_b: Any,
     ) -> None:
         self.pair = pair
         self._config = pair._config
@@ -342,7 +352,12 @@ load_config = Config.from_filename_or_environment
 
 
 def _resolve_conflict_via_command(
-    a: Any, b: Any, command: Any, a_name: Any, b_name: Any, _check_call: Any = None
+    a: Any,
+    b: Any,
+    command: Any,
+    a_name: Any,
+    b_name: Any,
+    _check_call: Any = None,
 ) -> Item:
     import shutil
     import tempfile

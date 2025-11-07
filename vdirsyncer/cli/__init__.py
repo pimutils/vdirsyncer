@@ -92,7 +92,9 @@ def collections_arg_callback(ctx: Any, param: Any, value: Any) -> Any:
 
 
 collections_arg = click.argument(
-    "collections", nargs=-1, callback=collections_arg_callback
+    "collections",
+    nargs=-1,
+    callback=collections_arg_callback,
 )
 
 

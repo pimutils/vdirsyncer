@@ -175,7 +175,10 @@ async def sync(
             for action in actions:
                 try:
                     await action.run(
-                        a_info, b_info, resolved_conflict_resolution, partial_sync
+                        a_info,
+                        b_info,
+                        resolved_conflict_resolution,
+                        partial_sync,
                     )
                 except Exception as e:
                     if error_callback:
@@ -189,7 +192,9 @@ class Action:
     ident: str
 
     async def _run_impl(
-        self, a: _StorageInfo, b: _StorageInfo
+        self,
+        a: _StorageInfo,
+        b: _StorageInfo,
     ) -> None:  # pragma: no cover
         raise NotImplementedError
 
@@ -214,7 +219,9 @@ class Action:
 
     @contextlib.contextmanager
     def auto_rollback(
-        self, a: _StorageInfo, b: _StorageInfo
+        self,
+        a: _StorageInfo,
+        b: _StorageInfo,
     ) -> Generator[None, None, None]:
         try:
             yield
@@ -237,13 +244,14 @@ class Upload(Action):
             href = etag = None
         else:
             sync_logger.info(
-                f"Copying (uploading) item {self.ident} to {self.dest.storage}"
+                f"Copying (uploading) item {self.ident} to {self.dest.storage}",
             )
             href, etag = await self.dest.storage.upload(self.item)
             assert href is not None
 
         self.dest.status.insert_ident(
-            self.ident, ItemMetadata(href=href, hash=self.item.hash, etag=etag)
+            self.ident,
+            ItemMetadata(href=href, hash=self.item.hash, etag=etag),
         )
 
 
@@ -259,14 +267,16 @@ class Update(Action):
             meta = ItemMetadata(hash=self.item.hash)
         else:
             sync_logger.info(
-                f"Copying (updating) item {self.ident} to {self.dest.storage}"
+                f"Copying (updating) item {self.ident} to {self.dest.storage}",
             )
             meta_from_status = self.dest.status.get_new(self.ident)
             assert meta_from_status is not None
             assert meta_from_status.href is not None
             assert meta_from_status.etag is not None
             meta_from_status.etag = await self.dest.storage.update(
-                meta_from_status.href, self.item, meta_from_status.etag
+                meta_from_status.href,
+                self.item,
+                meta_from_status.etag,
             )
             meta = meta_from_status
 
@@ -283,7 +293,7 @@ class Delete(Action):
         assert meta is not None
         if self.dest.storage.read_only or self.dest.storage.no_delete:
             sync_logger.debug(
-                f"Skipping deletion of item {self.ident} from {self.dest.storage}"
+                f"Skipping deletion of item {self.ident} from {self.dest.storage}",
             )
         else:
             sync_logger.info(f"Deleting item {self.ident} from {self.dest.storage}")
@@ -319,7 +329,9 @@ class ResolveConflict(Action):
                 assert meta_a.href is not None
                 assert meta_b.href is not None
                 raise SyncConflict(
-                    ident=self.ident, href_a=meta_a.href, href_b=meta_b.href
+                    ident=self.ident,
+                    href_a=meta_a.href,
+                    href_b=meta_b.href,
                 )
             elif callable(conflict_resolution):
                 item_a = a.get_item_cache(self.ident)
@@ -341,17 +353,19 @@ class ResolveConflict(Action):
                     )
             else:
                 raise UserError(
-                    f"Invalid conflict resolution mode: {conflict_resolution!r}"
+                    f"Invalid conflict resolution mode: {conflict_resolution!r}",
                 )
 
 
 def _get_actions(
-    a_info: _StorageInfo, b_info: _StorageInfo
+    a_info: _StorageInfo,
+    b_info: _StorageInfo,
 ) -> Generator[Action, None, None]:
     for ident in uniq(
         itertools.chain(
-            a_info.status.parent.iter_new(), a_info.status.parent.iter_old()
-        )
+            a_info.status.parent.iter_new(),
+            a_info.status.parent.iter_old(),
+        ),
     ):
         a = a_info.status.get_new(ident)
         b = b_info.status.get_new(ident)

@@ -97,7 +97,9 @@ class SingleFileStorage(Storage):
 
     @classmethod
     async def create_collection(
-        cls, collection: str | None, **kwargs: Any
+        cls,
+        collection: str | None,
+        **kwargs: Any,
     ) -> dict[str, Any]:
         path = os.path.abspath(expand_path(kwargs["path"]))
 
@@ -106,7 +108,7 @@ class SingleFileStorage(Storage):
                 path = path % (collection,)
             except TypeError:
                 raise ValueError(
-                    "Exactly one %s required in path if collection is not null."
+                    "Exactly one %s required in path if collection is not null.",
                 )
 
         checkfile(path, create=True)
@@ -149,7 +151,8 @@ class SingleFileStorage(Storage):
             raise exceptions.NotFoundError(href)
 
     async def get_multi(
-        self, hrefs: Iterable[str]
+        self,
+        hrefs: Iterable[str],
     ) -> AsyncIterator[tuple[str, Item, str]]:
         async with self.at_once():
             for href in uniq(hrefs):
@@ -194,12 +197,12 @@ class SingleFileStorage(Storage):
     def _write(self) -> None:
         assert self._items is not None
         if self._last_etag is not None and self._last_etag != get_etag_from_file(
-            self.path
+            self.path,
         ):
             raise exceptions.PreconditionFailed(
                 f"Some other program modified the file {self.path!r}. Re-run the "
                 "synchronization and make sure absolutely no other program is "
-                "writing into the same file."
+                "writing into the same file.",
             )
         text = join_collection(item.raw for item, etag in self._items.values())
         try:

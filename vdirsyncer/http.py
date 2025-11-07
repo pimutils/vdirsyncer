@@ -78,7 +78,8 @@ class DigestAuthMethod(AuthMethod):
         super().__init__(username, password)
 
         self._auth_helper = self._auth_helpers.get(
-            (username, password), requests.auth.HTTPDigestAuth(username, password)
+            (username, password),
+            requests.auth.HTTPDigestAuth(username, password),
         )
         self._auth_helpers[(username, password)] = self._auth_helper
 
@@ -106,7 +107,9 @@ class DigestAuthMethod(AuthMethod):
 
 
 def prepare_auth(
-    auth: str | None, username: str | None, password: str | None
+    auth: str | None,
+    username: str | None,
+    password: str | None,
 ) -> AuthMethod | None:
     if username and password:
         if auth == "basic" or auth is None:
@@ -119,33 +122,34 @@ def prepare_auth(
                 "vdirsyncer.\n"
                 "Please explicitly specify either 'basic' or 'digest' auth instead. \n"
                 "See the following issue for more information: "
-                "https://github.com/pimutils/vdirsyncer/issues/1015"
+                "https://github.com/pimutils/vdirsyncer/issues/1015",
             )
         else:
             raise exceptions.UserError(f"Unknown authentication method: {auth}")
     elif auth:
         raise exceptions.UserError(
-            f"You need to specify username and password for {auth} authentication."
+            f"You need to specify username and password for {auth} authentication.",
         )
 
     return None
 
 
 def prepare_verify(
-    verify: str | bool | None, verify_fingerprint: str | None
+    verify: str | bool | None,
+    verify_fingerprint: str | None,
 ) -> SSLContext | aiohttp.Fingerprint | None:
     if isinstance(verify, str):
         return create_default_context(cafile=expand_path(verify))
     elif verify is not None:
         raise exceptions.UserError(
-            f"Invalid value for verify ({verify}), must be a path to a PEM-file."
+            f"Invalid value for verify ({verify}), must be a path to a PEM-file.",
         )
 
     if verify_fingerprint is not None:
         if not isinstance(verify_fingerprint, str):
             raise exceptions.UserError(
                 "Invalid value for verify_fingerprint "
-                f"({verify_fingerprint}), must be a string."
+                f"({verify_fingerprint}), must be a string.",
             )
 
         return aiohttp.Fingerprint(bytes.fromhex(verify_fingerprint.replace(":", "")))
@@ -282,7 +286,7 @@ async def request(
             # Retry only if the method is safe/idempotent for our DAV use
             if _is_safe_to_retry_method(method):
                 logger.debug(
-                    f"Transient network error on {method} {url}: {e}. Will retry."
+                    f"Transient network error on {method} {url}: {e}. Will retry.",
                 )
                 raise TransientNetworkError(str(e)) from e
             raise e from None

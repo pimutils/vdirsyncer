@@ -84,7 +84,10 @@ async def test_request_ssl_leaf_fingerprint(
 @pytest.mark.parametrize("hash_algorithm", [hashes.SHA256])
 @pytest.mark.asyncio
 async def test_request_ssl_ca_fingerprints(
-    httpserver: Any, ca: Any, hash_algorithm: Any, aio_session: Any
+    httpserver: Any,
+    ca: Any,
+    hash_algorithm: Any,
+    aio_session: Any,
 ) -> None:
     fingerprint = fingerprint_of_cert(ca.cert_pem)
     bogus = "".join(reversed(fingerprint))

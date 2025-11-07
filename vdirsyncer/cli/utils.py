@@ -64,7 +64,8 @@ class JobFailed(RuntimeError):
 
 
 def handle_cli_error(
-    status_name: str | None = None, e: Exception | None = None
+    status_name: str | None = None,
+    e: Exception | None = None,
 ) -> None:
     """
     Print a useful error message for the current exception.
@@ -216,7 +217,9 @@ def prepare_status_path(path: str) -> None:
 
 @contextlib.contextmanager
 def manage_sync_status(
-    base_path: str, pair_name: str, collection_name: str
+    base_path: str,
+    pair_name: str,
+    collection_name: str,
 ) -> Generator[Any, None, None]:
     path = get_status_path(base_path, pair_name, collection_name, "items")
     status = None
@@ -296,7 +299,10 @@ async def storage_instance_from_config(
     except exceptions.CollectionNotFound as e:
         if create:
             config = await handle_collection_not_found(
-                config, config.get("collection"), e=str(e), implicit_create=True
+                config,
+                config.get("collection"),
+                e=str(e),
+                implicit_create=True,
             )
             return await storage_instance_from_config(
                 config,

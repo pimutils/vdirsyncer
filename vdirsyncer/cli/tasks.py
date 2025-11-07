@@ -23,7 +23,11 @@ from .utils import save_status
 
 
 async def prepare_pair(
-    pair_name: str, collections: Any, config: Any, *, connector: aiohttp.TCPConnector
+    pair_name: str,
+    collections: Any,
+    config: Any,
+    *,
+    connector: aiohttp.TCPConnector,
 ) -> AsyncIterator[tuple[CollectionConfig, Any]]:
     pair = config.get_pair(pair_name)
 
@@ -72,7 +76,9 @@ async def sync_collection(
             handle_cli_error(status_name, e)
 
         with manage_sync_status(
-            general["status_path"], pair.name, collection.name
+            general["status_path"],
+            pair.name,
+            collection.name,
         ) as status:
             await sync.sync(
                 a,
@@ -142,7 +148,10 @@ async def repair_collection(
 
 
 async def metasync_collection(
-    collection: CollectionConfig, general: Any, *, connector: aiohttp.TCPConnector
+    collection: CollectionConfig,
+    general: Any,
+    *,
+    connector: aiohttp.TCPConnector,
 ) -> None:
     from vdirsyncer.metasync import metasync
 

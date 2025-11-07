@@ -61,7 +61,8 @@ async def test_repair_unsafe_uids(uid: Any) -> None:
 
 
 @pytest.mark.parametrize(
-    ("uid", "href"), [("b@dh0mbr3", "perfectly-fine"), ("perfectly-fine", "b@dh0mbr3")]
+    ("uid", "href"),
+    [("b@dh0mbr3", "perfectly-fine"), ("perfectly-fine", "b@dh0mbr3")],
 )
 def test_repair_unsafe_href(uid: Any, href: Any) -> None:
     item = Item(f"BEGIN:VCARD\nUID:{uid}\nEND:VCARD")
@@ -79,7 +80,8 @@ def test_repair_do_nothing() -> None:
 
 
 @pytest.mark.parametrize(
-    "raw", ["AYYY", "", "@@@@", "BEGIN:VCARD", "BEGIN:FOO\nEND:FOO"]
+    "raw",
+    ["AYYY", "", "@@@@", "BEGIN:VCARD", "BEGIN:FOO\nEND:FOO"],
 )
 def test_repair_irreparable(raw: Any) -> None:
     with pytest.raises(IrreparableItem):

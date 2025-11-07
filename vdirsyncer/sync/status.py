@@ -109,13 +109,17 @@ class _StatusBase(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def get_by_href_a(
-        self, href: str, default: tuple[None, None] = (None, None)
+        self,
+        href: str,
+        default: tuple[None, None] = (None, None),
     ) -> tuple[str | None, ItemMetadata | None]:
         raise NotImplementedError
 
     @abc.abstractmethod
     def get_by_href_b(
-        self, href: str, default: tuple[None, None] = (None, None)
+        self,
+        href: str,
+        default: tuple[None, None] = (None, None),
     ) -> tuple[str | None, ItemMetadata | None]:
         raise NotImplementedError
 
@@ -155,7 +159,7 @@ class SqliteStatus(_StatusBase):
                 "hash_b" TEXT NOT NULL,
                 "etag_a" TEXT,
                 "etag_b" TEXT
-            ); """
+            ); """,
             )
             c.execute("CREATE UNIQUE INDEX by_href_a ON status(href_a)")
             c.execute("CREATE UNIQUE INDEX by_href_b ON status(href_b)")
@@ -182,7 +186,7 @@ class SqliteStatus(_StatusBase):
                 "hash_b" TEXT,
                 "etag_a" TEXT,
                 "etag_b" TEXT
-            ); """
+            ); """,
             )
 
     def close(self) -> None:
@@ -192,8 +196,9 @@ class SqliteStatus(_StatusBase):
         try:
             return bool(
                 self._c.execute(
-                    "SELECT version FROM meta WHERE version = ?", (self.SCHEMA_VERSION,)
-                ).fetchone()
+                    "SELECT version FROM meta WHERE version = ?",
+                    (self.SCHEMA_VERSION,),
+                ).fetchone(),
             )
         except sqlite3.OperationalError:
             return False
@@ -345,12 +350,16 @@ class SqliteStatus(_StatusBase):
         )
 
     def get_by_href_a(
-        self, href: str, default: tuple[None, None] = (None, None)
+        self,
+        href: str,
+        default: tuple[None, None] = (None, None),
     ) -> tuple[str | None, ItemMetadata | None]:
         return self._get_by_href_impl(href, default, side="a")
 
     def get_by_href_b(
-        self, href: str, default: tuple[None, None] = (None, None)
+        self,
+        href: str,
+        default: tuple[None, None] = (None, None),
     ) -> tuple[str | None, ItemMetadata | None]:
         return self._get_by_href_impl(href, default, side="b")
 

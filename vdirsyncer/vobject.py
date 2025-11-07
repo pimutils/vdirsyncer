@@ -7,6 +7,8 @@ from functools import cached_property
 from itertools import chain
 from itertools import tee
 from typing import Any
+from typing import Literal
+from typing import overload
 
 from .utils import uniq
 
@@ -48,9 +50,6 @@ class Item:
 
     def with_uid(self, new_uid: str | None) -> Item:
         parsed = _Component.parse(self.raw)
-        assert isinstance(
-            parsed, _Component
-        )  # parse() without multiple=True returns single component
         stack = [parsed]
         while stack:
             component = stack.pop()
@@ -106,17 +105,14 @@ class Item:
     def parsed(self) -> _Component | None:
         """Don't cache because the rv is mutable."""
         try:
-            result = _Component.parse(self.raw)
-            assert isinstance(
-                result, _Component
-            )  # parse() without multiple=True returns single component
-            return result
+            return _Component.parse(self.raw)
         except Exception:
             return None
 
 
 def normalize_item(
-    item: str | Item, ignore_props: tuple[str, ...] = IGNORE_PROPS
+    item: str | Item,
+    ignore_props: tuple[str, ...] = IGNORE_PROPS,
 ) -> str:
     """Create syntactically invalid mess that is equal for similar items."""
     if not isinstance(item, Item):
@@ -153,7 +149,6 @@ def split_collection(text: str) -> Generator[str, None, None]:
     ungrouped_items: list[_Component] = []
 
     parsed = _Component.parse(text, multiple=True)
-    assert isinstance(parsed, list)  # parse() with multiple=True returns list
     for main in parsed:
         _split_collection_impl(main, main, inline, items, ungrouped_items)
 
@@ -201,7 +196,8 @@ _default_join_wrappers = {
 
 
 def join_collection(
-    items: Iterator[str], wrappers: dict[str, str] = _default_join_wrappers
+    items: Iterator[str],
+    wrappers: dict[str, str] = _default_join_wrappers,
 ) -> str:
     """
     :param wrappers: {
@@ -210,11 +206,7 @@ def join_collection(
     """
 
     def _parse_single(x: str) -> _Component:
-        result = _Component.parse(x)
-        assert isinstance(
-            result, _Component
-        )  # parse() without multiple=True returns single component
-        return result
+        return _Component.parse(x)
 
     items1, items2 = tee((_parse_single(x) for x in items), 2)
     _item_type, wrapper_type = _get_item_type(items1, wrappers)
@@ -241,13 +233,14 @@ def join_collection(
                 uniq(wrapper_props),
                 lines,
                 [f"END:{wrapper_type}"],
-            )
+            ),
         )
     return "".join(line + "\r\n" for line in lines)
 
 
 def _get_item_type(
-    components: Iterator[_Component], wrappers: dict[str, str]
+    components: Iterator[_Component],
+    wrappers: dict[str, str],
 ) -> tuple[str | None, str | None]:
     i = 0
     for component in components:
@@ -284,7 +277,10 @@ class _Component:
     """
 
     def __init__(
-        self, name: str, lines: list[str], subcomponents: list[_Component]
+        self,
+        name: str,
+        lines: list[str],
+        subcomponents: list[_Component],
     ) -> None:
         """
         :param name: The component name.
@@ -296,9 +292,27 @@ class _Component:
         self.props = lines
         self.subcomponents = subcomponents
 
+    @overload
     @classmethod
     def parse(
-        cls, lines: bytes | str | list[str], multiple: bool = False
+        cls,
+        lines: bytes | str | list[str],
+        multiple: Literal[False] = False,
+    ) -> _Component: ...
+
+    @overload
+    @classmethod
+    def parse(
+        cls,
+        lines: bytes | str | list[str],
+        multiple: Literal[True],
+    ) -> list[_Component]: ...
+
+    @classmethod
+    def parse(
+        cls,
+        lines: bytes | str | list[str],
+        multiple: bool = False,
     ) -> _Component | list[_Component]:
         if isinstance(lines, bytes):
             lines = lines.decode("utf-8")
@@ -318,7 +332,7 @@ class _Component:
                     if c_name != component.name:
                         raise ValueError(
                             f"Got END:{c_name}, expected END:{component.name}"
-                            + f" at line {_i + 1}"
+                            + f" at line {_i + 1}",
                         )
                     if stack:
                         stack[-1].subcomponents.append(component)
@@ -332,7 +346,7 @@ class _Component:
 
         if len(stack) > 0:
             raise ValueError(
-                f"Missing END for component(s): {', '.join(c.name for c in stack)}"
+                f"Missing END for component(s): {', '.join(c.name for c in stack)}",
             )
 
         if multiple:

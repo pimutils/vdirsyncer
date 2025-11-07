@@ -30,7 +30,7 @@ async def repair_storage(storage: Any, repair_unsafe_uid: bool) -> None:  # noqa
             logger.error(
                 f"Item {href!r} is malformed beyond repair. "
                 "The PRODID property may indicate which software "
-                "created this item."
+                "created this item.",
             )
             logger.error(f"Item content: {item.raw!r}")
             continue
@@ -46,7 +46,10 @@ async def repair_storage(storage: Any, repair_unsafe_uid: bool) -> None:  # noqa
 
 
 def repair_item(
-    href: str, item: Item, seen_uids: set[str], repair_unsafe_uid: bool
+    href: str,
+    item: Item,
+    seen_uids: set[str],
+    repair_unsafe_uid: bool,
 ) -> Item:
     if item.parsed is None:
         raise IrreparableItem

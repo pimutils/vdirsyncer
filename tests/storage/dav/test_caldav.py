@@ -30,7 +30,9 @@ class TestCalDAVStorage(DAVStorageTests):
 
     @pytest.mark.asyncio
     async def test_doesnt_accept_vcard(
-        self, item_type: Any, get_storage_args: Any
+        self,
+        item_type: Any,
+        get_storage_args: Any,
     ) -> None:
         s = self.storage_class(item_types=(item_type,), **await get_storage_args())
 
@@ -55,7 +57,11 @@ class TestCalDAVStorage(DAVStorageTests):
     @pytest.mark.xfail(dav_server == "baikal", reason="Baikal returns 500.")
     @pytest.mark.asyncio
     async def test_item_types_performance(
-        self, get_storage_args: Any, arg: Any, calls_num: Any, monkeypatch: Any
+        self,
+        get_storage_args: Any,
+        arg: Any,
+        calls_num: Any,
+        monkeypatch: Any,
     ) -> None:
         s = self.storage_class(item_types=arg, **await get_storage_args())
         old_parse = s._parse_prop_responses
@@ -70,14 +76,17 @@ class TestCalDAVStorage(DAVStorageTests):
         assert len(calls) == calls_num
 
     @pytest.mark.xfail(
-        dav_server == "radicale", reason="Radicale doesn't support timeranges."
+        dav_server == "radicale",
+        reason="Radicale doesn't support timeranges.",
     )
     @pytest.mark.asyncio
     async def test_timerange_correctness(self, get_storage_args: Any) -> None:
         start_date = datetime.datetime(2013, 9, 10)
         end_date = datetime.datetime(2013, 9, 13)
         s = self.storage_class(
-            start_date=start_date, end_date=end_date, **await get_storage_args()
+            start_date=start_date,
+            end_date=end_date,
+            **await get_storage_args(),
         )
 
         too_old_item = format_item(
@@ -143,7 +152,9 @@ class TestCalDAVStorage(DAVStorageTests):
 
     @pytest.mark.asyncio
     async def test_invalid_resource(
-        self, monkeypatch: Any, get_storage_args: Any
+        self,
+        monkeypatch: Any,
+        get_storage_args: Any,
     ) -> None:
         args = await get_storage_args(collection=None)
 
@@ -158,7 +169,8 @@ class TestCalDAVStorage(DAVStorageTests):
 
     @pytest.mark.skipif(dav_server == "icloud", reason="iCloud only accepts VEVENT")
     @pytest.mark.skipif(
-        dav_server == "fastmail", reason="Fastmail has non-standard hadling of VTODOs."
+        dav_server == "fastmail",
+        reason="Fastmail has non-standard hadling of VTODOs.",
     )
     @pytest.mark.xfail(dav_server == "baikal", reason="Baikal returns 500.")
     @pytest.mark.asyncio

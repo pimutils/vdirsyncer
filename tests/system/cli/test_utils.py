@@ -23,7 +23,8 @@ def test_handle_cli_error(capsys: Any) -> None:
 
 @pytest.mark.asyncio
 async def test_storage_instance_from_config(
-    monkeypatch: Any, aio_connector: Any
+    monkeypatch: Any,
+    aio_connector: Any,
 ) -> None:
     class Dummy:
         def __init__(self, **kw: Any) -> None:

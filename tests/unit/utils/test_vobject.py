@@ -217,7 +217,8 @@ def test_replace_multiline_uid(benchmark: Any) -> None:
 
 
 @pytest.mark.parametrize(
-    "template", [EVENT_TEMPLATE, EVENT_WITH_TIMEZONE_TEMPLATE, VCARD_TEMPLATE]
+    "template",
+    [EVENT_TEMPLATE, EVENT_WITH_TIMEZONE_TEMPLATE, VCARD_TEMPLATE],
 )
 @given(uid=st.one_of(st.none(), uid_strategy))
 def test_replace_uid(template: Any, uid: Any) -> None:
@@ -305,7 +306,8 @@ def test_input_types() -> None:
 
 value_strategy = st.text(
     st.characters(
-        exclude_categories=("Zs", "Zl", "Zp", "Cc", "Cs"), exclude_characters=":="
+        exclude_categories=("Zs", "Zl", "Zp", "Cc", "Cs"),
+        exclude_characters=":=",
     ),
     min_size=1,
 ).filter(lambda x: x.strip() == x)

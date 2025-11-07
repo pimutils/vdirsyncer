@@ -98,7 +98,8 @@ async def test_invalid_conflict_resolution(conflict_state: Any) -> None:
 
 @pytest.mark.asyncio
 async def test_warning_on_custom_conflict_commands(
-    conflict_state: Any, monkeypatch: Any
+    conflict_state: Any,
+    monkeypatch: Any,
 ) -> None:
     a, b, status = conflict_state
     warnings: list[str] = []
@@ -166,7 +167,11 @@ metadata = st.dictionaries(keys, values)
     conflict_resolution=st.just("a wins") | st.just("b wins"),
 )
 @example(
-    a={"0": "0"}, b={}, status={"0": "0"}, keys={"0"}, conflict_resolution="a wins"
+    a={"0": "0"},
+    b={},
+    status={"0": "0"},
+    keys={"0"},
+    conflict_resolution="a wins",
 )
 @example(
     a={"0": "0"},
@@ -177,7 +182,11 @@ metadata = st.dictionaries(keys, values)
 )
 @pytest.mark.asyncio
 async def test_fuzzing(
-    a: Any, b: Any, status: Any, keys: Any, conflict_resolution: Any
+    a: Any,
+    b: Any,
+    status: Any,
+    keys: Any,
+    conflict_resolution: Any,
 ) -> None:
     def _get_storage(m: Any, instance_name: Any) -> Any:
         s = MemoryStorage(instance_name=instance_name)

@@ -64,8 +64,10 @@ async def collections_for_pair(
         if rv and rv.get("cache_key", None) == cache_key:
             return list(
                 _expand_collections_cache(
-                    rv["collections"], pair.config_a, pair.config_b
-                )
+                    rv["collections"],
+                    pair.config_a,
+                    pair.config_b,
+                ),
             )
         if rv:
             raise exceptions.UserError(
@@ -95,10 +97,16 @@ async def collections_for_pair(
         )
 
     async def _handle_collection_not_found(
-        config: Any, collection: Any, e: Any = None, implicit_create: bool = False
+        config: Any,
+        collection: Any,
+        e: Any = None,
+        implicit_create: bool = False,
     ) -> Any:
         return await handle_collection_not_found(
-            config, collection, e=e, implicit_create=pair.implicit == "create"
+            config,
+            collection,
+            e=e,
+            implicit_create=pair.implicit == "create",
         )
 
     # We have to use a list here because the special None/null value would get
@@ -131,7 +139,9 @@ async def collections_for_pair(
 
 
 async def _sanity_check_collections(
-    collections: Any, *, connector: aiohttp.TCPConnector
+    collections: Any,
+    *,
+    connector: aiohttp.TCPConnector,
 ) -> None:
     tasks = []
 
@@ -252,7 +262,10 @@ async def expand_collections(
 
 
 async def _collection_from_discovered(
-    get_discovered: Any, collection: Any, config: Any, _handle_collection_not_found: Any
+    get_discovered: Any,
+    collection: Any,
+    config: Any,
+    _handle_collection_not_found: Any,
 ) -> Any:
     if collection is None:
         args = dict(config)
@@ -296,7 +309,9 @@ async def _print_collections(
 
 
 async def _print_single_collection(
-    args: Any, instance_name: str, connector: aiohttp.TCPConnector
+    args: Any,
+    instance_name: str,
+    connector: aiohttp.TCPConnector,
 ) -> None:
     collection = args["collection"]
     if collection is None:

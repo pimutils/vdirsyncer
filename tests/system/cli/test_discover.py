@@ -201,7 +201,11 @@ def test_null_collection_with_named_collection(tmpdir: Any, runner: Any) -> None
     ],
 )
 def test_collection_required(
-    a_requires: Any, b_requires: Any, tmpdir: Any, runner: Any, monkeypatch: Any
+    a_requires: Any,
+    b_requires: Any,
+    tmpdir: Any,
+    runner: Any,
+    monkeypatch: Any,
 ) -> None:
     class TestStorage(Storage):
         storage_name = "test"

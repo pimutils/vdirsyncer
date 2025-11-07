@@ -108,5 +108,6 @@ END:FOO"""
 printable_characters_strategy = st.text(st.characters(exclude_categories=("Cc", "Cs")))
 
 uid_strategy = st.text(
-    st.characters(exclude_categories=("Zs", "Zl", "Zp", "Cc", "Cs")), min_size=1
+    st.characters(exclude_categories=("Zs", "Zl", "Zp", "Cc", "Cs")),
+    min_size=1,
 ).filter(lambda x: x.strip() == x)

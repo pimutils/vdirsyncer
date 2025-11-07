@@ -125,7 +125,9 @@ class Storage(metaclass=StorageMeta):
 
     @classmethod
     async def create_collection(
-        cls, collection: str | None, **kwargs: Any
+        cls,
+        collection: str | None,
+        **kwargs: Any,
     ) -> dict[str, Any]:
         """
         Create the specified collection and return the new arguments.
@@ -166,7 +168,8 @@ class Storage(metaclass=StorageMeta):
         """
 
     async def get_multi(
-        self, hrefs: Iterable[str]
+        self,
+        hrefs: Iterable[str],
     ) -> AsyncIterator[tuple[str, Item, str]]:
         """Fetch multiple items. Duplicate hrefs must be ignored.
 

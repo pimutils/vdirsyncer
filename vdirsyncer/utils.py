@@ -32,7 +32,8 @@ def expand_path(p: str) -> str:
 
 
 def split_dict(
-    d: dict[Any, Any], f: Callable[[Any], bool]
+    d: dict[Any, Any],
+    f: Callable[[Any], bool],
 ) -> tuple[dict[Any, Any], dict[Any, Any]]:
     """Puts key into first dict if f(key), otherwise in second dict"""
     a = {}
@@ -77,7 +78,8 @@ def get_etag_from_file(f: str | IO[Any]) -> str:
 
 
 def get_storage_init_specs(
-    cls: type, stop_at: type = object
+    cls: type,
+    stop_at: type = object,
 ) -> tuple[FullArgSpec, ...]:
     if cls is stop_at:
         return ()
@@ -87,8 +89,8 @@ def get_storage_init_specs(
     if traverse_superclass:
         if traverse_superclass is True:
             supercls = next(
-                getattr(x.__init__, "__objclass__", x)
-                for x in cls.__mro__[1:]  # type: ignore[misc]
+                getattr(x.__init__, "__objclass__", x)  # type: ignore[misc]
+                for x in cls.__mro__[1:]
             )
         else:
             supercls = traverse_superclass
@@ -100,7 +102,8 @@ def get_storage_init_specs(
 
 
 def get_storage_init_args(
-    cls: type, stop_at: type = object
+    cls: type,
+    stop_at: type = object,
 ) -> tuple[set[str], set[str]]:
     """
     Get args which are taken during class initialization. Assumes that all
@@ -221,7 +224,9 @@ def open_graphical_browser(url: str, new: int = 0, autoraise: bool = True) -> No
 
 @contextlib.contextmanager
 def atomic_write(
-    dest: str, mode: str = "wb", overwrite: bool = False
+    dest: str,
+    mode: str = "wb",
+    overwrite: bool = False,
 ) -> Generator[IO[Any], None, None]:
     if "w" not in mode:
         raise RuntimeError("`atomic_write` requires write access")

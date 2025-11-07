@@ -36,13 +36,15 @@ def wait_for_container(url: str) -> None:
 
     pytest.exit(
         "Server did not initialise in 5 seconds.\n"
-        "WARNING: There may be a stale docker container still running."
+        "WARNING: There may be a stale docker container still running.",
     )
 
 
 @contextlib.contextmanager
 def dockerised_server(
-    name: str, container_port: str, exposed_port: str
+    name: str,
+    container_port: str,
+    exposed_port: str,
 ) -> Iterator[str]:
     """Run a dockerised DAV server as a contenxt manager."""
     container_id = None
@@ -92,7 +94,8 @@ def xandikos_server() -> Iterator[None]:
 
 @pytest_asyncio.fixture
 async def slow_create_collection(
-    request: Any, aio_connector: Any
+    request: Any,
+    aio_connector: Any,
 ) -> AsyncGenerator[Any, None]:
     # We need to properly clean up because otherwise we might run into
     # storage limits.

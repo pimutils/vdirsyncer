@@ -72,7 +72,9 @@ class FilesystemStorage(Storage):
 
     @classmethod
     async def create_collection(
-        cls, collection: str | None, **kwargs: Any
+        cls,
+        collection: str | None,
+        **kwargs: Any,
     ) -> dict[str, Any]:
         kwargs = dict(kwargs)
         path = kwargs["path"]
@@ -187,7 +189,7 @@ class FilesystemStorage(Storage):
     def _run_pre_deletion_hook(self, fpath: str) -> None:
         assert self.pre_deletion_hook is not None
         logger.info(
-            f"Calling pre_deletion_hook={self.pre_deletion_hook} with argument={fpath}"
+            f"Calling pre_deletion_hook={self.pre_deletion_hook} with argument={fpath}",
         )
         try:
             subprocess.call([self.pre_deletion_hook, fpath])
