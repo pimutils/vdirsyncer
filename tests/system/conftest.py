@@ -1,23 +1,24 @@
 from __future__ import annotations
 
 import ssl
+from typing import Any
 
 import pytest
 import trustme
 
 
 @pytest.fixture(scope="session")
-def ca():
+def ca() -> Any:
     return trustme.CA()
 
 
 @pytest.fixture(scope="session")
-def localhost_cert(ca):
+def localhost_cert(ca: Any) -> Any:
     return ca.issue_cert("localhost")
 
 
 @pytest.fixture(scope="session")
-def httpserver_ssl_context(localhost_cert):
+def httpserver_ssl_context(localhost_cert: Any) -> Any:
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
 
     crt = localhost_cert.cert_chain_pems[0]

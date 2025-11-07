@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import aiostream
 import pytest
 
@@ -135,26 +137,26 @@ missing = object()
     ],
 )
 @pytest.mark.asyncio
-async def test_expand_collections(shortcuts, expected):
+async def test_expand_collections(shortcuts: Any, expected: Any) -> None:
     config_a = {"type": "fooboo", "storage_side": "a"}
 
     config_b = {"type": "fooboo", "storage_side": "b"}
 
-    async def get_discovered_a():
+    async def get_discovered_a() -> Any:
         return {
             "c1": {"type": "fooboo", "custom_arg": "a1", "collection": "c1"},
             "c2": {"type": "fooboo", "custom_arg": "a2", "collection": "c2"},
             "a3": {"type": "fooboo", "custom_arg": "a3", "collection": "a3"},
         }
 
-    async def get_discovered_b():
+    async def get_discovered_b() -> Any:
         return {
             "c1": {"type": "fooboo", "custom_arg": "b1", "collection": "c1"},
             "c2": {"type": "fooboo", "custom_arg": "b2", "collection": "c2"},
             "b3": {"type": "fooboo", "custom_arg": "b3", "collection": "b3"},
         }
 
-    async def handle_not_found(config, collection):
+    async def handle_not_found(config: Any, collection: Any) -> Any:
         return missing
 
     assert sorted(

@@ -71,15 +71,20 @@ vdirsyncer = "vdirsyncer.cli:app"
 
 [tool.ruff.lint]
 extend-select = [
+    "ANN",
     "B0",
     "C4",
     "E",
     "I",
     "RSE",
+    # "RUF",
     "SIM",
     "TID",
     "UP",
     "W",
+]
+ignore = [
+    "ANN401", # FIXME: Any types.
 ]
 
 [tool.ruff.lint.isort]

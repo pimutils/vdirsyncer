@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class _WSGIRequestHandler(wsgiref.simple_server.WSGIRequestHandler):
     """Custom WSGIRequestHandler."""
 
-    def log_message(self, format, *args):
+    def log_message(self, format: str, *args: Any) -> None:
         # (format is the argument name defined in the superclass.)
         logger.info(format, *args)
 
@@ -30,7 +30,7 @@ class _RedirectWSGIApp:
 
     last_request_uri: str | None
 
-    def __init__(self, success_message: str):
+    def __init__(self, success_message: str) -> None:
         """
         :param success_message: The message to display in the web browser the
             authorization flow is complete.

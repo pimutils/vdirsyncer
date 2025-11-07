@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 import uuid
+from typing import TYPE_CHECKING
+from typing import Any
 
 import aiohttp
 import aiostream
@@ -14,23 +16,29 @@ from vdirsyncer import exceptions
 from vdirsyncer.vobject import Item
 
 dav_server = os.environ.get("DAV_SERVER", "skip")
-ServerMixin = get_server_mixin(dav_server)
+
+if TYPE_CHECKING:
+    ServerMixin = get_server_mixin(dav_server)
+else:
+    ServerMixin = get_server_mixin(dav_server)
 
 
-class DAVStorageTests(ServerMixin, StorageTests):
+class DAVStorageTests(ServerMixin, StorageTests):  # type: ignore[valid-type,misc]
     dav_server = dav_server
 
     @pytest.mark.skipif(dav_server == "radicale", reason="Radicale is very tolerant.")
     @pytest.mark.asyncio
-    async def test_dav_broken_item(self, s):
+    async def test_dav_broken_item(self, s: Any) -> None:
         item = Item("HAHA:YES")
         with pytest.raises((exceptions.Error, aiohttp.ClientResponseError)):
             await s.upload(item)
         assert not await aiostream.stream.list(s.list())
 
     @pytest.mark.asyncio
-    async def test_dav_empty_get_multi_performance(self, s, monkeypatch):
-        def breakdown(*a, **kw):
+    async def test_dav_empty_get_multi_performance(
+        self, s: Any, monkeypatch: Any
+    ) -> None:
+        def breakdown(*a: Any, **kw: Any) -> None:
             raise AssertionError("Expected not to be called.")
 
         monkeypatch.setattr("requests.sessions.Session.request", breakdown)
@@ -42,7 +50,9 @@ class DAVStorageTests(ServerMixin, StorageTests):
             monkeypatch.undo()
 
     @pytest.mark.asyncio
-    async def test_dav_unicode_href(self, s, get_item, monkeypatch):
+    async def test_dav_unicode_href(
+        self, s: Any, get_item: Any, monkeypatch: Any
+    ) -> None:
         if self.dav_server == "radicale":
             pytest.skip("Radicale is unable to deal with unicode hrefs")
 

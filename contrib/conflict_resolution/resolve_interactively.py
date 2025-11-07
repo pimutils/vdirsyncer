@@ -29,16 +29,17 @@ KDIALOG = "/usr/bin/kdialog"
 SUMMARY_PATTERN = re.compile("^(SUMMARY:.*)$", re.MULTILINE)
 
 
-def get_summary(icalendar_text: str):
+def get_summary(icalendar_text: str) -> str:
     """Get the first SUMMARY: line from an iCalendar text.
 
     Do not care about the line being continued.
     """
     match = re.search(SUMMARY_PATTERN, icalendar_text)
+    assert match is not None
     return match[1]
 
 
-def main(ical1_filename, ical2_filename):
+def main(ical1_filename: Path, ical2_filename: Path) -> None:
     ical1 = ical1_filename.read_text()
     ical2 = ical2_filename.read_text()
 

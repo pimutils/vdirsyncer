@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 import uuid
+from typing import Any
+from typing import ClassVar
 
 import pytest
 
@@ -18,18 +20,21 @@ except KeyError as e:
 
 @pytest.mark.flaky(reruns=5)
 class ServerMixin:
+    storage_class: ClassVar[type[Any]]
+
     @pytest.fixture
-    def davical_args(self):
+    def davical_args(self) -> dict[str, str]:
         if self.storage_class.fileext == ".ics":
             return dict(caldav_args)
         elif self.storage_class.fileext == ".vcf":
             pytest.skip("No carddav")
+            return {}  # This line is never reached, but satisfies mypy
         else:
             raise RuntimeError
 
     @pytest.fixture
-    def get_storage_args(self, davical_args, request):
-        async def inner(collection="test"):
+    def get_storage_args(self, davical_args: dict[str, str], request: Any) -> Any:
+        async def inner(collection: str | None = "test") -> dict[str, Any]:
             if collection is None:
                 return davical_args
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from textwrap import dedent
+from typing import Any
 
 import pytest
 
@@ -9,7 +10,7 @@ from vdirsyncer import exceptions
 from vdirsyncer.storage.base import Storage
 
 
-def test_discover_command(tmpdir, runner):
+def test_discover_command(tmpdir: Any, runner: Any) -> None:
     runner.write_with_general(
         dedent(
             """
@@ -66,7 +67,7 @@ def test_discover_command(tmpdir, runner):
     assert "fileext" not in tmpdir.join("status").join("foobar.collections").read()
 
 
-def test_discover_different_collection_names(tmpdir, runner):
+def test_discover_different_collection_names(tmpdir: Any, runner: Any) -> None:
     foo = tmpdir.mkdir("foo")
     bar = tmpdir.mkdir("bar")
     runner.write_with_general(
@@ -115,7 +116,7 @@ def test_discover_different_collection_names(tmpdir, runner):
     assert coll_b1.join("foo.txt").exists()
 
 
-def test_discover_direct_path(tmpdir, runner):
+def test_discover_direct_path(tmpdir: Any, runner: Any) -> None:
     foo = tmpdir.join("foo")
     bar = tmpdir.join("bar")
 
@@ -150,7 +151,7 @@ def test_discover_direct_path(tmpdir, runner):
     assert bar.exists()
 
 
-def test_null_collection_with_named_collection(tmpdir, runner):
+def test_null_collection_with_named_collection(tmpdir: Any, runner: Any) -> None:
     runner.write_with_general(
         dedent(
             f"""
@@ -199,20 +200,23 @@ def test_null_collection_with_named_collection(tmpdir, runner):
         (False, False),
     ],
 )
-def test_collection_required(a_requires, b_requires, tmpdir, runner, monkeypatch):
+def test_collection_required(
+    a_requires: Any, b_requires: Any, tmpdir: Any, runner: Any, monkeypatch: Any
+) -> None:
     class TestStorage(Storage):
         storage_name = "test"
 
-        def __init__(self, require_collection, **kw):
+        def __init__(self, require_collection: Any, **kw: Any) -> None:
             if require_collection:
                 assert not kw.get("collection")
                 raise exceptions.CollectionRequired
 
-        async def get(self, href: str):
+        async def get(self, href: str) -> Any:
             raise NotImplementedError
 
-        async def list(self) -> list[tuple]:
+        async def list(self) -> Any:
             raise NotImplementedError
+            yield  # type: ignore[unreachable]
 
     from vdirsyncer.cli.utils import storage_names
 
@@ -245,7 +249,7 @@ def test_collection_required(a_requires, b_requires, tmpdir, runner, monkeypatch
         )
 
 
-def test_showconfig(tmpdir, runner):
+def test_showconfig(tmpdir: Any, runner: Any) -> None:
     runner.write_with_general(
         dedent(
             """

@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from vdirsyncer.storage.base import Storage
+
 from vdirsyncer import exceptions
 
 
@@ -34,11 +41,11 @@ class IdentConflict(SyncError):
     _hrefs = None
 
     @property
-    def hrefs(self):
+    def hrefs(self) -> set[str] | None:
         return self._hrefs
 
     @hrefs.setter
-    def hrefs(self, val):
+    def hrefs(self, val: Iterable[str]) -> None:
         new_val = set(val)
         assert len(new_val) > 1, val
         self._hrefs = new_val
@@ -78,5 +85,5 @@ class IdentAlreadyExists(SyncError):
     old_href = None
     new_href = None
 
-    def to_ident_conflict(self, storage):
+    def to_ident_conflict(self, storage: Storage) -> IdentConflict:
         return IdentConflict(storage=storage, hrefs=[self.old_href, self.new_href])

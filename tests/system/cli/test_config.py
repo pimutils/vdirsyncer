@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 from textwrap import dedent
+from typing import Any
 
 import pytest
 
@@ -13,9 +14,9 @@ invalid = object()
 
 
 @pytest.fixture
-def read_config(tmpdir, monkeypatch):
-    def inner(cfg):
-        errors = []
+def read_config(tmpdir: Any, monkeypatch: Any) -> Any:
+    def inner(cfg: Any) -> Any:
+        errors: list[Any] = []
         monkeypatch.setattr("vdirsyncer.cli.cli_logger.error", errors.append)
         f = io.StringIO(dedent(cfg.format(base=str(tmpdir))))
         rv = Config.from_fileobject(f)
@@ -25,7 +26,7 @@ def read_config(tmpdir, monkeypatch):
     return inner
 
 
-def test_read_config(read_config):
+def test_read_config(read_config: Any) -> None:
     _errors, c = read_config(
         """
         [general]
@@ -67,7 +68,7 @@ def test_read_config(read_config):
     }
 
 
-def test_missing_collections_param(read_config):
+def test_missing_collections_param(read_config: Any) -> None:
     with pytest.raises(exceptions.UserError) as excinfo:
         read_config(
             """
@@ -89,7 +90,7 @@ def test_missing_collections_param(read_config):
     assert "collections parameter missing" in str(excinfo.value)
 
 
-def test_invalid_section_type(read_config):
+def test_invalid_section_type(read_config: Any) -> None:
     with pytest.raises(exceptions.UserError) as excinfo:
         read_config(
             """
@@ -104,7 +105,7 @@ def test_invalid_section_type(read_config):
     assert "bogus" in str(excinfo.value)
 
 
-def test_missing_general_section(read_config):
+def test_missing_general_section(read_config: Any) -> None:
     with pytest.raises(exceptions.UserError) as excinfo:
         read_config(
             """
@@ -128,7 +129,7 @@ def test_missing_general_section(read_config):
     assert "Invalid general section." in str(excinfo.value)
 
 
-def test_wrong_general_section(read_config):
+def test_wrong_general_section(read_config: Any) -> None:
     with pytest.raises(exceptions.UserError) as excinfo:
         read_config(
             """
@@ -144,7 +145,7 @@ def test_wrong_general_section(read_config):
     ]
 
 
-def test_invalid_storage_name(read_config):
+def test_invalid_storage_name(read_config: Any) -> None:
     with pytest.raises(exceptions.UserError) as excinfo:
         read_config(
             """
@@ -158,7 +159,7 @@ def test_invalid_storage_name(read_config):
     assert "invalid characters" in str(excinfo.value).lower()
 
 
-def test_invalid_collections_arg(read_config):
+def test_invalid_collections_arg(read_config: Any) -> None:
     with pytest.raises(exceptions.UserError) as excinfo:
         read_config(
             """
@@ -185,7 +186,7 @@ def test_invalid_collections_arg(read_config):
     assert "Expected string" in str(excinfo.value)
 
 
-def test_duplicate_sections(read_config):
+def test_duplicate_sections(read_config: Any) -> None:
     with pytest.raises(exceptions.UserError) as excinfo:
         read_config(
             """
@@ -212,7 +213,7 @@ def test_duplicate_sections(read_config):
     assert 'Name "foobar" already used' in str(excinfo.value)
 
 
-def test_validate_collections_param():
+def test_validate_collections_param() -> None:
     x = cli.config._validate_collections_param
     x(None)
     x(["c", "a", "b"])
@@ -224,7 +225,7 @@ def test_validate_collections_param():
     x([["c", None, None]])
 
 
-def test_invalid_implicit_value(read_config):
+def test_invalid_implicit_value(read_config: Any) -> None:
     expected_message = "`implicit` parameter must be 'create' or absent"
     with pytest.raises(exceptions.UserError) as excinfo:
         read_config(
@@ -253,7 +254,7 @@ def test_invalid_implicit_value(read_config):
     assert expected_message in str(excinfo.value)
 
 
-def test_implicit_create_only(read_config):
+def test_implicit_create_only(read_config: Any) -> None:
     """Test that implicit create works."""
     errors, c = read_config(
         """

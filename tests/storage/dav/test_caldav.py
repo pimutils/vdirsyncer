@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import datetime
 from textwrap import dedent
+from typing import Any
 
 import aiohttp
 import aiostream
@@ -24,11 +25,13 @@ class TestCalDAVStorage(DAVStorageTests):
     storage_class = CalDAVStorage
 
     @pytest.fixture(params=["VTODO", "VEVENT"])
-    def item_type(self, request):
+    def item_type(self, request: Any) -> Any:
         return request.param
 
     @pytest.mark.asyncio
-    async def test_doesnt_accept_vcard(self, item_type, get_storage_args):
+    async def test_doesnt_accept_vcard(
+        self, item_type: Any, get_storage_args: Any
+    ) -> None:
         s = self.storage_class(item_types=(item_type,), **await get_storage_args())
 
         # Most storages hard-fail, but xandikos doesn't.
@@ -52,13 +55,13 @@ class TestCalDAVStorage(DAVStorageTests):
     @pytest.mark.xfail(dav_server == "baikal", reason="Baikal returns 500.")
     @pytest.mark.asyncio
     async def test_item_types_performance(
-        self, get_storage_args, arg, calls_num, monkeypatch
-    ):
+        self, get_storage_args: Any, arg: Any, calls_num: Any, monkeypatch: Any
+    ) -> None:
         s = self.storage_class(item_types=arg, **await get_storage_args())
         old_parse = s._parse_prop_responses
-        calls = []
+        calls: list[None] = []
 
-        def new_parse(*a, **kw):
+        def new_parse(*a: Any, **kw: Any) -> Any:
             calls.append(None)
             return old_parse(*a, **kw)
 
@@ -70,7 +73,7 @@ class TestCalDAVStorage(DAVStorageTests):
         dav_server == "radicale", reason="Radicale doesn't support timeranges."
     )
     @pytest.mark.asyncio
-    async def test_timerange_correctness(self, get_storage_args):
+    async def test_timerange_correctness(self, get_storage_args: Any) -> None:
         start_date = datetime.datetime(2013, 9, 10)
         end_date = datetime.datetime(2013, 9, 13)
         s = self.storage_class(
@@ -139,7 +142,9 @@ class TestCalDAVStorage(DAVStorageTests):
         assert actual_href == expected_href
 
     @pytest.mark.asyncio
-    async def test_invalid_resource(self, monkeypatch, get_storage_args):
+    async def test_invalid_resource(
+        self, monkeypatch: Any, get_storage_args: Any
+    ) -> None:
         args = await get_storage_args(collection=None)
 
         with aioresponses() as m:
@@ -157,12 +162,12 @@ class TestCalDAVStorage(DAVStorageTests):
     )
     @pytest.mark.xfail(dav_server == "baikal", reason="Baikal returns 500.")
     @pytest.mark.asyncio
-    async def test_item_types_general(self, s):
+    async def test_item_types_general(self, s: Any) -> None:
         event = (await s.upload(format_item(EVENT_TEMPLATE)))[0]
         task = (await s.upload(format_item(TASK_TEMPLATE)))[0]
         s.item_types = ("VTODO", "VEVENT")
 
-        async def hrefs():
+        async def hrefs() -> Any:
             return {href async for href, etag in s.list()}
 
         assert await hrefs() == {event, task}

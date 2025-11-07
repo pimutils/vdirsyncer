@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from textwrap import dedent
+from typing import Any
 
 import hypothesis.strategies as st
 import pytest
@@ -29,7 +30,7 @@ _simple_joined = "\r\n".join(
 )
 
 
-def test_split_collection_simple(benchmark):
+def test_split_collection_simple(benchmark: Any) -> None:
     given = benchmark(lambda: list(vobject.split_collection(_simple_joined)))
 
     assert [normalize_item(item) for item in given] == [
@@ -39,7 +40,7 @@ def test_split_collection_simple(benchmark):
     assert [x.splitlines() for x in given] == [x.splitlines() for x in _simple_split]
 
 
-def test_split_collection_multiple_wrappers(benchmark):
+def test_split_collection_multiple_wrappers(benchmark: Any) -> None:
     joined = "\r\n".join(
         "BEGIN:VADDRESSBOOK\r\n" + x + "\r\nEND:VADDRESSBOOK\r\n" for x in _simple_split
     )
@@ -52,18 +53,17 @@ def test_split_collection_multiple_wrappers(benchmark):
     assert [x.splitlines() for x in given] == [x.splitlines() for x in _simple_split]
 
 
-def test_join_collection_simple(benchmark):
-    given = benchmark(lambda: vobject.join_collection(_simple_split))
+def test_join_collection_simple(benchmark: Any) -> None:
+    given = benchmark(lambda: vobject.join_collection(iter(_simple_split)))
     assert normalize_item(given) == normalize_item(_simple_joined)
     assert given.splitlines() == _simple_joined.splitlines()
 
 
-def test_join_collection_vevents(benchmark):
+def test_join_collection_vevents(benchmark: Any) -> None:
     actual = benchmark(
         lambda: vobject.join_collection(
-            [
-                dedent(
-                    """
+            dedent(
+                """
             BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:HUEHUE
@@ -75,9 +75,8 @@ def test_join_collection_vevents(benchmark):
             END:VEVENT
             END:VCALENDAR
          """
-                ).format(i)
-                for i in range(3)
-            ]
+            ).format(i)
+            for i in range(3)
         )
     )
 
@@ -105,7 +104,7 @@ def test_join_collection_vevents(benchmark):
     assert actual.splitlines() == expected.splitlines()
 
 
-def test_split_collection_timezones():
+def test_split_collection_timezones() -> None:
     items = [
         BARE_EVENT_TEMPLATE.format(r=123, uid=123),
         BARE_EVENT_TEMPLATE.format(r=345, uid=345),
@@ -137,23 +136,26 @@ def test_split_collection_timezones():
     assert given == expected
 
 
-def test_split_contacts():
+def test_split_contacts() -> None:
     bare = "\r\n".join([VCARD_TEMPLATE.format(r=x, uid=x) for x in range(4)])
     with_wrapper = "BEGIN:VADDRESSBOOK\r\n" + bare + "\nEND:VADDRESSBOOK\r\n"
 
     for _ in (bare, with_wrapper):
         split = list(vobject.split_collection(bare))
         assert len(split) == 4
-        assert vobject.join_collection(split).splitlines() == with_wrapper.splitlines()
+        assert (
+            vobject.join_collection(iter(split)).splitlines()
+            == with_wrapper.splitlines()
+        )
 
 
-def test_hash_item():
+def test_hash_item() -> None:
     a = EVENT_TEMPLATE.format(r=1, uid=1)
     b = "\n".join(line for line in a.splitlines() if "PRODID" not in line)
     assert vobject.hash_item(a) == vobject.hash_item(b)
 
 
-def test_multiline_uid(benchmark):
+def test_multiline_uid(benchmark: Any) -> None:
     a = "BEGIN:FOO\r\nUID:123456789abcd\r\n efgh\r\nEND:FOO\r\n"
     assert benchmark(lambda: vobject.Item(a).uid) == "123456789abcdefgh"
 
@@ -199,7 +201,7 @@ complex_uid_item = dedent(
 ).strip()
 
 
-def test_multiline_uid_complex(benchmark):
+def test_multiline_uid_complex(benchmark: Any) -> None:
     assert benchmark(lambda: vobject.Item(complex_uid_item).uid) == (
         "040000008200E00074C5B7101A82E008000000005"
         "0AAABEEF50DCF001000000062548482FA830A46B9"
@@ -207,8 +209,8 @@ def test_multiline_uid_complex(benchmark):
     )
 
 
-def test_replace_multiline_uid(benchmark):
-    def inner():
+def test_replace_multiline_uid(benchmark: Any) -> None:
+    def inner() -> Any:
         return vobject.Item(complex_uid_item).with_uid("a").uid
 
     assert benchmark(inner) == "a"
@@ -218,7 +220,7 @@ def test_replace_multiline_uid(benchmark):
     "template", [EVENT_TEMPLATE, EVENT_WITH_TIMEZONE_TEMPLATE, VCARD_TEMPLATE]
 )
 @given(uid=st.one_of(st.none(), uid_strategy))
-def test_replace_uid(template, uid):
+def test_replace_uid(template: Any, uid: Any) -> None:
     item = vobject.Item(template.format(r=123, uid=123)).with_uid(uid)
     assert item.uid == uid
     if uid:
@@ -227,7 +229,7 @@ def test_replace_uid(template, uid):
         assert "\nUID:" not in item.raw
 
 
-def test_broken_item():
+def test_broken_item() -> None:
     with pytest.raises(ValueError) as excinfo:
         vobject._Component.parse("END:FOO")
 
@@ -237,7 +239,7 @@ def test_broken_item():
     assert item.parsed is None
 
 
-def test_mismatched_end():
+def test_mismatched_end() -> None:
     with pytest.raises(ValueError) as excinfo:
         vobject._Component.parse(
             [
@@ -249,7 +251,7 @@ def test_mismatched_end():
     assert "Got END:BAR, expected END:FOO at line 2" in str(excinfo.value)
 
 
-def test_missing_end():
+def test_missing_end() -> None:
     with pytest.raises(ValueError) as excinfo:
         vobject._Component.parse(
             [
@@ -262,7 +264,7 @@ def test_missing_end():
     assert "Missing END for component(s): FOO" in str(excinfo.value)
 
 
-def test_multiple_items():
+def test_multiple_items() -> None:
     with pytest.raises(ValueError) as excinfo:
         vobject._Component.parse(
             [
@@ -275,7 +277,7 @@ def test_multiple_items():
 
     assert "Found 2 components, expected one" in str(excinfo.value)
 
-    c1, c2 = vobject._Component.parse(
+    components = vobject._Component.parse(
         [
             "BEGIN:FOO",
             "END:FOO",
@@ -284,14 +286,18 @@ def test_multiple_items():
         ],
         multiple=True,
     )
+    assert isinstance(components, list)
+    c1, c2 = components
     assert c1.name == c2.name == "FOO"
 
 
-def test_input_types():
+def test_input_types() -> None:
     lines = ["BEGIN:FOO", "FOO:BAR", "END:FOO"]
 
     for x in (lines, "\r\n".join(lines), "\r\n".join(lines).encode("ascii")):
-        c = vobject._Component.parse(x)
+        result = vobject._Component.parse(x)
+        assert not isinstance(result, list), "Expected single component, not list"
+        c = result
         assert c.name == "FOO"
         assert c.props == ["FOO:BAR"]
         assert not c.subcomponents
@@ -310,26 +316,29 @@ class VobjectMachine(RuleBasedStateMachine):
     Parsed = Bundle("parsed")
 
     @rule(target=Unparsed, joined=st.booleans(), encoded=st.booleans())
-    def get_unparsed_lines(self, joined, encoded):
-        rv = ["BEGIN:FOO", "FOO:YES", "END:FOO"]
+    def get_unparsed_lines(self, joined: Any, encoded: Any) -> Any:
+        lines = ["BEGIN:FOO", "FOO:YES", "END:FOO"]
+        rv: list[str] | str | bytes
         if joined:
-            rv = "\r\n".join(rv)
-            if encoded:
-                rv = rv.encode("utf-8")
+            joined_str = "\r\n".join(lines)
+            rv = joined_str.encode("utf-8") if encoded else joined_str
         elif encoded:
             assume(False)
+            rv = b""  # Never reached, but satisfies type checker
+        else:
+            rv = lines
         return rv
 
     @rule(unparsed=Unparsed, target=Parsed)
-    def parse(self, unparsed):
+    def parse(self, unparsed: Any) -> Any:
         return vobject._Component.parse(unparsed)
 
     @rule(parsed=Parsed, target=Unparsed)
-    def serialize(self, parsed):
+    def serialize(self, parsed: Any) -> Any:
         return list(parsed.dump_lines())
 
     @rule(c=Parsed, key=uid_strategy, value=uid_strategy)
-    def add_prop(self, c, key, value):
+    def add_prop(self, c: Any, key: Any, value: Any) -> Any:
         c[key] = value
         assert c[key] == value
         assert key in c
@@ -344,7 +353,7 @@ class VobjectMachine(RuleBasedStateMachine):
         value=uid_strategy,
         params=st.lists(st.tuples(value_strategy, value_strategy)),
     )
-    def add_prop_raw(self, c, key, value, params):
+    def add_prop_raw(self, c: Any, key: Any, value: Any, params: Any) -> Any:
         params_str = ",".join(k + "=" + v for k, v in params)
         c.props.insert(0, f"{key};{params_str}:{value}")
         assert c[key] == value
@@ -352,13 +361,13 @@ class VobjectMachine(RuleBasedStateMachine):
         assert c.get(key) == value
 
     @rule(c=Parsed, sub_c=Parsed)
-    def add_component(self, c, sub_c):
+    def add_component(self, c: Any, sub_c: Any) -> Any:
         assume(sub_c is not c and sub_c not in c)
         c.subcomponents.append(sub_c)
         assert "\r\n".join(sub_c.dump_lines()) in "\r\n".join(c.dump_lines())
 
     @rule(c=Parsed)
-    def sanity_check(self, c):
+    def sanity_check(self, c: Any) -> Any:
         c1 = vobject._Component.parse(c.dump_lines())
         assert c1 == c
 
@@ -366,7 +375,7 @@ class VobjectMachine(RuleBasedStateMachine):
 TestVobjectMachine = VobjectMachine.TestCase
 
 
-def test_dupe_consecutive_keys():
+def test_dupe_consecutive_keys() -> None:
     state = VobjectMachine()
     unparsed_0 = state.get_unparsed_lines(encoded=False, joined=False)
     parsed_0 = state.parse(unparsed=unparsed_0)
@@ -376,7 +385,7 @@ def test_dupe_consecutive_keys():
     state.teardown()
 
 
-def test_component_contains():
+def test_component_contains() -> None:
     item = vobject._Component.parse(["BEGIN:FOO", "FOO:YES", "END:FOO"])
 
     assert "FOO" in item

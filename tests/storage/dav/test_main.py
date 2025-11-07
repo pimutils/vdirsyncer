@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from vdirsyncer.storage.dav import _BAD_XML_CHARS
@@ -8,7 +10,7 @@ from vdirsyncer.storage.dav import _normalize_href
 from vdirsyncer.storage.dav import _parse_xml
 
 
-def test_xml_utilities():
+def test_xml_utilities() -> None:
     x = _parse_xml(
         b"""<?xml version="1.0" encoding="UTF-8" ?>
         <multistatus xmlns="DAV:">
@@ -32,13 +34,15 @@ def test_xml_utilities():
     )
 
     response = x.find("{DAV:}response")
+    assert response is not None
     props = _merge_xml(response.findall("{DAV:}propstat/{DAV:}prop"))
+    assert props is not None
     assert props.find("{DAV:}resourcetype/{DAV:}collection") is not None
     assert props.find("{DAV:}getcontenttype") is not None
 
 
 @pytest.mark.parametrize("char", range(32))
-def test_xml_specialchars(char):
+def test_xml_specialchars(char: Any) -> None:
     x = _parse_xml(
         '<?xml version="1.0" encoding="UTF-8" ?>'
         f"<foo>ye{chr(char)}s\r\n"
@@ -55,5 +59,5 @@ def test_xml_specialchars(char):
         "/dav/calendars/user/testuser/123/UID%253A20210609T084907Z-@synaps-web-54fddfdf7-7kcfm%250A.ics",
     ],
 )
-def test_normalize_href(href):
+def test_normalize_href(href: Any) -> None:
     assert href == _normalize_href("https://example.com", href)

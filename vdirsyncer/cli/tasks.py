@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+from collections.abc import AsyncIterator
+from typing import Any
 
 import aiohttp
 
@@ -20,7 +22,9 @@ from .utils import manage_sync_status
 from .utils import save_status
 
 
-async def prepare_pair(pair_name, collections, config, *, connector):
+async def prepare_pair(
+    pair_name: str, collections: Any, config: Any, *, connector: aiohttp.TCPConnector
+) -> AsyncIterator[tuple[CollectionConfig, Any]]:
     pair = config.get_pair(pair_name)
 
     all_collections = dict(
@@ -45,12 +49,12 @@ async def prepare_pair(pair_name, collections, config, *, connector):
 
 
 async def sync_collection(
-    collection,
-    general,
-    force_delete,
+    collection: CollectionConfig,
+    general: Any,
+    force_delete: bool,
     *,
     connector: aiohttp.TCPConnector,
-):
+) -> None:
     pair = collection.pair
     status_name = get_status_name(pair.name, collection.name)
 
@@ -62,7 +66,7 @@ async def sync_collection(
 
         sync_failed = False
 
-        def error_callback(e):
+        def error_callback(e: Exception) -> None:
             nonlocal sync_failed
             sync_failed = True
             handle_cli_error(status_name, e)
@@ -89,52 +93,57 @@ async def sync_collection(
         raise JobFailed
 
 
-async def discover_collections(pair, **kwargs):
+async def discover_collections(pair: Any, **kwargs: Any) -> None:
     rv = await collections_for_pair(pair=pair, **kwargs)
-    collections = [c for c, (a, b) in rv]
+    collections: list[Any] | None = [c for c, (a, b) in rv]
     if collections == [None]:
         collections = None
     cli_logger.info(f"Saved for {pair.name}: collections = {json.dumps(collections)}")
 
 
 async def repair_collection(
-    config,
-    collection,
-    repair_unsafe_uid,
+    config: Any,
+    collection: str,
+    repair_unsafe_uid: bool,
     *,
     connector: aiohttp.TCPConnector,
-):
+) -> None:
     from vdirsyncer.repair import repair_storage
 
-    storage_name, collection = collection, None
+    storage_name: str
+    collection_name: str | None
+    storage_name, collection_name = collection, None
     if "/" in storage_name:
-        storage_name, collection = storage_name.split("/")
+        storage_name, collection_name = storage_name.split("/")
 
     config = config.get_storage_args(storage_name)
     # If storage type has a slash, ignore it and anything after it.
     storage_type = config["type"].split("/")[0]
 
-    if collection is not None:
+    if collection_name is not None:
         cli_logger.info("Discovering collections (skipping cache).")
         get_discovered = DiscoverResult(config, connector=connector)
         discovered = await get_discovered.get_self()
         for config in discovered.values():
-            if config["collection"] == collection:
+            if config["collection"] == collection_name:
                 break
         else:
             raise exceptions.UserError(
-                f"Couldn't find collection {collection} for storage {storage_name}."
+                f"Couldn't find collection {collection_name} for "
+                f"storage {storage_name}."
             )
 
     config["type"] = storage_type
     storage = await storage_instance_from_config(config, connector=connector)
 
-    cli_logger.info(f"Repairing {storage_name}/{collection}")
+    cli_logger.info(f"Repairing {storage_name}/{collection_name}")
     cli_logger.warning("Make sure no other program is talking to the server.")
     await repair_storage(storage, repair_unsafe_uid=repair_unsafe_uid)
 
 
-async def metasync_collection(collection, general, *, connector: aiohttp.TCPConnector):
+async def metasync_collection(
+    collection: CollectionConfig, general: Any, *, connector: aiohttp.TCPConnector
+) -> None:
     from vdirsyncer.metasync import metasync
 
     pair = collection.pair
@@ -153,12 +162,13 @@ async def metasync_collection(collection, general, *, connector: aiohttp.TCPConn
         a = await storage_instance_from_config(collection.config_a, connector=connector)
         b = await storage_instance_from_config(collection.config_b, connector=connector)
 
+        metadata_keys: list[str] = list(pair.metadata) if pair.metadata else []
         await metasync(
             a,
             b,
             status,
             conflict_resolution=pair.conflict_resolution,
-            keys=pair.metadata,
+            keys=metadata_keys,
         )
     except BaseException:
         handle_cli_error(status_name)

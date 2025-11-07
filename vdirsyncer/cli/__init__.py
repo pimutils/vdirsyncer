@@ -5,6 +5,7 @@ import functools
 import json
 import logging
 import sys
+from typing import Any
 
 import aiohttp
 import click
@@ -21,18 +22,18 @@ click_context_settings = {"help_option_names": ["-h", "--help"]}
 
 
 class AppContext:
-    def __init__(self):
-        self.config = None
-        self.fetched_params = {}
+    def __init__(self) -> None:
+        self.config: Any = None
+        self.fetched_params: dict[Any, Any] = {}
         self.logger = None
 
 
 pass_context = click.make_pass_decorator(AppContext, ensure=True)
 
 
-def catch_errors(f):
+def catch_errors(f: Any) -> Any:
     @functools.wraps(f)
-    def inner(*a, **kw):
+    def inner(*a: Any, **kw: Any) -> None:
         try:
             f(*a, **kw)
         except BaseException:
@@ -50,7 +51,7 @@ def catch_errors(f):
 @click.option("--config", "-c", metavar="FILE", help="Config file to use.")
 @pass_context
 @catch_errors
-def app(ctx, config: str):
+def app(ctx: AppContext, config: str) -> None:
     """
     Synchronize calendars and contacts
     """
@@ -67,15 +68,17 @@ def app(ctx, config: str):
 
         ctx.config = load_config(config)
 
+    assert ctx.config is not None
 
-def collections_arg_callback(ctx, param, value):
+
+def collections_arg_callback(ctx: Any, param: Any, value: Any) -> Any:
     """
     Expand the various CLI shortforms ("pair, pair/collection") to an iterable
     of (pair, collections).
     """
     # XXX: Ugly! pass_context should work everywhere.
     config = ctx.find_object(AppContext).config
-    rv = {}
+    rv: dict[Any, Any] = {}
     for pair_and_collection in value or config.pairs:
         pair, collection = pair_and_collection, None
         if "/" in pair:
@@ -104,7 +107,7 @@ collections_arg = click.argument(
 )
 @pass_context
 @catch_errors
-def sync(ctx, collections, force_delete):
+def sync(ctx: AppContext, collections: Any, force_delete: bool) -> None:
     """
     Synchronize the given collections or pairs. If no arguments are given, all
     will be synchronized.
@@ -128,7 +131,7 @@ def sync(ctx, collections, force_delete):
     from .tasks import prepare_pair
     from .tasks import sync_collection
 
-    async def main(collection_names):
+    async def main(collection_names: Any) -> None:
         async with aiohttp.TCPConnector(limit_per_host=16) as conn:
             tasks = []
             for pair_name, collections in collection_names:
@@ -163,7 +166,7 @@ def sync(ctx, collections, force_delete):
 @collections_arg
 @pass_context
 @catch_errors
-def metasync(ctx, collections):
+def metasync(ctx: AppContext, collections: Any) -> None:
     """
     Synchronize metadata of the given collections or pairs.
 
@@ -172,7 +175,7 @@ def metasync(ctx, collections):
     from .tasks import metasync_collection
     from .tasks import prepare_pair
 
-    async def main(collection_names):
+    async def main(collection_names: Any) -> None:
         async with aiohttp.TCPConnector(limit_per_host=16) as conn:
             for pair_name, collections in collection_names:
                 collections = prepare_pair(
@@ -208,7 +211,7 @@ def metasync(ctx, collections):
 )
 @pass_context
 @catch_errors
-def discover(ctx, pairs, list):
+def discover(ctx: AppContext, pairs: tuple[str, ...], list: bool) -> None:
     """
     Refresh collection cache for the given pairs.
     """
@@ -216,7 +219,8 @@ def discover(ctx, pairs, list):
 
     config = ctx.config
 
-    async def main():
+    async def main() -> None:
+        assert config is not None
         async with aiohttp.TCPConnector(limit_per_host=16) as conn:
             for pair_name in pairs or config.pairs:
                 await discover_collections(
@@ -244,7 +248,7 @@ def discover(ctx, pairs, list):
 )
 @pass_context
 @catch_errors
-def repair(ctx, collection, repair_unsafe_uid):
+def repair(ctx: AppContext, collection: str, repair_unsafe_uid: bool) -> None:
     """
     Repair a given collection.
 
@@ -267,7 +271,7 @@ def repair(ctx, collection, repair_unsafe_uid):
     )
     click.confirm("Do you want to continue?", abort=True)
 
-    async def main():
+    async def main() -> None:
         async with aiohttp.TCPConnector(limit_per_host=16) as conn:
             await repair_collection(
                 ctx.config,
@@ -282,11 +286,12 @@ def repair(ctx, collection, repair_unsafe_uid):
 @app.command()
 @pass_context
 @catch_errors
-def showconfig(ctx: AppContext):
+def showconfig(ctx: AppContext) -> None:
     """Show the current configuration.
 
     This is mostly intended to be used by scripts or other integrations.
     If you need additional information in this dump, please reach out.
     """
+    assert ctx.config is not None
     config = {"storages": list(ctx.config.storages.values())}
     click.echo(json.dumps(config, indent=2))

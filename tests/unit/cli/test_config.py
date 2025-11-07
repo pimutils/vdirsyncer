@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import os
+from typing import Any
 
 from vdirsyncer.cli.config import _resolve_conflict_via_command
 from vdirsyncer.vobject import Item
 
 
-def test_conflict_resolution_command():
-    def check_call(command):
+def test_conflict_resolution_command() -> None:
+    def check_call(command: Any) -> Any:
         command, a_tmp, b_tmp = command
         assert command == os.path.expanduser("~/command")
         with open(a_tmp) as f:

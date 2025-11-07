@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import aiostream
 import pytest
 from aioresponses import CallbackResult
@@ -19,7 +21,7 @@ class CombinedStorage(Storage):
     _repr_attributes = ("url", "path")
     storage_name = "http_and_singlefile"
 
-    def __init__(self, url, path, *, connector, **kwargs):
+    def __init__(self, url: Any, path: Any, *, connector: Any, **kwargs: Any) -> None:
         if kwargs.get("collection") is not None:
             raise ValueError
 
@@ -30,21 +32,21 @@ class CombinedStorage(Storage):
         self._reader._ignore_uids = False
         self._writer = SingleFileStorage(path=path)
 
-    async def list(self, *a, **kw):
+    async def list(self, *a: Any, **kw: Any) -> Any:
         async for item in self._reader.list(*a, **kw):
             yield item
 
-    async def get(self, *a, **kw):
+    async def get(self, *a: Any, **kw: Any) -> Any:
         await aiostream.stream.list(self.list())
         return await self._reader.get(*a, **kw)
 
-    async def upload(self, *a, **kw):
+    async def upload(self, *a: Any, **kw: Any) -> Any:
         return await self._writer.upload(*a, **kw)
 
-    async def update(self, *a, **kw):
+    async def update(self, *a: Any, **kw: Any) -> Any:
         return await self._writer.update(*a, **kw)
 
-    async def delete(self, *a, **kw):
+    async def delete(self, *a: Any, **kw: Any) -> Any:
         return await self._writer.delete(*a, **kw)
 
 
@@ -54,10 +56,10 @@ class TestHttpStorage(StorageTests):
     supports_metadata = False
 
     @pytest.fixture(autouse=True)
-    def setup_tmpdir(self, tmpdir, monkeypatch):
+    def setup_tmpdir(self, tmpdir: Any, monkeypatch: Any) -> Any:
         self.tmpfile = str(tmpdir.ensure("collection.txt"))
 
-        def callback(url, headers, **kwargs):
+        def callback(url: Any, headers: Any, **kwargs: Any) -> Any:
             """Read our tmpfile at request time.
 
             We can't just read this during test setup since the file get written to
@@ -81,8 +83,8 @@ class TestHttpStorage(StorageTests):
             yield
 
     @pytest.fixture
-    def get_storage_args(self, aio_connector):
-        async def inner(collection=None):
+    def get_storage_args(self, aio_connector: Any) -> Any:
+        async def inner(collection: Any = None) -> dict[str, Any]:
             assert collection is None
             return {
                 "url": "http://localhost:123/collection.txt",

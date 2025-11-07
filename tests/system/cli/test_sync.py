@@ -3,11 +3,12 @@ from __future__ import annotations
 import json
 import sys
 from textwrap import dedent
+from typing import Any
 
 import pytest
 
 
-def test_simple_run(tmpdir, runner):
+def test_simple_run(tmpdir: Any, runner: Any) -> None:
     runner.write_with_general(
         dedent(
             """
@@ -44,7 +45,7 @@ def test_simple_run(tmpdir, runner):
     assert tmpdir.join("path_b/haha.txt").read() == "UID:haha"
 
 
-def test_sync_inexistant_pair(tmpdir, runner):
+def test_sync_inexistant_pair(tmpdir: Any, runner: Any) -> None:
     runner.write_with_general("")
 
     result = runner.invoke(["sync", "foo"])
@@ -52,7 +53,7 @@ def test_sync_inexistant_pair(tmpdir, runner):
     assert "pair foo does not exist." in result.output.lower()
 
 
-def test_empty_storage(tmpdir, runner):
+def test_empty_storage(tmpdir: Any, runner: Any) -> None:
     runner.write_with_general(
         dedent(
             """
@@ -94,7 +95,7 @@ def test_empty_storage(tmpdir, runner):
     assert result.exception
 
 
-def test_verbosity(tmpdir, runner):
+def test_verbosity(tmpdir: Any, runner: Any) -> None:
     runner.write_with_general("")
     result = runner.invoke(["--verbosity=HAHA", "sync"])
     assert result.exception
@@ -104,7 +105,7 @@ def test_verbosity(tmpdir, runner):
     )
 
 
-def test_collections_cache_invalidation(tmpdir, runner):
+def test_collections_cache_invalidation(tmpdir: Any, runner: Any) -> None:
     foo = tmpdir.mkdir("foo")
     bar = tmpdir.mkdir("bar")
     for x in "abc":
@@ -188,7 +189,7 @@ def test_collections_cache_invalidation(tmpdir, runner):
     assert rv[0].basename == rv2[0].basename == "itemone.txt"
 
 
-def test_invalid_pairs_as_cli_arg(tmpdir, runner):
+def test_invalid_pairs_as_cli_arg(tmpdir: Any, runner: Any) -> None:
     runner.write_with_general(
         dedent(
             """
@@ -223,8 +224,8 @@ def test_invalid_pairs_as_cli_arg(tmpdir, runner):
     assert 'pair foobar: collection "d" not found' in result.output.lower()
 
 
-def test_multiple_pairs(tmpdir, runner):
-    def get_cfg():
+def test_multiple_pairs(tmpdir: Any, runner: Any) -> None:
+    def get_cfg() -> Any:
         for name_a, name_b in ("foo", "bar"), ("bam", "baz"):
             yield dedent(
                 """
@@ -277,7 +278,7 @@ def test_multiple_pairs(tmpdir, runner):
         ("فلسطين",),
     ],
 )
-def test_create_collections(collections, tmpdir, runner):
+def test_create_collections(collections: Any, tmpdir: Any, runner: Any) -> None:
     runner.write_with_general(
         dedent(
             f"""
@@ -310,7 +311,7 @@ def test_create_collections(collections, tmpdir, runner):
     }
 
 
-def test_ident_conflict(tmpdir, runner):
+def test_ident_conflict(tmpdir: Any, runner: Any) -> None:
     runner.write_with_general(
         dedent(
             f"""
@@ -364,7 +365,7 @@ def test_ident_conflict(tmpdir, runner):
         ("bar", "foo"),
     ],
 )
-def test_unknown_storage(tmpdir, runner, existing, missing):
+def test_unknown_storage(tmpdir: Any, runner: Any, existing: Any, missing: Any) -> None:
     runner.write_with_general(
         dedent(
             f"""
@@ -393,7 +394,7 @@ def test_unknown_storage(tmpdir, runner, existing, missing):
 
 
 @pytest.mark.parametrize("cmd", ["sync", "metasync"])
-def test_no_configured_pairs(tmpdir, runner, cmd):
+def test_no_configured_pairs(tmpdir: Any, runner: Any, cmd: Any) -> None:
     runner.write_with_general("")
 
     result = runner.invoke([cmd])
@@ -405,7 +406,9 @@ def test_no_configured_pairs(tmpdir, runner, cmd):
     ("resolution", "expect_foo", "expect_bar"),
     [(["command", "cp"], "UID:lol\nfööcontent", "UID:lol\nfööcontent")],
 )
-def test_conflict_resolution(tmpdir, runner, resolution, expect_foo, expect_bar):
+def test_conflict_resolution(
+    tmpdir: Any, runner: Any, resolution: Any, expect_foo: Any, expect_bar: Any
+) -> None:
     runner.write_with_general(
         dedent(
             f"""
@@ -446,7 +449,7 @@ def test_conflict_resolution(tmpdir, runner, resolution, expect_foo, expect_bar)
 
 
 @pytest.mark.parametrize("partial_sync", ["error", "ignore", "revert", None])
-def test_partial_sync(tmpdir, runner, partial_sync):
+def test_partial_sync(tmpdir: Any, runner: Any, partial_sync: Any) -> None:
     runner.write_with_general(
         dedent(
             """
@@ -511,7 +514,7 @@ def test_partial_sync(tmpdir, runner, partial_sync):
         assert fooitem.exists()
 
 
-def test_fetch_only_necessary_params(tmpdir, runner):
+def test_fetch_only_necessary_params(tmpdir: Any, runner: Any) -> None:
     fetched_file = tmpdir.join("fetched_flag")
     fetch_script = tmpdir.join("fetch_script")
     fetch_script.write(
@@ -555,7 +558,7 @@ def test_fetch_only_necessary_params(tmpdir, runner):
         )
     )
 
-    def fetched():
+    def fetched() -> Any:
         try:
             fetched_file.remove()
             return True

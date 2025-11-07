@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from . import exceptions
 from .storage.base import normalize_meta_value
@@ -16,25 +17,31 @@ class MetaSyncConflict(MetaSyncError):
     key = None
 
 
-def status_set_key(status, key, value):
+def status_set_key(status: dict[str, Any], key: str, value: Any) -> None:  # noqa: ANN401
     if value is None:
         status.pop(key, None)
     else:
         status[key] = value
 
 
-async def metasync(storage_a, storage_b, status, keys, conflict_resolution=None):
-    async def _a_to_b():
+async def metasync(
+    storage_a: Any,
+    storage_b: Any,
+    status: dict[str, Any],
+    keys: list[str],
+    conflict_resolution: str | None = None,
+) -> None:  # noqa: ANN401
+    async def _a_to_b() -> None:
         logger.info(f"Copying {key} to {storage_b}")
         await storage_b.set_meta(key, a)
         status_set_key(status, key, a)
 
-    async def _b_to_a():
+    async def _b_to_a() -> None:
         logger.info(f"Copying {key} to {storage_a}")
         await storage_a.set_meta(key, b)
         status_set_key(status, key, b)
 
-    async def _resolve_conflict():
+    async def _resolve_conflict() -> None:
         if a == b:
             status_set_key(status, key, a)
         elif conflict_resolution == "a wins":

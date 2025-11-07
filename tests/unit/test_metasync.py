@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from typing import Any
 
 import hypothesis.strategies as st
 import pytest
@@ -18,20 +19,20 @@ from vdirsyncer.storage.memory import MemoryStorage
 
 
 @pytest.mark.asyncio
-async def test_irrelevant_status():
+async def test_irrelevant_status() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
     status = {"foo": "bar"}
 
-    await metasync(a, b, status, keys=())
+    await metasync(a, b, status, keys=[])
     assert not status
 
 
 @pytest.mark.asyncio
-async def test_basic(monkeypatch):
+async def test_basic(monkeypatch: Any) -> None:
     a = MemoryStorage()
     b = MemoryStorage()
-    status = {}
+    status: dict[str, Any] = {}
 
     await a.set_meta("foo", None)
     await metasync(a, b, status, keys=["foo"])
@@ -60,14 +61,14 @@ async def test_basic(monkeypatch):
 
 
 @pytest_asyncio.fixture
-async def conflict_state(request):
+async def conflict_state(request: Any) -> Any:
     a = MemoryStorage()
     b = MemoryStorage()
-    status = {}
+    status: dict[str, Any] = {}
     await a.set_meta("foo", "bar")
     await b.set_meta("foo", "baz")
 
-    async def do_cleanup():
+    async def do_cleanup() -> Any:
         assert await a.get_meta("foo") == "bar"
         assert await b.get_meta("foo") == "baz"
         assert not status
@@ -78,7 +79,7 @@ async def conflict_state(request):
 
 
 @pytest_asyncio.fixture
-async def test_conflict(conflict_state):
+async def test_conflict(conflict_state: Any) -> None:
     a, b, status = conflict_state
 
     with pytest.raises(MetaSyncConflict):
@@ -86,7 +87,7 @@ async def test_conflict(conflict_state):
 
 
 @pytest.mark.asyncio
-async def test_invalid_conflict_resolution(conflict_state):
+async def test_invalid_conflict_resolution(conflict_state: Any) -> None:
     a, b, status = conflict_state
 
     with pytest.raises(UserError) as excinfo:
@@ -96,9 +97,11 @@ async def test_invalid_conflict_resolution(conflict_state):
 
 
 @pytest.mark.asyncio
-async def test_warning_on_custom_conflict_commands(conflict_state, monkeypatch):
+async def test_warning_on_custom_conflict_commands(
+    conflict_state: Any, monkeypatch: Any
+) -> None:
     a, b, status = conflict_state
-    warnings = []
+    warnings: list[str] = []
     monkeypatch.setattr(logger, "warning", warnings.append)
 
     with pytest.raises(MetaSyncConflict):
@@ -107,17 +110,17 @@ async def test_warning_on_custom_conflict_commands(conflict_state, monkeypatch):
             b,
             status,
             keys=["foo"],
-            conflict_resolution=lambda *a, **kw: None,
+            conflict_resolution=lambda *a, **kw: None,  # type: ignore[arg-type]
         )
 
     assert warnings == ["Custom commands don't work on metasync."]
 
 
 @pytest.mark.asyncio
-async def test_conflict_same_content():
+async def test_conflict_same_content() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
-    status = {}
+    status: dict[str, Any] = {}
     await a.set_meta("foo", "bar")
     await b.set_meta("foo", "bar")
 
@@ -127,10 +130,10 @@ async def test_conflict_same_content():
 
 @pytest.mark.parametrize("wins", "ab")
 @pytest.mark.asyncio
-async def test_conflict_x_wins(wins):
+async def test_conflict_x_wins(wins: Any) -> None:
     a = MemoryStorage()
     b = MemoryStorage()
-    status = {}
+    status: dict[str, Any] = {}
     await a.set_meta("foo", "bar")
     await b.set_meta("foo", "baz")
 
@@ -173,8 +176,10 @@ metadata = st.dictionaries(keys, values)
     conflict_resolution="a wins",
 )
 @pytest.mark.asyncio
-async def test_fuzzing(a, b, status, keys, conflict_resolution):
-    def _get_storage(m, instance_name):
+async def test_fuzzing(
+    a: Any, b: Any, status: Any, keys: Any, conflict_resolution: Any
+) -> None:
+    def _get_storage(m: Any, instance_name: Any) -> Any:
         s = MemoryStorage(instance_name=instance_name)
         s.metadata = m
         return s

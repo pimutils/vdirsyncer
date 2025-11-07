@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import aiostream
 import pytest
 from hypothesis import HealthCheck
@@ -19,7 +21,7 @@ from vdirsyncer.vobject import Item
 # Using the random module for UIDs:
 @settings(suppress_health_check=list(HealthCheck))
 @pytest.mark.asyncio
-async def test_repair_uids(uid):
+async def test_repair_uids(uid: Any) -> None:
     s = MemoryStorage()
     s.items = {
         "one": ("asdf", Item(f"BEGIN:VCARD\nFN:Hans\nUID:{uid}\nEND:VCARD")),
@@ -42,7 +44,7 @@ async def test_repair_uids(uid):
 # Using the random module for UIDs:
 @settings(suppress_health_check=list(HealthCheck))
 @pytest.mark.asyncio
-async def test_repair_unsafe_uids(uid):
+async def test_repair_unsafe_uids(uid: Any) -> None:
     s = MemoryStorage()
     item = Item(f"BEGIN:VCARD\nUID:{uid}\nEND:VCARD")
     href, _etag = await s.upload(item)
@@ -54,21 +56,23 @@ async def test_repair_unsafe_uids(uid):
     new_href = (await aiostream.stream.list(s.list()))[0][0]
     assert href_safe(new_href)
     newuid = (await s.get(new_href))[0].uid
+    assert newuid is not None
     assert href_safe(newuid)
 
 
 @pytest.mark.parametrize(
     ("uid", "href"), [("b@dh0mbr3", "perfectly-fine"), ("perfectly-fine", "b@dh0mbr3")]
 )
-def test_repair_unsafe_href(uid, href):
+def test_repair_unsafe_href(uid: Any, href: Any) -> None:
     item = Item(f"BEGIN:VCARD\nUID:{uid}\nEND:VCARD")
     new_item = repair_item(href, item, set(), True)
     assert new_item.raw != item.raw
     assert new_item.uid != item.uid
+    assert new_item.uid is not None
     assert href_safe(new_item.uid)
 
 
-def test_repair_do_nothing():
+def test_repair_do_nothing() -> None:
     item = Item("BEGIN:VCARD\nUID:justfine\nEND:VCARD")
     assert repair_item("fine", item, set(), True) is item
     assert repair_item("@@@@/fine", item, set(), True) is item
@@ -77,6 +81,6 @@ def test_repair_do_nothing():
 @pytest.mark.parametrize(
     "raw", ["AYYY", "", "@@@@", "BEGIN:VCARD", "BEGIN:FOO\nEND:FOO"]
 )
-def test_repair_irreparable(raw):
+def test_repair_irreparable(raw: Any) -> None:
     with pytest.raises(IrreparableItem):
         repair_item("fine", Item(raw), set(), True)

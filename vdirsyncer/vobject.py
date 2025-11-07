@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Generator
+from collections.abc import Iterator
 from functools import cached_property
 from itertools import chain
 from itertools import tee
+from typing import Any
 
 from .utils import uniq
 
@@ -39,12 +42,15 @@ class Item:
     """Immutable wrapper class for VCALENDAR (VEVENT, VTODO) and
     VCARD"""
 
-    def __init__(self, raw):
+    def __init__(self, raw: str) -> None:
         assert isinstance(raw, str), type(raw)
         self._raw = raw
 
-    def with_uid(self, new_uid):
+    def with_uid(self, new_uid: str | None) -> Item:
         parsed = _Component.parse(self.raw)
+        assert isinstance(
+            parsed, _Component
+        )  # parse() without multiple=True returns single component
         stack = [parsed]
         while stack:
             component = stack.pop()
@@ -58,7 +64,7 @@ class Item:
         return Item("\r\n".join(parsed.dump_lines()))
 
     @cached_property
-    def raw(self):
+    def raw(self) -> str:
         """Raw content of the item, as unicode string.
 
         Vdirsyncer doesn't validate the content in any way.
@@ -66,7 +72,7 @@ class Item:
         return self._raw
 
     @cached_property
-    def uid(self):
+    def uid(self) -> str | None:
         """Global identifier of the item, across storages, doesn't change after
         a modification of the item."""
         # Don't actually parse component, but treat all lines as single
@@ -78,12 +84,12 @@ class Item:
             return None
 
     @cached_property
-    def hash(self):
+    def hash(self) -> str:
         """Hash of self.raw, used for etags."""
         return hash_item(self.raw)
 
     @cached_property
-    def ident(self):
+    def ident(self) -> str:
         """Used for generating hrefs and matching up items during
         synchronization. This is either the UID or the hash of the item's
         content."""
@@ -97,15 +103,21 @@ class Item:
         return self.uid or self.hash
 
     @property
-    def parsed(self):
+    def parsed(self) -> _Component | None:
         """Don't cache because the rv is mutable."""
         try:
-            return _Component.parse(self.raw)
+            result = _Component.parse(self.raw)
+            assert isinstance(
+                result, _Component
+            )  # parse() without multiple=True returns single component
+            return result
         except Exception:
             return None
 
 
-def normalize_item(item, ignore_props=IGNORE_PROPS):
+def normalize_item(
+    item: str | Item, ignore_props: tuple[str, ...] = IGNORE_PROPS
+) -> str:
     """Create syntactically invalid mess that is equal for similar items."""
     if not isinstance(item, Item):
         item = Item(item)
@@ -120,7 +132,7 @@ def normalize_item(item, ignore_props=IGNORE_PROPS):
     return "\r\n".join(filter(bool, (line.strip() for line in x.props)))
 
 
-def _strip_timezones(item):
+def _strip_timezones(item: Item) -> Item:
     parsed = item.parsed
     if not parsed or parsed.name != "VCALENDAR":
         return item
@@ -130,17 +142,19 @@ def _strip_timezones(item):
     return Item("\r\n".join(parsed.dump_lines()))
 
 
-def hash_item(text):
+def hash_item(text: str | Item) -> str:
     return hashlib.sha256(normalize_item(text).encode("utf-8")).hexdigest()
 
 
-def split_collection(text):
+def split_collection(text: str) -> Generator[str, None, None]:
     assert isinstance(text, str)
-    inline = []
-    items = {}  # uid => item
-    ungrouped_items = []
+    inline: list[_Component] = []
+    items: dict[str, _Component] = {}  # uid => item
+    ungrouped_items: list[_Component] = []
 
-    for main in _Component.parse(text, multiple=True):
+    parsed = _Component.parse(text, multiple=True)
+    assert isinstance(parsed, list)  # parse() with multiple=True returns list
+    for main in parsed:
         _split_collection_impl(main, main, inline, items, ungrouped_items)
 
     for item in chain(items.values(), ungrouped_items):
@@ -148,7 +162,13 @@ def split_collection(text):
         yield "\r\n".join(item.dump_lines())
 
 
-def _split_collection_impl(item, main, inline, items, ungrouped_items):
+def _split_collection_impl(
+    item: _Component,
+    main: _Component,
+    inline: list[_Component],
+    items: dict[str, _Component],
+    ungrouped_items: list[_Component],
+) -> None:
     if item.name == "VTIMEZONE":
         inline.append(item)
     elif item.name == "VCARD":
@@ -157,7 +177,7 @@ def _split_collection_impl(item, main, inline, items, ungrouped_items):
         uid = item.get("UID", "")
         wrapper = _Component(main.name, main.props[:], [])
 
-        if uid.strip():
+        if uid and uid.strip():
             wrapper = items.setdefault(uid, wrapper)
         else:
             ungrouped_items.append(wrapper)
@@ -180,18 +200,27 @@ _default_join_wrappers = {
 }
 
 
-def join_collection(items, wrappers=_default_join_wrappers):
+def join_collection(
+    items: Iterator[str], wrappers: dict[str, str] = _default_join_wrappers
+) -> str:
     """
     :param wrappers: {
         item_type: wrapper_type
     }
     """
 
-    items1, items2 = tee((_Component.parse(x) for x in items), 2)
-    _item_type, wrapper_type = _get_item_type(items1, wrappers)
-    wrapper_props = []
+    def _parse_single(x: str) -> _Component:
+        result = _Component.parse(x)
+        assert isinstance(
+            result, _Component
+        )  # parse() without multiple=True returns single component
+        return result
 
-    def _get_item_components(x):
+    items1, items2 = tee((_parse_single(x) for x in items), 2)
+    _item_type, wrapper_type = _get_item_type(items1, wrappers)
+    wrapper_props: list[str] = []
+
+    def _get_item_components(x: _Component) -> list[_Component]:
         if x.name == wrapper_type:
             wrapper_props.extend(x.props)
             return x.subcomponents
@@ -217,7 +246,9 @@ def join_collection(items, wrappers=_default_join_wrappers):
     return "".join(line + "\r\n" for line in lines)
 
 
-def _get_item_type(components, wrappers):
+def _get_item_type(
+    components: Iterator[_Component], wrappers: dict[str, str]
+) -> tuple[str | None, str | None]:
     i = 0
     for component in components:
         i += 1
@@ -252,7 +283,9 @@ class _Component:
     from the similar API, very few parts have been reused.
     """
 
-    def __init__(self, name, lines, subcomponents):
+    def __init__(
+        self, name: str, lines: list[str], subcomponents: list[_Component]
+    ) -> None:
         """
         :param name: The component name.
         :param lines: The component's own properties, as list of lines
@@ -264,7 +297,9 @@ class _Component:
         self.subcomponents = subcomponents
 
     @classmethod
-    def parse(cls, lines, multiple=False):
+    def parse(
+        cls, lines: bytes | str | list[str], multiple: bool = False
+    ) -> _Component | list[_Component]:
         if isinstance(lines, bytes):
             lines = lines.decode("utf-8")
         if isinstance(lines, str):
@@ -306,14 +341,14 @@ class _Component:
             raise ValueError(f"Found {len(rv)} components, expected one.")
         return rv[0]
 
-    def dump_lines(self):
+    def dump_lines(self) -> Generator[str, None, None]:
         yield f"BEGIN:{self.name}"
         yield from self.props
         for c in self.subcomponents:
             yield from c.dump_lines()
         yield f"END:{self.name}"
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: str) -> None:
         prefix = (f"{key}:", f"{key};")
         new_lines = []
         lineiter = iter(self.props)
@@ -332,14 +367,14 @@ class _Component:
 
         self.props = new_lines
 
-    def __setitem__(self, key, val):
+    def __setitem__(self, key: str, val: str) -> None:
         assert isinstance(val, str)
         assert "\n" not in val
         del self[key]
         line = f"{key}:{val}"
         self.props.append(line)
 
-    def __contains__(self, obj):
+    def __contains__(self, obj: Any) -> bool:  # noqa: ANN401
         if isinstance(obj, type(self)):
             return obj not in self.subcomponents and not any(
                 obj in x for x in self.subcomponents
@@ -348,7 +383,7 @@ class _Component:
             return self.get(obj, None) is not None
         raise ValueError(obj)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> str:
         prefix_without_params = f"{key}:"
         prefix_with_params = f"{key};"
         iterlines = iter(self.props)
@@ -370,13 +405,13 @@ class _Component:
 
         return rv
 
-    def get(self, key, default=None):
+    def get(self, key: str, default: str | None = None) -> str | None:
         try:
             return self[key]
         except KeyError:
             return default
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return (
             isinstance(other, type(self))
             and self.name == other.name

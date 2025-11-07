@@ -6,6 +6,9 @@ from __future__ import annotations
 
 import logging
 import os
+from collections.abc import AsyncIterator
+from collections.abc import Callable
+from typing import Any
 
 import aiohttp
 import click_log
@@ -17,7 +20,7 @@ from hypothesis import settings
 
 
 @pytest.fixture(autouse=True)
-def setup_logging():
+def setup_logging() -> None:
     click_log.basic_config("vdirsyncer").setLevel(logging.DEBUG)
 
 
@@ -26,7 +29,7 @@ try:
 except ImportError:
 
     @pytest.fixture
-    def benchmark():
+    def benchmark() -> Callable[[Callable[[], Any]], Any]:
         return lambda x: x()
 
 else:
@@ -59,12 +62,12 @@ else:
 
 
 @pytest_asyncio.fixture
-async def aio_session():
+async def aio_session() -> AsyncIterator[aiohttp.ClientSession]:
     async with aiohttp.ClientSession() as session:
         yield session
 
 
 @pytest_asyncio.fixture
-async def aio_connector():
+async def aio_connector() -> AsyncIterator[aiohttp.TCPConnector]:
     async with aiohttp.TCPConnector(limit_per_host=16) as conn:
         yield conn

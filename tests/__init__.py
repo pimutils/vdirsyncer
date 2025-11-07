@@ -4,6 +4,8 @@ Test suite for vdirsyncer.
 
 from __future__ import annotations
 
+from typing import Any
+
 import hypothesis.strategies as st
 import urllib3.exceptions
 
@@ -12,11 +14,11 @@ from vdirsyncer.vobject import normalize_item
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-def blow_up(*a, **kw):
+def blow_up(*a: Any, **kw: Any) -> None:
     raise AssertionError("Did not expect to be called.")
 
 
-def assert_item_equals(a, b):
+def assert_item_equals(a: str, b: str) -> None:
     assert normalize_item(a) == normalize_item(b)
 
 

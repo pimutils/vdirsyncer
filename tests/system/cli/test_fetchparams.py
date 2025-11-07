@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from textwrap import dedent
+from typing import Any
 
 
-def test_get_password_from_command(tmpdir, runner):
+def test_get_password_from_command(tmpdir: Any, runner: Any) -> None:
     runner.write_with_general(
         dedent(
             f"""

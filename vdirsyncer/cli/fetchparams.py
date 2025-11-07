@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
+from typing import Callable
 
 import click
 
@@ -15,7 +17,7 @@ SUFFIX = ".fetch"
 logger = logging.getLogger(__name__)
 
 
-def expand_fetch_params(config):
+def expand_fetch_params(config: dict[str, Any]) -> dict[str, Any]:
     config = dict(config)
     for key in list(config):
         if not key.endswith(SUFFIX):
@@ -31,7 +33,7 @@ def expand_fetch_params(config):
 
 
 @synchronized()
-def _fetch_value(opts, key):
+def _fetch_value(opts: Any, key: str) -> str:
     if not isinstance(opts, list):
         raise ValueError(f"Invalid value for {key}: Expected a list, found {opts!r}.")
     if not opts:
@@ -74,7 +76,7 @@ def _fetch_value(opts, key):
         return rv
 
 
-def _strategy_command(*command: str, shell: bool = False):
+def _strategy_command(*command: str, shell: bool = False) -> str:
     """Execute a user-specified command and return its output."""
     import subprocess
 
@@ -91,16 +93,16 @@ def _strategy_command(*command: str, shell: bool = False):
         raise exceptions.UserError(f"Failed to execute command: {cmd}\n{e!s}")
 
 
-def _strategy_shell(*command: str):
+def _strategy_shell(*command: str) -> str:
     """Execute a user-specified command string in a shell and return its output."""
     return _strategy_command(*command, shell=True)
 
 
-def _strategy_prompt(text):
+def _strategy_prompt(text: str) -> str:
     return click.prompt(text, hide_input=True)
 
 
-STRATEGIES = {
+STRATEGIES: dict[str, Callable[..., str]] = {
     "command": _strategy_command,
     "shell": _strategy_shell,
     "prompt": _strategy_prompt,

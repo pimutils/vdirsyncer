@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import aiohttp
 import click_log
@@ -13,12 +14,12 @@ from vdirsyncer import utils
 
 
 @pytest.fixture(autouse=True)
-def no_debug_output(request):
+def no_debug_output(request: Any) -> Any:
     logger = click_log.basic_config("vdirsyncer")
     logger.setLevel(logging.WARNING)
 
 
-def test_get_storage_init_args():
+def test_get_storage_init_args() -> None:
     from vdirsyncer.storage.memory import MemoryStorage
 
     all, required = utils.get_storage_init_args(MemoryStorage)
@@ -27,7 +28,7 @@ def test_get_storage_init_args():
 
 
 @pytest.mark.asyncio
-async def test_request_ssl():
+async def test_request_ssl() -> None:
     async with aiohttp.ClientSession() as session:
         with pytest.raises(
             aiohttp.ClientConnectorCertificateError,
@@ -42,7 +43,7 @@ async def test_request_ssl():
 
 @pytest.mark.xfail(reason="feature not implemented")
 @pytest.mark.asyncio
-async def test_request_unsafe_ssl():
+async def test_request_unsafe_ssl() -> None:
     async with aiohttp.ClientSession() as session:
         await http.request(
             "GET",
@@ -52,18 +53,18 @@ async def test_request_unsafe_ssl():
         )
 
 
-def fingerprint_of_cert(cert, hash=hashes.SHA256) -> str:
+def fingerprint_of_cert(cert: Any, hash: Any = hashes.SHA256) -> str:
     return x509.load_pem_x509_certificate(cert.bytes()).fingerprint(hash()).hex()
 
 
 @pytest.mark.parametrize("hash_algorithm", [hashes.SHA256])
 @pytest.mark.asyncio
 async def test_request_ssl_leaf_fingerprint(
-    httpserver,
-    localhost_cert,
-    hash_algorithm,
-    aio_session,
-):
+    httpserver: Any,
+    localhost_cert: Any,
+    hash_algorithm: Any,
+    aio_session: Any,
+) -> None:
     fingerprint = fingerprint_of_cert(localhost_cert.cert_chain_pems[0], hash_algorithm)
     bogus = "".join(reversed(fingerprint))
 
@@ -82,7 +83,9 @@ async def test_request_ssl_leaf_fingerprint(
 @pytest.mark.xfail(reason="Not implemented")
 @pytest.mark.parametrize("hash_algorithm", [hashes.SHA256])
 @pytest.mark.asyncio
-async def test_request_ssl_ca_fingerprints(httpserver, ca, hash_algorithm, aio_session):
+async def test_request_ssl_ca_fingerprints(
+    httpserver: Any, ca: Any, hash_algorithm: Any, aio_session: Any
+) -> None:
     fingerprint = fingerprint_of_cert(ca.cert_pem)
     bogus = "".join(reversed(fingerprint))
 
@@ -108,12 +111,12 @@ async def test_request_ssl_ca_fingerprints(httpserver, ca, hash_algorithm, aio_s
         )
 
 
-def test_open_graphical_browser(monkeypatch):
+def test_open_graphical_browser(monkeypatch: Any) -> None:
     import webbrowser
 
     # Just assert that this internal attribute still exists and behaves the way
     # expected
-    assert webbrowser._tryorder is None
+    assert webbrowser._tryorder is None  # type: ignore[attr-defined]
 
     monkeypatch.setattr("webbrowser._tryorder", [])
 

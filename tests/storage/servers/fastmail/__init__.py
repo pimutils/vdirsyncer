@@ -1,13 +1,19 @@
 from __future__ import annotations
 
 import os
+from typing import Any
+from typing import ClassVar
 
 import pytest
 
 
 class ServerMixin:
+    storage_class: ClassVar[type[Any]]
+
     @pytest.fixture
-    def get_storage_args(self, slow_create_collection, aio_connector, request):
+    def get_storage_args(
+        self, slow_create_collection: Any, aio_connector: Any, request: Any
+    ) -> Any:
         if (
             "item_type" in request.fixturenames
             and request.getfixturevalue("item_type") == "VTODO"
@@ -16,7 +22,7 @@ class ServerMixin:
             # See https://github.com/pimutils/vdirsyncer/issues/824
             pytest.skip("Fastmail has non-standard VTODO support.")
 
-        async def inner(collection="test"):
+        async def inner(collection: str | None = "test") -> dict[str, Any]:
             args = {
                 "username": os.environ["FASTMAIL_USERNAME"],
                 "password": os.environ["FASTMAIL_PASSWORD"],

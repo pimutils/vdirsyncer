@@ -4,18 +4,20 @@ import contextlib
 import functools
 from abc import ABCMeta
 from abc import abstractmethod
+from collections.abc import AsyncIterator
 from collections.abc import Iterable
+from typing import Any
 
 from vdirsyncer import exceptions
 from vdirsyncer.utils import uniq
 from vdirsyncer.vobject import Item
 
 
-def mutating_storage_method(f):
+def mutating_storage_method(f: Any) -> Any:
     """Wrap a method and fail if the instance is readonly."""
 
     @functools.wraps(f)
-    async def inner(self, *args, **kwargs):
+    async def inner(self: Any, *args: Any, **kwargs: Any) -> Any:
         if self.read_only:
             raise exceptions.ReadOnlyError("This storage is read-only.")
         return await f(self, *args, **kwargs)
@@ -24,12 +26,12 @@ def mutating_storage_method(f):
 
 
 class StorageMeta(ABCMeta):
-    def __init__(cls, name, bases, d):
+    def __init__(cls, name: str, bases: tuple[type, ...], d: dict[str, Any]) -> None:
         """Wrap mutating methods to fail if the storage is readonly."""
 
         for method in ("update", "upload", "delete", "set_meta"):
             setattr(cls, method, mutating_storage_method(getattr(cls, method)))
-        return super().__init__(name, bases, d)
+        super().__init__(name, bases, d)
 
 
 class Storage(metaclass=StorageMeta):
@@ -79,11 +81,11 @@ class Storage(metaclass=StorageMeta):
 
     def __init__(
         self,
-        instance_name=None,
-        read_only=None,
-        no_delete=None,
-        collection=None,
-    ):
+        instance_name: str | None = None,
+        read_only: bool | None = None,
+        no_delete: bool | None = None,
+        collection: str | None = None,
+    ) -> None:
         if read_only is None:
             read_only = self.read_only
         if self.read_only and not read_only:
@@ -102,7 +104,7 @@ class Storage(metaclass=StorageMeta):
         self.collection = collection
 
     @classmethod
-    async def discover(cls, **kwargs):
+    async def discover(cls, **kwargs: Any) -> AsyncIterator[dict[str, Any]]:
         """Discover collections given a basepath or -URL to many collections.
 
         :param **kwargs: Keyword arguments to additionally pass to the storage
@@ -122,7 +124,9 @@ class Storage(metaclass=StorageMeta):
         raise NotImplementedError
 
     @classmethod
-    async def create_collection(cls, collection, **kwargs):
+    async def create_collection(
+        cls, collection: str | None, **kwargs: Any
+    ) -> dict[str, Any]:
         """
         Create the specified collection and return the new arguments.
 
@@ -133,7 +137,7 @@ class Storage(metaclass=StorageMeta):
         """
         raise NotImplementedError
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         try:
             if self.instance_name:
                 return str(self.instance_name)
@@ -144,10 +148,12 @@ class Storage(metaclass=StorageMeta):
         return f"<{self.__class__.__name__}(**{attrs})>"
 
     @abstractmethod
-    async def list(self) -> list[tuple]:
+    async def list(self) -> AsyncIterator[tuple[str, str]]:
         """
-        :returns: list of (href, etag)
+        :returns: async iterator of (href, etag)
         """
+        if False:
+            yield  # Make this an async generator
 
     @abstractmethod
     async def get(self, href: str) -> tuple[Item, str]:
@@ -159,7 +165,9 @@ class Storage(metaclass=StorageMeta):
             be found.
         """
 
-    async def get_multi(self, hrefs: Iterable[str]):
+    async def get_multi(
+        self, hrefs: Iterable[str]
+    ) -> AsyncIterator[tuple[str, Item, str]]:
         """Fetch multiple items. Duplicate hrefs must be ignored.
 
         Functionally similar to :py:meth:`get`, but might bring performance
@@ -174,7 +182,7 @@ class Storage(metaclass=StorageMeta):
             item, etag = await self.get(href)
             yield href, item, etag
 
-    async def has(self, href) -> bool:
+    async def has(self, href: str) -> bool:
         """Check if an item exists by its href."""
         try:
             await self.get(href)
@@ -183,7 +191,7 @@ class Storage(metaclass=StorageMeta):
         else:
             return True
 
-    async def upload(self, item: Item):
+    async def upload(self, item: Item) -> tuple[str, str | None]:
         """Upload a new item.
 
         In cases where the new etag cannot be atomically determined (i.e. in
@@ -198,7 +206,7 @@ class Storage(metaclass=StorageMeta):
         """
         raise NotImplementedError
 
-    async def update(self, href: str, item: Item, etag):
+    async def update(self, href: str, item: Item, etag: str) -> str | None:
         """Update an item.
 
         The etag may be none in some cases, see `upload`.
@@ -211,7 +219,7 @@ class Storage(metaclass=StorageMeta):
         """
         raise NotImplementedError
 
-    async def delete(self, href: str, etag: str):
+    async def delete(self, href: str, etag: str) -> None:
         """Delete an item by href.
 
         :raises: :exc:`vdirsyncer.exceptions.PreconditionFailed` when item has
@@ -220,7 +228,7 @@ class Storage(metaclass=StorageMeta):
         raise NotImplementedError
 
     @contextlib.asynccontextmanager
-    async def at_once(self):
+    async def at_once(self) -> AsyncIterator[None]:
         """A contextmanager that buffers all writes.
 
         Essentially, this::
@@ -249,7 +257,7 @@ class Storage(metaclass=StorageMeta):
         """
         raise NotImplementedError("This storage does not support metadata.")
 
-    async def set_meta(self, key: str, value: str | None):
+    async def set_meta(self, key: str, value: str | None) -> None:
         """Set metadata value for collection/storage.
 
         :param key: The metadata key.
@@ -258,7 +266,7 @@ class Storage(metaclass=StorageMeta):
         raise NotImplementedError("This storage does not support metadata.")
 
 
-def normalize_meta_value(value) -> str | None:
+def normalize_meta_value(value: str | None) -> str | None:
     # `None` is returned by iCloud for empty properties.
     if value is None or value == "None":
         return None

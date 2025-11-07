@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import subprocess
+from typing import Any
 
 import aiostream
 import pytest
@@ -15,8 +16,8 @@ class TestFilesystemStorage(StorageTests):
     storage_class = FilesystemStorage
 
     @pytest.fixture
-    def get_storage_args(self, tmpdir):
-        async def inner(collection="test"):
+    def get_storage_args(self, tmpdir: Any) -> Any:
+        async def inner(collection: Any = "test") -> dict[str, Any]:
             rv = {"path": str(tmpdir), "fileext": ".txt", "collection": collection}
             if collection is not None:
                 rv = await self.storage_class.create_collection(**rv)
@@ -24,14 +25,14 @@ class TestFilesystemStorage(StorageTests):
 
         return inner
 
-    def test_is_not_directory(self, tmpdir):
+    def test_is_not_directory(self, tmpdir: Any) -> None:
         with pytest.raises(OSError):
             f = tmpdir.join("hue")
             f.write("stub")
             self.storage_class(str(tmpdir) + "/hue", ".txt")
 
     @pytest.mark.asyncio
-    async def test_broken_data(self, tmpdir):
+    async def test_broken_data(self, tmpdir: Any) -> None:
         s = self.storage_class(str(tmpdir), ".txt")
 
         class BrokenItem:
@@ -40,11 +41,11 @@ class TestFilesystemStorage(StorageTests):
             ident = uid
 
         with pytest.raises(TypeError):
-            await s.upload(BrokenItem)
+            await s.upload(BrokenItem())  # type: ignore[arg-type]
         assert not tmpdir.listdir()
 
     @pytest.mark.asyncio
-    async def test_ident_with_slash(self, tmpdir):
+    async def test_ident_with_slash(self, tmpdir: Any) -> None:
         s = self.storage_class(str(tmpdir), ".txt")
         await s.upload(Item("UID:a/b/c"))
         (item_file,) = tmpdir.listdir()
@@ -52,7 +53,7 @@ class TestFilesystemStorage(StorageTests):
         assert item_file.isfile()
 
     @pytest.mark.asyncio
-    async def test_ignore_tmp_files(self, tmpdir):
+    async def test_ignore_tmp_files(self, tmpdir: Any) -> None:
         """Test that files with .tmp suffix beside .ics files are ignored."""
         s = self.storage_class(str(tmpdir), ".ics")
         await s.upload(Item("UID:xyzxyz"))
@@ -62,7 +63,7 @@ class TestFilesystemStorage(StorageTests):
         assert len(await aiostream.stream.list(s.list())) == 1
 
     @pytest.mark.asyncio
-    async def test_ignore_tmp_files_empty_fileext(self, tmpdir):
+    async def test_ignore_tmp_files_empty_fileext(self, tmpdir: Any) -> None:
         """Test that files with .tmp suffix are ignored with empty fileext."""
         s = self.storage_class(str(tmpdir), "")
         await s.upload(Item("UID:xyzxyz"))
@@ -73,7 +74,7 @@ class TestFilesystemStorage(StorageTests):
         assert len(await aiostream.stream.list(s.list())) == 1
 
     @pytest.mark.asyncio
-    async def test_ignore_files_typical_backup(self, tmpdir):
+    async def test_ignore_files_typical_backup(self, tmpdir: Any) -> None:
         """Test file-name ignorance with typical backup ending ~."""
         ignorext = "~"  # without dot
 
@@ -86,16 +87,17 @@ class TestFilesystemStorage(StorageTests):
         assert len(await aiostream.stream.list(storage.list())) == 1
 
     @pytest.mark.asyncio
-    async def test_too_long_uid(self, tmpdir):
+    async def test_too_long_uid(self, tmpdir: Any) -> None:
         storage = self.storage_class(str(tmpdir), ".txt")
         item = Item("UID:" + "hue" * 600)
 
         href, _etag = await storage.upload(item)
+        assert item.uid is not None
         assert item.uid not in href
 
     @pytest.mark.asyncio
-    async def test_post_hook_inactive(self, tmpdir, monkeypatch):
-        def check_call_mock(*args, **kwargs):
+    async def test_post_hook_inactive(self, tmpdir: Any, monkeypatch: Any) -> None:
+        def check_call_mock(*args: Any, **kwargs: Any) -> Any:
             raise AssertionError
 
         monkeypatch.setattr(subprocess, "call", check_call_mock)
@@ -104,11 +106,11 @@ class TestFilesystemStorage(StorageTests):
         await s.upload(Item("UID:a/b/c"))
 
     @pytest.mark.asyncio
-    async def test_post_hook_active(self, tmpdir, monkeypatch):
+    async def test_post_hook_active(self, tmpdir: Any, monkeypatch: Any) -> None:
         calls = []
         exe = "foo"
 
-        def check_call_mock(call, *args, **kwargs):
+        def check_call_mock(call: Any, *args: Any, **kwargs: Any) -> Any:
             calls.append(True)
             assert len(call) == 2
             assert call[0] == exe
@@ -120,13 +122,13 @@ class TestFilesystemStorage(StorageTests):
         assert calls
 
     @pytest.mark.asyncio
-    async def test_ignore_git_dirs(self, tmpdir):
+    async def test_ignore_git_dirs(self, tmpdir: Any) -> None:
         tmpdir.mkdir(".git").mkdir("foo")
         tmpdir.mkdir("a")
         tmpdir.mkdir("b")
 
         expected = {"a", "b"}
         actual = {
-            c["collection"] async for c in self.storage_class.discover(str(tmpdir))
+            c["collection"] async for c in self.storage_class.discover(path=str(tmpdir))
         }
         assert actual == expected

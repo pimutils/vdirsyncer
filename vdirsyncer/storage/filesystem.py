@@ -5,6 +5,8 @@ import errno
 import logging
 import os
 import subprocess
+from collections.abc import AsyncIterator
+from typing import Any
 
 from vdirsyncer import exceptions
 from vdirsyncer.utils import atomic_write
@@ -26,14 +28,14 @@ class FilesystemStorage(Storage):
 
     def __init__(
         self,
-        path,
-        fileext,
-        encoding="utf-8",
-        post_hook=None,
-        pre_deletion_hook=None,
-        fileignoreext=".tmp",
-        **kwargs,
-    ):
+        path: str,
+        fileext: str,
+        encoding: str = "utf-8",
+        post_hook: str | None = None,
+        pre_deletion_hook: str | None = None,
+        fileignoreext: str = ".tmp",
+        **kwargs: Any,
+    ) -> None:
         super().__init__(**kwargs)
         path = expand_path(path)
         checkdir(path, create=False)
@@ -45,10 +47,10 @@ class FilesystemStorage(Storage):
         self.pre_deletion_hook = pre_deletion_hook
 
     @classmethod
-    async def discover(cls, path, **kwargs):
+    async def discover(cls, **kwargs: Any) -> AsyncIterator[dict[str, Any]]:
         if kwargs.pop("collection", None) is not None:
             raise TypeError("collection argument must not be given.")
-        path = expand_path(path)
+        path = expand_path(kwargs["path"])
         try:
             collections = os.listdir(path)
         except OSError as e:
@@ -63,13 +65,15 @@ class FilesystemStorage(Storage):
                 yield args
 
     @classmethod
-    def _validate_collection(cls, path):
+    def _validate_collection(cls, path: str) -> bool:
         if not os.path.isdir(path):
             return False
         return not os.path.basename(path).startswith(".")
 
     @classmethod
-    async def create_collection(cls, collection, **kwargs):
+    async def create_collection(
+        cls, collection: str | None, **kwargs: Any
+    ) -> dict[str, Any]:
         kwargs = dict(kwargs)
         path = kwargs["path"]
 
@@ -82,13 +86,13 @@ class FilesystemStorage(Storage):
         kwargs["collection"] = collection
         return kwargs
 
-    def _get_filepath(self, href):
+    def _get_filepath(self, href: str) -> str:
         return os.path.join(self.path, href)
 
-    def _get_href(self, ident):
+    def _get_href(self, ident: str | None) -> str:
         return generate_href(ident) + self.fileext
 
-    async def list(self):
+    async def list(self) -> AsyncIterator[tuple[str, str]]:
         for fname in os.listdir(self.path):
             fpath = os.path.join(self.path, fname)
             if (
@@ -98,7 +102,7 @@ class FilesystemStorage(Storage):
             ):
                 yield fname, get_etag_from_file(fpath)
 
-    async def get(self, href) -> tuple[Item, str]:
+    async def get(self, href: str) -> tuple[Item, str]:
         fpath = self._get_filepath(href)
         try:
             with open(fpath, "rb") as f:
@@ -109,7 +113,7 @@ class FilesystemStorage(Storage):
             else:
                 raise
 
-    async def upload(self, item):
+    async def upload(self, item: Item) -> tuple[str, str]:
         if not isinstance(item.raw, str):
             raise TypeError("item.raw must be a unicode string.")
 
@@ -129,7 +133,7 @@ class FilesystemStorage(Storage):
             self._run_post_hook(fpath)
         return href, etag
 
-    def _upload_impl(self, item, href):
+    def _upload_impl(self, item: Item, href: str) -> tuple[str, str]:
         fpath = self._get_filepath(href)
         try:
             with atomic_write(fpath, mode="wb", overwrite=False) as f:
@@ -141,7 +145,7 @@ class FilesystemStorage(Storage):
             else:
                 raise
 
-    async def update(self, href, item, etag):
+    async def update(self, href: str, item: Item, etag: str) -> str:
         fpath = self._get_filepath(href)
         if not os.path.exists(fpath):
             raise exceptions.NotFoundError(item.uid)
@@ -160,7 +164,7 @@ class FilesystemStorage(Storage):
             self._run_post_hook(fpath)
         return etag
 
-    async def delete(self, href, etag):
+    async def delete(self, href: str, etag: str) -> None:
         fpath = self._get_filepath(href)
         if not os.path.isfile(fpath):
             raise exceptions.NotFoundError(href)
@@ -172,14 +176,16 @@ class FilesystemStorage(Storage):
 
         os.remove(fpath)
 
-    def _run_post_hook(self, fpath):
+    def _run_post_hook(self, fpath: str) -> None:
+        assert self.post_hook is not None
         logger.info(f"Calling post_hook={self.post_hook} with argument={fpath}")
         try:
             subprocess.call([self.post_hook, fpath])
         except OSError as e:
             logger.warning(f"Error executing external hook: {e!s}")
 
-    def _run_pre_deletion_hook(self, fpath):
+    def _run_pre_deletion_hook(self, fpath: str) -> None:
+        assert self.pre_deletion_hook is not None
         logger.info(
             f"Calling pre_deletion_hook={self.pre_deletion_hook} with argument={fpath}"
         )
@@ -188,7 +194,7 @@ class FilesystemStorage(Storage):
         except OSError as e:
             logger.warning(f"Error executing external hook: {e!s}")
 
-    async def get_meta(self, key):
+    async def get_meta(self, key: str) -> str | None:
         fpath = os.path.join(self.path, key)
         try:
             with open(fpath, "rb") as f:
@@ -199,7 +205,7 @@ class FilesystemStorage(Storage):
             else:
                 raise
 
-    async def set_meta(self, key, value):
+    async def set_meta(self, key: str, value: str | None) -> None:
         value = normalize_meta_value(value)
 
         fpath = os.path.join(self.path, key)

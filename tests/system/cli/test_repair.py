@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from textwrap import dedent
+from typing import Any
 
 import pytest
 
 
 @pytest.fixture
-def storage(tmpdir, runner):
+def storage(tmpdir: Any, runner: Any) -> Any:
     runner.write_with_general(
         dedent(
             """
@@ -22,7 +23,7 @@ def storage(tmpdir, runner):
 
 
 @pytest.mark.parametrize("collection", [None, "foocoll"])
-def test_basic(storage, runner, collection):
+def test_basic(storage: Any, runner: Any, collection: Any) -> None:
     if collection is not None:
         storage = storage.mkdir(collection)
         collection_arg = f"foo/{collection}"
@@ -46,7 +47,7 @@ def test_basic(storage, runner, collection):
 
 
 @pytest.mark.parametrize("repair_uids", [None, True, False])
-def test_repair_uids(storage, runner, repair_uids):
+def test_repair_uids(storage: Any, runner: Any, repair_uids: Any) -> None:
     f = storage.join("baduid.txt")
     orig_f = "BEGIN:VCARD\nUID:!!!!!\nEND:VCARD"
     f.write(orig_f)

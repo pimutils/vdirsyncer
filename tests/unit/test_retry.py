@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from typing import Any
 from unittest.mock import AsyncMock
 from unittest.mock import Mock
 
@@ -11,7 +12,7 @@ from vdirsyncer.http import UsageLimitReached
 from vdirsyncer.http import request
 
 
-async def _create_mock_response(status: int, body: str | dict):
+async def _create_mock_response(status: int, body: str | dict) -> Any:
     raw_body = body
     text_body = json.dumps(body) if isinstance(body, dict) else body
 
@@ -47,7 +48,7 @@ async def _create_mock_response(status: int, body: str | dict):
 
 
 @pytest.mark.asyncio
-async def test_request_retry_on_usage_limit():
+async def test_request_retry_on_usage_limit() -> None:
     url = "http://example.com/api"
     max_retries = 5  # As configured in the @retry decorator
 
@@ -76,7 +77,7 @@ async def test_request_retry_on_usage_limit():
 
 
 @pytest.mark.asyncio
-async def test_request_retry_exceeds_max_attempts():
+async def test_request_retry_exceeds_max_attempts() -> None:
     url = "http://example.com/api"
     max_retries = 5  # As configured in the @retry decorator
 
@@ -103,7 +104,7 @@ async def test_request_retry_exceeds_max_attempts():
 
 
 @pytest.mark.asyncio
-async def test_request_no_retry_on_generic_403_json():
+async def test_request_no_retry_on_generic_403_json() -> None:
     url = "http://example.com/api"
 
     mock_session = AsyncMock()
@@ -120,7 +121,7 @@ async def test_request_no_retry_on_generic_403_json():
 
 
 @pytest.mark.asyncio
-async def test_request_no_retry_on_generic_403_text():
+async def test_request_no_retry_on_generic_403_text() -> None:
     url = "http://example.com/api"
 
     mock_session = AsyncMock()

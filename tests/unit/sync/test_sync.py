@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 from copy import deepcopy
+from typing import Any
 
 import aiostream
 import hypothesis.strategies as st
@@ -26,7 +27,7 @@ from vdirsyncer.sync.status import SqliteStatus
 from vdirsyncer.vobject import Item
 
 
-async def sync(a, b, status, *args, **kwargs) -> None:
+async def sync(a: Any, b: Any, status: Any, *args: Any, **kwargs: Any) -> None:
     with contextlib.closing(SqliteStatus(":memory:")) as new_status:
         new_status.load_legacy_status(status)
         await _sync(a, b, new_status, *args, **kwargs)
@@ -34,16 +35,16 @@ async def sync(a, b, status, *args, **kwargs) -> None:
         status.update(new_status.to_legacy_status())
 
 
-def empty_storage(x):
+def empty_storage(x: Any) -> Any:
     return list(x.list()) == []
 
 
-def items(s):
+def items(s: Any) -> Any:
     return {x[1].raw for x in s.items.values()}
 
 
 @pytest.mark.asyncio
-async def test_irrelevant_status():
+async def test_irrelevant_status() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
     status = {"1": ("1", 1234, "1.ics", 2345)}
@@ -54,10 +55,10 @@ async def test_irrelevant_status():
 
 
 @pytest.mark.asyncio
-async def test_missing_status():
+async def test_missing_status() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
-    status = {}
+    status: dict[str, Any] = {}
     item = Item("asdf")
     await a.upload(item)
     await b.upload(item)
@@ -67,11 +68,11 @@ async def test_missing_status():
 
 
 @pytest.mark.asyncio
-async def test_missing_status_and_different_items():
+async def test_missing_status_and_different_items() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
 
-    status = {}
+    status: dict[str, Any] = {}
     item1 = Item("UID:1\nhaha")
     item2 = Item("UID:1\nhoho")
     await a.upload(item1)
@@ -84,12 +85,12 @@ async def test_missing_status_and_different_items():
 
 
 @pytest.mark.asyncio
-async def test_read_only_and_prefetch():
+async def test_read_only_and_prefetch() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
     b.read_only = True
 
-    status = {}
+    status: dict[str, Any] = {}
     item1 = Item("UID:1\nhaha")
     item2 = Item("UID:2\nhoho")
     await a.upload(item1)
@@ -103,10 +104,10 @@ async def test_read_only_and_prefetch():
 
 
 @pytest.mark.asyncio
-async def test_partial_sync_error():
+async def test_partial_sync_error() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
-    status = {}
+    status: dict[str, Any] = {}
 
     await a.upload(Item("UID:0"))
     b.read_only = True
@@ -116,10 +117,10 @@ async def test_partial_sync_error():
 
 
 @pytest.mark.asyncio
-async def test_partial_sync_ignore():
+async def test_partial_sync_ignore() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
-    status = {}
+    status: dict[str, Any] = {}
 
     item0 = Item("UID:0\nhehe")
     await a.upload(item0)
@@ -138,10 +139,10 @@ async def test_partial_sync_ignore():
 
 
 @pytest.mark.asyncio
-async def test_partial_sync_ignore2():
+async def test_partial_sync_ignore2() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
-    status = {}
+    status: dict[str, Any] = {}
 
     href, etag = await a.upload(Item("UID:0"))
     a.read_only = True
@@ -163,10 +164,10 @@ async def test_partial_sync_ignore2():
 
 
 @pytest.mark.asyncio
-async def test_upload_and_update():
+async def test_upload_and_update() -> None:
     a = MemoryStorage(fileext=".a")
     b = MemoryStorage(fileext=".b")
-    status = {}
+    status: dict[str, Any] = {}
 
     item = Item("UID:1")  # new item 1 in a
     await a.upload(item)
@@ -190,10 +191,10 @@ async def test_upload_and_update():
 
 
 @pytest.mark.asyncio
-async def test_deletion():
+async def test_deletion() -> None:
     a = MemoryStorage(fileext=".a")
     b = MemoryStorage(fileext=".b")
-    status = {}
+    status: dict[str, Any] = {}
 
     item = Item("UID:1")
     await a.upload(item)
@@ -213,10 +214,10 @@ async def test_deletion():
 
 
 @pytest.mark.asyncio
-async def test_insert_hash():
+async def test_insert_hash() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
-    status = {}
+    status: dict[str, Any] = {}
 
     item = Item("UID:1")
     href, etag = await a.upload(item)
@@ -232,7 +233,7 @@ async def test_insert_hash():
 
 
 @pytest.mark.asyncio
-async def test_already_synced():
+async def test_already_synced() -> None:
     a = MemoryStorage(fileext=".a")
     b = MemoryStorage(fileext=".b")
     item = Item("UID:1")
@@ -245,7 +246,7 @@ async def test_already_synced():
         )
     }
     old_status = deepcopy(status)
-    a.update = b.update = a.upload = b.upload = lambda *a, **kw: pytest.fail(
+    a.update = b.update = a.upload = b.upload = lambda *a, **kw: pytest.fail(  # type: ignore[method-assign,assignment]
         "Method shouldn't have been called."
     )
 
@@ -257,13 +258,13 @@ async def test_already_synced():
 
 @pytest.mark.parametrize("winning_storage", "ab")
 @pytest.mark.asyncio
-async def test_conflict_resolution_both_etags_new(winning_storage):
+async def test_conflict_resolution_both_etags_new(winning_storage: Any) -> None:
     a = MemoryStorage()
     b = MemoryStorage()
     item = Item("UID:1")
     href_a, etag_a = await a.upload(item)
     href_b, etag_b = await b.upload(item)
-    status = {}
+    status: dict[str, Any] = {}
     await sync(a, b, status)
     assert status
     item_a = Item("UID:1\nitem a")
@@ -279,11 +280,11 @@ async def test_conflict_resolution_both_etags_new(winning_storage):
 
 
 @pytest.mark.asyncio
-async def test_updated_and_deleted():
+async def test_updated_and_deleted() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
     href_a, etag_a = await a.upload(Item("UID:1"))
-    status = {}
+    status: dict[str, Any] = {}
     await sync(a, b, status, force_delete=True)
 
     ((href_b, etag_b),) = await aiostream.stream.list(b.list())
@@ -296,7 +297,7 @@ async def test_updated_and_deleted():
 
 
 @pytest.mark.asyncio
-async def test_conflict_resolution_invalid_mode():
+async def test_conflict_resolution_invalid_mode() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
     item_a = Item("UID:1\nitem a")
@@ -308,7 +309,7 @@ async def test_conflict_resolution_invalid_mode():
 
 
 @pytest.mark.asyncio
-async def test_conflict_resolution_new_etags_without_changes():
+async def test_conflict_resolution_new_etags_without_changes() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
     item = Item("UID:1")
@@ -318,7 +319,10 @@ async def test_conflict_resolution_new_etags_without_changes():
 
     await sync(a, b, status)
 
-    ((ident, (status_a, status_b)),) = status.items()
+    items_list = list(status.items())
+    assert len(items_list) == 1
+    ident, status_tuple = items_list[0]
+    status_a, status_b = status_tuple  # type: ignore[misc]
     assert ident == "1"
     assert status_a["href"] == href_a
     assert status_a["etag"] == etag_a
@@ -327,15 +331,15 @@ async def test_conflict_resolution_new_etags_without_changes():
 
 
 @pytest.mark.asyncio
-async def test_uses_get_multi(monkeypatch):
-    def breakdown(*a, **kw):
+async def test_uses_get_multi(monkeypatch: Any) -> None:
+    def breakdown(*a: Any, **kw: Any) -> Any:
         raise AssertionError("Expected use of get_multi")
 
     get_multi_calls = []
 
     old_get = MemoryStorage.get
 
-    async def get_multi(self, hrefs):
+    async def get_multi(self: Any, hrefs: Any) -> Any:
         hrefs = list(hrefs)
         get_multi_calls.append(hrefs)
         for href in hrefs:
@@ -355,12 +359,12 @@ async def test_uses_get_multi(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_empty_storage_dataloss():
+async def test_empty_storage_dataloss() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
     await a.upload(Item("UID:1"))
     await a.upload(Item("UID:2"))
-    status = {}
+    status: dict[str, Any] = {}
     await sync(a, b, status)
     with pytest.raises(StorageEmpty):
         await sync(MemoryStorage(), b, status)
@@ -370,23 +374,23 @@ async def test_empty_storage_dataloss():
 
 
 @pytest.mark.asyncio
-async def test_no_uids():
+async def test_no_uids() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
     await a.upload(Item("ASDF"))
     await b.upload(Item("FOOBAR"))
-    status = {}
+    status: dict[str, Any] = {}
     await sync(a, b, status)
     assert items(a) == items(b) == {"ASDF", "FOOBAR"}
 
 
 @pytest.mark.asyncio
-async def test_changed_uids():
+async def test_changed_uids() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
     href_a, etag_a = await a.upload(Item("UID:A-ONE"))
     _href_b, _etag_b = await b.upload(Item("UID:B-ONE"))
-    status = {}
+    status: dict[str, Any] = {}
     await sync(a, b, status)
 
     await a.update(href_a, Item("UID:A-TWO"), etag_a)
@@ -394,21 +398,21 @@ async def test_changed_uids():
 
 
 @pytest.mark.asyncio
-async def test_both_readonly():
+async def test_both_readonly() -> None:
     a = MemoryStorage(read_only=True)
     b = MemoryStorage(read_only=True)
     assert a.read_only
     assert b.read_only
-    status = {}
+    status: dict[str, Any] = {}
     with pytest.raises(BothReadOnly):
         await sync(a, b, status)
 
 
 @pytest.mark.asyncio
-async def test_partial_sync_revert():
+async def test_partial_sync_revert() -> None:
     a = MemoryStorage(instance_name="a")
     b = MemoryStorage(instance_name="b")
-    status = {}
+    status: dict[str, Any] = {}
     await a.upload(Item("UID:1"))
     await b.upload(Item("UID:2"))
     b.read_only = True
@@ -441,10 +445,10 @@ async def test_partial_sync_revert():
 
 @pytest.mark.parametrize("sync_inbetween", [True, False])
 @pytest.mark.asyncio
-async def test_ident_conflict(sync_inbetween):
+async def test_ident_conflict(sync_inbetween: Any) -> None:
     a = MemoryStorage()
     b = MemoryStorage()
-    status = {}
+    status: dict[str, Any] = {}
     href_a, etag_a = await a.upload(Item("UID:aaa"))
     href_b, etag_b = await a.upload(Item("UID:bbb"))
     if sync_inbetween:
@@ -458,7 +462,7 @@ async def test_ident_conflict(sync_inbetween):
 
 
 @pytest.mark.asyncio
-async def test_moved_href():
+async def test_moved_href() -> None:
     """
     Concrete application: ppl_ stores contact aliases in filenames, which means
     item's hrefs get changed. Vdirsyncer doesn't synchronize this data, but
@@ -468,7 +472,7 @@ async def test_moved_href():
     """
     a = MemoryStorage()
     b = MemoryStorage()
-    status = {}
+    status: dict[str, Any] = {}
     _href, _etag = await a.upload(Item("UID:haha"))
     await sync(a, b, status)
 
@@ -476,9 +480,9 @@ async def test_moved_href():
 
     # The sync algorithm should prefetch `lol`, see that it's the same ident
     # and not do anything else.
-    a.get_multi = blow_up  # Absolutely no prefetch on A
+    a.get_multi = blow_up  # type: ignore[method-assign,assignment]  # Absolutely no prefetch on A
     # No actual sync actions
-    a.delete = a.update = a.upload = b.delete = b.update = b.upload = blow_up
+    a.delete = a.update = a.upload = b.delete = b.update = b.upload = blow_up  # type: ignore[method-assign,assignment]
 
     await sync(a, b, status)
     assert len(status) == 1
@@ -487,7 +491,7 @@ async def test_moved_href():
     old_status = deepcopy(status)
 
     # Further sync should be a noop. Not even prefetching should occur.
-    b.get_multi = blow_up
+    b.get_multi = blow_up  # type: ignore[method-assign,assignment]
 
     await sync(a, b, status)
     assert old_status == status
@@ -495,7 +499,7 @@ async def test_moved_href():
 
 
 @pytest.mark.asyncio
-async def test_bogus_etag_change():
+async def test_bogus_etag_change() -> None:
     """Assert that sync algorithm is resilient against etag changes if content
     didn\'t change.
 
@@ -504,7 +508,7 @@ async def test_bogus_etag_change():
     """
     a = MemoryStorage()
     b = MemoryStorage()
-    status = {}
+    status: dict[str, Any] = {}
     href_a, etag_a = await a.upload(Item("UID:ASDASD"))
     await sync(a, b, status)
     assert (
@@ -518,7 +522,7 @@ async def test_bogus_etag_change():
     await a.update(href_a, Item("UID:ASDASD"), etag_a)
     await b.update(href_b, Item("UID:ASDASD\nACTUALCHANGE:YES"), etag_b)
 
-    b.delete = b.update = b.upload = blow_up
+    b.delete = b.update = b.upload = blow_up  # type: ignore[method-assign,assignment]
 
     await sync(a, b, status)
     assert len(status) == 1
@@ -526,10 +530,10 @@ async def test_bogus_etag_change():
 
 
 @pytest.mark.asyncio
-async def test_unicode_hrefs():
+async def test_unicode_hrefs() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
-    status = {}
+    status: dict[str, Any] = {}
     _href, _etag = await a.upload(Item("UID:äää"))
     await sync(a, b, status)
 
@@ -538,7 +542,7 @@ class ActionIntentionallyFailed(Exception):
     pass
 
 
-def action_failure(*a, **kw):
+def action_failure(*a: Any, **kw: Any) -> Any:
     raise ActionIntentionallyFailed
 
 
@@ -548,69 +552,69 @@ class SyncMachine(RuleBasedStateMachine):
 
     @rule(target=Storage, flaky_etags=st.booleans(), null_etag_on_upload=st.booleans())
     @pytest.mark.asyncio
-    def newstorage(self, flaky_etags, null_etag_on_upload):
+    def newstorage(self, flaky_etags: Any, null_etag_on_upload: Any) -> Any:
         s = MemoryStorage()
         if flaky_etags:
 
-            async def get(href):
+            async def get(href: Any) -> Any:
                 _old_etag, item = s.items[href]
                 etag = _random_string()
                 s.items[href] = etag, item
                 return item, etag
 
-            s.get = get
+            s.get = get  # type: ignore[method-assign]
 
         if null_etag_on_upload:
             _old_upload = s.upload
             _old_update = s.update
 
-            async def upload(item):
+            async def upload(item: Any) -> Any:
                 return (await _old_upload(item))[0], "NULL"
 
-            async def update(href, item, etag):
+            async def update(href: Any, item: Any, etag: Any) -> Any:
                 return await _old_update(href, item, etag) and "NULL"
 
-            s.upload = upload
-            s.update = update
+            s.upload = upload  # type: ignore[method-assign]
+            s.update = update  # type: ignore[method-assign]
 
         return s
 
     @rule(s=Storage, read_only=st.booleans())
-    def is_read_only(self, s, read_only):
+    def is_read_only(self, s: Any, read_only: Any) -> Any:
         assume(s.read_only != read_only)
         s.read_only = read_only
 
     @rule(s=Storage)
-    def actions_fail(self, s):
+    def actions_fail(self, s: Any) -> Any:
         s.upload = action_failure
         s.update = action_failure
         s.delete = action_failure
 
     @rule(s=Storage)
-    def none_as_etag(self, s):
+    def none_as_etag(self, s: Any) -> Any:
         _old_upload = s.upload
         _old_update = s.update
 
-        async def upload(item):
+        async def upload(item: Any) -> Any:
             return (await _old_upload(item))[0], None
 
-        async def update(href, item, etag):
+        async def update(href: Any, item: Any, etag: Any) -> Any:
             return await _old_update(href, item, etag)
 
         s.upload = upload
         s.update = update
 
     @rule(target=Status)
-    def newstatus(self):
+    def newstatus(self) -> Any:
         return {}
 
     @rule(storage=Storage, uid=uid_strategy, etag=st.text())
-    def upload(self, storage, uid, etag):
+    def upload(self, storage: Any, uid: Any, etag: Any) -> Any:
         item = Item(f"UID:{uid}")
         storage.items[uid] = (etag, item)
 
     @rule(storage=Storage, href=st.text())
-    def delete(self, storage, href):
+    def delete(self, storage: Any, href: Any) -> Any:
         assume(storage.items.pop(href, None))
 
     @rule(
@@ -626,15 +630,15 @@ class SyncMachine(RuleBasedStateMachine):
     )
     def sync(
         self,
-        status,
-        a,
-        b,
-        force_delete,
-        conflict_resolution,
-        with_error_callback,
-        partial_sync,
-    ):
-        async def inner():
+        status: Any,
+        a: Any,
+        b: Any,
+        force_delete: Any,
+        conflict_resolution: Any,
+        with_error_callback: Any,
+        partial_sync: Any,
+    ) -> Any:
+        async def inner() -> Any:
             assume(a is not b)
             old_items_a = items(a)
             old_items_b = items(b)
@@ -642,7 +646,7 @@ class SyncMachine(RuleBasedStateMachine):
             a.instance_name = "a"
             b.instance_name = "b"
 
-            errors = []
+            errors: list[Exception] = []
 
             error_callback = errors.append if with_error_callback else None
 
@@ -698,18 +702,18 @@ TestSyncMachine = SyncMachine.TestCase
 
 @pytest.mark.parametrize("error_callback", [True, False])
 @pytest.mark.asyncio
-async def test_rollback(error_callback):
+async def test_rollback(error_callback: Any) -> None:
     a = MemoryStorage()
     b = MemoryStorage()
-    status = {}
+    status: dict[str, Any] = {}
 
     a.items["0"] = ("", Item("UID:0"))
     b.items["1"] = ("", Item("UID:1"))
 
-    b.upload = b.update = b.delete = action_failure
+    b.upload = b.update = b.delete = action_failure  # type: ignore[method-assign]
 
     if error_callback:
-        errors = []
+        errors: list[Exception] = []
 
         await sync(
             a,
@@ -730,18 +734,18 @@ async def test_rollback(error_callback):
 
 
 @pytest.mark.asyncio
-async def test_duplicate_hrefs():
+async def test_duplicate_hrefs() -> None:
     a = MemoryStorage()
     b = MemoryStorage()
 
-    async def fake_list():
+    async def fake_list() -> Any:
         for item in [("a", "a")] * 3:
             yield item
 
-    a.list = fake_list
+    a.list = fake_list  # type: ignore[method-assign]
     a.items["a"] = ("a", Item("UID:a"))
 
-    status = {}
+    status: dict[str, Any] = {}
     await sync(a, b, status)
     with pytest.raises(AssertionError):
         await sync(a, b, status)

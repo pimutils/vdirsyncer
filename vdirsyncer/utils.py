@@ -6,7 +6,11 @@ import os
 import sys
 import tempfile
 import uuid
+from collections.abc import Generator
+from inspect import FullArgSpec
 from inspect import getfullargspec
+from typing import IO
+from typing import Any
 from typing import Callable
 
 from . import exceptions
@@ -27,7 +31,9 @@ def expand_path(p: str) -> str:
     return os.path.normpath(p)
 
 
-def split_dict(d: dict, f: Callable):
+def split_dict(
+    d: dict[Any, Any], f: Callable[[Any], bool]
+) -> tuple[dict[Any, Any], dict[Any, Any]]:
     """Puts key into first dict if f(key), otherwise in second dict"""
     a = {}
     b = {}
@@ -39,7 +45,7 @@ def split_dict(d: dict, f: Callable):
     return a, b
 
 
-def uniq(s):
+def uniq(s: Any) -> Generator[Any, None, None]:  # noqa: ANN401
     """Filter duplicates while preserving order. ``set`` can almost always be
     used instead of this, but preserving order might prove useful for
     debugging."""
@@ -50,19 +56,19 @@ def uniq(s):
             yield x
 
 
-def get_etag_from_file(f):
+def get_etag_from_file(f: str | IO[Any]) -> str:
     """Get etag from a filepath or file-like object.
 
     This function will flush/sync the file as much as necessary to obtain a
     correct value.
     """
-    if hasattr(f, "read"):
+    if isinstance(f, str):
+        stat = os.stat(f)
+    else:
         f.flush()  # Only this is necessary on Linux
         if sys.platform == "win32":
             os.fsync(f.fileno())  # Apparently necessary on Windows
         stat = os.fstat(f.fileno())
-    else:
-        stat = os.stat(f)
 
     mtime = getattr(stat, "st_mtime_ns", None)
     if mtime is None:
@@ -70,16 +76,19 @@ def get_etag_from_file(f):
     return f"{mtime:.9f};{stat.st_ino}"
 
 
-def get_storage_init_specs(cls, stop_at=object):
+def get_storage_init_specs(
+    cls: type, stop_at: type = object
+) -> tuple[FullArgSpec, ...]:
     if cls is stop_at:
         return ()
 
-    spec = getfullargspec(cls.__init__)
-    traverse_superclass = getattr(cls.__init__, "_traverse_superclass", True)
+    spec = getfullargspec(cls.__init__)  # type: ignore[misc]
+    traverse_superclass = getattr(cls.__init__, "_traverse_superclass", True)  # type: ignore[misc]
     if traverse_superclass:
         if traverse_superclass is True:
             supercls = next(
-                getattr(x.__init__, "__objclass__", x) for x in cls.__mro__[1:]
+                getattr(x.__init__, "__objclass__", x)
+                for x in cls.__mro__[1:]  # type: ignore[misc]
             )
         else:
             supercls = traverse_superclass
@@ -90,7 +99,9 @@ def get_storage_init_specs(cls, stop_at=object):
     return (spec, *superspecs)
 
 
-def get_storage_init_args(cls, stop_at=object):
+def get_storage_init_args(
+    cls: type, stop_at: type = object
+) -> tuple[set[str], set[str]]:
     """
     Get args which are taken during class initialization. Assumes that all
     classes' __init__ calls super().__init__ with the rest of the arguments.
@@ -126,7 +137,7 @@ def checkdir(path: str, create: bool = False, mode: int = 0o750) -> None:
             raise exceptions.CollectionNotFound(f"Directory {path} does not exist.")
 
 
-def checkfile(path, create=False) -> None:
+def checkfile(path: str, create: bool = False) -> None:
     """Check whether ``path`` is a file.
 
     :param create: Whether to create the file's parent directories if they do
@@ -145,11 +156,11 @@ def checkfile(path, create=False) -> None:
             raise exceptions.CollectionNotFound(f"File {path} does not exist.")
 
 
-def href_safe(ident, safe=SAFE_UID_CHARS):
+def href_safe(ident: str, safe: str = SAFE_UID_CHARS) -> bool:
     return not bool(set(ident) - set(safe))
 
 
-def generate_href(ident=None, safe=SAFE_UID_CHARS):
+def generate_href(ident: str | None = None, safe: str = SAFE_UID_CHARS) -> str:
     """
     Generate a safe identifier, suitable for URLs, storage hrefs or UIDs.
 
@@ -161,15 +172,17 @@ def generate_href(ident=None, safe=SAFE_UID_CHARS):
     return ident
 
 
-def synchronized(lock=None):
+def synchronized(
+    lock: Any = None,
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:  # noqa: ANN401
     if lock is None:
         from threading import Lock
 
         lock = Lock()
 
-    def inner(f):
+    def inner(f: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(f)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:  # noqa: ANN401
             with lock:
                 return f(*args, **kwargs)
 
@@ -178,7 +191,7 @@ def synchronized(lock=None):
     return inner
 
 
-def open_graphical_browser(url, new=0, autoraise=True):
+def open_graphical_browser(url: str, new: int = 0, autoraise: bool = True) -> None:
     """Open a graphical web browser.
 
     This is basically like `webbrowser.open`, but without trying to launch CLI
@@ -191,10 +204,11 @@ def open_graphical_browser(url, new=0, autoraise=True):
 
     cli_names = {"www-browser", "links", "links2", "elinks", "lynx", "w3m"}
 
-    if webbrowser._tryorder is None:  # Python 3.8
-        webbrowser.register_standard_browsers()
+    # Accessing webbrowser private attributes for filtering CLI browsers
+    if webbrowser._tryorder is None:  # type: ignore[attr-defined]
+        webbrowser.register_standard_browsers()  # type: ignore[attr-defined]
 
-    for name in webbrowser._tryorder:
+    for name in webbrowser._tryorder:  # type: ignore[attr-defined]
         if name in cli_names:
             continue
 
@@ -206,7 +220,9 @@ def open_graphical_browser(url, new=0, autoraise=True):
 
 
 @contextlib.contextmanager
-def atomic_write(dest, mode="wb", overwrite=False):
+def atomic_write(
+    dest: str, mode: str = "wb", overwrite: bool = False
+) -> Generator[IO[Any], None, None]:
     if "w" not in mode:
         raise RuntimeError("`atomic_write` requires write access")
 

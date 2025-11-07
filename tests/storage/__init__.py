@@ -3,6 +3,8 @@ from __future__ import annotations
 import random
 import textwrap
 import uuid
+from typing import Any
+from typing import ClassVar
 from urllib.parse import quote as urlquote
 from urllib.parse import unquote as urlunquote
 
@@ -20,31 +22,31 @@ from vdirsyncer.storage.base import normalize_meta_value
 from vdirsyncer.vobject import Item
 
 
-def get_server_mixin(server_name):
+def get_server_mixin(server_name: str) -> type[Any]:
     from . import __name__ as base
 
     x = __import__(f"{base}.servers.{server_name}", fromlist=[""])
     return x.ServerMixin
 
 
-def format_item(item_template, uid=None):
+def format_item(item_template: str, uid: str | None = None) -> Item:
     # assert that special chars are handled correctly.
     r = random.random()
     return Item(item_template.format(r=r, uid=uid or r))
 
 
 class StorageTests:
-    storage_class = None
+    storage_class: ClassVar[type[Any] | None] = None
     supports_collections = True
     supports_metadata = True
 
     @pytest.fixture(params=["VEVENT", "VTODO", "VCARD"])
-    def item_type(self, request):
+    def item_type(self, request: Any) -> str:
         """Parametrize with all supported item types."""
         return request.param
 
     @pytest.fixture
-    def get_storage_args(self):
+    def get_storage_args(self) -> Any:
         """
         Return a function with the following properties:
 
@@ -53,12 +55,13 @@ class StorageTests:
         raise NotImplementedError
 
     @pytest_asyncio.fixture
-    async def s(self, get_storage_args):
+    async def s(self, get_storage_args: Any) -> Any:
+        assert self.storage_class is not None
         rv = self.storage_class(**await get_storage_args())
         return rv
 
     @pytest.fixture
-    def get_item(self, item_type):
+    def get_item(self, item_type: str) -> Any:
         template = {
             "VEVENT": EVENT_TEMPLATE,
             "VTODO": TASK_TEMPLATE,
@@ -68,17 +71,17 @@ class StorageTests:
         return lambda **kw: format_item(template, **kw)
 
     @pytest.fixture
-    def requires_collections(self):
+    def requires_collections(self) -> None:
         if not self.supports_collections:
             pytest.skip("This storage does not support collections.")
 
     @pytest.fixture
-    def requires_metadata(self):
+    def requires_metadata(self) -> None:
         if not self.supports_metadata:
             pytest.skip("This storage does not support metadata.")
 
     @pytest.mark.asyncio
-    async def test_generic(self, s, get_item):
+    async def test_generic(self, s: Any, get_item: Any) -> None:
         items = [get_item() for i in range(1, 10)]
         hrefs = []
         for item in items:
@@ -96,11 +99,11 @@ class StorageTests:
             assert etag == etag2
 
     @pytest.mark.asyncio
-    async def test_empty_get_multi(self, s):
+    async def test_empty_get_multi(self, s: Any) -> None:
         assert await aiostream.stream.list(s.get_multi([])) == []
 
     @pytest.mark.asyncio
-    async def test_get_multi_duplicates(self, s, get_item):
+    async def test_get_multi_duplicates(self, s: Any, get_item: Any) -> None:
         href, etag = await s.upload(get_item())
         if etag is None:
             _, etag = await s.get(href)
@@ -109,20 +112,20 @@ class StorageTests:
         assert etag2 == etag
 
     @pytest.mark.asyncio
-    async def test_upload_already_existing(self, s, get_item):
+    async def test_upload_already_existing(self, s: Any, get_item: Any) -> None:
         item = get_item()
         await s.upload(item)
         with pytest.raises(exceptions.PreconditionFailed):
             await s.upload(item)
 
     @pytest.mark.asyncio
-    async def test_upload(self, s, get_item):
+    async def test_upload(self, s: Any, get_item: Any) -> None:
         item = get_item()
         href, _etag = await s.upload(item)
         assert_item_equals((await s.get(href))[0], item)
 
     @pytest.mark.asyncio
-    async def test_update(self, s, get_item):
+    async def test_update(self, s: Any, get_item: Any) -> None:
         item = get_item()
         href, etag = await s.upload(item)
         if etag is None:
@@ -138,13 +141,13 @@ class StorageTests:
         assert_item_equals((await s.get(href))[0], new_item)
 
     @pytest.mark.asyncio
-    async def test_update_nonexisting(self, s, get_item):
+    async def test_update_nonexisting(self, s: Any, get_item: Any) -> None:
         item = get_item()
         with pytest.raises(exceptions.PreconditionFailed):
             await s.update("huehue", item, '"123"')
 
     @pytest.mark.asyncio
-    async def test_wrong_etag(self, s, get_item):
+    async def test_wrong_etag(self, s: Any, get_item: Any) -> None:
         item = get_item()
         href, _etag = await s.upload(item)
         with pytest.raises(exceptions.PreconditionFailed):
@@ -153,18 +156,18 @@ class StorageTests:
             await s.delete(href, '"lolnope"')
 
     @pytest.mark.asyncio
-    async def test_delete(self, s, get_item):
+    async def test_delete(self, s: Any, get_item: Any) -> None:
         href, etag = await s.upload(get_item())
         await s.delete(href, etag)
         assert not await aiostream.stream.list(s.list())
 
     @pytest.mark.asyncio
-    async def test_delete_nonexisting(self, s, get_item):
+    async def test_delete_nonexisting(self, s: Any, get_item: Any) -> None:
         with pytest.raises(exceptions.PreconditionFailed):
             await s.delete("1", '"123"')
 
     @pytest.mark.asyncio
-    async def test_list(self, s, get_item):
+    async def test_list(self, s: Any, get_item: Any) -> None:
         assert not await aiostream.stream.list(s.list())
         href, etag = await s.upload(get_item())
         if etag is None:
@@ -172,7 +175,7 @@ class StorageTests:
         assert await aiostream.stream.list(s.list()) == [(href, etag)]
 
     @pytest.mark.asyncio
-    async def test_has(self, s, get_item):
+    async def test_has(self, s: Any, get_item: Any) -> None:
         assert not await s.has("asd")
         href, etag = await s.upload(get_item())
         assert await s.has(href)
@@ -181,7 +184,7 @@ class StorageTests:
         assert not await s.has(href)
 
     @pytest.mark.asyncio
-    async def test_update_others_stay_the_same(self, s, get_item):
+    async def test_update_others_stay_the_same(self, s: Any, get_item: Any) -> None:
         info = {}
         for _ in range(4):
             href, etag = await s.upload(get_item())
@@ -194,18 +197,20 @@ class StorageTests:
         )
         assert {href: etag for href, item, etag in items} == info
 
-    def test_repr(self, s):
+    def test_repr(self, s: Any) -> None:
+        assert self.storage_class is not None
         assert self.storage_class.__name__ in repr(s)
         assert s.instance_name is None
 
     @pytest.mark.asyncio
     async def test_discover(
         self,
-        requires_collections,
-        get_storage_args,
-        get_item,
-        aio_connector,
-    ):
+        requires_collections: Any,
+        get_storage_args: Any,
+        get_item: Any,
+        aio_connector: Any,
+    ) -> None:
+        assert self.storage_class is not None
         collections = set()
         for i in range(1, 5):
             collection = f"test{i}"
@@ -224,15 +229,16 @@ class StorageTests:
     @pytest.mark.asyncio
     async def test_create_collection(
         self,
-        requires_collections,
-        get_storage_args,
-        get_item,
-    ):
+        requires_collections: Any,
+        get_storage_args: Any,
+        get_item: Any,
+    ) -> None:
         if getattr(self, "dav_server", "") in ("icloud", "fastmail", "davical"):
             pytest.skip("Manual cleanup would be necessary.")
         if getattr(self, "dav_server", "") == "radicale":
             pytest.skip("Radicale does not support collection creation")
 
+        assert self.storage_class is not None
         args = await get_storage_args(collection=None)
         args["collection"] = "test"
 
@@ -245,8 +251,9 @@ class StorageTests:
 
     @pytest.mark.asyncio
     async def test_discover_collection_arg(
-        self, requires_collections, get_storage_args
-    ):
+        self, requires_collections: Any, get_storage_args: Any
+    ) -> None:
+        assert self.storage_class is not None
         args = await get_storage_args(collection="test2")
         with pytest.raises(TypeError) as excinfo:
             await aiostream.stream.list(self.storage_class.discover(**args))
@@ -254,7 +261,8 @@ class StorageTests:
         assert "collection argument must not be given" in str(excinfo.value)
 
     @pytest.mark.asyncio
-    async def test_collection_arg(self, get_storage_args):
+    async def test_collection_arg(self, get_storage_args: Any) -> None:
+        assert self.storage_class is not None
         if self.supports_collections:
             s = self.storage_class(**await get_storage_args(collection="test2"))
             # Can't do stronger assertion because of radicale, which needs a
@@ -265,7 +273,8 @@ class StorageTests:
                 self.storage_class(collection="ayy", **await get_storage_args())
 
     @pytest.mark.asyncio
-    async def test_case_sensitive_uids(self, s, get_item):
+    async def test_case_sensitive_uids(self, s: Any, get_item: Any) -> None:
+        assert self.storage_class is not None
         if s.storage_name == "filesystem":
             pytest.skip("Behavior depends on the filesystem.")
 
@@ -278,8 +287,12 @@ class StorageTests:
 
     @pytest.mark.asyncio
     async def test_specialchars(
-        self, monkeypatch, requires_collections, get_storage_args, get_item
-    ):
+        self,
+        monkeypatch: Any,
+        requires_collections: Any,
+        get_storage_args: Any,
+        get_item: Any,
+    ) -> None:
         if getattr(self, "dav_server", "") in ("icloud", "fastmail"):
             pytest.skip("iCloud and FastMail reject this name.")
 
@@ -288,6 +301,7 @@ class StorageTests:
         uid = "test @ foo ät bar град сатану"
         collection = "test @ foo ät bar"
 
+        assert self.storage_class is not None
         s = self.storage_class(**await get_storage_args(collection=collection))
         item = get_item(uid=uid)
 
@@ -306,12 +320,17 @@ class StorageTests:
 
     @pytest.mark.asyncio
     async def test_newline_in_uid(
-        self, monkeypatch, requires_collections, get_storage_args, get_item
-    ):
+        self,
+        monkeypatch: Any,
+        requires_collections: Any,
+        get_storage_args: Any,
+        get_item: Any,
+    ) -> None:
         monkeypatch.setattr("vdirsyncer.utils.generate_href", lambda x: x)
 
         uid = "UID:20210609T084907Z-@synaps-web-54fddfdf7-7kcfm%0A.ics"
 
+        assert self.storage_class is not None
         s = self.storage_class(**await get_storage_args())
         item = get_item(uid=uid)
 
@@ -325,7 +344,7 @@ class StorageTests:
         assert etag2 == etag3
 
     @pytest.mark.asyncio
-    async def test_empty_metadata(self, requires_metadata, s):
+    async def test_empty_metadata(self, requires_metadata: Any, s: Any) -> None:
         if getattr(self, "dav_server", ""):
             pytest.skip()
 
@@ -333,7 +352,7 @@ class StorageTests:
         assert await s.get_meta("displayname") is None
 
     @pytest.mark.asyncio
-    async def test_metadata(self, requires_metadata, s):
+    async def test_metadata(self, requires_metadata: Any, s: Any) -> None:
         if getattr(self, "dav_server", "") == "xandikos":
             pytest.skip("xandikos does not support removing metadata.")
 
@@ -346,7 +365,7 @@ class StorageTests:
             pass
 
     @pytest.mark.asyncio
-    async def test_encoding_metadata(self, requires_metadata, s):
+    async def test_encoding_metadata(self, requires_metadata: Any, s: Any) -> None:
         for x in ("hello world", "hello wörld"):
             await s.set_meta("displayname", x)
             rv = await s.get_meta("displayname")
@@ -367,7 +386,9 @@ class StorageTests:
         ],
     )
     @pytest.mark.asyncio
-    async def test_metadata_normalization(self, requires_metadata, s, value):
+    async def test_metadata_normalization(
+        self, requires_metadata: Any, s: Any, value: str | None
+    ) -> None:
         x = await s.get_meta("displayname")
         assert x == normalize_meta_value(x)
 
@@ -377,7 +398,7 @@ class StorageTests:
             assert await s.get_meta("displayname") == normalize_meta_value(value)
 
     @pytest.mark.asyncio
-    async def test_recurring_events(self, s, item_type):
+    async def test_recurring_events(self, s: Any, item_type: str) -> None:
         if item_type != "VEVENT":
             pytest.skip("This storage instance doesn't support iCalendar.")
 

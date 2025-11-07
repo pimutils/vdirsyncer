@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import random
+from collections.abc import AsyncIterator
+from typing import Any
 
 from vdirsyncer import exceptions
 from vdirsyncer.vobject import Item
@@ -9,7 +11,7 @@ from .base import Storage
 from .base import normalize_meta_value
 
 
-def _random_string():
+def _random_string() -> str:
     return f"{random.random():.9f}"
 
 
@@ -20,29 +22,29 @@ class MemoryStorage(Storage):
     Saves data in RAM, only useful for testing.
     """
 
-    def __init__(self, fileext="", **kwargs):
+    def __init__(self, fileext: str = "", **kwargs: Any) -> None:
         if kwargs.get("collection") is not None:
             raise exceptions.UserError("MemoryStorage does not support collections.")
-        self.items = {}  # href => (etag, item)
-        self.metadata = {}
+        self.items: dict[str, tuple[str, Item]] = {}  # href => (etag, item)
+        self.metadata: dict[str, str | None] = {}
         self.fileext = fileext
         super().__init__(**kwargs)
 
-    def _get_href(self, item):
+    def _get_href(self, item: Item) -> str:
         return item.ident + self.fileext
 
-    async def list(self):
+    async def list(self) -> AsyncIterator[tuple[str, str]]:
         for href, (etag, _item) in self.items.items():
             yield href, etag
 
-    async def get(self, href) -> tuple[Item, str]:
+    async def get(self, href: str) -> tuple[Item, str]:
         etag, item = self.items[href]
         return item, etag
 
-    async def has(self, href):
+    async def has(self, href: str) -> bool:
         return href in self.items
 
-    async def upload(self, item):
+    async def upload(self, item: Item) -> tuple[str, str]:
         href = self._get_href(item)
         if href in self.items:
             raise exceptions.AlreadyExistingError(existing_href=href)
@@ -50,7 +52,7 @@ class MemoryStorage(Storage):
         self.items[href] = (etag, item)
         return href, etag
 
-    async def update(self, href, item, etag):
+    async def update(self, href: str, item: Item, etag: str) -> str:
         if href not in self.items:
             raise exceptions.NotFoundError(href)
         actual_etag, _ = self.items[href]
@@ -61,17 +63,17 @@ class MemoryStorage(Storage):
         self.items[href] = (new_etag, item)
         return new_etag
 
-    async def delete(self, href, etag):
+    async def delete(self, href: str, etag: str) -> None:
         if not await self.has(href):
             raise exceptions.NotFoundError(href)
         if etag != self.items[href][0]:
             raise exceptions.WrongEtagError(etag)
         del self.items[href]
 
-    async def get_meta(self, key):
+    async def get_meta(self, key: str) -> str | None:
         return normalize_meta_value(self.metadata.get(key))
 
-    async def set_meta(self, key, value):
+    async def set_meta(self, key: str, value: str | None) -> None:
         if value is None:
             self.metadata.pop(key, None)
         else:

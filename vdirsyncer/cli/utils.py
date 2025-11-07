@@ -6,6 +6,7 @@ import importlib
 import json
 import os
 import sys
+from collections.abc import Generator
 from typing import Any
 
 import aiohttp
@@ -32,7 +33,7 @@ STATUS_DIR_PERMISSIONS = 0o700
 
 class _StorageIndex:
     def __init__(self) -> None:
-        self._storages: dict[str, str] = {
+        self._storages: dict[str, str | type[Storage]] = {
             "caldav": "vdirsyncer.storage.dav.CalDAVStorage",
             "carddav": "vdirsyncer.storage.dav.CardDAVStorage",
             "filesystem": "vdirsyncer.storage.filesystem.FilesystemStorage",
@@ -42,10 +43,10 @@ class _StorageIndex:
             "google_contacts": "vdirsyncer.storage.google.GoogleContactsStorage",
         }
 
-    def __getitem__(self, name: str) -> Storage:
+    def __getitem__(self, name: str) -> type[Storage]:
         item = self._storages[name]
         if not isinstance(item, str):
-            return item
+            return item  # type: ignore[return-value]
 
         modname, clsname = item.rsplit(".", 1)
         mod = importlib.import_module(modname)
@@ -62,7 +63,9 @@ class JobFailed(RuntimeError):
     pass
 
 
-def handle_cli_error(status_name=None, e=None):
+def handle_cli_error(
+    status_name: str | None = None, e: Exception | None = None
+) -> None:
     """
     Print a useful error message for the current exception.
 
@@ -78,6 +81,7 @@ def handle_cli_error(status_name=None, e=None):
     except exceptions.UserError as e:
         cli_logger.critical(e)
     except StorageEmpty as e:
+        assert e.empty_storage is not None
         cli_logger.error(
             f'{status_name}: Storage "{e.empty_storage.instance_name}" was '
             "completely emptied. If you want to delete ALL entries on BOTH sides,"
@@ -102,6 +106,8 @@ def handle_cli_error(status_name=None, e=None):
             f"Item href on side B: {e.href_b}\n"
         )
     except IdentConflict as e:
+        assert e.hrefs is not None
+        assert e.storage is not None
         cli_logger.error(
             '{status_name}: Storage "{storage.instance_name}" contains '
             "multiple items with the same UID or even content. Vdirsyncer "
@@ -138,10 +144,10 @@ def handle_cli_error(status_name=None, e=None):
             'You probably want to set `collections = ["from a", "from b"]`.'
         )
     except Exception as e:
-        tb = sys.exc_info()[2]
+        tb_exc = sys.exc_info()[2]
         import traceback
 
-        tb = traceback.format_tb(tb)
+        tb = traceback.format_tb(tb_exc)
         if status_name:
             msg = f"Unknown error occurred for {status_name}"
         else:
@@ -209,7 +215,9 @@ def prepare_status_path(path: str) -> None:
 
 
 @contextlib.contextmanager
-def manage_sync_status(base_path: str, pair_name: str, collection_name: str):
+def manage_sync_status(
+    base_path: str, pair_name: str, collection_name: str
+) -> Generator[Any, None, None]:
     path = get_status_path(base_path, pair_name, collection_name, "items")
     status = None
     legacy_status = None
@@ -252,7 +260,9 @@ def save_status(
     os.chmod(path, STATUS_PERMISSIONS)
 
 
-def storage_class_from_config(config):
+def storage_class_from_config(
+    config: dict[str, Any],
+) -> tuple[type[Storage], dict[str, Any]]:
     config = dict(config)
     storage_name = config.pop("type")
     try:
@@ -263,11 +273,11 @@ def storage_class_from_config(config):
 
 
 async def storage_instance_from_config(
-    config,
-    create=True,
+    config: dict[str, Any],
+    create: bool = True,
     *,
     connector: aiohttp.TCPConnector,
-):
+) -> Storage:
     """
     :param config: A configuration dictionary to pass as kwargs to the class
         corresponding to config['type']
@@ -286,7 +296,7 @@ async def storage_instance_from_config(
     except exceptions.CollectionNotFound as e:
         if create:
             config = await handle_collection_not_found(
-                config, config.get("collection", None), e=str(e), implicit_create=True
+                config, config.get("collection"), e=str(e), implicit_create=True
             )
             return await storage_instance_from_config(
                 config,
@@ -295,10 +305,11 @@ async def storage_instance_from_config(
             )
         raise
     except Exception:
-        return handle_storage_init_error(cls, new_config)
+        handle_storage_init_error(cls, new_config)
+        raise  # handle_storage_init_error always raises, but mypy doesn't know that
 
 
-def handle_storage_init_error(cls, config):
+def handle_storage_init_error(cls: type[Storage], config: dict[str, Any]) -> None:
     e = sys.exc_info()[1]
     if not isinstance(e, TypeError) or "__init__" not in repr(e):
         raise
@@ -342,9 +353,12 @@ def assert_permissions(path: str, wanted: int) -> None:
 
 
 async def handle_collection_not_found(
-    config, collection, e=None, implicit_create=False
-):
-    storage_name = config.get("instance_name", None)
+    config: dict[str, Any],
+    collection: Any,
+    e: Any = None,
+    implicit_create: bool = False,
+) -> dict[str, Any]:
+    storage_name = config.get("instance_name")
 
     cli_logger.warning(
         "{}No collection {} found for storage {}.".format(

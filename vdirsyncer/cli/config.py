@@ -23,7 +23,7 @@ GENERAL_REQUIRED = frozenset(["status_path"])
 SECTION_NAME_CHARS = frozenset(chain(string.ascii_letters, string.digits, "_"))
 
 
-def validate_section_name(name, section_type):
+def validate_section_name(name: str, section_type: str) -> None:
     invalid = set(name) - SECTION_NAME_CHARS
     if invalid:
         chars_display = "".join(sorted(SECTION_NAME_CHARS))
@@ -34,7 +34,7 @@ def validate_section_name(name, section_type):
         )
 
 
-def _validate_general_section(general_config: dict[str, str]):
+def _validate_general_section(general_config: dict[str, str]) -> None:
     invalid = set(general_config) - GENERAL_ALL
     missing = GENERAL_REQUIRED - set(general_config)
     problems: list[str] = []
@@ -57,7 +57,7 @@ def _validate_general_section(general_config: dict[str, str]):
         )
 
 
-def _validate_collections_param(collections):
+def _validate_collections_param(collections: Any) -> None:
     if collections is None:
         return
 
@@ -96,7 +96,7 @@ def _validate_collections_param(collections):
             raise ValueError(f"`collections` parameter, position {i}: {e!s}")
 
 
-def _validate_implicit_param(implicit):
+def _validate_implicit_param(implicit: Any) -> None:
     if implicit is None:
         return
 
@@ -105,11 +105,11 @@ def _validate_implicit_param(implicit):
 
 
 class _ConfigReader:
-    def __init__(self, f: IO[Any]):
+    def __init__(self, f: IO[Any]) -> None:
         self._file: IO[Any] = f
         self._parser = c = RawConfigParser()
         c.read_file(f)
-        self._seen_names: set = set()
+        self._seen_names: set[str] = set()
 
         self._general: dict[str, str] = {}
         self._pairs: dict[str, dict[str, str]] = {}
@@ -192,12 +192,12 @@ class Config:
                 raise exceptions.UserError(f"Pair {name}: {e}")
 
     @classmethod
-    def from_fileobject(cls, f: IO[Any]):
+    def from_fileobject(cls, f: IO[Any]) -> Config:
         reader = _ConfigReader(f)
         return cls(*reader.parse())
 
     @classmethod
-    def from_filename_or_environment(cls, fname: str | None = None):
+    def from_filename_or_environment(cls, fname: str | None = None) -> Config:
         if fname is None:
             fname = os.environ.get("VDIRSYNCER_CONFIG", None)
         if fname is None:
@@ -214,7 +214,7 @@ class Config:
         except Exception as e:
             raise exceptions.UserError(f"Error during reading config {fname}: {e}")
 
-    def get_storage_args(self, storage_name: str):
+    def get_storage_args(self, storage_name: str) -> dict[str, Any]:
         try:
             args = self.storages[storage_name]
         except KeyError:
@@ -233,7 +233,7 @@ class Config:
 
 
 class PairConfig:
-    def __init__(self, full_config: Config, name: str, options: dict[str, str]):
+    def __init__(self, full_config: Config, name: str, options: dict[str, str]) -> None:
         self._config: Config = full_config
         self.name: str = name
         self.name_a: str = options.pop("a")
@@ -264,7 +264,7 @@ class PairConfig:
 
     def _process_conflict_resolution_param(
         self, conflict_resolution: str | list[str] | None
-    ):
+    ) -> Any:
         if conflict_resolution in (None, "a wins", "b wins"):
             return conflict_resolution
         if (
@@ -273,7 +273,7 @@ class PairConfig:
             and conflict_resolution[0] == "command"
         ):
 
-            def resolve(a, b):
+            def resolve(a: Any, b: Any) -> Item:
                 a_name = self.config_a["instance_name"]
                 b_name = self.config_b["instance_name"]
                 command = conflict_resolution[1:]
@@ -288,15 +288,15 @@ class PairConfig:
     # unnecessary if the pair is not actually synced.
 
     @cached_property
-    def config_a(self):
+    def config_a(self) -> dict[str, Any]:
         return self._config.get_storage_args(self.name_a)
 
     @cached_property
-    def config_b(self):
+    def config_b(self) -> dict[str, Any]:
         return self._config.get_storage_args(self.name_b)
 
     @cached_property
-    def partial_sync(self):
+    def partial_sync(self) -> str:
         partial_sync = self._partial_sync
         # We need to use UserError here because ValueError is not
         # caught at the time this is expanded.
@@ -327,7 +327,9 @@ class PairConfig:
 
 
 class CollectionConfig:
-    def __init__(self, pair, name: str, config_a, config_b):
+    def __init__(
+        self, pair: PairConfig, name: str, config_a: Any, config_b: Any
+    ) -> None:
         self.pair = pair
         self._config = pair._config
         self.name: str = name
@@ -340,7 +342,7 @@ load_config = Config.from_filename_or_environment
 
 
 def _resolve_conflict_via_command(
-    a, b, command, a_name, b_name, _check_call=None
+    a: Any, b: Any, command: Any, a_name: Any, b_name: Any, _check_call: Any = None
 ) -> Item:
     import shutil
     import tempfile

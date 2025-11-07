@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 import subprocess
 import urllib.parse as urlparse
+from collections.abc import AsyncIterator
+from typing import Any
 
 import aiohttp
 
@@ -24,25 +26,25 @@ class HttpStorage(Storage):
     storage_name = "http"
     read_only = True
     _repr_attributes = ("username", "url")
-    _items = None
+    _items: dict[str, tuple[Item, str]] | None = None
 
     # Required for tests.
     _ignore_uids = True
 
     def __init__(
         self,
-        url,
-        username="",
-        password="",
-        verify=None,
-        auth=None,
-        useragent=USERAGENT,
-        verify_fingerprint=None,
-        auth_cert=None,
-        filter_hook=None,
+        url: str,
+        username: str = "",
+        password: str = "",
+        verify: Any = None,
+        auth: Any = None,
+        useragent: str = USERAGENT,
+        verify_fingerprint: str | None = None,
+        auth_cert: Any = None,
+        filter_hook: str | None = None,
         *,
-        connector,
-        **kwargs,
+        connector: aiohttp.BaseConnector,
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -56,7 +58,7 @@ class HttpStorage(Storage):
 
         ssl = prepare_verify(verify, verify_fingerprint)
         if ssl:
-            self._settings["ssl"] = ssl
+            self._settings["ssl"] = ssl  # type: ignore[assignment]
 
         self.username, self.password = username, password
         self.useragent = useragent
@@ -70,10 +72,11 @@ class HttpStorage(Storage):
         self.url = url
         self.parsed_url = urlparse.urlparse(self.url)
 
-    def _default_headers(self):
+    def _default_headers(self) -> dict[str, str]:
         return {"User-Agent": self.useragent}
 
-    def _run_filter_hook(self, raw_item):
+    def _run_filter_hook(self, raw_item: str) -> str:
+        assert self._filter_hook is not None
         try:
             result = subprocess.run(
                 [self._filter_hook],
@@ -86,7 +89,7 @@ class HttpStorage(Storage):
             logger.warning(f"Error executing external command: {e!s}")
             return raw_item
 
-    async def list(self):
+    async def list(self) -> AsyncIterator[tuple[str, str]]:
         async with aiohttp.ClientSession(
             connector=self.connector,
             connector_owner=False,
@@ -117,7 +120,7 @@ class HttpStorage(Storage):
         for href, (_, etag) in self._items.items():
             yield href, etag
 
-    async def get(self, href) -> tuple[Item, str]:
+    async def get(self, href: str) -> tuple[Item, str]:
         if self._items is None:
             async for _ in self.list():
                 pass

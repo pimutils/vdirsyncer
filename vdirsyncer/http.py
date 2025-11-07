@@ -8,7 +8,9 @@ import re
 from abc import ABC
 from abc import abstractmethod
 from base64 import b64encode
+from ssl import SSLContext
 from ssl import create_default_context
+from typing import Any
 
 import aiohttp
 import requests.auth
@@ -36,19 +38,19 @@ os.environ["NETRC"] = "NUL" if platform.system() == "Windows" else "/dev/null"
 
 
 class AuthMethod(ABC):
-    def __init__(self, username, password):
+    def __init__(self, username: str, password: str) -> None:
         self.username = username
         self.password = password
 
     @abstractmethod
-    def handle_401(self, response):
+    def handle_401(self, response: aiohttp.ClientResponse) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    def get_auth_header(self, method, url):
+    def get_auth_header(self, method: str, url: str) -> str:
         raise NotImplementedError
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, AuthMethod):
             return False
         return (
@@ -59,10 +61,10 @@ class AuthMethod(ABC):
 
 
 class BasicAuthMethod(AuthMethod):
-    def handle_401(self, _response):
+    def handle_401(self, _response: aiohttp.ClientResponse) -> None:
         pass
 
-    def get_auth_header(self, _method, _url):
+    def get_auth_header(self, _method: str, _url: str) -> str:
         auth_str = f"{self.username}:{self.password}"
         return "Basic " + b64encode(auth_str.encode("utf-8")).decode("utf-8")
 
@@ -72,7 +74,7 @@ class DigestAuthMethod(AuthMethod):
     # each request would first require another 'initialization' request.
     _auth_helpers: dict[tuple[str, str], requests.auth.HTTPDigestAuth] = {}
 
-    def __init__(self, username: str, password: str):
+    def __init__(self, username: str, password: str) -> None:
         super().__init__(username, password)
 
         self._auth_helper = self._auth_helpers.get(
@@ -81,10 +83,10 @@ class DigestAuthMethod(AuthMethod):
         self._auth_helpers[(username, password)] = self._auth_helper
 
     @property
-    def auth_helper_vars(self):
-        return self._auth_helper._thread_local
+    def auth_helper_vars(self) -> Any:  # noqa: ANN401
+        return self._auth_helper._thread_local  # type: ignore[attr-defined]
 
-    def handle_401(self, response):
+    def handle_401(self, response: aiohttp.ClientResponse) -> None:
         s_auth = response.headers.get("www-authenticate", "")
 
         if "digest" in s_auth.lower():
@@ -93,7 +95,7 @@ class DigestAuthMethod(AuthMethod):
             pat = re.compile(r"digest ", flags=re.IGNORECASE)
             self.auth_helper_vars.chal = parse_dict_header(pat.sub("", s_auth, count=1))
 
-    def get_auth_header(self, method, url):
+    def get_auth_header(self, method: str, url: str) -> str:
         self._auth_helper.init_per_thread_state()
 
         if not self.auth_helper_vars.chal:
@@ -103,7 +105,9 @@ class DigestAuthMethod(AuthMethod):
         return self._auth_helper.build_digest_header(method, url)
 
 
-def prepare_auth(auth, username, password):
+def prepare_auth(
+    auth: str | None, username: str | None, password: str | None
+) -> AuthMethod | None:
     if username and password:
         if auth == "basic" or auth is None:
             return BasicAuthMethod(username, password)
@@ -127,7 +131,9 @@ def prepare_auth(auth, username, password):
     return None
 
 
-def prepare_verify(verify, verify_fingerprint):
+def prepare_verify(
+    verify: str | bool | None, verify_fingerprint: str | None
+) -> SSLContext | aiohttp.Fingerprint | None:
     if isinstance(verify, str):
         return create_default_context(cafile=expand_path(verify))
     elif verify is not None:
@@ -147,9 +153,13 @@ def prepare_verify(verify, verify_fingerprint):
     return None
 
 
-def prepare_client_cert(cert):
-    if isinstance(cert, (str, bytes)):
+def prepare_client_cert(
+    cert: str | bytes | list[Any] | tuple[Any, ...] | None,
+) -> str | tuple[Any, ...] | None:
+    if isinstance(cert, str):
         cert = expand_path(cert)
+    elif isinstance(cert, bytes):
+        cert = expand_path(cert.decode("utf-8"))
     elif isinstance(cert, list):
         cert = tuple(map(prepare_client_cert, cert))
     return cert
@@ -214,13 +224,13 @@ async def _is_quota_exceeded_google(response: aiohttp.ClientResponse) -> bool:
     reraise=True,
 )
 async def request(
-    method,
-    url,
-    session,
-    auth=None,
-    latin1_fallback=True,
-    **kwargs,
-):
+    method: str,
+    url: str,
+    session: aiohttp.ClientSession,
+    auth: AuthMethod | None = None,
+    latin1_fallback: bool = True,
+    **kwargs: Any,  # noqa: ANN401
+) -> aiohttp.ClientResponse:
     """Wrapper method for requests, to ease logging and mocking as well as to
     support auth methods currently unsupported by aiohttp.
 
@@ -326,7 +336,7 @@ async def request(
     return response
 
 
-def _fix_redirects(r, *args, **kwargs):
+def _fix_redirects(r: Any, *args: Any, **kwargs: Any) -> None:  # noqa: ANN401
     """
     Requests discards of the body content when it is following a redirect that
     is not a 307 or 308. We never want that to happen.

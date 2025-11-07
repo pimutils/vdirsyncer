@@ -3,7 +3,7 @@ from __future__ import annotations
 from vdirsyncer import exceptions
 
 
-def test_user_error_problems():
+def test_user_error_problems() -> None:
     e = exceptions.UserError(
         "A few problems occurred",
         problems=["Problem one", "Problem two", "Problem three"],

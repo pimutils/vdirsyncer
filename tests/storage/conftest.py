@@ -5,6 +5,9 @@ import contextlib
 import subprocess
 import time
 import uuid
+from collections.abc import AsyncGenerator
+from collections.abc import Iterator
+from typing import Any
 
 import aiostream
 import pytest
@@ -12,7 +15,7 @@ import pytest_asyncio
 import requests
 
 
-def wait_for_container(url):
+def wait_for_container(url: str) -> None:
     """Wait for a container to initialise.
 
     Polls a URL every 100ms until the server responds.
@@ -38,7 +41,9 @@ def wait_for_container(url):
 
 
 @contextlib.contextmanager
-def dockerised_server(name, container_port, exposed_port):
+def dockerised_server(
+    name: str, container_port: str, exposed_port: str
+) -> Iterator[str]:
     """Run a dockerised DAV server as a contenxt manager."""
     container_id = None
     url = f"http://127.0.0.1:{exposed_port}/"
@@ -68,25 +73,27 @@ def dockerised_server(name, container_port, exposed_port):
 
 
 @pytest.fixture(scope="session")
-def baikal_server():
+def baikal_server() -> Iterator[None]:
     with dockerised_server("baikal", "80", "8002"):
         yield
 
 
 @pytest.fixture(scope="session")
-def radicale_server():
+def radicale_server() -> Iterator[None]:
     with dockerised_server("radicale", "8001", "8001"):
         yield
 
 
 @pytest.fixture(scope="session")
-def xandikos_server():
+def xandikos_server() -> Iterator[None]:
     with dockerised_server("xandikos", "8000", "8000"):
         yield
 
 
 @pytest_asyncio.fixture
-async def slow_create_collection(request, aio_connector):
+async def slow_create_collection(
+    request: Any, aio_connector: Any
+) -> AsyncGenerator[Any, None]:
     # We need to properly clean up because otherwise we might run into
     # storage limits.
     to_delete = []
@@ -102,8 +109,8 @@ async def slow_create_collection(request, aio_connector):
         collection_name = f"{collection_name}-vdirsyncer-ci-{uuid.uuid4()}"
 
         # Create the collection:
-        args = await cls.create_collection(collection_name, **args)
-        collection = cls(**args)
+        args = await cls.create_collection(collection_name, **args)  # type: ignore[attr-defined]
+        collection = cls(**args)  # type: ignore[operator]
 
         # Keep collection in a list to be deleted once tests end:
         to_delete.append(collection)

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import aiohttp
 import pytest
 from aioresponses import CallbackResult
@@ -16,7 +18,7 @@ from vdirsyncer.storage.http import prepare_auth
 
 
 @pytest.mark.asyncio
-async def test_list(aio_connector):
+async def test_list(aio_connector: Any) -> None:
     collection_url = "http://127.0.0.1/calendar/collection.ics"
 
     items = [
@@ -43,7 +45,7 @@ async def test_list(aio_connector):
 
     responses = ["\n".join(["BEGIN:VCALENDAR", *items, "END:VCALENDAR"])] * 2
 
-    def callback(url, headers, **kwargs):
+    def callback(url: Any, headers: Any, **kwargs: Any) -> Any:
         assert headers["User-Agent"].startswith("vdirsyncer/")
         assert responses
 
@@ -79,7 +81,7 @@ async def test_list(aio_connector):
             assert found_items[normalize_item(item)] == href
 
 
-def test_readonly_param(aio_connector):
+def test_readonly_param(aio_connector: Any) -> None:
     """The ``readonly`` param cannot be ``False``."""
 
     url = "http://example.com/"
@@ -92,7 +94,7 @@ def test_readonly_param(aio_connector):
     assert a.read_only is b.read_only is True
 
 
-def test_prepare_auth():
+def test_prepare_auth() -> None:
     assert prepare_auth(None, "", "") is None
 
     assert prepare_auth(None, "user", "pwd") == BasicAuthMethod("user", "pwd")
@@ -110,7 +112,7 @@ def test_prepare_auth():
     assert "unknown authentication method" in str(excinfo.value).lower()
 
 
-def test_prepare_auth_guess():
+def test_prepare_auth_guess() -> None:
     # guess auth is currently not supported
     with pytest.raises(UserError) as excinfo:
         prepare_auth("guess", "usr", "pwd")
@@ -118,7 +120,7 @@ def test_prepare_auth_guess():
     assert "not supported" in str(excinfo.value).lower()
 
 
-def test_verify_false_disallowed(aio_connector):
+def test_verify_false_disallowed(aio_connector: Any) -> None:
     with pytest.raises(ValueError) as excinfo:
         HttpStorage(url="http://example.com", verify=False, connector=aio_connector)
 
@@ -126,7 +128,7 @@ def test_verify_false_disallowed(aio_connector):
 
 
 @pytest.mark.asyncio
-async def test_403_usage_limit_exceeded(aio_connector):
+async def test_403_usage_limit_exceeded(aio_connector: Any) -> None:
     url = "http://127.0.0.1/test_403"
     error_body = {
         "error": {
@@ -150,7 +152,7 @@ async def test_403_usage_limit_exceeded(aio_connector):
 
 
 @pytest.mark.asyncio
-async def test_403_without_usage_limits_domain(aio_connector):
+async def test_403_without_usage_limits_domain(aio_connector: Any) -> None:
     """A 403 JSON error without the Google 'usageLimits' domain should not be
     treated as UsageLimitReached and should surface as ClientResponseError.
     """

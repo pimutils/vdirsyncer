@@ -4,12 +4,18 @@ import abc
 import contextlib
 import sqlite3
 import sys
+from collections.abc import Generator
+from collections.abc import Iterator
+from contextlib import AbstractContextManager
+from typing import Any
 
 from .exceptions import IdentAlreadyExists
 
 
 @contextlib.contextmanager
-def _exclusive_transaction(conn):
+def _exclusive_transaction(
+    conn: sqlite3.Connection,
+) -> Generator[sqlite3.Cursor, None, None]:
     c = None
     try:
         c = conn.execute("BEGIN EXCLUSIVE TRANSACTION")
@@ -20,11 +26,13 @@ def _exclusive_transaction(conn):
             raise
         _, e, tb = sys.exc_info()
         c.execute("ROLLBACK")
-        raise e.with_traceback(tb)
+        if e is not None:
+            raise e.with_traceback(tb)
+        raise
 
 
 class _StatusBase(metaclass=abc.ABCMeta):
-    def load_legacy_status(self, status):
+    def load_legacy_status(self, status: dict[str, Any]) -> None:
         with self.transaction():
             for ident, metadata in status.items():
                 if len(metadata) == 4:
@@ -41,84 +49,92 @@ class _StatusBase(metaclass=abc.ABCMeta):
                 self.insert_ident_a(ident, props_a)
                 self.insert_ident_b(ident, props_b)
 
-    def to_legacy_status(self):
+    def to_legacy_status(
+        self,
+    ) -> Generator[tuple[str, tuple[dict[str, Any], dict[str, Any]]], None, None]:
         for ident in self.iter_old():
             a = self.get_a(ident)
             b = self.get_b(ident)
+            assert a is not None
+            assert b is not None
             yield ident, (a.to_status(), b.to_status())
 
     @abc.abstractmethod
-    def transaction(self):
+    def transaction(self) -> AbstractContextManager[None]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def insert_ident_a(self, ident, props):
+    def insert_ident_a(self, ident: str, props: ItemMetadata) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def insert_ident_b(self, ident, props):
+    def insert_ident_b(self, ident: str, props: ItemMetadata) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update_ident_a(self, ident, props):
+    def update_ident_a(self, ident: str, props: ItemMetadata) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update_ident_b(self, ident, props):
+    def update_ident_b(self, ident: str, props: ItemMetadata) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def remove_ident(self, ident):
+    def remove_ident(self, ident: str) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_a(self, ident):
+    def get_a(self, ident: str) -> ItemMetadata | None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_b(self, ident):
+    def get_b(self, ident: str) -> ItemMetadata | None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_new_a(self, ident):
+    def get_new_a(self, ident: str) -> ItemMetadata | None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_new_b(self, ident):
+    def get_new_b(self, ident: str) -> ItemMetadata | None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def iter_old(self):
+    def iter_old(self) -> Iterator[str]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def iter_new(self):
+    def iter_new(self) -> Iterator[str]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_by_href_a(self, href, default=(None, None)):
+    def get_by_href_a(
+        self, href: str, default: tuple[None, None] = (None, None)
+    ) -> tuple[str | None, ItemMetadata | None]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_by_href_b(self, href, default=(None, None)):
+    def get_by_href_b(
+        self, href: str, default: tuple[None, None] = (None, None)
+    ) -> tuple[str | None, ItemMetadata | None]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def rollback(self, ident):
+    def rollback(self, ident: str) -> None:
         raise NotImplementedError
 
 
 class SqliteStatus(_StatusBase):
     SCHEMA_VERSION = 1
 
-    def __init__(self, path=":memory:"):
+    def __init__(self, path: str = ":memory:") -> None:
         self._path = path
         self._c = sqlite3.connect(path)
         self._c.isolation_level = None  # turn off idiocy of DB-API
         self._c.row_factory = sqlite3.Row
         self._update_schema()
 
-    def _update_schema(self):
+    def _update_schema(self) -> None:
         if self._is_latest_version():
             return
 
@@ -169,12 +185,10 @@ class SqliteStatus(_StatusBase):
             ); """
             )
 
-    def close(self):
-        if self._c:
-            self._c.close()
-            self._c = None
+    def close(self) -> None:
+        self._c.close()
 
-    def _is_latest_version(self):
+    def _is_latest_version(self) -> bool:
         try:
             return bool(
                 self._c.execute(
@@ -185,19 +199,19 @@ class SqliteStatus(_StatusBase):
             return False
 
     @contextlib.contextmanager
-    def transaction(self):
+    def transaction(self) -> Generator[None, None, None]:
         old_c = self._c
         try:
-            with _exclusive_transaction(self._c) as new_c:
-                self._c = new_c
+            with _exclusive_transaction(self._c) as cursor:
+                self._c = cursor.connection
                 yield
-                self._c.execute("DELETE FROM status")
-                self._c.execute("INSERT INTO status SELECT * FROM new_status")
-                self._c.execute("DELETE FROM new_status")
+                cursor.execute("DELETE FROM status")
+                cursor.execute("INSERT INTO status SELECT * FROM new_status")
+                cursor.execute("DELETE FROM new_status")
         finally:
             self._c = old_c
 
-    def insert_ident_a(self, ident, a_props):
+    def insert_ident_a(self, ident: str, a_props: ItemMetadata) -> None:
         # FIXME: Super inefficient
         old_props = self.get_new_a(ident)
         if old_props is not None:
@@ -216,7 +230,7 @@ class SqliteStatus(_StatusBase):
             ),
         )
 
-    def insert_ident_b(self, ident, b_props):
+    def insert_ident_b(self, ident: str, b_props: ItemMetadata) -> None:
         # FIXME: Super inefficient
         old_props = self.get_new_b(ident)
         if old_props is not None:
@@ -235,24 +249,24 @@ class SqliteStatus(_StatusBase):
             ),
         )
 
-    def update_ident_a(self, ident, props):
-        self._c.execute(
+    def update_ident_a(self, ident: str, props: ItemMetadata) -> None:
+        cursor = self._c.execute(
             "UPDATE new_status SET href_a=?, hash_a=?, etag_a=? WHERE ident=?",
             (props.href, props.hash, props.etag, ident),
         )
-        assert self._c.rowcount > 0
+        assert cursor.rowcount > 0
 
-    def update_ident_b(self, ident, props):
-        self._c.execute(
+    def update_ident_b(self, ident: str, props: ItemMetadata) -> None:
+        cursor = self._c.execute(
             "UPDATE new_status SET href_b=?, hash_b=?, etag_b=? WHERE ident=?",
             (props.href, props.hash, props.etag, ident),
         )
-        assert self._c.rowcount > 0
+        assert cursor.rowcount > 0
 
-    def remove_ident(self, ident):
+    def remove_ident(self, ident: str) -> None:
         self._c.execute("DELETE FROM new_status WHERE ident=?", (ident,))
 
-    def _get_impl(self, ident, side, table):
+    def _get_impl(self, ident: str, side: str, table: str) -> ItemMetadata | None:
         res = self._c.execute(
             f"SELECT href_{side} AS href,"
             f"       hash_{side} AS hash,"
@@ -271,31 +285,31 @@ class SqliteStatus(_StatusBase):
         res = dict(res)
         return ItemMetadata(**res)
 
-    def get_a(self, ident):
+    def get_a(self, ident: str) -> ItemMetadata | None:
         return self._get_impl(ident, side="a", table="status")
 
-    def get_b(self, ident):
+    def get_b(self, ident: str) -> ItemMetadata | None:
         return self._get_impl(ident, side="b", table="status")
 
-    def get_new_a(self, ident):
+    def get_new_a(self, ident: str) -> ItemMetadata | None:
         return self._get_impl(ident, side="a", table="new_status")
 
-    def get_new_b(self, ident):
+    def get_new_b(self, ident: str) -> ItemMetadata | None:
         return self._get_impl(ident, side="b", table="new_status")
 
-    def iter_old(self):
+    def iter_old(self) -> Iterator[str]:
         return iter(
             res["ident"]
             for res in self._c.execute("SELECT ident FROM status").fetchall()
         )
 
-    def iter_new(self):
+    def iter_new(self) -> Iterator[str]:
         return iter(
             res["ident"]
             for res in self._c.execute("SELECT ident FROM new_status").fetchall()
         )
 
-    def rollback(self, ident):
+    def rollback(self, ident: str) -> None:
         a = self.get_a(ident)
         b = self.get_b(ident)
         assert (a is None) == (b is None)
@@ -304,12 +318,19 @@ class SqliteStatus(_StatusBase):
             self.remove_ident(ident)
             return
 
+        assert a is not None
+        assert b is not None
         self._c.execute(
             "INSERT OR REPLACE INTO new_status VALUES (?, ?, ?, ?, ?, ?, ?)",
             (ident, a.href, b.href, a.hash, b.hash, a.etag, b.etag),
         )
 
-    def _get_by_href_impl(self, href, default=(None, None), side=None):
+    def _get_by_href_impl(
+        self,
+        href: str,
+        default: tuple[None, None] = (None, None),
+        side: str | None = None,
+    ) -> tuple[str | None, ItemMetadata | None]:
         res = self._c.execute(
             f"SELECT ident, hash_{side} AS hash, etag_{side} AS etag "
             f"FROM status WHERE href_{side}=?",
@@ -323,27 +344,35 @@ class SqliteStatus(_StatusBase):
             etag=res["etag"],
         )
 
-    def get_by_href_a(self, *a, **kw):
-        kw["side"] = "a"
-        return self._get_by_href_impl(*a, **kw)
+    def get_by_href_a(
+        self, href: str, default: tuple[None, None] = (None, None)
+    ) -> tuple[str | None, ItemMetadata | None]:
+        return self._get_by_href_impl(href, default, side="a")
 
-    def get_by_href_b(self, *a, **kw):
-        kw["side"] = "b"
-        return self._get_by_href_impl(*a, **kw)
+    def get_by_href_b(
+        self, href: str, default: tuple[None, None] = (None, None)
+    ) -> tuple[str | None, ItemMetadata | None]:
+        return self._get_by_href_impl(href, default, side="b")
 
 
 class SubStatus:
-    def __init__(self, parent: SqliteStatus, side: str):
+    def __init__(self, parent: SqliteStatus, side: str) -> None:
+        from collections.abc import Callable
+
         self.parent = parent
         assert side in "ab"
 
-        self.remove_ident = parent.remove_ident
+        self.remove_ident: Callable[[str], None] = parent.remove_ident
 
         if side == "a":
-            self.insert_ident = parent.insert_ident_a
-            self.update_ident = parent.update_ident_a
-            self.get = parent.get_a
-            self.get_new = parent.get_new_a
+            self.insert_ident: Callable[[str, ItemMetadata], None] = (
+                parent.insert_ident_a
+            )
+            self.update_ident: Callable[[str, ItemMetadata], None] = (
+                parent.update_ident_a
+            )
+            self.get: Callable[[str], ItemMetadata | None] = parent.get_a
+            self.get_new: Callable[[str], ItemMetadata | None] = parent.get_new_a
             self.get_by_href = parent.get_by_href_a
         else:
             self.insert_ident = parent.insert_ident_b
@@ -358,10 +387,10 @@ class ItemMetadata:
     hash = None
     etag = None
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: str | None) -> None:
         for k, v in kwargs.items():
             assert hasattr(self, k)
             setattr(self, k, v)
 
-    def to_status(self):
+    def to_status(self) -> dict[str, str | None]:
         return {"href": self.href, "etag": self.etag, "hash": self.hash}

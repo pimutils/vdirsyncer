@@ -5,11 +5,13 @@ only the most commonly used ones.
 
 from __future__ import annotations
 
+from typing import Any
+
 
 class Error(Exception):
     """Baseclass for all errors."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         for key, value in kwargs.items():
             if getattr(self, key, object()) is not None:  # pragma: no cover
                 raise TypeError(f"Invalid argument: {key}")
@@ -24,8 +26,9 @@ class UserError(Error, ValueError):
 
     problems = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         msg = Error.__str__(self)
+        problem: str
         for problem in self.problems or ():
             msg += f"\n  - {problem}"
 

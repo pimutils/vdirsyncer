@@ -20,7 +20,7 @@ except ImportError:  # pragma: no cover
 __all__ = ["__version__"]
 
 
-def _check_python_version():
+def _check_python_version() -> None:
     import sys
 
     if sys.version_info < (3, 9, 0):  # noqa: UP036

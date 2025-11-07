@@ -8,6 +8,7 @@ import wsgiref.simple_server
 import wsgiref.util
 from pathlib import Path
 from threading import Thread
+from typing import Any
 
 import aiohttp
 import click
@@ -40,13 +41,13 @@ except ImportError:
 class GoogleSession(dav.DAVSession):
     def __init__(
         self,
-        token_file,
-        client_id,
-        client_secret,
-        url=None,
+        token_file: str,
+        client_id: str,
+        client_secret: str,
+        url: str | None = None,
         *,
         connector: aiohttp.BaseConnector,
-    ):
+    ) -> None:
         if not have_oauth2:
             raise exceptions.UserError("aiohttp-oauthlib not installed")
 
@@ -62,22 +63,24 @@ class GoogleSession(dav.DAVSession):
         self._client_id = client_id
         self._client_secret = client_secret
         self._token = None
-        self._redirect_uri = None
+        self._redirect_uri: str | None = None
 
-    async def request(self, method, path, **kwargs):
+    async def request(
+        self, method: str, path: str, **kwargs: Any
+    ) -> aiohttp.ClientResponse:
         if not self._token:
             await self._init_token()
 
         return await super().request(method, path, **kwargs)
 
-    async def _save_token(self, token):
+    async def _save_token(self, token: dict[str, Any]) -> None:
         """Helper function called by OAuth2Session when a token is updated."""
         checkdir(expand_path(os.path.dirname(self._token_file)), create=True)
-        with atomic_write(self._token_file, mode="w", overwrite=True) as f:
+        with atomic_write(str(self._token_file), mode="w", overwrite=True) as f:
             json.dump(token, f)
 
     @property
-    def _session(self):
+    def _session(self) -> Any:
         """Return a new OAuth session for requests.
 
         Accesses the self.redirect_uri field (str): the URI to redirect
@@ -90,7 +93,7 @@ class GoogleSession(dav.DAVSession):
             client_id=self._client_id,
             token=self._token,
             redirect_uri=self._redirect_uri,
-            scope=self.scope,
+            scope=self.scope,  # type: ignore[attr-defined]
             auto_refresh_url=REFRESH_URL,
             auto_refresh_kwargs={
                 "client_id": self._client_id,
@@ -102,7 +105,7 @@ class GoogleSession(dav.DAVSession):
             trust_env=True,
         )
 
-    async def _init_token(self):
+    async def _init_token(self) -> None:
         try:
             with self._token_file.open() as f:
                 self._token = json.load(f)
@@ -122,7 +125,10 @@ class GoogleSession(dav.DAVSession):
             wsgiref.simple_server.WSGIServer.allow_reuse_address = False
             host = "127.0.0.1"
             local_server = wsgiref.simple_server.make_server(
-                host, 0, wsgi_app, handler_class=_WSGIRequestHandler
+                host,
+                0,
+                wsgi_app,
+                handler_class=_WSGIRequestHandler,  # type: ignore[arg-type]
             )
             thread = Thread(target=local_server.handle_request)
             thread.start()
@@ -149,6 +155,7 @@ class GoogleSession(dav.DAVSession):
 
                 # Note: using https here because oauthlib is very picky that
                 # OAuth 2.0 should only occur over https.
+                assert wsgi_app.last_request_uri is not None
                 authorization_response = wsgi_app.last_request_uri.replace(
                     "http", "https", 1
                 )
@@ -163,6 +170,7 @@ class GoogleSession(dav.DAVSession):
                 local_server.server_close()
 
             # FIXME: Ugly
+            assert self._token is not None
             await self._save_token(self._token)
 
 
@@ -173,7 +181,7 @@ class GoogleCalendarStorage(dav.CalDAVStorage):
 
     class discovery_class(dav.CalDiscover):
         @staticmethod
-        def _get_collection_from_url(url):
+        def _get_collection_from_url(url: str) -> str:
             # Google CalDAV has collection URLs like:
             # /user/foouser/calendars/foocalendar/events/
             parts = url.rstrip("/").split("/")
@@ -185,14 +193,14 @@ class GoogleCalendarStorage(dav.CalDAVStorage):
 
     def __init__(
         self,
-        token_file,
-        client_id,
-        client_secret,
-        start_date=None,
-        end_date=None,
-        item_types=(),
-        **kwargs,
-    ):
+        token_file: str,
+        client_id: str,
+        client_secret: str,
+        start_date: Any = None,
+        end_date: Any = None,
+        item_types: tuple[str, ...] | list[str] = (),
+        **kwargs: Any,
+    ) -> None:
         if not kwargs.get("collection"):
             raise exceptions.CollectionRequired
 
@@ -230,7 +238,9 @@ class GoogleContactsStorage(dav.CardDAVStorage):
 
     storage_name = "google_contacts"
 
-    def __init__(self, token_file, client_id, client_secret, **kwargs):
+    def __init__(
+        self, token_file: str, client_id: str, client_secret: str, **kwargs: Any
+    ) -> None:
         if not kwargs.get("collection"):
             raise exceptions.CollectionRequired
 
