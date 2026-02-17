@@ -59,5 +59,3 @@ install-dev:
 		pip install pyproject-dependencies && \
 		pip install -U --force-reinstall $$(pyproject-dependencies . | sed 's/>/=/'); \
 	fi
-
-.PHONY: docs
