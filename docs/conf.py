@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 import os
 
-from pkg_resources import get_distribution
+import vdirsyncer
 
 extensions = ["sphinx.ext.autodoc"]
 
@@ -17,7 +17,7 @@ copyright = "2014-{}, Markus Unterwaditzer & contributors".format(
     datetime.date.today().strftime("%Y")
 )
 
-release = get_distribution("vdirsyncer").version
+release = vdirsyncer.__version__
 version = ".".join(release.split(".")[:2])  # The short X.Y version.
 
 rst_epilog = f".. |vdirsyncer_version| replace:: {release}"
