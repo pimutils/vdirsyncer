@@ -549,8 +549,16 @@ class DAVStorage(Storage):
                         dav_logger.warning(f"Server sent unsolicited item: {href}")
                 else:
                     rv.append((href, Item(raw), etag))
-            for href in hrefs_left:
+            if len(hrefs) == 1 and hrefs_left:
+                # Preserve get(href) semantics for single-item lookups.
+                (href,) = hrefs_left
                 raise exceptions.NotFoundError(href)
+
+            # In multiget, tolerate transiently missing hrefs from the server.
+            for href in hrefs_left:
+                dav_logger.warning(
+                    f"Skipping {href}, server did not return the item in REPORT."
+                )
 
             for href, item, etag in rv:
                 yield href, item, etag
