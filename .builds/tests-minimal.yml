@@ -33,3 +33,4 @@ tasks:
   - test: |
       cd vdirsyncer
       make -e ci-test
+      make -e ci-test-storage
