@@ -5,6 +5,7 @@
 
 image: debian/bookworm # python 3.11
 packages:
+  - apparmor
   - build-essential
   - docker.io
   - docker-compose
