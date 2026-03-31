@@ -18,7 +18,7 @@ environment:
   BUILD: test
   CI: true
   CODECOV_TOKEN: b834a3c5-28fa-4808-9bdb-182210069c79
-  DAV_SERVER: xandikos
+  DAV_SERVER: radicale xandikos
   REQUIREMENTS: minimal
 tasks:
   - venv: |
