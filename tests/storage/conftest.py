@@ -46,17 +46,26 @@ def dockerised_server(name, container_port, exposed_port):
     try:
         # Hint: This will block while the pull happends, and only return once
         # the container has actually started.
-        output = subprocess.check_output(
-            [
-                "docker",
-                "run",
-                "--rm",
-                "--detach",
-                "--publish",
-                f"{exposed_port}:{container_port}",
-                f"whynothugo/vdirsyncer-devkit-{name}",
-            ]
-        )
+        command = [
+            "docker",
+            "run",
+            "--rm",
+            "--detach",
+            "--publish",
+            f"{exposed_port}:{container_port}",
+            f"whynothugo/vdirsyncer-devkit-{name}",
+        ]
+        result = subprocess.run(command, capture_output=True, check=False)
+        if result.returncode != 0:
+            raise RuntimeError(
+                "Failed to start Docker test server.\n"
+                f"Command: {command!r}\n"
+                f"Exit code: {result.returncode}\n"
+                f"stdout:\n{result.stdout.decode(errors='replace')}\n"
+                f"stderr:\n{result.stderr.decode(errors='replace')}"
+            )
+
+        output = result.stdout
 
         container_id = output.decode().strip()
         wait_for_container(url)
