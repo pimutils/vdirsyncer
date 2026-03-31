@@ -35,11 +35,8 @@ environment:
   REQUIREMENTS: release
   # TODO: ETESYNC_TESTS
 tasks:
-  - check-python: |
-      python - <<'PY'
-      import sys
-      assert (3, 13) <= sys.version_info[:2] <= (3, 14), sys.version
-      PY
+  - check-python:
+      python --version | grep 'Python 3.14'
   - docker: |
       sudo systemctl start docker
   - setup: |
