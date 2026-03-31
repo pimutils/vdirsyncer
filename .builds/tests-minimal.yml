@@ -24,6 +24,7 @@ tasks:
       python3 -m venv $HOME/venv
       echo "export PATH=$HOME/venv/bin:$PATH" >> $HOME/.buildenv
   - docker: |
+      sudo addgroup $(whoami) docker
       sudo systemctl start docker
   - setup: |
       cd vdirsyncer
