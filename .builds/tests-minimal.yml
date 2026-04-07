@@ -1,15 +1,17 @@
 # Run tests using oldest available dependency versions.
 #
-# TODO: It might make more sense to test with an older Ubuntu or Fedora version
-# here, and consider that our "oldest suppported environment".
+# Debian bookworm keeps this job on Python 3.11, which still supports the
+# oldest aiohttp release in our minimal dependency set.
 
-image: alpine/3.19 # python 3.11
+image: debian/bookworm # python 3.11
 packages:
-  - docker
-  - docker-cli
+  - apparmor
+  - build-essential
+  - docker.io
   - docker-compose
-  - py3-pip
+  - python3-pip
   - python3-dev
+  - python3-venv
 sources:
   - https://github.com/pimutils/vdirsyncer
 environment:
@@ -23,8 +25,9 @@ tasks:
       python3 -m venv $HOME/venv
       echo "export PATH=$HOME/venv/bin:$PATH" >> $HOME/.buildenv
   - docker: |
-      sudo addgroup $(whoami) docker
-      sudo service docker start
+      sudo adduser $(whoami) docker
+      sudo systemctl start docker
+      sudo chmod 666 /var/run/docker.sock
   - setup: |
       cd vdirsyncer
       # Hack, no idea why it's needed
