@@ -550,7 +550,7 @@ class DAVStorage(Storage):
                 else:
                     rv.append((href, Item(raw), etag))
             for href in hrefs_left:
-                raise exceptions.NotFoundError(href)
+                dav_logger.warning(f"Server does not have referenced item: {href}")
 
             for href, item, etag in rv:
                 yield href, item, etag
