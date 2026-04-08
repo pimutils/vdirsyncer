@@ -550,7 +550,7 @@ class DAVStorage(Storage):
                 else:
                     rv.append((href, Item(raw), etag))
             for href in hrefs_left:
-                raise exceptions.NotFoundError(href)
+                dav_logger.warning(f"Skipping {href}, not found")
 
             for href, item, etag in rv:
                 yield href, item, etag
@@ -590,12 +590,52 @@ class DAVStorage(Storage):
     async def update(self, href, item, etag):
         if etag is None:
             raise ValueError("etag must be given and must not be None.")
-        href, etag = await self._put(self._normalize_href(href), item, etag)
+        try:
+            href, etag = await self._put(self._normalize_href(href), item, etag)
+        except aiohttp.ClientResponseError as e:
+            if e.status == 409:
+                dav_logger.debug("Conflict, will delete old event and recreate it.")
+                try:
+                    await self.delete(self._normalize_href(href), None)
+                    dav_logger.debug("Now trying again")
+                    rv = await self._put(self._normalize_href(href), item, None)
+                except aiohttp.ClientResponseError as delerr:
+                    dav_logger.debug(f"delerr.status = {delerr.status}")
+                    if delerr.status == 403 or delerr.status == 404:
+                        dav_logger.warning("Old event not found, ignoring")
+                        rv = None, None
+                    else:
+                        raise
+            elif e.status == 403:
+                dav_logger.debug("Google Calendar refusing update, ignore")
+                rv = None, None
+            else:
+                raise
         return etag
 
     async def upload(self, item: Item):
         href = self._get_href(item)
-        rv = await self._put(href, item, None)
+        try:
+            rv = await self._put(href, item, None)
+        except aiohttp.ClientResponseError as e:
+            if e.status == 409:
+                dav_logger.debug("Conflict, will delete old event and recreate it.")
+                try:
+                    await self.delete(href, None)
+                    dav_logger.debug("Now trying again")
+                    rv = await self._put(href, item, None)
+                except aiohttp.ClientResponseError as delerr:
+                    dav_logger.debug(f"delerr.status = {delerr.status}")
+                    if delerr.status == 403 or delerr.status == 404:
+                        dav_logger.warning("Old event not found, ignoring")
+                        rv = None, None
+                    else:
+                        raise
+            elif e.status == 403:
+                dav_logger.debug("Google Calendar refusing update, ignore")
+                rv = None, None
+            else:
+                raise
         return rv
 
     async def delete(self, href, etag):
@@ -630,6 +670,7 @@ class DAVStorage(Storage):
             props = response.findall("{DAV:}propstat/{DAV:}prop")
             if props is None or not props:
                 dav_logger.debug(f"Skipping {href!r}, properties are missing.")
+                dav_logger.debug(f"Response for {href!r}: {etree.tostring(response)}")
                 continue
             else:
                 props = _merge_xml(props)
