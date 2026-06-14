@@ -289,10 +289,35 @@ for reference) and the
 `BDAY <https://www.rfc-editor.org/rfc/rfc6350#section-6.2.5>`_ property is not
 synced when only partial date information is present (e.g. the year is missing).
 
-At first run you will be asked to authorize application for Google account
-access.
+Authentication
+++++++++++++++
 
-To use this storage type, you need to install some additional dependencies::
+There are two ways to handle OAuth authentication with Google:
+
+1. **Built-in OAuth flow** (``token_file`` + ``client_id`` + ``client_secret``):
+   Vdirsyncer manages the OAuth2 flow, including token storage and refresh. At
+   first run you will be asked to authorize the application via a browser.
+
+2. **External token command** (``token_command``): An external command is
+   executed to obtain a fresh access token on demand. Vdirsyncer passes the
+   token as a ``Bearer`` header and re-runs the command on 401 responses.
+
+With ``token_command``, you do not need to register a Google Cloud project or
+install ``aiohttp-oauthlib``. Any OAuth helper that prints an access token to
+stdout works, e.g. `oama <https://github.com/pdobsan/oama>`_::
+
+    [storage my_google_cal]
+    type = "google_calendar"
+    token_command = ["oama", "access", "my-google-account"]
+
+The command can be specified as a list (executed directly) or a string (run via
+shell).
+
+Built-in OAuth setup
+++++++++++++++++++++
+
+To use the built-in OAuth flow, you need to install some additional
+dependencies::
 
     pip install vdirsyncer[google]
 
@@ -344,15 +369,22 @@ itself or write anything to it.
        token_file = "..."
        client_id = "..."
        client_secret = "..."
+       #token_command = null
        #start_date = null
        #end_date = null
        #item_types = []
 
    Please refer to :storage:`caldav` regarding the ``item_types`` and timerange parameters.
 
-   :param token_file: A filepath where access tokens are stored.
+   :param token_file: A filepath where access tokens are stored. Optional if
+                      ``token_command`` is set.
    :param client_id/client_secret: OAuth credentials, obtained from the Google
-                                   API Manager.
+                                   API Manager. Optional if ``token_command``
+                                   is set.
+   :param token_command: Command to fetch an OAuth access token. Can be a list
+                         of arguments or a string (run via shell). The command
+                         must print a valid bearer token to stdout. When set,
+                         ``token_file`` and OAuth credentials are not required.
 
 .. storage:: google_contacts
 
@@ -365,14 +397,22 @@ itself or write anything to it.
        token_file = "..."
        client_id = "..."
        client_secret = "..."
+       #token_command = null
 
-   :param token_file: A filepath where access tokens are stored.
+   :param token_file: A filepath where access tokens are stored. Optional if
+                      ``token_command`` is set.
    :param client_id/client_secret: OAuth credentials, obtained from the Google
-                                   API Manager.
+                                   API Manager. Optional if ``token_command``
+                                   is set.
+   :param token_command: Command to fetch an OAuth access token. Can be a list
+                         of arguments or a string (run via shell). The command
+                         must print a valid bearer token to stdout. When set,
+                         ``token_file`` and OAuth credentials are not required.
 
-The current flow is not ideal, but Google has deprecated the previous APIs used
-for this without providing a suitable replacement. See :gh:`975` for discussion
-on the topic.
+The built-in OAuth flow is not ideal, but Google has deprecated the previous
+APIs used for this without providing a suitable replacement. See :gh:`975` for
+discussion on the topic. Using ``token_command`` with an external OAuth helper
+sidesteps these issues.
 
 Local
 +++++
