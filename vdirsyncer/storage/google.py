@@ -49,12 +49,7 @@ class GoogleSession(dav.DAVSession):
         connector: aiohttp.BaseConnector,
     ):
         if token_command is not None:
-            if isinstance(token_command, str):
-                self._token_command = token_command
-                self._token_command_shell = True
-            else:
-                self._token_command = list(token_command)
-                self._token_command_shell = False
+            self._token_command = list(token_command)
         else:
             self._token_command = None
             if not have_oauth2:
@@ -208,27 +203,23 @@ class GoogleSession(dav.DAVSession):
             await self._save_token(self._token)
 
     async def _fetch_token_via_command(self):
-        import subprocess
+        from vdirsyncer.cli.fetchparams import STRATEGIES
 
         assert self._token_command is not None
-
+        strategy = self._token_command[0]
         try:
-            if self._token_command_shell:
-                stdout = subprocess.check_output(
-                    self._token_command, text=True, shell=True
-                )
-            else:
-                stdout = subprocess.check_output(self._token_command, text=True)
-        except OSError as e:
+            strategy_fn = STRATEGIES[strategy]
+        except KeyError:
             raise exceptions.UserError(
-                f"Failed to execute token_command: {self._token_command}\n{e!s}"
+                f"Unknown token_command strategy: {strategy}. "
+                f"Available: {', '.join(sorted(STRATEGIES))}"
             )
-
-        self._token = stdout.strip()
-        if not self._token:
+        token = strategy_fn(*self._token_command[1:])
+        if not token:
             raise exceptions.UserError(
-                f"token_command returned empty output: {self._token_command}"
+                f"token_command strategy '{strategy}' returned empty output"
             )
+        self._token = token
         logger.debug("Successfully fetched token via token_command")
 
 

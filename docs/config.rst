@@ -302,16 +302,19 @@ There are two ways to handle OAuth authentication with Google:
    executed to obtain a fresh access token on demand. Vdirsyncer passes the
    token as a ``Bearer`` header and re-runs the command on 401 responses.
 
-With ``token_command``, you do not need to register a Google Cloud project or
-install ``aiohttp-oauthlib``. Any OAuth helper that prints an access token to
-stdout works, e.g. `oama <https://github.com/pdobsan/oama>`_::
+With ``token_command``, vdirsyncer doesn't need OAuth credentials or
+``aiohttp-oauthlib``. The external helper handles Google registration. The format is
+``["strategy", "arg1", ...]``, same as :ref:`the .fetch config values
+<fetch_params>`. Supported strategies are ``command`` (exec directly) and
+``shell`` (run via shell)::
 
     [storage my_google_cal]
     type = "google_calendar"
-    token_command = ["oama", "access", "my-google-account"]
+    token_command = ["command", "oama", "access", "my-google-account"]
 
-The command can be specified as a list (executed directly) or a string (run via
-shell).
+Or using a shell command::
+
+    token_command = ["shell", "oama access my-google-account"]
 
 Built-in OAuth setup
 ++++++++++++++++++++
@@ -381,10 +384,12 @@ itself or write anything to it.
    :param client_id/client_secret: OAuth credentials, obtained from the Google
                                    API Manager. Optional if ``token_command``
                                    is set.
-   :param token_command: Command to fetch an OAuth access token. Can be a list
-                         of arguments or a string (run via shell). The command
-                         must print a valid bearer token to stdout. When set,
-                         ``token_file`` and OAuth credentials are not required.
+   :param token_command: Fetch strategy for OAuth access token, same format as
+                         ``.fetch`` params: ``["strategy", "arg1", ...]``.
+                         Supported strategies: ``command``, ``shell``.
+                         The command must print a valid bearer token to stdout.
+                         When set, ``token_file`` and OAuth credentials are not
+                         required.
 
 .. storage:: google_contacts
 
@@ -404,10 +409,12 @@ itself or write anything to it.
    :param client_id/client_secret: OAuth credentials, obtained from the Google
                                    API Manager. Optional if ``token_command``
                                    is set.
-   :param token_command: Command to fetch an OAuth access token. Can be a list
-                         of arguments or a string (run via shell). The command
-                         must print a valid bearer token to stdout. When set,
-                         ``token_file`` and OAuth credentials are not required.
+   :param token_command: Fetch strategy for OAuth access token, same format as
+                         ``.fetch`` params: ``["strategy", "arg1", ...]``.
+                         Supported strategies: ``command``, ``shell``.
+                         The command must print a valid bearer token to stdout.
+                         When set, ``token_file`` and OAuth credentials are not
+                         required.
 
 The built-in OAuth flow is not ideal, but Google has deprecated the previous
 APIs used for this without providing a suitable replacement. See :gh:`975` for
