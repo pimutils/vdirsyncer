@@ -198,7 +198,7 @@ There are three collection names that have a special meaning:
 
 - ``"from a"``, ``"from b"``: A placeholder for all collections that can be
   found on side A/B when running ``vdirsyncer discover``.
-- ``null``: The parameters give to the storage are exact and require no discovery.
+- ``null``: The parameters given to the storage are exact and require no discovery.
 
 The last one requires a bit more explanation.  Assume this config which
 synchronizes two directories of addressbooks::
