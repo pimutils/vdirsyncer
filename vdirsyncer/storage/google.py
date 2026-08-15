@@ -115,8 +115,8 @@ class GoogleSession(dav.DAVSession):
             )
 
         if not self._token:
-            # Some times a task stops at this `async`, and another continues the flow.
-            # At this point, the user has already completed the flow, but is prompeted
+            # Sometimes a task stops at this `async`, and another continues the flow.
+            # At this point, the user has already completed the flow, but is prompted
             # for a second one.
             wsgi_app = _RedirectWSGIApp("Successfully obtained token.")
             wsgiref.simple_server.WSGIServer.allow_reuse_address = False
