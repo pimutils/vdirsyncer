@@ -4,16 +4,30 @@ General-purpose fixtures for vdirsyncer's testsuite.
 
 from __future__ import annotations
 
+import inspect
 import logging
 import os
+from unittest.mock import Mock
 
 import aiohttp
+import aioresponses.core as _aioresponses_core
 import click_log
 import pytest
 import pytest_asyncio
 from hypothesis import HealthCheck
 from hypothesis import Verbosity
 from hypothesis import settings
+
+# Workaround for https://github.com/pnuckowski/aioresponses/issues/289
+# Can be dropped once https://github.com/pnuckowski/aioresponses/pull/288 is merged
+if "stream_writer" in inspect.signature(aiohttp.ClientResponse.__init__).parameters:
+
+    class _CompatClientResponse(aiohttp.ClientResponse):
+        def __init__(self, *args, **kwargs):
+            kwargs.setdefault("stream_writer", Mock(output_size=0))
+            super().__init__(*args, **kwargs)
+
+    _aioresponses_core.ClientResponse = _CompatClientResponse
 
 
 @pytest.fixture(autouse=True)
