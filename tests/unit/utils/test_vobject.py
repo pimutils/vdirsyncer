@@ -10,13 +10,13 @@ from hypothesis.stateful import Bundle
 from hypothesis.stateful import RuleBasedStateMachine
 from hypothesis.stateful import rule
 
-import vdirsyncer.vobject as vobject
 from tests import BARE_EVENT_TEMPLATE
 from tests import EVENT_TEMPLATE
 from tests import EVENT_WITH_TIMEZONE_TEMPLATE
 from tests import VCARD_TEMPLATE
 from tests import normalize_item
 from tests import uid_strategy
+from vdirsyncer import vobject
 
 _simple_split = [
     VCARD_TEMPLATE.format(r=123, uid=123),
@@ -128,9 +128,7 @@ def test_split_collection_timezones():
 
     given = {normalize_item(item) for item in vobject.split_collection(full)}
     expected = {
-        normalize_item(
-            "\r\n".join(("BEGIN:VCALENDAR", item, timezone, "END:VCALENDAR"))
-        )
+        normalize_item(f"BEGIN:VCALENDAR\r\n{item}\r\n{timezone}\r\nEND:VCALENDAR")
         for item in items
     }
 

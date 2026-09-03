@@ -5,7 +5,7 @@ from textwrap import dedent
 import pytest
 from click.testing import CliRunner
 
-import vdirsyncer.cli as cli
+from vdirsyncer import cli
 
 
 class _CustomRunner:

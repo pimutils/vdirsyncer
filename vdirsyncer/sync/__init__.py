@@ -193,9 +193,9 @@ class Action:
     def auto_rollback(self, a, b):
         try:
             yield
-        except BaseException as e:
+        except BaseException:
             self.rollback(a, b)
-            raise e
+            raise
 
     def rollback(self, a, b):
         a.status.parent.rollback(self.ident)
