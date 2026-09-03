@@ -9,6 +9,7 @@ from abc import abstractmethod
 from functools import cached_property
 from inspect import getfullargspec
 from inspect import signature
+from typing import ClassVar
 
 import aiohttp
 import aiostream
@@ -454,7 +455,7 @@ class DAVStorage(Storage):
 
     _repr_attributes = ("username", "url")
 
-    _property_table = {
+    _property_table: ClassVar[dict[str, tuple[str, str]]] = {
         "displayname": ("displayname", "DAV:"),
     }
 
@@ -777,7 +778,9 @@ class CalDAVStorage(DAVStorage):
 
     get_multi_data_query = "{urn:ietf:params:xml:ns:caldav}calendar-data"
 
-    _property_table = dict(DAVStorage._property_table)
+    _property_table: ClassVar[dict[str, tuple[str, str]]] = dict(
+        DAVStorage._property_table
+    )
     _property_table.update(
         {
             "color": ("calendar-color", "http://apple.com/ns/ical/"),
@@ -911,7 +914,9 @@ class CardDAVStorage(DAVStorage):
 
     get_multi_data_query = "{urn:ietf:params:xml:ns:carddav}address-data"
 
-    _property_table = dict(DAVStorage._property_table)
+    _property_table: ClassVar[dict[str, tuple[str, str]]] = dict(
+        DAVStorage._property_table
+    )
     _property_table.update(
         {
             "description": (

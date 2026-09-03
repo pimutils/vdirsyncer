@@ -9,6 +9,7 @@ from abc import ABC
 from abc import abstractmethod
 from base64 import b64encode
 from ssl import create_default_context
+from typing import ClassVar
 
 import aiohttp
 import requests.auth
@@ -70,7 +71,7 @@ class BasicAuthMethod(AuthMethod):
 class DigestAuthMethod(AuthMethod):
     # make class var to 'cache' the state, which is more efficient because otherwise
     # each request would first require another 'initialization' request.
-    _auth_helpers: dict[tuple[str, str], requests.auth.HTTPDigestAuth] = {}
+    _auth_helpers: ClassVar[dict[tuple[str, str], requests.auth.HTTPDigestAuth]] = {}
 
     def __init__(self, username: str, password: str):
         super().__init__(username, password)

@@ -8,6 +8,7 @@ import wsgiref.simple_server
 import wsgiref.util
 from pathlib import Path
 from threading import Thread
+from typing import ClassVar
 
 import aiohttp
 import click
@@ -169,7 +170,7 @@ class GoogleSession(dav.DAVSession):
 class GoogleCalendarStorage(dav.CalDAVStorage):
     class session_class(GoogleSession):
         url = "https://apidata.googleusercontent.com/caldav/v2/"
-        scope = ["https://www.googleapis.com/auth/calendar"]
+        scope: ClassVar[list[str]] = ["https://www.googleapis.com/auth/calendar"]
 
     class discovery_class(dav.CalDiscover):
         @staticmethod
@@ -222,7 +223,7 @@ class GoogleContactsStorage(dav.CardDAVStorage):
         # So we configure the well-known URI here again, such that discovery
         # tries collection enumeration on it directly. That appears to work.
         url = "https://www.googleapis.com/.well-known/carddav"
-        scope = ["https://www.googleapis.com/auth/carddav"]
+        scope: ClassVar[list[str]] = ["https://www.googleapis.com/auth/carddav"]
 
     class discovery_class(dav.CardDiscover):
         # Google CardDAV doesn't return any resourcetype prop.
