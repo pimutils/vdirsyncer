@@ -101,7 +101,7 @@ class Item:
         """Don't cache because the rv is mutable."""
         try:
             return _Component.parse(self.raw)
-        except Exception:
+        except ValueError:
             return None
 
 

@@ -559,7 +559,7 @@ def test_fetch_only_necessary_params(tmpdir, runner):
         try:
             fetched_file.remove()
             return True
-        except Exception:
+        except OSError:
             return False
 
     r = runner.invoke(["discover"])

@@ -11,7 +11,7 @@ from vdirsyncer.cli.utils import storage_names
 def test_handle_cli_error(capsys):
     try:
         raise exceptions.InvalidResponse("ayy lmao")
-    except BaseException:
+    except exceptions.InvalidResponse:
         handle_cli_error()
 
     _out, err = capsys.readouterr()

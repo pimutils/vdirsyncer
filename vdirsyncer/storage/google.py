@@ -140,7 +140,7 @@ class GoogleSession(dav.DAVSession):
                 click.echo(f"Opening {authorization_url} ...")
                 try:
                     open_graphical_browser(authorization_url)
-                except Exception as e:
+                except (OSError, RuntimeError) as e:
                     logger.warning(str(e))
 
                 click.echo("Follow the instructions on the page.")

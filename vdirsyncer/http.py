@@ -183,7 +183,7 @@ async def _is_quota_exceeded_google(response: aiohttp.ClientResponse) -> bool:
     """
     try:
         data = await response.json(content_type=None)
-    except Exception:
+    except ValueError:
         return False
 
     if not isinstance(data, dict):
