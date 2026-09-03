@@ -131,10 +131,10 @@ def sync(ctx, collections, force_delete):
     async def main(collection_names):
         async with aiohttp.TCPConnector(limit_per_host=16) as conn:
             tasks = []
-            for pair_name, collections in collection_names:
+            for pair_name, pair_collections in collection_names:
                 async for collection, config in prepare_pair(
                     pair_name=pair_name,
-                    collections=collections,
+                    collections=pair_collections,
                     config=ctx.config,
                     connector=conn,
                 ):
@@ -174,10 +174,10 @@ def metasync(ctx, collections):
 
     async def main(collection_names):
         async with aiohttp.TCPConnector(limit_per_host=16) as conn:
-            for pair_name, collections in collection_names:
-                collections = prepare_pair(
+            for pair_name, pair_collections in collection_names:
+                prepared = prepare_pair(
                     pair_name=pair_name,
-                    collections=collections,
+                    collections=pair_collections,
                     config=ctx.config,
                     connector=conn,
                 )
@@ -189,7 +189,7 @@ def metasync(ctx, collections):
                             general=config,
                             connector=conn,
                         )
-                        async for collection, config in collections
+                        async for collection, config in prepared
                     ]
                 )
 
