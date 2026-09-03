@@ -17,6 +17,8 @@ Version 0.21.0
 - Drop support for Python 3.8.
 - Retry transient network errors for nullipotent requests.
 - Add support for Python 3.14.
+- Show a helpful error message instead of a traceback when the status database
+  is locked.
 
 Version 0.20.0
 ==============
