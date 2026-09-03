@@ -82,6 +82,15 @@ extend-select = [
     "UP",
     "W",
 ]
+[tool.ruff.lint.per-file-ignores]
+# Entry point handles broad exception to properly render errors.
+"vdirsyncer/cli/*.py" = ["BLE001"]
+# TypeError implies invalid user input in when parsing config, not programming error.
+"vdirsyncer/cli/config.py" = ["TRY004"]
+"vdirsyncer/cli/fetchparams.py" = ["TRY004"]
+# Use blocking filesystem I/O; POSIX has no useful async filesystem I/O.
+"vdirsyncer/storage/filesystem.py" = ["ASYNC230"]
+"vdirsyncer/storage/singlefile.py" = ["ASYNC230"]
 
 [tool.ruff.lint.isort]
 force-single-line = true
