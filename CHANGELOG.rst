@@ -16,6 +16,7 @@ Version 0.21.0
 - ``tenacity`` is now a required dependency.
 - Drop support for Python 3.8.
 - Retry transient network errors for nullipotent requests.
+- Add support for Python 3.14.
 
 Version 0.20.0
 ==============
