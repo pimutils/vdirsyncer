@@ -80,6 +80,7 @@ class HttpStorage(Storage):
                 input=raw_item,
                 capture_output=True,
                 encoding="utf-8",
+                check=False,
             )
             return result.stdout
         except OSError as e:
