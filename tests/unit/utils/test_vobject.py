@@ -303,6 +303,14 @@ value_strategy = st.text(
 ).filter(lambda x: x.strip() == x)
 
 
+def _is_valid_prop_key(key: str) -> bool:
+    """Excluse keys that look like a component boundary."""
+    return key not in ("BEGIN", "END") and not key.startswith(("BEGIN:", "END:"))
+
+
+prop_key_strategy = uid_strategy.filter(_is_valid_prop_key)
+
+
 class VobjectMachine(RuleBasedStateMachine):
     Unparsed = Bundle("unparsed")
     Parsed = Bundle("parsed")
@@ -326,7 +334,7 @@ class VobjectMachine(RuleBasedStateMachine):
     def serialize(self, parsed):
         return list(parsed.dump_lines())
 
-    @rule(c=Parsed, key=uid_strategy, value=uid_strategy)
+    @rule(c=Parsed, key=prop_key_strategy, value=uid_strategy)
     def add_prop(self, c, key, value):
         c[key] = value
         assert c[key] == value
@@ -338,7 +346,7 @@ class VobjectMachine(RuleBasedStateMachine):
 
     @rule(
         c=Parsed,
-        key=uid_strategy,
+        key=prop_key_strategy,
         value=uid_strategy,
         params=st.lists(st.tuples(value_strategy, value_strategy)),
     )
