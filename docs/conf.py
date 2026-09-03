@@ -14,7 +14,7 @@ master_doc = "index"
 
 project = "vdirsyncer"
 copyright = "2014-{}, Markus Unterwaditzer & contributors".format(
-    datetime.date.today().strftime("%Y")
+    datetime.datetime.now(tz=datetime.timezone.utc).date().strftime("%Y")
 )
 
 release = vdirsyncer.__version__

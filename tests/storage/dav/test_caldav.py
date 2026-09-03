@@ -71,8 +71,8 @@ class TestCalDAVStorage(DAVStorageTests):
     )
     @pytest.mark.asyncio
     async def test_timerange_correctness(self, get_storage_args):
-        start_date = datetime.datetime(2013, 9, 10)
-        end_date = datetime.datetime(2013, 9, 13)
+        start_date = datetime.datetime(2013, 9, 10, tzinfo=datetime.timezone.utc)
+        end_date = datetime.datetime(2013, 9, 13, tzinfo=datetime.timezone.utc)
         s = self.storage_class(
             start_date=start_date, end_date=end_date, **await get_storage_args()
         )
