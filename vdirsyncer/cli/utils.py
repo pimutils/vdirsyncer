@@ -62,7 +62,7 @@ class JobFailed(RuntimeError):
     pass
 
 
-def handle_cli_error(status_name=None, e=None):
+def handle_cli_error(status_name=None, exc=None):
     """
     Print a useful error message for the current exception.
 
@@ -71,10 +71,10 @@ def handle_cli_error(status_name=None, e=None):
     """
 
     try:
-        if e is not None:
-            raise e
+        if exc is not None:
+            raise exc
         else:
-            raise
+            raise  # noqa: PLE0704
     except exceptions.UserError as e:
         cli_logger.critical(e)
     except StorageEmpty as e:
@@ -301,7 +301,7 @@ async def storage_instance_from_config(
 def handle_storage_init_error(cls, config):
     e = sys.exc_info()[1]
     if not isinstance(e, TypeError) or "__init__" not in repr(e):
-        raise
+        raise  # noqa: PLE0704
 
     all, required = get_storage_init_args(cls)
     given = set(config)
@@ -360,8 +360,8 @@ async def handle_collection_not_found(
             args = await cls.create_collection(**config)
             args["type"] = storage_type
             return args
-        except NotImplementedError as e:
-            cli_logger.error(e)
+        except NotImplementedError as exc:
+            cli_logger.error(exc)
 
     raise exceptions.UserError(
         f'Unable to find or create collection "{collection}" for '
