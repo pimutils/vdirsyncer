@@ -1,0 +1,49 @@
+# Run tests using the packaged dependencies on Alpine.
+
+image: alpine/3.24
+packages:
+  - docker
+  - docker-cli-compose
+  # Build dependencies:
+  - py3-wheel
+  - py3-build
+  - py3-installer
+  - py3-setuptools_scm
+  # Runtime dependencies:
+  - py3-click
+  - py3-click-log
+  - py3-requests
+  - py3-aiohttp-oauthlib
+  - py3-tenacity
+  # Test dependencies:
+  - py3-hypothesis
+  - py3-pytest-cov
+  - py3-pytest-httpserver
+  - py3-trustme
+  - py3-pytest-asyncio
+  - py3-aiohttp
+  - py3-aiostream
+  - py3-aioresponses
+sources:
+  - https://github.com/pimutils/vdirsyncer
+environment:
+  BUILD: test
+  CI: true
+  CODECOV_TOKEN: b834a3c5-28fa-4808-9bdb-182210069c79
+  DAV_SERVER: radicale xandikos
+  REQUIREMENTS: release
+  # TODO: ETESYNC_TESTS
+tasks:
+  - check-python:
+      python --version | grep 'Python 3.14'
+  - docker: |
+      doas addgroup $(whoami) docker
+      doas service docker start
+  - setup: |
+      cd vdirsyncer
+      python -m build --wheel --skip-dependency-check --no-isolation
+      doas python -m installer dist/*.whl
+  - test: |
+      cd vdirsyncer
+      make -e ci-test
+      make -e ci-test-storage
