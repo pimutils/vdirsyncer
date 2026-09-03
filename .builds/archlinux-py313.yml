@@ -12,7 +12,6 @@ packages:
   # Runtime dependencies:
   - python-click
   - python-click-log
-  - python-click-threading
   - python-requests
   - python-aiohttp-oauthlib
   - python-tenacity
