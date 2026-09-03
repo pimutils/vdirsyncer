@@ -29,7 +29,7 @@ class StorageMeta(ABCMeta):
 
         for method in ("update", "upload", "delete", "set_meta"):
             setattr(cls, method, mutating_storage_method(getattr(cls, method)))
-        return super().__init__(name, bases, d)
+        super().__init__(name, bases, d)
 
 
 class Storage(metaclass=StorageMeta):
