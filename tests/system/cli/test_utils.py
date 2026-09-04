@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sqlite3
+
 import pytest
 
 from vdirsyncer import exceptions
@@ -17,6 +19,26 @@ def test_handle_cli_error(capsys):
     _out, err = capsys.readouterr()
     assert "returned something vdirsyncer doesn't understand" in err
     assert "ayy lmao" in err
+
+
+def test_handle_cli_error_database_locked(capsys):
+    try:
+        raise sqlite3.OperationalError("database is locked")
+    except BaseException:
+        handle_cli_error("my_pair/my_collection")
+
+    _out, err = capsys.readouterr()
+    assert "status database is locked" in err
+    assert "my_pair/my_collection" in err
+    assert "Traceback" not in err
+
+
+def test_handle_cli_error_other_operational_error(capsys):
+    with pytest.raises(sqlite3.OperationalError):
+        try:
+            raise sqlite3.OperationalError("no such table: status")
+        except BaseException:
+            handle_cli_error("my_pair/my_collection")
 
 
 @pytest.mark.asyncio
