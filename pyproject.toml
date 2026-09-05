@@ -4,7 +4,7 @@
 # how to package vdirsyncer.
 
 [build-system]
-requires = ["setuptools>=64", "setuptools_scm>=8"]
+requires = ["setuptools>=77.0.0", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
