@@ -455,6 +455,7 @@ Local
         [pair my_calendar]
         a = my_calendar_local
         b = my_calendar_remote
+        collections = null
 
         [storage my_calendar_local]
         type = "singlefile"
