@@ -585,7 +585,10 @@ class DAVStorage(Storage):
         # In such cases we return a constant etag. The next synchronization
         # will then detect an etag change and will download the new item.
         etag = response.headers.get("etag", None)
-        href = self._normalize_href(str(response.url))
+        # A server may assign a different resource URL on creation. Persisting
+        # the request URL would make the next listing look like a different item.
+        location = response.headers.get("Location")
+        href = self._normalize_href(location or str(response.url))
         return href, etag
 
     async def update(self, href, item, etag):

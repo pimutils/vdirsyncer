@@ -1,8 +1,14 @@
 from __future__ import annotations
 
+from unittest.mock import AsyncMock
+from unittest.mock import Mock
+
 import pytest
+from multidict import CIMultiDict
+from yarl import URL
 
 from vdirsyncer.storage.dav import _BAD_XML_CHARS
+from vdirsyncer.storage.dav import CardDAVStorage
 from vdirsyncer.storage.dav import _merge_xml
 from vdirsyncer.storage.dav import _normalize_href
 from vdirsyncer.storage.dav import _parse_xml
@@ -57,3 +63,38 @@ def test_xml_specialchars(char):
 )
 def test_normalize_href(href):
     assert href == _normalize_href("https://example.com", href)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("location", "expected_href"),
+    [
+        (
+            "https://example.com/lists/default/server-assigned.vcf",
+            "/lists/default/server-assigned.vcf",
+        ),
+        (None, "/lists/default/requested.vcf"),
+    ],
+)
+async def test_put_uses_server_assigned_location(location, expected_href):
+    storage = CardDAVStorage(
+        connector=None,
+        url="https://example.com/lists/default/",
+    )
+    response = Mock(
+        headers=CIMultiDict(
+            {"ETag": '"new"', **({"Location": location} if location else {})}
+        ),
+        url=URL("https://example.com/lists/default/requested.vcf"),
+    )
+    response.content.read = AsyncMock(return_value=b"")
+    storage.session.request = AsyncMock(return_value=response)
+
+    href, etag = await storage._put(
+        "/lists/default/requested.vcf",
+        Mock(raw="BEGIN:VCARD\nEND:VCARD"),
+        None,
+    )
+
+    assert href == expected_href
+    assert etag == '"new"'

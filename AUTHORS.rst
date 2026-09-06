@@ -3,6 +3,7 @@ Contributors
 
 In alphabetical order:
 
+- be-student
 - Ben Boeckel
 - Bleala
 - Christian Geier
