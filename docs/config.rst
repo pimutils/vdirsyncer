@@ -494,6 +494,7 @@ leads to an error.
         [storage holidays_remote]
         type = "http"
         url = https://example.com/holidays_from_hicksville.ics
+        #ignore_fields = ["SEQUENCE"]
         #filter_hook = null
 
     Too many WebCAL providers generate UIDs of all ``VEVENT``-components
@@ -519,6 +520,12 @@ leads to an error.
     :param auth_cert: Optional. Either a path to a certificate with a client
         certificate and the key or a list of paths to the files with them.
     :param useragent: Default ``vdirsyncer``.
+    :param ignore_fields: Optional. A list of additional iCalendar or vCard
+        fields to exclude when detecting changes. Field names are
+        case-insensitive. Vdirsyncer already ignores common volatile fields,
+        including ``DTSTAMP`` and ``LAST-MODIFIED``. This option is useful for
+        providers that change other fields such as ``SEQUENCE`` without
+        changing the event itself.
     :param filter_hook: Optional. A filter command to call for each fetched
         item, passed in raw form to stdin and returned via stdout.
         If nothing is returned by the filter command, the item is skipped.

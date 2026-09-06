@@ -151,6 +151,17 @@ def test_hash_item():
     assert vobject.hash_item(a) == vobject.hash_item(b)
 
 
+def test_hash_item_custom_ignore_props():
+    a = EVENT_TEMPLATE.format(r=1, uid=1).replace("SUMMARY:", "SEQUENCE:1\nSUMMARY:")
+    b = a.replace("SEQUENCE:1", "SEQUENCE:2")
+
+    assert vobject.hash_item(a) != vobject.hash_item(b)
+    ignore_props = (*vobject.IGNORE_PROPS, "SEQUENCE")
+    assert vobject.hash_item(a, ignore_props=ignore_props) == vobject.hash_item(
+        b, ignore_props=ignore_props
+    )
+
+
 def test_multiline_uid(benchmark):
     a = "BEGIN:FOO\r\nUID:123456789abcd\r\n efgh\r\nEND:FOO\r\n"
     assert benchmark(lambda: vobject.Item(a).uid) == "123456789abcdefgh"

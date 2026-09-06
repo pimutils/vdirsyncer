@@ -17,6 +17,8 @@ Version 0.21.0
 - Drop support for Python 3.8.
 - Retry transient network errors for nullipotent requests.
 - Add support for Python 3.14.
+- Allow HTTP storages to ignore additional volatile fields when detecting
+  changes.
 
 Version 0.20.0
 ==============

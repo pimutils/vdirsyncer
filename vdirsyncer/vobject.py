@@ -113,7 +113,7 @@ def normalize_item(item, ignore_props=IGNORE_PROPS):
     item = _strip_timezones(item)
 
     x = _Component("TEMP", item.raw.splitlines(), [])
-    for prop in IGNORE_PROPS:
+    for prop in ignore_props:
         del x[prop]
 
     x.props.sort()
@@ -130,8 +130,9 @@ def _strip_timezones(item):
     return Item("\r\n".join(parsed.dump_lines()))
 
 
-def hash_item(text):
-    return hashlib.sha256(normalize_item(text).encode("utf-8")).hexdigest()
+def hash_item(text, ignore_props=IGNORE_PROPS):
+    normalized = normalize_item(text, ignore_props=ignore_props)
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
 
 
 def split_collection(text):

@@ -12,7 +12,9 @@ from vdirsyncer.http import prepare_auth
 from vdirsyncer.http import prepare_client_cert
 from vdirsyncer.http import prepare_verify
 from vdirsyncer.http import request
+from vdirsyncer.vobject import IGNORE_PROPS
 from vdirsyncer.vobject import Item
+from vdirsyncer.vobject import hash_item
 from vdirsyncer.vobject import split_collection
 
 from .base import Storage
@@ -40,6 +42,7 @@ class HttpStorage(Storage):
         verify_fingerprint=None,
         auth_cert=None,
         filter_hook=None,
+        ignore_fields=None,
         *,
         connector,
         **kwargs,
@@ -63,6 +66,16 @@ class HttpStorage(Storage):
         assert connector is not None
         self.connector = connector
         self._filter_hook = filter_hook
+        if ignore_fields is None:
+            ignore_fields = []
+        if not isinstance(ignore_fields, list) or not all(
+            isinstance(field, str) and field.strip() for field in ignore_fields
+        ):
+            raise ValueError("ignore_fields must be a list of non-empty strings")
+        self._ignore_props = (
+            *IGNORE_PROPS,
+            *(field.strip().upper() for field in ignore_fields),
+        )
 
         collection = kwargs.get("collection")
         if collection is not None:
@@ -110,10 +123,11 @@ class HttpStorage(Storage):
                 continue
 
             item = Item(raw_item)
+            item_hash = hash_item(raw_item, ignore_props=self._ignore_props)
             if self._ignore_uids:
-                item = item.with_uid(item.hash)
+                item = item.with_uid(item_hash)
 
-            self._items[item.ident] = item, item.hash
+            self._items[item.ident] = item, item_hash
 
         for href, (_, etag) in self._items.items():
             yield href, etag

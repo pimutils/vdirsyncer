@@ -79,6 +79,39 @@ async def test_list(aio_connector):
             assert found_items[normalize_item(item)] == href
 
 
+@pytest.mark.asyncio
+async def test_list_ignores_configured_fields(aio_connector):
+    collection_url = "http://127.0.0.1/calendar/collection.ics"
+    responses = [
+        (
+            "BEGIN:VCALENDAR\nBEGIN:VEVENT\nUID:event\nDTSTAMP:20260101T000000Z\n"
+            "SEQUENCE:1\n"
+            "SUMMARY:Stable event\nEND:VEVENT\nEND:VCALENDAR"
+        ),
+        (
+            "BEGIN:VCALENDAR\nBEGIN:VEVENT\nUID:event\nDTSTAMP:20260102T000000Z\n"
+            "SEQUENCE:2\n"
+            "SUMMARY:Stable event\nEND:VEVENT\nEND:VCALENDAR"
+        ),
+    ]
+
+    def callback(url, **kwargs):
+        return CallbackResult(status=200, body=responses.pop().encode("utf-8"))
+
+    with aioresponses() as mocked_responses:
+        mocked_responses.get(collection_url, callback=callback, repeat=True)
+        storage = HttpStorage(
+            url=collection_url,
+            ignore_fields=["sequence"],
+            connector=aio_connector,
+        )
+
+        first = [item async for item in storage.list()]
+        second = [item async for item in storage.list()]
+
+    assert first == second
+
+
 def test_readonly_param(aio_connector):
     """The ``readonly`` param cannot be ``False``."""
 
@@ -90,6 +123,16 @@ def test_readonly_param(aio_connector):
     b = HttpStorage(url=url, read_only=None, connector=aio_connector)
 
     assert a.read_only is b.read_only is True
+
+
+@pytest.mark.parametrize("ignore_fields", ["SEQUENCE", ("SEQUENCE",), [""], [1]])
+def test_ignore_fields_must_be_a_list_of_names(aio_connector, ignore_fields):
+    with pytest.raises(ValueError, match="list of non-empty strings"):
+        HttpStorage(
+            url="http://example.com/",
+            ignore_fields=ignore_fields,
+            connector=aio_connector,
+        )
 
 
 def test_prepare_auth():
