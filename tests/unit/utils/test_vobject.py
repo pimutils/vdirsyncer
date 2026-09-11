@@ -151,6 +151,188 @@ def test_hash_item():
     assert vobject.hash_item(a) == vobject.hash_item(b)
 
 
+def test_prepare_calendar_for_caldav_strips_method():
+    raw = dedent(
+        """
+        BEGIN:VCALENDAR
+        PRODID:Zimbra-Calendar-Provider
+        VERSION:2.0
+        METHOD:PUBLISH
+        BEGIN:VEVENT
+        UID:example-event-uid
+        ORGANIZER;SENT-BY="mailto:assistant@example.com":mailto:owner@example.com
+        SUMMARY:Example event
+        END:VEVENT
+        END:VCALENDAR
+        """
+    ).strip()
+
+    actual = vobject.prepare_calendar_for_caldav(vobject.Item(raw))
+
+    assert "METHOD:" not in actual.raw
+    assert "ORGANIZER;" in actual.raw
+    assert actual.uid == "example-event-uid"
+
+
+def test_prepare_calendar_for_caldav_method_is_case_insensitive():
+    raw = dedent(
+        """
+        BEGIN:VCALENDAR
+        method:publish
+         folded-value
+        BEGIN:VEVENT
+        UID:one
+        END:VEVENT
+        END:VCALENDAR
+        """
+    ).strip()
+
+    actual = vobject.prepare_calendar_for_caldav(vobject.Item(raw))
+
+    assert "method:" not in actual.raw.lower()
+    assert "folded-value" not in actual.raw
+
+
+def test_prepare_calendar_for_caldav_passive_scheduling():
+    raw = dedent(
+        '''
+        BEGIN:VCALENDAR
+        METHOD:REQUEST
+        BEGIN:VEVENT
+        UID:one
+        ORGANIZER;SENT-BY="mailto:assistant@example.com":mailto:owner@example.com
+        ATTENDEE;CN="Example, Person";SCHEDULE-AGENT=SERVER:mailto:person@exampl
+         e.com
+        END:VEVENT
+        END:VCALENDAR
+        '''
+    ).strip()
+
+    actual = vobject.prepare_calendar_for_caldav(
+        vobject.Item(raw), scheduling_mode="passive"
+    )
+
+    assert "METHOD:" not in actual.raw
+    assert (
+        'ORGANIZER;SENT-BY="mailto:assistant@example.com";SCHEDULE-AGENT=NONE:'
+        "mailto:owner@example.com" in actual.raw
+    )
+    assert (
+        'ATTENDEE;CN="Example, Person";SCHEDULE-AGENT=NONE:'
+        "mailto:person@example.com" in actual.raw
+    )
+
+
+def test_prepare_calendar_for_caldav_standalone_zimbra_event():
+    raw = dedent(
+        r'''
+        BEGIN:VCALENDAR
+        PRODID:Zimbra-Calendar-Provider
+        VERSION:2.0
+        METHOD:PUBLISH
+        BEGIN:VTIMEZONE
+        TZID:Europe/Paris
+        END:VTIMEZONE
+        BEGIN:VEVENT
+        UID:example-zimbra-event
+        SUMMARY:Example appointment
+        ORGANIZER;SENT-BY="mailto:assistant\@example.com":mailto:owner\@example.com
+        X-MS-OLK-SENDER:mailto:owner\@example.com
+        DTSTART;TZID="Europe/Paris":20260907T080000
+        DTEND;TZID="Europe/Paris":20260907T083000
+        STATUS:CONFIRMED
+        BEGIN:VALARM
+        ACTION:DISPLAY
+        TRIGGER;RELATED=START:-PT5M
+        DESCRIPTION:Reminder
+        END:VALARM
+        END:VEVENT
+        END:VCALENDAR
+        '''
+    ).strip()
+
+    actual = vobject.prepare_calendar_for_caldav(
+        vobject.Item(raw), scheduling_mode="standalone"
+    )
+
+    assert "METHOD:" not in actual.raw
+    assert "ORGANIZER" not in actual.raw
+    assert "X-MS-OLK-SENDER" not in actual.raw
+    assert "UID:example-zimbra-event" in actual.raw
+    assert "SUMMARY:Example appointment" in actual.raw
+    assert "TZID:Europe/Paris" in actual.raw
+    assert "BEGIN:VALARM" in actual.raw
+
+
+def test_prepare_calendar_for_caldav_standalone_cleans_all_events():
+    raw = dedent(
+        """
+        BEGIN:VCALENDAR
+        BEGIN:VEVENT
+        UID:series
+        ORGANIZER:mailto:owner@example.com
+        ATTENDEE:mailto:guest@example.com
+        END:VEVENT
+        BEGIN:VEVENT
+        UID:series
+        RECURRENCE-ID:20260908T080000Z
+        ORGANIZER:mailto:owner@example.com
+        ATTENDEE:mailto:guest@example.com
+        END:VEVENT
+        END:VCALENDAR
+        """
+    ).strip()
+
+    actual = vobject.prepare_calendar_for_caldav(
+        vobject.Item(raw), scheduling_mode="standalone"
+    )
+
+    assert "ORGANIZER" not in actual.raw
+    assert "ATTENDEE" not in actual.raw
+    assert "RECURRENCE-ID:20260908T080000Z" in actual.raw
+
+
+def test_prepare_calendar_for_caldav_rejects_invalid_scheduling_mode():
+    with pytest.raises(ValueError, match="Invalid scheduling mode"):
+        vobject.prepare_calendar_for_caldav(
+            vobject.Item("BEGIN:VCALENDAR\nEND:VCALENDAR"),
+            scheduling_mode="invite-everyone",
+        )
+
+
+@pytest.mark.parametrize("mode", sorted(vobject.CALDAV_SCHEDULING_MODES))
+def test_prepare_calendar_for_caldav_is_idempotent(mode):
+    item = vobject.Item(
+        "BEGIN:VCALENDAR\n"
+        "METHOD:REQUEST\n"
+        "BEGIN:VEVENT\n"
+        "UID:one\n"
+        "ORGANIZER:mailto:owner@example.com\n"
+        "ATTENDEE:mailto:guest@example.com\n"
+        "END:VEVENT\n"
+        "END:VCALENDAR"
+    )
+
+    once = vobject.prepare_calendar_for_caldav(item, scheduling_mode=mode)
+    twice = vobject.prepare_calendar_for_caldav(once, scheduling_mode=mode)
+
+    assert twice is once
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        "BEGIN:VCARD\nUID:one\nEND:VCARD",
+        "not an iCalendar object",
+        "BEGIN:VCALENDAR\nBEGIN:VEVENT\nUID:one\nEND:VEVENT\nEND:VCALENDAR",
+    ],
+)
+def test_prepare_calendar_for_caldav_leaves_other_items_untouched(raw):
+    item = vobject.Item(raw)
+
+    assert vobject.prepare_calendar_for_caldav(item) is item
+
+
 def test_multiline_uid(benchmark):
     a = "BEGIN:FOO\r\nUID:123456789abcd\r\n efgh\r\nEND:FOO\r\n"
     assert benchmark(lambda: vobject.Item(a).uid) == "123456789abcdefgh"

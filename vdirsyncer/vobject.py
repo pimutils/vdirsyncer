@@ -34,6 +34,8 @@ IGNORE_PROPS = (
     "UID",
 )
 
+CALDAV_SCHEDULING_MODES = frozenset({"preserve", "passive", "standalone"})
+
 
 class Item:
     """Immutable wrapper class for VCALENDAR (VEVENT, VTODO) and
@@ -103,6 +105,65 @@ class Item:
             return _Component.parse(self.raw)
         except ValueError:
             return None
+
+
+def prepare_calendar_for_caldav(
+    item: Item, scheduling_mode: str = "preserve"
+) -> Item:
+    """Return a calendar object suitable for storage in a CalDAV collection.
+
+    ``METHOD`` describes an iTIP message such as a request or a published
+    event.  RFC 4791 section 4.1 forbids that property on calendar object
+    resources stored in a CalDAV collection.  Some servers nevertheless
+    expose stored objects containing it, so strip it at the destination
+    boundary instead of forwarding invalid data to another server.
+
+    ``scheduling_mode`` controls how organizer and attendee properties are
+    written.  ``preserve`` keeps them unchanged, ``passive`` asks the server
+    not to process scheduling messages, and ``standalone`` removes scheduling
+    relationships so the destination stores a personal event copy.
+
+    Keep malformed or non-calendar items untouched.  Validation remains the
+    destination server's responsibility, as it was before this normalization.
+    """
+    if (
+        not isinstance(scheduling_mode, str)
+        or scheduling_mode not in CALDAV_SCHEDULING_MODES
+    ):
+        raise ValueError(f"Invalid scheduling mode: {scheduling_mode!r}")
+
+    parsed = item.parsed
+    if parsed is None or parsed.name != "VCALENDAR":
+        return item
+
+    changed = "METHOD" in parsed
+    del parsed["METHOD"]
+
+    components = list(_walk_components(parsed))
+    if scheduling_mode == "passive":
+        for component in components:
+            changed |= component.set_property_parameter(
+                "ORGANIZER", "SCHEDULE-AGENT", "NONE"
+            )
+            changed |= component.set_property_parameter(
+                "ATTENDEE", "SCHEDULE-AGENT", "NONE"
+            )
+    elif scheduling_mode == "standalone":
+        for component in components:
+            for prop in ("ORGANIZER", "ATTENDEE", "X-MS-OLK-SENDER"):
+                if prop in component:
+                    changed = True
+                    del component[prop]
+
+    if not changed:
+        return item
+    return Item("\r\n".join(parsed.dump_lines()))
+
+
+def _walk_components(component):
+    yield component
+    for subcomponent in component.subcomponents:
+        yield from _walk_components(subcomponent)
 
 
 def normalize_item(item, ignore_props=IGNORE_PROPS):
@@ -316,19 +377,17 @@ class _Component:
     def __delitem__(self, key):
         prefix = (f"{key}:", f"{key};")
         new_lines = []
-        lineiter = iter(self.props)
-        while True:
-            for line in lineiter:
-                if line.startswith(prefix):
-                    break
-                new_lines.append(line)
-            else:
-                break
+        deleting = False
 
-            for line in lineiter:
-                if not line.startswith((" ", "\t", *prefix)):
+        for line in self.props:
+            if line.startswith((" ", "\t")):
+                if not deleting:
                     new_lines.append(line)
-                    break
+                continue
+
+            deleting = any(_startswith_case_insensitive(line, x) for x in prefix)
+            if not deleting:
+                new_lines.append(line)
 
         self.props = new_lines
 
@@ -338,6 +397,64 @@ class _Component:
         del self[key]
         line = f"{key}:{val}"
         self.props.append(line)
+
+    def set_property_parameter(self, key, parameter, value):
+        """Set a parameter on all matching properties.
+
+        Property lines are unfolded only when they need to be changed.  This
+        keeps unrelated, possibly vendor-specific iCalendar data byte-for-byte
+        stable while still handling folded ORGANIZER and ATTENDEE lines.
+        """
+        groups = []
+        for line in self.props:
+            if line.startswith((" ", "\t")) and groups:
+                groups[-1].append(line)
+            else:
+                groups.append([line])
+
+        changed = False
+        new_lines = []
+        for group in groups:
+            logical_line = group[0] + "".join(line[1:] for line in group[1:])
+            separator = _find_unquoted(logical_line, ":")
+            if separator < 0:
+                new_lines.extend(group)
+                continue
+
+            head = logical_line[:separator]
+            parts = _split_unquoted(head, ";")
+            if not parts or parts[0].upper() != key.upper():
+                new_lines.extend(group)
+                continue
+
+            replacement = f"{parameter.upper()}={value}"
+            group_changed = False
+            new_parts = [parts[0]]
+            parameter_found = False
+            for part in parts[1:]:
+                name, equals, _old_value = part.partition("=")
+                if equals and name.upper() == parameter.upper():
+                    if parameter_found:
+                        group_changed = True
+                        continue
+                    parameter_found = True
+                    new_parts.append(replacement)
+                    group_changed |= part != replacement
+                else:
+                    new_parts.append(part)
+            if not parameter_found:
+                new_parts.append(replacement)
+                group_changed = True
+
+            if group_changed:
+                new_lines.append(";".join(new_parts) + logical_line[separator:])
+            else:
+                new_lines.extend(group)
+            changed |= group_changed
+
+        if changed:
+            self.props = new_lines
+        return changed
 
     def __contains__(self, obj):
         if isinstance(obj, type(self)):
@@ -353,10 +470,10 @@ class _Component:
         prefix_with_params = f"{key};"
         iterlines = iter(self.props)
         for line in iterlines:
-            if line.startswith(prefix_without_params):
+            if _startswith_case_insensitive(line, prefix_without_params):
                 rv = line[len(prefix_without_params) :]
                 break
-            if line.startswith(prefix_with_params):
+            if _startswith_case_insensitive(line, prefix_with_params):
                 rv = line[len(prefix_with_params) :].split(":", 1)[-1]
                 break
         else:
@@ -383,3 +500,40 @@ class _Component:
             and self.props == other.props
             and self.subcomponents == other.subcomponents
         )
+
+
+def _find_unquoted(value, needle):
+    quoted = False
+    escaped = False
+    for index, char in enumerate(value):
+        if escaped:
+            escaped = False
+        elif char == "\\":
+            escaped = True
+        elif char == '"':
+            quoted = not quoted
+        elif char == needle and not quoted:
+            return index
+    return -1
+
+
+def _startswith_case_insensitive(value, prefix):
+    if len(value) < len(prefix):
+        return False
+    return all(
+        actual.upper() == expected.upper()
+        for actual, expected in zip(value[: len(prefix)], prefix, strict=True)
+    )
+
+
+def _split_unquoted(value, separator):
+    parts = []
+    start = 0
+    while True:
+        offset = _find_unquoted(value[start:], separator)
+        if offset < 0:
+            parts.append(value[start:])
+            return parts
+        end = start + offset
+        parts.append(value[start:end])
+        start = end + 1

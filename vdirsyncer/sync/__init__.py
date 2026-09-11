@@ -209,16 +209,18 @@ class Upload(Action):
 
     async def _run_impl(self, a, b):
         if self.dest.storage.read_only:
+            item = self.item
             href = etag = None
         else:
+            item = self.dest.storage.prepare_item(self.item)
             sync_logger.info(
                 f"Copying (uploading) item {self.ident} to {self.dest.storage}"
             )
-            href, etag = await self.dest.storage.upload(self.item)
+            href, etag = await self.dest.storage.upload(item)
             assert href is not None
 
         self.dest.status.insert_ident(
-            self.ident, ItemMetadata(href=href, hash=self.item.hash, etag=etag)
+            self.ident, ItemMetadata(href=href, hash=item.hash, etag=etag)
         )
 
 
@@ -232,11 +234,13 @@ class Update(Action):
         if self.dest.storage.read_only:
             meta = ItemMetadata(hash=self.item.hash)
         else:
+            item = self.dest.storage.prepare_item(self.item)
             sync_logger.info(
                 f"Copying (updating) item {self.ident} to {self.dest.storage}"
             )
             meta = self.dest.status.get_new(self.ident)
-            meta.etag = await self.dest.storage.update(meta.href, self.item, meta.etag)
+            meta.etag = await self.dest.storage.update(meta.href, item, meta.etag)
+            meta.hash = item.hash
 
         self.dest.status.update_ident(self.ident, meta)
 

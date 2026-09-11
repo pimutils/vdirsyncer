@@ -15,6 +15,7 @@ from tests import VCARD_TEMPLATE
 from tests.storage import format_item
 from vdirsyncer import exceptions
 from vdirsyncer.storage.dav import CalDAVStorage
+from vdirsyncer.vobject import Item
 
 from . import DAVStorageTests
 from . import dav_server
@@ -26,6 +27,24 @@ class TestCalDAVStorage(DAVStorageTests):
     @pytest.fixture(params=["VTODO", "VEVENT"])
     def item_type(self, request):
         return request.param
+
+    def test_prepare_item_strips_method(self):
+        storage = object.__new__(self.storage_class)
+        item = Item(
+            "BEGIN:VCALENDAR\r\n"
+            "VERSION:2.0\r\n"
+            "METHOD:PUBLISH\r\n"
+            "BEGIN:VEVENT\r\n"
+            "UID:zimbra-event\r\n"
+            "SUMMARY:Example event\r\n"
+            "END:VEVENT\r\n"
+            "END:VCALENDAR\r\n"
+        )
+
+        actual = storage.prepare_item(item)
+
+        assert "METHOD:" not in actual.raw
+        assert actual.uid == "zimbra-event"
 
     @pytest.mark.asyncio
     async def test_doesnt_accept_vcard(self, item_type, get_storage_args):

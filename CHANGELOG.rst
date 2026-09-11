@@ -9,6 +9,15 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Next version
+============
+
+- Remove the iCalendar ``METHOD`` property before uploading objects to CalDAV
+  collections.  This fixes synchronization from servers such as Zimbra that
+  expose stored events as iTIP ``PUBLISH`` or ``REQUEST`` messages.
+- Add a Google Calendar ``scheduling_mode`` option.  It can preserve meeting
+  metadata, disable server-side scheduling, or create standalone event copies.
+
 Version 0.21.0
 ==============
 

@@ -183,6 +183,17 @@ class Storage(metaclass=StorageMeta):
         else:
             return True
 
+    def prepare_item(self, item: Item) -> Item:
+        """Adapt an item to the representation written by this storage.
+
+        Synchronization uses the returned item for both the write and the
+        destination-side status hash.  Storage-specific transformations can
+        therefore remain stable across subsequent synchronization runs.  The
+        transformation must be idempotent because a storage may prepare an
+        already-prepared item at its write boundary.
+        """
+        return item
+
     async def upload(self, item: Item):
         """Upload a new item.
 

@@ -42,6 +42,11 @@ def items(s):
     return {x[1].raw for x in s.items.values()}
 
 
+class TransformingMemoryStorage(MemoryStorage):
+    def prepare_item(self, item):
+        return Item(item.raw.replace("SOURCE:YES", "DESTINATION:YES"))
+
+
 @pytest.mark.asyncio
 async def test_irrelevant_status():
     a = MemoryStorage()
@@ -187,6 +192,47 @@ async def test_upload_and_update():
     await a.update("2.a", item2, (await a.get("2.a"))[1])
     await sync(a, b, status)
     assert items(b) == items(a) == {item.raw, item2.raw}
+
+
+@pytest.mark.asyncio
+async def test_destination_transformation_is_stable_across_syncs():
+    a = MemoryStorage(fileext=".a")
+    b = TransformingMemoryStorage(fileext=".b")
+    status = {}
+
+    await a.upload(Item("UID:1\nSOURCE:YES"))
+
+    await sync(a, b, status)
+    first_status = deepcopy(status)
+    first_etag = (await b.get("1.b"))[1]
+
+    assert items(a) == {"UID:1\nSOURCE:YES"}
+    assert items(b) == {"UID:1\nDESTINATION:YES"}
+
+    await sync(a, b, status)
+
+    assert status == first_status
+    assert (await b.get("1.b"))[1] == first_etag
+
+
+@pytest.mark.asyncio
+async def test_destination_transformation_updates_status_hash():
+    a = MemoryStorage(fileext=".a")
+    b = TransformingMemoryStorage(fileext=".b")
+    status = {}
+
+    href, etag = await a.upload(Item("UID:1\nSOURCE:YES\nVERSION:1"))
+    await sync(a, b, status)
+    await a.update(href, Item("UID:1\nSOURCE:YES\nVERSION:2"), etag)
+
+    await sync(a, b, status)
+    updated_status = deepcopy(status)
+    updated_etag = (await b.get("1.b"))[1]
+    await sync(a, b, status)
+
+    assert items(b) == {"UID:1\nDESTINATION:YES\nVERSION:2"}
+    assert status == updated_status
+    assert (await b.get("1.b"))[1] == updated_etag
 
 
 @pytest.mark.asyncio

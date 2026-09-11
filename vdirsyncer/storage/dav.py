@@ -23,6 +23,7 @@ from vdirsyncer.http import prepare_auth
 from vdirsyncer.http import prepare_client_cert
 from vdirsyncer.http import prepare_verify
 from vdirsyncer.vobject import Item
+from vdirsyncer.vobject import prepare_calendar_for_caldav
 
 from .base import Storage
 from .base import normalize_meta_value
@@ -557,6 +558,8 @@ class DAVStorage(Storage):
                 yield href, item, etag
 
     async def _put(self, href, item, etag):
+        item = self.prepare_item(item)
+
         headers = self.session.get_default_headers()
         headers["Content-Type"] = self.item_mimetype
         if etag is None:
@@ -788,6 +791,9 @@ class CalDAVStorage(DAVStorage):
             "order": ("calendar-order", "http://apple.com/ns/ical/"),
         }
     )
+
+    def prepare_item(self, item: Item) -> Item:
+        return prepare_calendar_for_caldav(item)
 
     def __init__(self, start_date=None, end_date=None, item_types=(), **kwargs):
         super().__init__(**kwargs)

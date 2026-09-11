@@ -18,6 +18,9 @@ from vdirsyncer.utils import atomic_write
 from vdirsyncer.utils import checkdir
 from vdirsyncer.utils import expand_path
 from vdirsyncer.utils import open_graphical_browser
+from vdirsyncer.vobject import CALDAV_SCHEDULING_MODES
+from vdirsyncer.vobject import Item
+from vdirsyncer.vobject import prepare_calendar_for_caldav
 
 from . import base
 from . import dav
@@ -192,10 +195,20 @@ class GoogleCalendarStorage(dav.CalDAVStorage):
         start_date=None,
         end_date=None,
         item_types=(),
+        scheduling_mode="preserve",
         **kwargs,
     ):
         if not kwargs.get("collection"):
             raise exceptions.CollectionRequired
+        if (
+            not isinstance(scheduling_mode, str)
+            or scheduling_mode not in CALDAV_SCHEDULING_MODES
+        ):
+            modes = ", ".join(sorted(CALDAV_SCHEDULING_MODES))
+            raise exceptions.UserError(
+                f"scheduling_mode must be one of: {modes}."
+            )
+        self.scheduling_mode = scheduling_mode
 
         super().__init__(
             token_file=token_file,
@@ -206,6 +219,9 @@ class GoogleCalendarStorage(dav.CalDAVStorage):
             item_types=item_types,
             **kwargs,
         )
+
+    def prepare_item(self, item: Item) -> Item:
+        return prepare_calendar_for_caldav(item, self.scheduling_mode)
 
     # This is ugly: We define/override the entire signature computed for the
     # docs here because the current way we autogenerate those docs are too

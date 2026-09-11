@@ -176,6 +176,12 @@ CalDAV and CardDAV
 
     CalDAV.
 
+    Before uploading a calendar object, vdirsyncer removes the iCalendar
+    ``METHOD`` property.  ``METHOD`` identifies an iTIP scheduling message
+    such as ``PUBLISH`` or ``REQUEST`` and is not valid on an object stored in
+    a CalDAV calendar collection.  This also prevents non-conforming source
+    servers from forwarding message semantics to another calendar server.
+
     ::
 
         [storage example_for_caldav]
@@ -347,12 +353,24 @@ itself or write anything to it.
        #start_date = null
        #end_date = null
        #item_types = []
+       #scheduling_mode = "preserve"
 
    Please refer to :storage:`caldav` regarding the ``item_types`` and timerange parameters.
 
    :param token_file: A filepath where access tokens are stored.
    :param client_id/client_secret: OAuth credentials, obtained from the Google
                                    API Manager.
+   :param scheduling_mode: Controls how meeting metadata is uploaded to Google:
+                           ``preserve`` keeps ``ORGANIZER`` and ``ATTENDEE``;
+                           ``passive`` adds ``SCHEDULE-AGENT=NONE`` so the
+                           server should not perform scheduling; and
+                           ``standalone`` removes ``ORGANIZER``, ``ATTENDEE``,
+                           and ``X-MS-OLK-SENDER`` so Google receives a personal
+                           event rather than a meeting.  The default is
+                           ``preserve``.  ``standalone`` is destructive to
+                           meeting relationships: use it for a one-way mirror,
+                           or only when Google-side changes are not allowed to
+                           remove attendee data from the other storage.
 
 .. storage:: google_contacts
 
