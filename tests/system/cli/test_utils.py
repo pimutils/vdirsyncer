@@ -24,7 +24,7 @@ def test_handle_cli_error(capsys):
 def test_handle_cli_error_database_locked(capsys):
     try:
         raise sqlite3.OperationalError("database is locked")
-    except BaseException:
+    except sqlite3.OperationalError:
         handle_cli_error("my_pair/my_collection")
 
     _out, err = capsys.readouterr()
@@ -37,7 +37,7 @@ def test_handle_cli_error_other_operational_error(capsys):
     with pytest.raises(sqlite3.OperationalError):
         try:
             raise sqlite3.OperationalError("no such table: status")
-        except BaseException:
+        except sqlite3.OperationalError:
             handle_cli_error("my_pair/my_collection")
 
 
