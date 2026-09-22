@@ -588,7 +588,8 @@ class DAVStorage(Storage):
         # A server may assign a different resource URL on creation. Persisting
         # the request URL would make the next listing look like a different item.
         location = response.headers.get("Location")
-        href = self._normalize_href(location or str(response.url))
+        # Relative locations refer to the final request URL, including redirects.
+        href = self._normalize_href(urlparse.urljoin(str(response.url), location or ""))
         return href, etag
 
     async def update(self, href, item, etag):

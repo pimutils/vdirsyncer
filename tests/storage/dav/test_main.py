@@ -73,7 +73,14 @@ def test_normalize_href(href):
             "https://example.com/lists/default/server-assigned.vcf",
             "/lists/default/server-assigned.vcf",
         ),
-        (None, "/lists/default/requested.vcf"),
+        ("/lists/default/server-assigned.vcf", "/lists/default/server-assigned.vcf"),
+        ("server-assigned.vcf", "/lists/redirected/server-assigned.vcf"),
+        ("./server-assigned.vcf", "/lists/redirected/server-assigned.vcf"),
+        ("../server-assigned.vcf", "/lists/server-assigned.vcf"),
+        ("server%20assigned.vcf", "/lists/redirected/server%20assigned.vcf"),
+        ("?version=2", "/lists/redirected/requested.vcf"),
+        (None, "/lists/redirected/requested.vcf"),
+        ("", "/lists/redirected/requested.vcf"),
     ],
 )
 async def test_put_uses_server_assigned_location(location, expected_href):
@@ -81,11 +88,15 @@ async def test_put_uses_server_assigned_location(location, expected_href):
         connector=None,
         url="https://example.com/lists/default/",
     )
+    # The PUT may have followed a redirect outside the configured collection.
     response = Mock(
         headers=CIMultiDict(
-            {"ETag": '"new"', **({"Location": location} if location else {})}
+            {
+                "ETag": '"new"',
+                **({"Location": location} if location is not None else {}),
+            }
         ),
-        url=URL("https://example.com/lists/default/requested.vcf"),
+        url=URL("https://example.com/lists/redirected/requested.vcf"),
     )
     response.content.read = AsyncMock(return_value=b"")
     storage.session.request = AsyncMock(return_value=response)
