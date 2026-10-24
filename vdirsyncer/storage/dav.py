@@ -602,9 +602,10 @@ class DAVStorage(Storage):
     async def delete(self, href, etag):
         href = self._normalize_href(href)
         headers = self.session.get_default_headers()
-        if etag:  # baikal doesn't give us an etag.
-            dav_logger.warning("Deleting an item with no etag.")
+        if etag:
             headers.update({"If-Match": etag})
+        else:  # baikal doesn't give us an etag.
+            dav_logger.warning("Deleting an item with no etag.")
 
         await self.session.request("DELETE", href, headers=headers)
 
