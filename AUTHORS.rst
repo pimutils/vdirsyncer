@@ -12,6 +12,7 @@ In alphabetical order:
 - Hugo Osvaldo Barrera
 - Jason Cox
 - Julian Mehne
+- jwalith4418-Mj
 - Malte Kiefer
 - Marek Marczykowski-Górecki
 - Markus Unterwaditzer
