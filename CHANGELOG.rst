@@ -9,6 +9,11 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Version 0.21.1
+==============
+
+- Mark ``aiostream 0.8.x`` as supported.
+
 Version 0.21.0
 ==============
 
