@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import os
+import re
 import uuid
+import xml.etree.ElementTree as ET
 
 import aiohttp
 import aiostream
 import pytest
+from aioresponses import aioresponses
 
 from tests import assert_item_equals
 from tests.storage import StorageTests
@@ -51,3 +54,50 @@ class DAVStorageTests(ServerMixin, StorageTests):
         href, _etag = await s.upload(item)
         item2, _etag2 = await s.get(href)
         assert_item_equals(item, item2)
+
+    @pytest.mark.asyncio
+    async def test_dav_get_multi_missing_href_batch_is_nonfatal(
+        self, s, get_item, monkeypatch
+    ):
+        item = get_item()
+        existing_href, _etag = await s.upload(item)
+        missing_href = existing_href + ".missing"
+
+        def _fake_parse_prop_responses(_root):
+            prop = ET.Element("prop")
+            ET.SubElement(prop, s.get_multi_data_query).text = item.raw
+            return [(existing_href, '"etag-existing"', prop)]
+
+        monkeypatch.setattr(s, "_parse_prop_responses", _fake_parse_prop_responses)
+        url = str(s.url).rstrip("/")
+        url_pattern = re.compile(rf"^{re.escape(url)}/?$")
+        with aioresponses() as m:
+            m.add(url_pattern, method="REPORT", status=207, body="<multistatus/>")
+            result = await aiostream.stream.list(
+                s.get_multi([existing_href, missing_href])
+            )
+        assert len(m.requests) == 1
+        assert len(result) == 1
+        href, returned_item, etag = result[0]
+        assert href == existing_href
+        assert etag == '"etag-existing"'
+        assert_item_equals(item, returned_item)
+
+    @pytest.mark.asyncio
+    async def test_dav_get_multi_missing_single_href_raises(
+        self, s, get_item, monkeypatch
+    ):
+        existing_href, _etag = await s.upload(get_item())
+        href = existing_href + ".missing"
+
+        def _fake_parse_prop_responses(_root):
+            return []
+
+        monkeypatch.setattr(s, "_parse_prop_responses", _fake_parse_prop_responses)
+        url = str(s.url).rstrip("/")
+        url_pattern = re.compile(rf"^{re.escape(url)}/?$")
+        with aioresponses() as m:
+            m.add(url_pattern, method="REPORT", status=207, body="<multistatus/>")
+            with pytest.raises(exceptions.NotFoundError):
+                await aiostream.stream.list(s.get_multi([href]))
+        assert len(m.requests) == 1
