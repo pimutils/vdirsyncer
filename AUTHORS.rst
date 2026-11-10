@@ -18,6 +18,7 @@ In alphabetical order:
 - Michael Adler
 - rEnr3n
 - Thomas Weißschuh
+- Vladimir Babin
 - Witcher01
 - samm81
 

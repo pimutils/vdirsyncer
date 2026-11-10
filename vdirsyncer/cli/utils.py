@@ -5,6 +5,7 @@ import errno
 import importlib
 import json
 import os
+import sqlite3
 import sys
 from typing import Any
 
@@ -137,6 +138,17 @@ def handle_cli_error(status_name=None, exc=None):
             "One or more storages don't support `collections = null`. "
             'You probably want to set `collections = ["from a", "from b"]`.'
         )
+    except sqlite3.OperationalError as e:
+        if "database is locked" in str(e):
+            cli_logger.error(
+                f"{status_name}: The status database is locked. This usually "
+                "means another vdirsyncer process is running, or a previous run "
+                "was interrupted. Make sure no other vdirsyncer process is "
+                "running, then try again. If the problem persists, delete the "
+                "`.items` file for this collection in your status directory."
+            )
+        else:
+            raise
     except Exception as e:
         tb = sys.exc_info()[2]
         import traceback
