@@ -117,6 +117,11 @@ def checkdir(path: str, create: bool = False, mode: int = 0o750) -> None:
     :param mode: Mode to create missing directories with.
     """
 
+    if not path:
+        # A bare filename has an empty dirname, which refers to the
+        # current working directory.
+        path = "."
+
     if not os.path.isdir(path):
         if os.path.exists(path):
             raise OSError(f"{path} is not a directory.")
