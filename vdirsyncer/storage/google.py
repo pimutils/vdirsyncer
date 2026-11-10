@@ -41,15 +41,20 @@ except ImportError:
 class GoogleSession(dav.DAVSession):
     def __init__(
         self,
-        token_file,
-        client_id,
-        client_secret,
+        token_file=None,
+        client_id=None,
+        client_secret=None,
+        token_command=None,
         url=None,
         *,
         connector: aiohttp.BaseConnector,
     ):
-        if not have_oauth2:
-            raise exceptions.UserError("aiohttp-oauthlib not installed")
+        if token_command is not None:
+            self._token_command = list(token_command)
+        else:
+            self._token_command = None
+            if not have_oauth2:
+                raise exceptions.UserError("aiohttp-oauthlib not installed")
 
         # Required for discovering collections
         if url is not None:
@@ -59,7 +64,7 @@ class GoogleSession(dav.DAVSession):
         self._settings = {}
         self.connector = connector
 
-        self._token_file = Path(expand_path(token_file))
+        self._token_file = Path(expand_path(token_file)) if token_file else None
         self._client_id = client_id
         self._client_secret = client_secret
         self._token = None
@@ -69,24 +74,52 @@ class GoogleSession(dav.DAVSession):
         if not self._token:
             await self._init_token()
 
+        if self._token_command:
+            kwargs["headers"] = dict(kwargs.get("headers", {}))
+            kwargs["headers"]["Authorization"] = f"Bearer {self._token}"
+            try:
+                return await super().request(method, path, **kwargs)
+            except aiohttp.ClientResponseError as e:
+                if e.status == 401:
+                    logger.debug("Token expired, re-fetching via token_command")
+                    await self._fetch_token_via_command()
+                    kwargs["headers"]["Authorization"] = f"Bearer {self._token}"
+                    return await super().request(method, path, **kwargs)
+                raise
+
         return await super().request(method, path, **kwargs)
 
     async def _save_token(self, token):
         """Helper function called by OAuth2Session when a token is updated."""
+        if self._token_command:
+            return
+        assert self._token_file is not None
         checkdir(expand_path(os.path.dirname(self._token_file)), create=True)
         with atomic_write(self._token_file, mode="w", overwrite=True) as f:
             json.dump(token, f)
 
     @property
     def _session(self):
-        """Return a new OAuth session for requests.
+        """Return a new session for requests.
 
-        Accesses the self.redirect_uri field (str): the URI to redirect
+        When token_command is set, returns a plain aiohttp session (the
+        external command handles all OAuth concerns). Otherwise returns an
+        OAuth2Session that manages the OAuth2 flow with Google.
+
+        The OAuth2 path uses self.redirect_uri (str): the URI to redirect
         authentication to. Should be a loopback address for a local server that
         follows the process detailed in
         https://developers.google.com/identity/protocols/oauth2/native-app.
         """
 
+        if self._token_command:
+            return aiohttp.ClientSession(
+                connector=self.connector,
+                connector_owner=False,
+                trust_env=True,
+            )
+
+        assert have_oauth2
         return OAuth2Session(
             client_id=self._client_id,
             token=self._token,
@@ -104,6 +137,10 @@ class GoogleSession(dav.DAVSession):
         )
 
     async def _init_token(self):
+        if self._token_command:
+            await self._fetch_token_via_command()
+            return
+
         try:
             with self._token_file.open() as f:
                 self._token = json.load(f)
@@ -166,6 +203,26 @@ class GoogleSession(dav.DAVSession):
             # FIXME: Ugly
             await self._save_token(self._token)
 
+    async def _fetch_token_via_command(self):
+        from vdirsyncer.cli.fetchparams import STRATEGIES
+
+        assert self._token_command is not None
+        strategy = self._token_command[0]
+        try:
+            strategy_fn = STRATEGIES[strategy]
+        except KeyError:
+            raise exceptions.UserError(
+                f"Unknown token_command strategy: {strategy}. "
+                f"Available: {', '.join(sorted(STRATEGIES))}"
+            )
+        token = strategy_fn(*self._token_command[1:])
+        if not token:
+            raise exceptions.UserError(
+                f"token_command strategy '{strategy}' returned empty output"
+            )
+        self._token = token
+        logger.debug("Successfully fetched token via token_command")
+
 
 class GoogleCalendarStorage(dav.CalDAVStorage):
     class session_class(GoogleSession):
@@ -186,9 +243,10 @@ class GoogleCalendarStorage(dav.CalDAVStorage):
 
     def __init__(
         self,
-        token_file,
-        client_id,
-        client_secret,
+        token_file=None,
+        client_id=None,
+        client_secret=None,
+        token_command=None,
         start_date=None,
         end_date=None,
         item_types=(),
@@ -201,6 +259,7 @@ class GoogleCalendarStorage(dav.CalDAVStorage):
             token_file=token_file,
             client_id=client_id,
             client_secret=client_secret,
+            token_command=token_command,
             start_date=start_date,
             end_date=end_date,
             item_types=item_types,
@@ -231,7 +290,8 @@ class GoogleContactsStorage(dav.CardDAVStorage):
 
     storage_name = "google_contacts"
 
-    def __init__(self, token_file, client_id, client_secret, **kwargs):
+    def __init__(self, token_file=None, client_id=None, client_secret=None,
+                 token_command=None, **kwargs):
         if not kwargs.get("collection"):
             raise exceptions.CollectionRequired
 
@@ -239,6 +299,7 @@ class GoogleContactsStorage(dav.CardDAVStorage):
             token_file=token_file,
             client_id=client_id,
             client_secret=client_secret,
+            token_command=token_command,
             **kwargs,
         )
 
