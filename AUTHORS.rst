@@ -16,6 +16,7 @@ In alphabetical order:
 - Marek Marczykowski-Górecki
 - Markus Unterwaditzer
 - Michael Adler
+- Muhammad Umar Nadeem
 - rEnr3n
 - Thomas Weißschuh
 - Witcher01

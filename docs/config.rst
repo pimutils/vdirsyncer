@@ -275,6 +275,34 @@ Google
 Vdirsyncer supports synchronization with Google calendars with the restriction
 that ``VTODO`` files are rejected by the server.
 
+If you only need to download events from a Google calendar, you can use
+:storage:`http` with its iCalendar (``.ics``) URL instead of the Google API.
+This does not require registering an application or obtaining OAuth credentials.
+In Google Calendar's settings, select the calendar, open **Integrate calendar**,
+and copy its **Secret address in iCal format**, as described in
+`Google's instructions <https://support.google.com/calendar/answer/37648>`_.
+Keep this URL private: anyone with it can read the calendar.
+
+For example, replace ``url`` below with the full iCalendar URL::
+
+    [pair google_ical]
+    a = "google_ical_local"
+    b = "google_ical_remote"
+    collections = null
+
+    [storage google_ical_local]
+    type = "filesystem"
+    path = "~/.local/share/vdirsyncer/google-calendar/"
+    fileext = ".ics"
+
+    [storage google_ical_remote]
+    type = "http"
+    url = "https://calendar.google.com/calendar/ical/your-calendar/private-your-token/basic.ics"
+
+This pair downloads one calendar. HTTP storage is read-only, so local changes
+are not uploaded to Google. The following instructions describe access through
+Google's APIs, which is needed for two-way synchronization.
+
 Synchronization with Google contacts is less reliable due to negligence of
 Google's CardDAV API. **Google's CardDAV implementation is allegedly a disaster
 in terms of data safety**. See `this blog post
