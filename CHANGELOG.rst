@@ -9,6 +9,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/pimutils/vdirsyncer/tags.atom>`_.
 
+Unreleased
+==========
+
+- Document read-only Google Calendar downloads using an iCalendar URL and HTTP
+  storage. :gh:`1218`
+
 Version 0.21.1
 ==============
 
