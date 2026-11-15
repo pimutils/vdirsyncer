@@ -522,5 +522,6 @@ leads to an error.
     :param filter_hook: Optional. A filter command to call for each fetched
         item, passed in raw form to stdin and returned via stdout.
         If nothing is returned by the filter command, the item is skipped.
+        If the filter command exits unsuccessfully, syncing fails with an error.
         This can be used to alter fields as needed when dealing with providers
         generating malformed events.

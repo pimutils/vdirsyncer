@@ -82,6 +82,14 @@ class HttpStorage(Storage):
                 encoding="utf-8",
                 check=False,
             )
+            if result.returncode:
+                message = (
+                    f"Filter hook {self._filter_hook!r} exited with status "
+                    f"{result.returncode}"
+                )
+                if result.stderr.strip():
+                    message += f": {result.stderr.strip()}"
+                raise exceptions.UserError(message)
             return result.stdout
         except OSError as e:
             logger.warning(f"Error executing external command: {e!s}")

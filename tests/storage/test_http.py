@@ -79,6 +79,24 @@ async def test_list(aio_connector):
             assert found_items[normalize_item(item)] == href
 
 
+@pytest.mark.asyncio
+async def test_filter_hook_failure_is_reported(aio_connector):
+    collection_url = "http://127.0.0.1/calendar/collection.ics"
+    calendar = "BEGIN:VCALENDAR\nBEGIN:VEVENT\nSUMMARY:Event\nEND:VEVENT\nEND:VCALENDAR"
+
+    with aioresponses() as m:
+        m.get(collection_url, body=calendar)
+        storage = HttpStorage(
+            url=collection_url,
+            connector=aio_connector,
+            filter_hook="/usr/bin/false",
+        )
+
+        with pytest.raises(UserError, match="Filter hook.*exited with status 1"):
+            async for _ in storage.list():
+                pass
+
+
 def test_readonly_param(aio_connector):
     """The ``readonly`` param cannot be ``False``."""
 
