@@ -71,7 +71,7 @@ class Item:
         a modification of the item."""
         # Don't actually parse component, but treat all lines as single
         # component, avoiding traversal through all subcomponents.
-        x = _Component("TEMP", self.raw.splitlines(), [])
+        x = _Component("TEMP", list(_skip_vcalendar_props(self.raw.splitlines())), [])
         try:
             return x["UID"].strip() or None
         except KeyError:
@@ -103,6 +103,26 @@ class Item:
             return _Component.parse(self.raw)
         except ValueError:
             return None
+
+
+def _skip_vcalendar_props(lines):
+    """Skip the properties of the outermost VCALENDAR, yield everything else.
+
+    RFC 7986 allows a UID on the VCALENDAR itself. It identifies the calendar,
+    not the item, so it must not be mistaken for the UID of the VEVENT/VTODO.
+    """
+    depth = 0
+    skipping = False
+    for line in lines:
+        if line.startswith("BEGIN:"):
+            depth += 1
+            if depth == 1:
+                skipping = line[len("BEGIN:") :].strip().upper() == "VCALENDAR"
+        elif line.startswith("END:"):
+            depth -= 1
+        elif skipping and depth == 1:
+            continue
+        yield line
 
 
 def normalize_item(item, ignore_props=IGNORE_PROPS):

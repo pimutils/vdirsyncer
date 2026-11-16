@@ -212,6 +212,47 @@ def test_replace_multiline_uid(benchmark):
     assert benchmark(inner) == "a"
 
 
+def test_uid_ignores_vcalendar_level_uid():
+    # RFC 7986 allows a UID on the VCALENDAR itself. It identifies the
+    # calendar, not the item, so the UID of the component must be used.
+    item = vobject.Item(
+        dedent(
+            """
+            BEGIN:VCALENDAR
+            VERSION:2.0
+            PRODID:-//Test//Test//EN
+            UID:calendar-uid-123
+            BEGIN:VEVENT
+            DTSTART:20140325T084000Z
+            DTEND:20140325T101000Z
+            UID:event-uid-456
+            SUMMARY:Test Event
+            END:VEVENT
+            END:VCALENDAR
+            """
+        ).strip()
+    )
+    assert item.uid == "event-uid-456"
+
+
+def test_uid_vcalendar_level_uid_without_component_uid():
+    item = vobject.Item(
+        dedent(
+            """
+            BEGIN:VCALENDAR
+            VERSION:2.0
+            UID:calendar-uid-123
+            BEGIN:VEVENT
+            SUMMARY:Test Event
+            END:VEVENT
+            END:VCALENDAR
+            """
+        ).strip()
+    )
+    assert item.uid is None
+    assert item.ident == item.hash
+
+
 @pytest.mark.parametrize(
     "template", [EVENT_TEMPLATE, EVENT_WITH_TIMEZONE_TEMPLATE, VCARD_TEMPLATE]
 )
